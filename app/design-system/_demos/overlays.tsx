@@ -239,7 +239,7 @@ export function Overlays() {
 
       <Section id="context-menu" title="Context Menu">
         <ContextMenu>
-          <ContextMenuTrigger className="flex h-32 w-full items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+          <ContextMenuTrigger className="flex h-32 w-full items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground hover:border-primary hover:text-foreground">
             Right-click here
           </ContextMenuTrigger>
           <ContextMenuPopup>

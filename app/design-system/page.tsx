@@ -42,7 +42,9 @@ export default function DesignSystemPage() {
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="px-4 py-3 font-heading font-semibold">
-          <a href="#top">Design system</a>
+          <a href="#top" className="hover:underline">
+            Design system
+          </a>
         </SidebarHeader>
         <SidebarContent>
           {sectionGroups.map((group) => (

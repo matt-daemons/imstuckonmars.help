@@ -372,6 +372,53 @@
   color: var(--primary-foreground);
 }
 
+/* Hover states for controls coss leaves without one. */
+@media (hover: hover) {
+  .dark
+    :is(
+      [data-slot="input-control"],
+      [data-slot="textarea-control"],
+      [data-slot="select-trigger"],
+      [data-slot="number-field-group"],
+      [data-slot="otp-field"] input,
+      [data-slot="composer"]
+    ):not([data-disabled], :has(:disabled)):hover {
+    background-color: color-mix(in srgb, var(--hermes-cyan) 12%, transparent);
+  }
+
+  :is([data-slot="checkbox"], [data-slot="radio"]):not([data-disabled]):is(
+      :hover,
+      :is([data-slot="label"], [data-slot="field-label"]):hover *
+    ) {
+    border-color: var(--primary);
+
+    &[data-checked] {
+      background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+    }
+  }
+
+  [data-slot="switch"]:not([data-disabled]):is(
+      :hover,
+      :is([data-slot="label"], [data-slot="field-label"]):hover *
+    ),
+  [data-slot="slider-thumb"]:not([data-disabled]):hover {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 32%, transparent);
+  }
+
+  [data-slot="accordion-trigger"]:not([data-disabled]):hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  [data-slot="preview-card-trigger"]:hover {
+    color: var(--primary);
+  }
+
+  .dark [data-slot="toggle"][data-pressed]:hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+  }
+}
+
 /* coss's dark:bg-input/32 otherwise cancels the destructive-outline hover fill. */
 .dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
   background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
