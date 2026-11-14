@@ -59,6 +59,38 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
   (`--font-mono`), set in `app/layout.tsx`.
 - pnpm 12 and Node.js 24 from the Nix dev shell.
 
+## UI standards
+
+Always load and follow `.agents/skills/operational-ui-standards/SKILL.md` when building, changing,
+or reviewing any UI in this repository, including components, theme tokens, and
+`/design-system`.
+
+The skill governs data, alerts, status, and commands. Where it conflicts with the Hermes theme
+above, it wins, with these accepted deviations for chrome and headings only:
+
+- T-4: uppercase panel and dialog titles, control labels, badges, and table heads stay. Data
+  values, messages, procedures, and descriptions use mixed case.
+- K-1 and K-2: cyan stays as the chrome accent (hairline borders, panel header bars, primary
+  controls). Info alerts also use cyan, so they always carry their icon (K-4) to stand apart from
+  chrome.
+- Green is success only and needs a color table entry (K-3).
+
+Alert levels use coss variant names. In the skill's terms, from highest priority:
+
+| Level     | Skill level | Tokens        | Treatment beyond color                        |
+| --------- | ----------- | ------------- | --------------------------------------------- |
+| Emergency | Emergency   | `destructive` | Reverse video and flashing (K-6, F-2)         |
+| Error     | Warning     | `destructive` | Solid border and error icon                   |
+| Warning   | Caution     | `warning`     | Warning icon. Used as a note, not as a danger |
+| Info      | Advisory    | `info`        | Info icon                                     |
+
+Hazard is not an alert level. Black and yellow hazard tape (`data-hazard` on
+`AlertDialogPopup`) marks the confirmation dialog of a dangerous or irreversible action (C-1). It
+replaces C-3's striped border on the control itself: the trigger uses a `destructive` button
+variant instead. The tape goes on borders only, never behind text (K-5).
+
+Every other skill rule applies as written, including K-5 (6:1 text contrast).
+
 ## Formatting and checks
 
 - Formatter: oxfmt for TypeScript, CSS, JSON, and Markdown; nixfmt for Nix. Linter: oxlint.
