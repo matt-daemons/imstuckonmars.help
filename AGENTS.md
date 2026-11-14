@@ -40,7 +40,13 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
   Do not reintroduce the `cf` CLI or `cloudflare.config.ts`: its build hangs in the Nix sandbox.
   `cf` may be used later for authentication only.
 - Hono owns `/api/*`: add routes in `server/api/`, not as App Router route handlers.
-- shadcn/ui (base-nova, Base UI primitives) in `components/ui/`.
+- coss ui (https://coss.com/ui, built on Base UI) in `components/ui/`, with its hooks in `hooks/`
+  and helpers in `lib/`. Install or update components from the `@coss` registry with
+  `pnpm dlx shadcn@latest add @coss/<name>`. Do not add shadcn/ui registry components.
+  Keep coss files unmodified so they can be updated in place; customize through theme tokens in
+  `app/globals.css` or wrapper components. Reference: https://coss.com/ui/llms.txt
+- Fonts: Inter (`--font-sans`, also used for `--font-heading`) and Geist Mono (`--font-mono`),
+  set in `app/layout.tsx`.
 - pnpm 12 and Node.js 24 from the Nix dev shell.
 
 ## Formatting and checks
@@ -52,7 +58,12 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
 - After changing `pnpm-lock.yaml`, update `pnpmDeps.hash` in `nix/package.nix`: set it to `""`,
   run `nix build`, and copy the reported hash.
 - Keep `wrangler types --include-runtime=false`. Runtime type generation starts workerd, which
-  hangs in the Nix sandbox. Runtime types come from `@cloudflare/workers-types`.
+  hangs in the Nix sandbox.
+- Do not add `@cloudflare/workers-types` to `tsconfig.json` `types`: its globals override DOM types
+  that client components use. Import Worker types per file instead, for example
+  `import type { Fetcher } from "@cloudflare/workers-types"`.
+- New top-level source directories must be added to the `fileset` in `flake.nix`, or the
+  sandboxed build cannot see them.
 - Keep `compatibility_date` in `wrangler.jsonc` at or below the date the nixpkgs workerd supports,
   or `nix run .` cannot serve the build.
 
