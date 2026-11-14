@@ -76,8 +76,9 @@ workerd. Otherwise `nix run .` cannot start it.
 
 ## Deploying
 
-GitHub Actions (`.github/workflows/ci.yml`) runs `nix flake check` on every pull request and push.
-Pushes to `main` that pass the check deploy to Cloudflare with `nix run .#deploy`.
+GitHub Actions (`.github/workflows/ci.yml`) installs with pnpm and runs `pnpm fmt:check`,
+`pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` on every pull request and push.
+Pushes to `main` that pass deploy to Cloudflare with `pnpm run deploy`.
 
 The `imstuckonmars.help` custom domain is attached to the Worker in Cloudflare, not in
 `wrangler.jsonc`.
