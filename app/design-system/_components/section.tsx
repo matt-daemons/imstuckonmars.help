@@ -15,7 +15,10 @@ export function Section({
 }) {
   return (
     <section id={id} aria-labelledby={`${id}-title`} className="scroll-mt-20">
-      <h3 id={`${id}-title`} className="mb-3 font-heading text-lg font-semibold">
+      <h3
+        id={`${id}-title`}
+        className="mb-3 font-heading text-lg font-semibold tracking-wider uppercase"
+      >
         <a href={`#${id}`} className="hover:underline">
           {title}
         </a>
@@ -36,7 +39,7 @@ export function GroupHeading({ id, children }: { id: string; children: ReactNode
   return (
     <h2
       id={id}
-      className="scroll-mt-20 border-b pb-2 font-heading text-2xl font-semibold tracking-tight"
+      className="scroll-mt-20 border-b pb-2 font-heading text-2xl font-semibold tracking-wide uppercase"
     >
       {children}
     </h2>

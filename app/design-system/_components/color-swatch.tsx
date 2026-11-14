@@ -7,16 +7,9 @@ export function ColorSwatch({ token }: { token: string }) {
   const [resolved, setResolved] = useState("");
 
   useEffect(() => {
-    const element = swatch.current;
-    if (!element) return;
-
-    const read = () => setResolved(getComputedStyle(element).backgroundColor);
-    read();
-
-    // Re-read when the theme class on <html> changes.
-    const observer = new MutationObserver(read);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => observer.disconnect();
+    if (swatch.current) {
+      setResolved(getComputedStyle(swatch.current).backgroundColor);
+    }
   }, []);
 
   return (

@@ -16,7 +16,6 @@ import {
 } from "@/components/ui/sidebar";
 
 import { GroupHeading } from "./_components/section";
-import { ThemeToggle } from "./_components/theme-toggle";
 import { Actions } from "./_demos/actions";
 import { Feedback } from "./_demos/feedback";
 import { Forms } from "./_demos/forms";
@@ -71,9 +70,6 @@ export default function DesignSystemPage() {
           <h1 id="top" className="font-heading text-base font-semibold">
             Design system
           </h1>
-          <div className="ms-auto">
-            <ThemeToggle />
-          </div>
         </header>
 
         <main className="mx-auto flex w-full max-w-5xl flex-col gap-14 px-6 py-10">

@@ -33,7 +33,8 @@ The dev shell provides Node.js 24, pnpm, and nixfmt, and disables Next.js and Wr
 | `flake.nix`, `nix/`                | Nix package, apps, and checks           |
 
 All coss ui primitives are installed and shown at `/design-system` (not indexed), along with the
-theme tokens in light and dark mode. Add or update coss components and particles with
+theme tokens. The dark-only Hermes theme in `app/globals.css` is modeled on the Hermes screens
+from [The Martian](https://territorystudio.com/project/the-martian). Add or update coss components and particles with
 `pnpm dlx shadcn@latest add @coss/<name>` (the shadcn CLI is only the installer), then run
 `nix run .#fmt`.
 

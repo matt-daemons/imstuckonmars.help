@@ -47,8 +47,16 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
   `app/globals.css` or wrapper components. Reference: https://coss.com/ui/llms.txt
 - `/design-system` (`app/design-system/`) shows every component and theme token. When you add a
   component, variant, or token, add it there too.
-- Fonts: Inter (`--font-sans`, also used for `--font-heading`) and Geist Mono (`--font-mono`),
-  set in `app/layout.tsx`.
+- Visual design: the Hermes theme, after Territory Studio's screen graphics for The Martian
+  (https://territorystudio.com/project/the-martian, the Hermes screens). Dark only (`dark` is
+  always set on `<html>`): black surfaces, cyan hairline borders, square corners (`--radius: 0`),
+  flat surfaces, tinted panel header bars, uppercase condensed titles and control labels, and
+  monospace numeric readouts. Cyan is the primary/info accent, green is success, amber is warning,
+  red is error. Do not add a light theme or rounded, shadowed surfaces.
+- Theme lives in `app/globals.css`: tokens in `:root`, and Hermes treatments applied to coss
+  `data-slot` selectors. Rules that must beat coss utility classes go outside `@layer`.
+- Fonts: Barlow (`--font-sans`), Barlow Condensed (`--font-heading`), and JetBrains Mono
+  (`--font-mono`), set in `app/layout.tsx`.
 - pnpm 12 and Node.js 24 from the Nix dev shell.
 
 ## Formatting and checks
