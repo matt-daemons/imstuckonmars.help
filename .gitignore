@@ -4,5 +4,6 @@ node_modules
 next-env.d.ts
 /dist/
 .vinext/
-.cloudflare/
+.wrangler/
 tsconfig.tsbuildinfo
+worker-configuration.d.ts
