@@ -9,8 +9,9 @@ import {
   SirenIcon,
   TriangleAlertIcon,
 } from "lucide-react";
+import { useState } from "react";
 
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -81,20 +82,37 @@ const badgeVariants = [
 const toastTypes = ["info", "success", "warning", "error", "loading"] as const;
 
 export function Feedback() {
+  const [acknowledged, setAcknowledged] = useState(false);
+
   return (
     <>
       <Section id="alert" title="Alert" className="flex-col">
-        {alertVariants.map((alert) => (
-          <Alert
-            key={alert.title}
-            variant={alert.variant}
-            data-level={"level" in alert ? alert.level : undefined}
-          >
-            <alert.Icon aria-hidden />
-            <AlertTitle>{alert.title}</AlertTitle>
-            <AlertDescription>{alert.description}</AlertDescription>
-          </Alert>
-        ))}
+        {alertVariants.map((alert) => {
+          const emergency = "level" in alert;
+          return (
+            <Alert
+              key={alert.title}
+              variant={alert.variant}
+              data-level={emergency ? alert.level : undefined}
+              data-acknowledged={emergency && acknowledged ? "" : undefined}
+            >
+              <alert.Icon aria-hidden />
+              <AlertTitle>{alert.title}</AlertTitle>
+              <AlertDescription>{alert.description}</AlertDescription>
+              {emergency && (
+                <AlertAction>
+                  <Button
+                    onClick={() => setAcknowledged(!acknowledged)}
+                    size="sm"
+                    variant="outline"
+                  >
+                    {acknowledged ? "Re-arm demo" : "Acknowledge"}
+                  </Button>
+                </AlertAction>
+              )}
+            </Alert>
+          );
+        })}
       </Section>
 
       <Section id="badge" title="Badge" className="flex-col">

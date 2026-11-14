@@ -351,13 +351,16 @@
 }
 
 /*
- * Emergency alerts (variant="error" with data-level="emergency"): reverse
- * video, 6.2:1. The icon flashes at 3 Hz with 50% on for 10 s, and stays
- * static under reduced motion.
+ * Emergency alerts (variant="error" with data-level="emergency"): until
+ * acknowledged (data-acknowledged), reverse video at 6.2:1, flashing the whole
+ * alert at the low rate, 0.8 Hz with 70% in reverse video. The off phase and
+ * the acknowledged state use the error alert look. Static reverse video under
+ * reduced motion.
  */
-[data-slot="alert"][data-level="emergency"] {
+[data-slot="alert"][data-level="emergency"]:not([data-acknowledged]) {
   border-color: var(--destructive);
   background-color: var(--destructive);
+  animation: emergency-flash 1.25s steps(1) infinite;
 
   & > svg,
   & > [data-slot="alert-title"],
@@ -366,17 +369,53 @@
   }
 
   & > svg {
-    animation: alert-flash-high 333ms steps(1) 30;
+    animation: emergency-flash-icon 1.25s steps(1) infinite;
+  }
+  & > [data-slot="alert-title"] {
+    animation: emergency-flash-title 1.25s steps(1) infinite;
+  }
+  & > [data-slot="alert-description"] {
+    animation: emergency-flash-description 1.25s steps(1) infinite;
   }
 }
-@keyframes alert-flash-high {
-  50% {
-    opacity: 0.4;
+/* Actions stay dark and solid, so they read on both flash states. */
+[data-slot="alert"][data-level="emergency"] [data-slot="button"] {
+  border-color: var(--destructive-contrast);
+  background-color: var(--destructive-contrast);
+  color: var(--destructive-foreground);
+
+  &:hover {
+    border-color: var(--destructive-foreground);
+  }
+}
+@keyframes emergency-flash {
+  70%,
+  100% {
+    background-color: color-mix(in srgb, var(--destructive) 22%, transparent);
+  }
+}
+@keyframes emergency-flash-icon {
+  70%,
+  100% {
+    color: var(--destructive);
+  }
+}
+@keyframes emergency-flash-title {
+  70%,
+  100% {
+    color: var(--destructive-foreground);
+  }
+}
+@keyframes emergency-flash-description {
+  70%,
+  100% {
+    color: var(--foreground);
   }
 }
 @media (prefers-reduced-motion: reduce) {
-  [data-slot="alert"][data-level="emergency"] > svg {
-    animation: none;
+  [data-slot="alert"][data-level="emergency"],
+  [data-slot="alert"][data-level="emergency"] > * {
+    animation: none !important;
   }
 }
 
