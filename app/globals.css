@@ -27,6 +27,7 @@
   --accent-foreground: #e8ffff;
   --destructive: #ff4f4f;
   --destructive-foreground: #ff8585;
+  --destructive-contrast: #1a0000;
   --border: color-mix(in srgb, var(--hermes-cyan) 55%, transparent);
   --input: color-mix(in srgb, var(--hermes-cyan) 65%, transparent);
   --ring: var(--hermes-cyan);
@@ -295,4 +296,83 @@
     [data-slot="composer"]
   ) {
   background-color: color-mix(in srgb, var(--hermes-cyan) 5%, transparent);
+}
+
+/*
+ * Solid destructive fills take dark text, like primary: white on the
+ * Hermes red is 3.24:1. Unlayered so it outranks coss's text-white.
+ */
+:is([data-slot="button"], [data-slot="badge"]).bg-destructive,
+[data-slot="button"].bg-destructive > [data-slot="button-loading-indicator"] {
+  color: var(--destructive-contrast);
+}
+
+/*
+ * Status alerts: full-strength border, tinted surface, and a
+ * status-colored title. coss exposes the variant only through its classes.
+ */
+[data-slot="alert"][class~="bg-info/4"] {
+  --alert-tone: var(--info);
+  --alert-tone-foreground: var(--info-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-success/4"] {
+  --alert-tone: var(--success);
+  --alert-tone-foreground: var(--success-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-warning/4"] {
+  --alert-tone: var(--warning);
+  --alert-tone-foreground: var(--warning-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-destructive/4"] {
+  --alert-tone: var(--destructive);
+  --alert-tone-foreground: var(--destructive-foreground);
+  --alert-tint: 22%;
+}
+[data-slot="alert"]:where(
+  [class~="bg-info/4"],
+  [class~="bg-success/4"],
+  [class~="bg-warning/4"],
+  [class~="bg-destructive/4"]
+) {
+  border-color: var(--alert-tone);
+  background-color: color-mix(in srgb, var(--alert-tone) var(--alert-tint), transparent);
+
+  & > [data-slot="alert-title"] {
+    color: var(--alert-tone-foreground);
+  }
+  & > [data-slot="alert-description"] {
+    color: var(--foreground);
+  }
+}
+
+/* The neutral alert stays quieter than every status alert. */
+.dark [data-slot="alert"][class~="dark:bg-input/32"] {
+  background-color: transparent;
+}
+
+/* Group text is a static label: panel-header tint, not the cyan control fill. */
+.dark [data-slot="group-text"] {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+/*
+ * Selected states use the solid primary pairing. Light text on the 65% cyan
+ * input fill coss uses measures 3.78:1.
+ */
+.dark [data-slot="toggle"][data-pressed],
+.dark [data-slot="segmented-control-indicator"] {
+  background-color: var(--primary);
+}
+.dark [data-slot="toggle"][data-pressed],
+.dark [data-slot="segmented-control"] [aria-checked="true"] {
+  color: var(--primary-foreground);
+}
+
+/* coss's dark:bg-input/32 otherwise cancels the destructive-outline hover fill. */
+.dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
+  background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
 }

@@ -31,6 +31,7 @@ const colorGroups = [
     tokens: [
       "destructive",
       "destructive-foreground",
+      "destructive-contrast",
       "info",
       "info-foreground",
       "success",

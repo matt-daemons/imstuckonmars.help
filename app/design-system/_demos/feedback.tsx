@@ -1,6 +1,13 @@
 "use client";
 
-import { InboxIcon, InfoIcon } from "lucide-react";
+import {
+  BellIcon,
+  CircleCheckIcon,
+  CircleXIcon,
+  InboxIcon,
+  InfoIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +30,11 @@ import { toastManager } from "@/components/ui/toast";
 import { Section } from "../_components/section";
 
 const alertVariants = [
-  { variant: "default", title: "Default" },
-  { variant: "info", title: "Info" },
-  { variant: "success", title: "Success" },
-  { variant: "warning", title: "Warning" },
-  { variant: "error", title: "Error" },
+  { variant: "default", title: "Default", Icon: BellIcon },
+  { variant: "info", title: "Info", Icon: InfoIcon },
+  { variant: "success", title: "Success", Icon: CircleCheckIcon },
+  { variant: "warning", title: "Warning", Icon: TriangleAlertIcon },
+  { variant: "error", title: "Error", Icon: CircleXIcon },
 ] as const;
 
 const badgeVariants = [
@@ -47,9 +54,9 @@ export function Feedback() {
   return (
     <>
       <Section id="alert" title="Alert" className="flex-col">
-        {alertVariants.map(({ variant, title }) => (
+        {alertVariants.map(({ variant, title, Icon }) => (
           <Alert key={variant} variant={variant}>
-            <InfoIcon />
+            <Icon />
             <AlertTitle>{title}</AlertTitle>
             <AlertDescription>Dust storm expected at sol 550.</AlertDescription>
           </Alert>
