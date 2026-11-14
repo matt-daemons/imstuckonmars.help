@@ -31,8 +31,8 @@ GitHub Actions deploys every push to `main` that passes `nix flake check`. The w
 
 ## Version control
 
-Use jj (colocated with Git). Keep commits small, with messages formatted as
-`feature-name(action): Brief description`.
+jj (colocated with Git) is optional. If jj is not installed, use Git. Keep commits small, with
+messages formatted as `feature-name(action): Brief description`.
 
 ## Stack
 
@@ -57,7 +57,8 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
   `data-slot` selectors. Rules that must beat coss utility classes go outside `@layer`.
 - Fonts: Barlow (`--font-sans`), Barlow Condensed (`--font-heading`), and JetBrains Mono
   (`--font-mono`), set in `app/layout.tsx`.
-- pnpm 12 and Node.js 24 from the Nix dev shell.
+- pnpm 12 and Node.js 24. The Nix dev shell provides them, but Nix is optional: without it, use
+  locally installed pnpm 12 and Node.js 24, and run the pnpm scripts directly.
 
 ## UI standards
 
@@ -104,11 +105,14 @@ Every other skill rule applies as written, including K-5 (6:1 text contrast).
 ## Formatting and checks
 
 - Formatter: oxfmt for TypeScript, CSS, JSON, and Markdown; nixfmt for Nix. Linter: oxlint.
-  Both were approved for this repository; use `nix run .#fmt`.
-- Before committing, run `nix run .#check`. Run `nix flake check` when changing Nix files,
-  dependencies, or anything the sandboxed build uses.
+  Both were approved for this repository; use `nix run .#fmt`, or `pnpm fmt` without Nix.
+- Before committing, run `nix run .#check`, or without Nix:
+  `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`. Run
+  `nix flake check` when changing Nix files, dependencies, or anything the sandboxed build uses.
+  Without Nix, say that it was not run: CI runs it before every deploy.
 - After changing `pnpm-lock.yaml`, update `pnpmDeps.hash` in `nix/package.nix`: set it to `""`,
-  run `nix build`, and copy the reported hash.
+  run `nix build`, and copy the reported hash. Without Nix, flag the stale hash to the user, since
+  the CI build fails until someone with Nix updates it.
 - Keep `wrangler types --include-runtime=false`. Runtime type generation starts workerd, which
   hangs in the Nix sandbox.
 - Do not add `@cloudflare/workers-types` to `tsconfig.json` `types`: its globals override DOM types
