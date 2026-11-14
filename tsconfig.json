@@ -14,7 +14,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "types": ["vinext/types", "node", "@cloudflare/workers-types"],
+    "types": ["vinext/types", "node"],
     "paths": {
       "@/*": ["./*"]
     }
