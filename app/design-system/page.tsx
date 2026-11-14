@@ -21,6 +21,7 @@ import { Feedback } from "./_demos/feedback";
 import { Forms } from "./_demos/forms";
 import { Foundations } from "./_demos/foundations";
 import { LayoutData } from "./_demos/layout-data";
+import { Operational } from "./_demos/operational";
 import { Overlays } from "./_demos/overlays";
 import { sectionGroups } from "./_lib/sections";
 
@@ -29,6 +30,7 @@ const groupContent: Record<string, ComponentType> = {
   Actions,
   Forms,
   Feedback,
+  "Operational standards": Operational,
   Overlays,
   "Layout & data": LayoutData,
 };

@@ -64,6 +64,20 @@ export const sectionGroups: SectionGroup[] = [
     ],
   },
   {
+    title: "Operational standards",
+    sections: [
+      { id: "lookalike-characters", title: "Lookalike characters" },
+      { id: "typeface-roles", title: "Typeface roles" },
+      { id: "text-size", title: "Text size" },
+      { id: "number-formatting", title: "Number formatting" },
+      { id: "data-states", title: "Data states" },
+      { id: "alert-levels", title: "Alert levels" },
+      { id: "messages", title: "Messages" },
+      { id: "time", title: "Time" },
+      { id: "color-table", title: "Color table" },
+    ],
+  },
+  {
     title: "Overlays",
     sections: [
       { id: "dialog", title: "Dialog" },
