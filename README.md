@@ -69,8 +69,18 @@ workerd. Otherwise `nix run .` cannot start it.
 
 ## Deploying
 
-Deploys use Wrangler. Authenticate with `pnpm exec wrangler login`, or set `CLOUDFLARE_API_TOKEN`
-and `CLOUDFLARE_ACCOUNT_ID`, then run `nix run .#deploy`.
+GitHub Actions (`.github/workflows/ci.yml`) runs `nix flake check` on every pull request and push.
+Pushes to `main` that pass the check deploy to Cloudflare with `nix run .#deploy`.
+
+The deploy job needs these repository secrets:
+
+| Secret                  | Value                                                                     |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | API token created from the **Edit Cloudflare Workers** template           |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID from the Cloudflare dashboard URL (`dash.cloudflare.com/<id>`) |
+
+To deploy manually, authenticate with `pnpm exec wrangler login` (or export the two variables
+above), then run `nix run .#deploy`.
 
 ## License
 
