@@ -419,6 +419,22 @@
   }
 }
 
+/* Choice controls and the labels that toggle them take the pointer, like buttons. */
+:is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"]),
+:is([data-slot="label"], [data-slot="field-label"]):has(
+  [data-slot="checkbox"],
+  [data-slot="radio"],
+  [data-slot="switch"]
+) {
+  cursor: pointer;
+}
+:is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"])[data-disabled],
+:is([data-slot="label"], [data-slot="field-label"]):has(
+  :is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"])[data-disabled]
+) {
+  cursor: not-allowed;
+}
+
 /* coss's dark:bg-input/32 otherwise cancels the destructive-outline hover fill. */
 .dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
   background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
