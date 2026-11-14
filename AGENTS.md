@@ -66,23 +66,33 @@ or reviewing any UI in this repository, including components, theme tokens, and
 `/design-system`.
 
 The skill governs data, alerts, status, and commands. Where it conflicts with the Hermes theme
-above, it wins, with these accepted deviations for chrome and headings only:
+above, it wins, with these accepted deviations:
 
 - T-4: uppercase panel and dialog titles, control labels, badges, and table heads stay. Data
   values, messages, procedures, and descriptions use mixed case.
-- K-1 and K-2: cyan stays as the chrome accent (hairline borders, panel header bars, primary
-  controls). Info alerts also use cyan, so they always carry their icon (K-4) to stand apart from
-  chrome.
-- Green is success only and needs a color table entry (K-3).
+- K-1 and K-2: cyan is this project's advisory hue in place of blue. It also stays the chrome
+  accent (hairline borders, panel header bars, primary controls), so Info alerts always carry
+  their icon (K-4) to stand apart from chrome.
+- K-2: red also marks destructive actions (`destructive` button variants), and yellow also forms
+  the hazard tape below.
+- K-3: green means success only.
 
 Alert levels use coss variant names. In the skill's terms, from highest priority:
 
-| Level     | Skill level | Tokens        | Treatment beyond color                        |
-| --------- | ----------- | ------------- | --------------------------------------------- |
-| Emergency | Emergency   | `destructive` | Reverse video and flashing (K-6, F-2)         |
-| Error     | Warning     | `destructive` | Solid border and error icon                   |
-| Warning   | Caution     | `warning`     | Warning icon. Used as a note, not as a danger |
-| Info      | Advisory    | `info`        | Info icon                                     |
+| Level     | Skill level | Tokens        | Treatment beyond color                                |
+| --------- | ----------- | ------------- | ----------------------------------------------------- |
+| Emergency | Emergency   | `destructive` | Siren icon. Flashing reverse video until acknowledged |
+| Error     | Warning     | `destructive` | Error icon                                            |
+| Warning   | Caution     | `warning`     | Warning icon. Used as a note, not as a danger         |
+| Info      | Advisory    | `info`        | Info icon                                             |
+
+Warning is a note, so AL-5 (link to a procedure) applies to Emergency and Error only.
+
+Emergency alerts flash the whole alert until acknowledged, then take the static error alert look,
+keeping the siren icon and title. Mark acknowledgment with `data-acknowledged`. F-2 rates follow
+the element: anything containing text uses the low rate (0.8 Hz, 70% in reverse video), even at
+the highest priority. The high rate is for a standalone non-text indicator only. Never flash just
+the icon of an alert.
 
 Hazard is not an alert level. Black and yellow hazard tape (`data-hazard` on
 `AlertDialogPopup`) marks the confirmation dialog of a dangerous or irreversible action (C-1). It
