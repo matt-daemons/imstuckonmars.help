@@ -20,6 +20,12 @@ credentials. Still keep credential values out of the repository, commits, and lo
 
 ## Deployment
 
+The primary domain is https://imstuckonmars.help. Use it in canonical URLs, metadata, and links.
+The Worker is also reachable at https://imstuckonmars-help.hackrlabs.workers.dev.
+
+The custom domain is attached to the Worker in Cloudflare, not in `wrangler.jsonc`. If you add
+`routes` to `wrangler.jsonc`, include the domain so a deploy does not detach it.
+
 GitHub Actions deploys every push to `main` that passes `nix flake check`. The workflow reads the
 `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
 

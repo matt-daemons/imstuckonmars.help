@@ -3,6 +3,9 @@
 A [vinext](https://github.com/cloudflare/vinext) App Router site with a [Hono](https://hono.dev)
 API and [shadcn/ui](https://ui.shadcn.com), deployed to Cloudflare Workers with Wrangler.
 
+Live at **https://imstuckonmars.help** (primary domain). The Worker is also reachable at
+https://imstuckonmars-help.hackrlabs.workers.dev.
+
 ## Prerequisites
 
 - Nix with flakes enabled
@@ -71,6 +74,9 @@ workerd. Otherwise `nix run .` cannot start it.
 
 GitHub Actions (`.github/workflows/ci.yml`) runs `nix flake check` on every pull request and push.
 Pushes to `main` that pass the check deploy to Cloudflare with `nix run .#deploy`.
+
+The `imstuckonmars.help` custom domain is attached to the Worker in Cloudflare, not in
+`wrangler.jsonc`.
 
 The deploy job needs these repository secrets:
 
