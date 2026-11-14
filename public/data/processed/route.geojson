@@ -1,0 +1,17 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "r1", "verdict": "GO" },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.05, 45.97],
+          [-176.0, 46.0],
+          [-175.95, 46.03]
+        ]
+      }
+    }
+  ]
+}

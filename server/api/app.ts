@@ -5,6 +5,7 @@ import { MissionError } from "../../lib/mission/types";
 import type { ApiBindings } from "./bindings";
 import { telemetry } from "./telemetry";
 import { missions } from "./missions";
+import type { LiveSnapshot } from "@/lib/mars/types";
 
 export const api = new Hono<{ Bindings: ApiBindings }>().basePath("/api");
 
@@ -38,6 +39,23 @@ api.onError((error, c) => {
 api.get("/health", (c) => c.json({ status: "ok" }));
 api.route("/telemetry", telemetry);
 api.route("/missions", missions);
+
+// Stub until team role D's replay.ts output lands in data/processed/live/.
+api.get("/live", (c) => {
+  const snapshot: LiveSnapshot = {
+    timestamp: new Date().toISOString(),
+    sol: 0,
+    lmst: "12:00:00",
+    radiation_dose_rate: 0,
+    solar_alert_level: "none",
+    dust_opacity: 0,
+    temp: 0,
+    wind: 0,
+    sun_elevation: 0,
+    proxy_source: "Stub — not real data",
+  };
+  return c.json(snapshot);
+});
 
 api.notFound((c) => c.json({ error: "Not found" }, 404));
 

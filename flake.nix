@@ -24,6 +24,7 @@
           ./components
           ./hooks
           ./lib
+          ./public
           ./server
           ./migrations
           ./.oxfmtrc.json

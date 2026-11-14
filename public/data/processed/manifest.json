@@ -1,0 +1,30 @@
+{
+  "aoi": {
+    "name": "Arcadia Planitia (placeholder AOI — replace after HiRISE DTM pick)",
+    "center": [-176.0, 46.0],
+    "zoom": 12,
+    "bounds": [
+      [-176.1, 45.93],
+      [-175.9, 46.07]
+    ]
+  },
+  "crs": "Equirectangular on Mars 2000 sphere (R = 3396190 m), centered on AOI",
+  "layers": [
+    {
+      "id": "stops",
+      "title": "Science stops",
+      "kind": "vector",
+      "path": "stops.geojson",
+      "visible": true,
+      "source": { "name": "Placeholder — Role C" }
+    },
+    {
+      "id": "route",
+      "title": "Planned route",
+      "kind": "vector",
+      "path": "route.geojson",
+      "visible": true,
+      "source": { "name": "Placeholder — Role C" }
+    }
+  ]
+}
