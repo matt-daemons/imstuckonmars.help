@@ -12,7 +12,8 @@
     "lint": "oxlint",
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pipe:check": "node pipelines/check-env.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -32,19 +33,25 @@
   "devDependencies": {
     "@cloudflare/vite-plugin": "^1.69.1",
     "@cloudflare/workers-types": "^5.20261113.1",
+    "@duckdb/node-api": "2.0.0-r.1",
     "@tailwindcss/postcss": "latest",
+    "@turf/turf": "^7.4.0",
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "^6.3.0",
     "@vitejs/plugin-rsc": "^0.5.39",
+    "execa": "^10.2.1",
+    "geotiff": "^3.0.5",
     "oxfmt": "^0.78.0",
     "oxlint": "^1.93.0",
     "tailwindcss": "latest",
     "typescript": "latest",
     "vite": "8.3.0",
     "vitest": "^5.1.0",
-    "wrangler": "^4.162.0"
+    "wrangler": "^4.162.0",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
   },
   "packageManager": "pnpm@12.9.0"
 }

@@ -1,0 +1,20 @@
+# Shared pipeline config. Values marked TBD are owned by team role A; don't guess them.
+
+aoi:
+  # Placeholder — replace after the HiRISE DTM pick (Step 2).
+  name: Arcadia Planitia (placeholder)
+  center_lon_e: 184.0 # east-positive, planetocentric
+  center_lat_n: 46.0
+  buffer_m: 200
+
+crs:
+  # Mars 2000 sphere (IAU_2015:49900, R = 3396190 m), equirectangular centered on the AOI.
+  geographic: IAU_2015:49900
+  projected: "+proj=eqc +lat_ts=46 +lon_0=184 +R=3396190 +units=m +no_defs"
+  resolution_m: TBD # set from the chosen DTM
+
+thresholds:
+  slope_max_deg: 20 # ASSUMPTION — Artemis lunar planning value, unverified for Mars
+  suit_budget: TBD
+  radiation: TBD
+  walk_back: TBD
