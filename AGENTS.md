@@ -49,7 +49,7 @@ Keep commits small, with messages formatted as `feature-name(action): Brief desc
 - Visual design: the Hermes theme, after Territory Studio's screen graphics for The Martian
   (https://territorystudio.com/project/the-martian, the Hermes screens). Dark only (`dark` is
   always set on `<html>`): black surfaces, cyan hairline borders, square corners (`--radius: 0`),
-  flat surfaces, tinted panel header bars, uppercase condensed titles and control labels, and
+  flat surfaces, tinted panel header bars, condensed titles and control labels in mixed case, and
   monospace numeric readouts. Cyan is the primary/info accent, green is success, amber is warning,
   red is error. Do not add a light theme or rounded, shadowed surfaces.
 - Theme lives in `app/globals.css`: tokens in `:root`, and Hermes treatments applied to coss
@@ -67,8 +67,6 @@ or reviewing any UI in this repository, including components, theme tokens, and
 The skill governs data, alerts, status, and commands. Where it conflicts with the Hermes theme
 above, it wins, with these accepted deviations:
 
-- T-4: uppercase panel and dialog titles, control labels, badges, and table heads stay. Data
-  values, messages, procedures, and descriptions use mixed case.
 - K-1 and K-2: cyan is this project's advisory hue in place of blue. It also stays the chrome
   accent (hairline borders, panel header bars, primary controls), so Info alerts always carry
   their icon (K-4) to stand apart from chrome.
@@ -98,7 +96,11 @@ Hazard is not an alert level. Black and yellow hazard tape (`data-hazard` on
 replaces C-3's striped border on the control itself: the trigger uses a `destructive` button
 variant instead. The tape goes on borders only, never behind text (K-5).
 
-Every other skill rule applies as written, including K-5 (6:1 text contrast).
+Every other skill rule applies as written, including T-4 (mixed case) and K-5 (6:1 text
+contrast).
+
+Acronym glossary (T-4): API, EVA, MAV (Mars Ascent Vehicle), MTC (Mars Coordinated Time), OTP,
+and UI. Add an acronym here before using it in the UI.
 
 ## Formatting and checks
 

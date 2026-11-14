@@ -222,16 +222,14 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* Panel and dialog titles: condensed uppercase. */
+  /* Panel and dialog titles: condensed, in mixed case. */
   :where(h1, h2),
   [data-slot$="-title"],
   [data-slot="fieldset-legend"] {
     font-family: var(--font-heading);
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
   }
 
-  /* Control and column labels read like console keys. */
+  /* Control and column labels: condensed, in mixed case. */
   [data-slot="button"],
   [data-slot="toolbar-button"],
   [data-slot="dialog-trigger"],
@@ -257,8 +255,6 @@
   [data-slot$="group-label"],
   [data-slot$="menu-label"] {
     font-family: var(--font-heading);
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
   }
 
   /* Numeric readouts use the data face. */
