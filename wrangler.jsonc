@@ -4,6 +4,20 @@
   "compatibility_date": "2026-10-30",
   "compatibility_flags": ["nodejs_compat"],
   "main": "vinext/server/fetch-handler",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "ares-telemetry",
+      // Local-only sentinel. Replace with the ID from `wrangler d1 create` before deployment.
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations",
+    },
+  ],
+  "vars": {
+    "TELEMETRY_RELEASE": "nasa-v1",
+    "DIAGNOSTICS_MODEL": "",
+  },
+  "observability": { "enabled": true },
   "assets": {
     "directory": "dist/client",
     "html_handling": "none",
