@@ -1,10 +1,77 @@
-# vinext app
+# imstuckonmars.help
 
-This project was created with create-vinext-app.
+A [vinext](https://github.com/cloudflare/vinext) App Router site with a [Hono](https://hono.dev)
+API and [shadcn/ui](https://ui.shadcn.com), deployed to Cloudflare Workers with Wrangler.
 
-## Scripts
+## Prerequisites
 
-- `pnpm run dev` starts the vinext dev server.
-- `pnpm run build` builds the Cloudflare Worker output.
-- `pnpm run start` previews the built Worker locally.
-- `pnpm run deploy` deploys the Cloudflare Worker.
+- Nix with flakes enabled
+- direnv with [nix-direnv](https://github.com/nix-community/nix-direnv) (recommended)
+
+## First run
+
+```sh
+direnv allow        # or: nix develop
+pnpm install
+nix run .#dev       # http://localhost:5173
+```
+
+The dev shell provides Node.js 24, pnpm, and nixfmt, and disables Next.js and Wrangler telemetry.
+
+## Layout
+
+| Path                     | Purpose                                 |
+| ------------------------ | --------------------------------------- |
+| `app/`                   | App Router pages and layouts            |
+| `app/api/[[...route]]/`  | Forwards every `/api/*` request to Hono |
+| `server/api/`            | Hono API app and its tests              |
+| `components/ui/`, `lib/` | shadcn/ui components and helpers        |
+| `wrangler.jsonc`         | Worker configuration                    |
+| `flake.nix`, `nix/`      | Nix package, apps, and checks           |
+
+Add components with `pnpm dlx shadcn@latest add <component>`, then run `nix run .#fmt`.
+
+## Commands
+
+Development apps run against the checkout and find the repository root from any subdirectory.
+They install locked dependencies on first use.
+
+| Command               | Purpose                                                     |
+| --------------------- | ----------------------------------------------------------- |
+| `nix run .#dev`       | vinext dev server with HMR                                  |
+| `nix run .#build`     | Build the Worker into `dist/`                               |
+| `nix run .#test`      | vitest; extra arguments are forwarded                       |
+| `nix run .#lint`      | oxlint                                                      |
+| `nix run .#typecheck` | Generate Worker binding types and run `tsc`                 |
+| `nix run .#fmt`       | Format sources with oxfmt and Nix files with nixfmt         |
+| `nix run .#fmt-check` | Check formatting without writing                            |
+| `nix run .#check`     | Format check, lint, typecheck, tests, and build             |
+| `nix run .#deploy`    | Build and deploy to Cloudflare (`-- --dry-run` to validate) |
+
+The same tasks are available as `pnpm` scripts inside the dev shell.
+
+## Packaged build
+
+`nix build` produces the deployable Worker in `result/share/imstuckonmars-help/` (`client/`
+assets and `server/` with `wrangler.json`).
+
+`nix run .` serves that build locally in workerd, using the Wrangler from nixpkgs:
+
+```sh
+nix run . -- --port 8787
+```
+
+`nix flake check` builds the package and runs formatting, lint, type, and test checks in the
+Nix sandbox.
+
+The Worker's `compatibility_date` must not be newer than the date supported by the nixpkgs
+workerd. Otherwise `nix run .` cannot start it.
+
+## Deploying
+
+Deploys use Wrangler. Authenticate with `pnpm exec wrangler login`, or set `CLOUDFLARE_API_TOKEN`
+and `CLOUDFLARE_ACCOUNT_ID`, then run `nix run .#deploy`.
+
+## License
+
+[MIT](LICENSE)
