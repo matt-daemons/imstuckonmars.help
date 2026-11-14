@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model 
+href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch" 
+schematypens="http://purl.oclc.org/dsdl/schematron" ?>
+<?xml-model 
+href="https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.sch"
+schematypens="http://purl.oclc.org/dsdl/schematron"?>
+
+<Product_Document xmlns="http://pds.nasa.gov/pds4/pds/v1"
+                  xmlns:mars2020="http://pds.nasa.gov/pds4/mission/mars2020/v1"
+                  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                  xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1     
+                                      https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd
+                                      http://pds.nasa.gov/pds4/mission/mars2020/v1 
+                                      https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.xsd">
+
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:mars2020_meda:document:meda_env_rdr_sis</logical_identifier>
+    <version_id>4.0</version_id>
+    <title>Mars 2020 MEDA Environmental Reduced Data Record (RDR) Software Interface Specification (SIS)</title>
+    <information_model_version>1.16.0.0</information_model_version>
+    <product_class>Product_Document</product_class>
+    <Citation_Information>
+      <author_list>Mora Sotomayor, Luis</author_list>
+      <editor_list>Huber, Lyle</editor_list>
+      <publication_year>2021</publication_year>
+      <keyword>Mars, weather, meteorology, environment</keyword>
+      <description>This document is a sofware interface specification describing the format of the Mars 2020 MEDA Environmental RDRs</description>
+    </Citation_Information>
+    <Modification_History>
+      <Modification_Detail>
+        <modification_date>2021-07-04</modification_date>
+        <version_id>2.0</version_id>
+        <description>First release</description>
+      </Modification_Detail>
+      <Modification_Detail>
+        <modification_date>2021-11-12</modification_date>
+        <version_id>3.0</version_id>
+        <description>Second release</description>
+      </Modification_Detail>
+      <Modification_Detail>
+        <modification_date>2022-03-07</modification_date>
+        <version_id>4.0</version_id>
+        <description>Third release</description>
+      </Modification_Detail>
+    </Modification_History>        
+  </Identification_Area>
+  <Context_Area>
+    <Investigation_Area>
+      <name>Mars 2020</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:mission.mars2020</lid_reference>
+        <reference_type>document_to_investigation</reference_type>
+        <comment>This is the PDS4 logical identifier for the Mars 2020 Perseverance Rover Mission.</comment>
+      </Internal_Reference>
+    </Investigation_Area>
+    <Observing_System>
+      <name>Mars 2020</name>
+      <Observing_System_Component>
+        <name>Mars 2020</name>
+        <type>Host</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.mars2020</lid_reference>
+          <reference_type>is_instrument_host</reference_type>
+          <comment>
+            This is the PDS4 logical identifier for the Mars 2020 Perseverance Rover.
+          </comment>
+        </Internal_Reference>
+      </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Mars Environmental Dynamics Analyzer (MEDA)</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+          <lid_reference>urn:nasa:pds:context:instrument:mars2020.meda</lid_reference>
+          <reference_type>is_instrument</reference_type>
+          <comment>
+            This is the PDS4 logical identifier for them MEDA instrument onboard the Mars 2020 Perseverance Rover.
+          </comment>
+        </Internal_Reference>
+      </Observing_System_Component>
+    </Observing_System>
+    <Target_Identification>
+      <name>Mars</name>
+      <type>Planet</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+        <reference_type>document_to_target</reference_type>
+        <comment>Reference to the Planet - Mars target</comment>
+      </Internal_Reference>
+    </Target_Identification>
+  </Context_Area>
+  <Document>
+    <publication_date>2021-11-22</publication_date>
+    <description>Mars 2020 MEDA Environmental RDR Software Interface Specification (SIS)</description>
+    <Document_Edition>
+      <edition_name>Mars 2020 MEDA Environmental RDR SIS, PDF Edition</edition_name>
+      <language>English</language>
+      <files>1</files>
+      <Document_File>
+        <file_name>meda_env_rdr_sis.pdf</file_name>
+        <document_standard_id>PDF/A</document_standard_id>
+      </Document_File>
+    </Document_Edition>
+  </Document>
+</Product_Document>

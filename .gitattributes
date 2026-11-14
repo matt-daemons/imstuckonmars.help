@@ -1,0 +1,3 @@
+# Preserve immutable NASA products byte-for-byte, including original line endings.
+data/telemetry/** binary
+data/telemetry/sources.json text eol=lf diff merge

@@ -1,0 +1,657 @@
+Mars2020 MEDA Release Notes
+
+Users are encouraged to provide comments to the PDS Atmospheres Node
+if errors are found either in data or in documentation in this archive.
+Please send comments by e-mail or U.S. mail to:
+
+          PDS Atmospheres Node
+          Astronomy Department
+          New Mexico State University
+          P.O. Box 30001, Dept 4500
+          Las Cruces, NM 88003
+          U.S.A.
+
+          Web:   http://pds-atmospheres.nmsu.edu/
+
+This document, release_notes.txt, contains release notes and errata
+concerning the Mars2020 MEDA archives. It is updated with each release of 
+MEDA data.
+
+Section A of this document contains an entry for each MEDA release with
+general information about the contents of the release, in order from newest
+to oldest. Updates to previously released files are reported in these
+entries, along with any known errata.
+
+Section B of this file contains general notes, if any, concerning the archive
+as a whole.
+
+
+******** SECTION A ********
+
+------------------------------------------------------------
+Release Number: 16
+Release Date: 2026-08-11
+Data Coverage: 2026-01-11 through 2026-05-13 (Sols 1740-1859)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+This release adds data not available at the time of the previous
+release, due to downlink latencies during conjunction. Revised data
+starts at sol 1720.
+
+------------------------------------------------------------
+Release Number: 15
+Release Date: 2026-04-07
+Data Coverage: 2025-09-09 through 2026-01-09 (Sols 1620-1739)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Some data after sol 1723 are not available at the time of release, due to 
+downlink latencies during the solar conjunction. They caused the reception 
+of the data on Earth to occur several weeks after the data acquisition on 
+Mars, and outside the scope of this release time range. 
+
+The missing data will be added to the next release.
+
+Products from previous releases have been revised to include the following 
+updates:
+
+- Pressure data updates:
+
+In previously released data, derived data pressure was based on what was 
+considered the most reliable calibrated barocap for a particular time range. 
+This was either barocap 2 or 3 from the pressure calibrated data products.
+However, this caused some data inconsistencies. Because of this, derived 
+data have been updated to always use barocap 3.
+
+However, under some environmental conditions, barocap 3 can have 
+discontinuities. When this happens, data from barocap 2 in the pressure 
+calibrated data products should be checked by the user.
+
+Since humidity data processing depends on pressure derived data, humidity 
+data products have also been updated.
+
+------------------------------------------------------------
+Release Number: 14
+Release Date: 2025-12-04
+Data Coverage: 2025-05-09 through 2025-09-08 (Sols 1500-1619)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Products from previous releases have been revised to include
+the following updates:
+
+- TIRS data updates:
+
+TIRS calibrated and derived data after sol 875 have been revised 
+in order to use the latest inflight calibrations, which take 
+into account channel responsivity degradation.
+
+
+------------------------------------------------------------
+Release Number: 13
+Release Date: 2025-08-05
+Data Coverage: 2025-01-06 through 2025-05-08 (Sols 1380-1499)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+------------------------------------------------------------
+Release Number: 12
+Release Date: 2025-04-03
+Data Coverage: 2024-09-04 through 2025-01-05 (Sols 1260-1379)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+------------------------------------------------------------
+Release Number: 11
+Release Date: 2024-12-03
+Data Coverage: 2024-05-04 through 2024-09-03 (Sols 1140-1259)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+------------------------------------------------------------
+Release Number: 10
+Release Date: 2024-07-30
+Data Coverage: 2024-01-01 through 2024-05-04 (Sols 1020-1139)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+------------------------------------------------------------
+Release Number: 9
+Release Date: 2024-03-29
+Data Coverage: 2023-08-31 through 2024-01-01 (Sols 900-1019)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Products from sols 796 and 797 have been revised to add data that were
+missing in the previous release.
+
+Several skycam images were duplicated after the reprocessing to
+correct temperatures in image headers (see release 6). These are in
+sols 341, 351, 387, 398, 404, 409, 413, 414, 418, 420, 426, 427, 655,
+656.
+
+In addition, several images have incorrect solar elevation, site
+parameter or quaternion in the label header.
+
+These skycam issues are expected to be corrected for a future release.
+
+------------------------------------------------------------
+Release Number: 8
+Release Date: 2023-11-27
+Data Coverage: 2023-04-30 through 2023-08-31 (Sols 780-899)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+------------------------------------------------------------
+Release Number: 7
+Release Date: 2023-07-27
+Data Coverage: 2022-12-28 through 2023-04-30 (Sols 660-779)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Products from previous releases have been revised to include
+the following updates:
+
+- TIRS data updates:
+
+Calibrated and derived data after sol 518 have been updated using the
+latest inflight calibrations, which take into account channel
+responsivity degradation.
+
+- PS data updates:
+
+Applied drift correction to barocap pressure data in calibrated files
+after sol 518. Derived files are mostly unaffected, with two
+exceptions:
+
+1) Sols 518-519, when a pressure self-test check was performed
+iterating over the transducers.
+
+2) Sols 632-633, when another pressure self-test check was performed.
+
+- Ancillary files:
+
+Rover location data after sol 535 updated using the latest SPICE kernels.
+
+- Skycam files:
+
+Missing browse products for sols 437-441 have been added.
+
+Late arriving images on sols 655, 656, 658 and 659, not previously
+released, have been added.
+
+------------------------------------------------------------
+Release Number: 6
+Release Date: 2023-03-24
+Data Coverage: 2022-08-27 through 2022-12-28 (Sols 540-659)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products from previous releases have been revised to include
+the following updates:
+
+- Skycam issues:
+
+Incorrect acquisiton times of sols 437-441 skycam images (as described
+on release 5 notes) have been corrected. As a result of that, the
+files have been renamed:
+
+WSM_0441_0706103604_000*_N0250000MEDA00000_0000LUJ* --> WSM_0437_0705725550_000*_N0243900MEDA00000_0000LUJ*
+WSM_0441_0706103741_000*_N0250000MEDA00000_0000LUJ* --> WSM_0437_0705737572_000*_N0243900MEDA00000_0000LUJ*
+WSM_0441_0706103881_000*_N0250000MEDA00000_0000LUJ* --> WSM_0437_0705746020_000*_N0244232MEDA00000_0000LUJ*
+WSM_0441_0706104019_000*_N0250000MEDA00000_0000LUJ* --> WSM_0441_0706093472_000*_N0244358MEDA00000_0000LUJ*
+
+Incorrect temperatures in skycam images headers after sol 241 have
+been corrected.
+
+------------------------------------------------------------
+Release Number: 5
+Release Date: 2022-11-21
+Data Coverage: 2022-04-26 through 2022-08-26 (Sols 420-539)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Products from previous releases have been revised to include
+the following updates:
+
+- TIRS data updates:
+
+The values of broadband longwave radiation from the sky (dLW in the DER file)
+have been updated, taking into account typical emission spectra for the sky
+instead of assuming a model of black-body radiation and Stefan-Boltzmann-type
+emission. The associated uncertainty was also updated according to the new
+calculus. 
+ 
+Status flags in partially processed files are now correctly updated.
+
+TIRS measurements used for inflight calibration removed from calibrated and
+derived data products.
+
+New calculation to estimate the channels responsivity degradation for the
+different sols. A linear interpolation between sols is performed, using for this
+the results of the different in-flight calibration campaigns.
+
+Until now, the result of the initial in-flight calibration campaign (sols 70-91)
+was being used to estimate channels responsivity degradation. The in-flight
+calibration campaigns for sols 429-436, 503-506 and 589-592 have confirmed an
+additional degradation associated with the increment of dust in the atmosphere.
+This is the reason that motivates the new calculation. The change affects
+calibrated and derived data products.
+
+- Pressure data updates:
+
+Applied drift correction to barocap pressure data in CAL (calibrated) files
+after sol 168. Derived DER files are mostly unaffected, since the barocaps
+corrected are not used for the generation of derived data products, with two
+exceptions:
+
+1) Sol 313, when one of the corrected barocaps was used, for the range
+15:00:05.423 - 18:44:42.043 LMST.
+
+2) Sols 168-170, when a pressure self-test check was performed iterating over
+the transducers.
+
+Humidity data processing depends on pressure derived data, which means that
+humidity data products were updated for the sols noted above.
+
+- Ancillary data updates:
+
+Rover location and orientation data in DER_ANCILLARY data products are revised
+using updated SPK SPICE kernels. This makes some small updates to wind sensor
+data and RDS/TIRS flags.
+
+- Skycam issues:
+
+Due to a ground data processing issue, there are four skycam images with an
+incorrect image acquisition time. These are:
+
+WSM_0441_0706103604_000*_N0250000MEDA00000_0000LUJ*
+WSM_0441_0706103741_000*_N0250000MEDA00000_0000LUJ*
+WSM_0441_0706103881_000*_N0250000MEDA00000_0000LUJ*
+WSM_0441_0706104019_000*_N0250000MEDA00000_0000LUJ*
+
+Their current times are:
+
+SCLK 706103604 / LMST 0441M16:11:03
+SCLK 706103741 / LMST 0441M16:13:16
+SCLK 706103881 / LMST 0441M16:15:32
+SCLK 706104019 / LMST 0441M16:17:46
+
+But their true image acquisition times should be:
+
+SCLK 705725550 / LMST 0437M09:58:40
+SCLK 705737572 / LMST 0437M13:13:41
+SCLK 705746020 / LMST 0437M15:30:43
+SCLK 706093472 / LMST 0441M13:26:41
+
+This is expected to be fixed in a future release.
+
+Temperatures in skycam images headers after sol 241 are still
+incorrect. They are expected to be fixed for release 6.
+
+------------------------------------------------------------
+Release Number: 4
+Release Date: 2022-07-22
+Data Coverage: 2021-12-23 through 2022-04-25 (Sols 300-419)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+
+Comments:
+
+Products from previous releases have been revised to include
+the following updates:
+
+- Data gaps present in environmental EDRs from previous releases have
+  been eliminated, filling them with the missing data.
+
+- Rover location data in DER_ANCILLARY files regenerated using higher
+  accuracy data from localiced SPK SPICE kernels.
+
+- Humidity data updates:
+
+  Calibration fine tuning plus pressure dependent compensation of
+  humidity calibrated and derived data.
+
+  Added uncertainty of relative humidity. This is given only for the
+  first 10 sec of each measurement session.
+
+  Added uncertainity of the humicap local temperature.
+
+  Added VMR in humidity derived data (only when RH > 2.5%).
+
+- TIRS data updates:
+
+  Update of thermopile responsivity degradation values (all channels:
+  IR1, IR2, IR3, IR4 and IR5). Results obtained from the analysis of
+  the new in-flight calibrations, as well as from the use of a linear
+  interpolation of the degradation value between sols (degradation
+  values obtained from in-flight calibrations carried out on specific
+  campaigns and sols).
+
+  The responsivity of thermopile IR3 (for which it is not possible to
+  run the in-flight calibration algorithm) has been assumed to be
+  equal to the arithmetic mean of the degradations of thermopiles IR4
+  and IR5.
+
+  New values for the thermal calibration coefficients vs. operating
+  temperature (all channels: IR1, IR2, IR3, IR4 and IR5). These
+  coefficients are the result of the analysis of the different
+  in-flight calibration sequences performed on Mars.
+
+  Update of the mathematical model for the IR3 thermopile, including
+  new radiative terms to model the internal structure of the TIRS.
+
+  The retrieval of the atmospheric temperature@40m (IR2 channel) has
+  been updated taking into account both the undesired spectral
+  transmistance windows of the IR2 channel [Sebastian et al., 2020]
+  and otherwise the shape of a typical emission spectrum of the
+  atmosphere [Smith et al., 2006].
+
+Wind data beyond sol 315 is not provided for now due to issues with
+the wind sensor (see section B.4 of this file).
+
+Temperatures in skycam images headers after sol 241 are still
+incorrect, pending a future update.
+
+------------------------------------------------------------
+Release Number: 3
+Release Date: 2022-03-22
+Data Coverage: 2021-08-22 through 2021-12-22 (Sols 180-299)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:document
+
+Comments:
+
+A bug in the generation of environmental EDRs may create some minor
+data gaps in some of the data products. These data gaps may have the
+consecuence that some values in the RDRs are out of range. This will
+be fixed at the next release.
+
+Added derived wind data, that contains data selected from the most
+appropiate boom at the calibrated level, thus providing single
+measurements of wind speed and direction. Spurious data are filtered
+at this level.
+
+Wind calibrated data have been reprocessed and redelivered. The reason
+is that, previously, the data from both booms of the wind sensor were
+filtered when one of them was in a transitory state (due to a change
+in their operational temperature). In this release, the filtering is
+done independently per boom, which makes more calibrated data
+available when one boom is on a stable state while the other is on a
+transitory state.
+
+A new calibration of humidity data is in progress and will be available 
+in the next release. Details will be provided in due course. 
+
+After sol 241, skycam images raw temperature data in the headers are
+byte-swapped with respect to the order used in previous sols. This
+couldn't be compensated on time for the release, and it has the
+consecuence that, after that sol, the calibrated temperature data in
+the skycam images headers are incorrect. In particular:
+
+- Labels INSTRUMENT_TEMPERATURE and INSTRUMENT_TEMPERATURE_COUNT in
+  the .IMG data products
+
+- The correspondent tags img:Device_Temperatures (both img:raw_count
+and img:temperature_value) in the .xml labels.
+
+------------------------------------------------------------
+Release Number: 2
+Release Date: 2021-11-22
+Data Coverage: 2021-05-21 to 2021-08-21 (Sols 90-179)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+    urn:nasa:pds:mars2020_meda:document
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:document
+
+Comments:
+
+The mars2020_meda:data_skycam collection contains LIDVID reference
+pointers to browse images that incorrectly omit the extension, causing
+the pointer to the browse images LID to be broken.
+
+Higher level data not present in the first release, including some
+uncertainties, wind derived data and humidity volume mixing ratio are
+still not included in this version, due to ongoing sensor
+characterization. They are planned for a future release.
+
+TIRS flag column SUN_OUTSIDE_TIRS_UPWARD_LOOKING_FOV was renamed to
+SUN_OUTSIDE_TIRS_FOV. The reason is that the Sun was found to have a
+small impact in the channel UPWARD_SW_IRRADIANCE due to reflections on
+the ground.
+
+Local relative humidity data from derived humidity data products prior
+to sol 63 have been removed. The reason is that those data were
+considered unreliable before the first humidity sensor maintenance
+activity performed on that sol. For the same reason, humidity
+calibrated data before sol 63 should not be used.
+
+Calibrated pressure data were reprocessed to compensate for barocap
+drift. Derived pressure data are unchanged since the barocap
+correction do not affect that level when transducer 1 is in use.
+
+Ancillary data files were reprocessed using the latest SPICE kernels,
+causing some small adjustments in Sun ephemeris data.
+
+------------------------------------------------------------
+Release Number: 1
+Release Date: 2021-08-20
+Data Coverage: 2021-02-18 through 2021-05-20 (Sols 0-89)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_meda:data_raw_env
+    urn:nasa:pds:mars2020_meda:data_partially_processed_env
+    urn:nasa:pds:mars2020_meda:data_calibrated_env
+    urn:nasa:pds:mars2020_meda:data_derived_env
+    urn:nasa:pds:mars2020_meda:data_skycam
+    urn:nasa:pds:mars2020_meda:browse_skycam
+    urn:nasa:pds:mars2020_meda:document
+
+Products have been revised in these collections:
+    None.
+
+Comments:
+
+Some higher level products were not generated for this release, and
+they will be available for the second release. These are:
+
+- Derived wind data, containing unique wind speed and direction. For
+  this release, wind data are provided per individual boom only. When
+  the wind direction is not in the boom measuring range, the wind data
+  of that boom is not correct. Please contact the MEDA team if
+  planning to use wind data, to get advise on which boom is best for a
+  particular period of time.
+
+- Vertical wind speed.
+
+- Wind Sensor measurements uncertainties.
+
+- Pressure and humidity measurements uncertainties.
+
+- Volume Mixing Ratio.
+
+- MASTHEAD_AZIMUTH and MASTHEAD_ELEVATION in the ancillary data files.
+
+- Several flags present in some products:
+
+  RDS: ROVER_HGA_STILL
+  TIRS: WHEEL_OUTSIDE_TIRS_DOWNWARD_LOOKING_FOV, ROVER_HGA_OFF, SKYCAM_OFF
+
+Some wind spurious data (isolated very high speed) are not filtered
+yet. These will be eliminated when a single speed and direction are
+released as part of the derived wind data set.
+
+Calibrated wind data are not available before sol 36, because the
+sensor was going through a commissioning process to tune its 
+internal configuration for the Martian conditions at the landing site.
+
+TIRS session types are not properly noted. This includes both nominal 
+sessions and calibration sessions. For this release, all TIRS data 
+are assumed to be nominal sessions, since calibration sessions are 
+infrequent. This will be fixed for the second release.
+
+The mars2020_meda:data_skycam collection contains LIDVID reference pointers to
+browse images that incorrectly omit the extension, causing the pointer to the 
+browse images LID to be broken.
+
+******** SECTION B ********
+
+1. MEDA Observations do not include sub-second precision in LTST values, causing 
+MEDA measurements at 2Hz sampling to have repeated LTST values on consecutive data
+points.
+
+2. Some sensors data should not be used before their post-landing
+activities were complete. These are:
+
+- Humidity Sensor data before sol 63.
+
+- Wind Sensor data before sol 36.
+
+3. For a quick overview of MEDA data and measurement strategy, please
+refer to the readme.txt file included in the bundle's root directory.
+
+4. At the moment, wind data beyond sol 315 is not provided due to
+certain damage to some components of the wind sensor, as a result of
+harsh weather conditions. Recalibration to compensate for the missing
+elements is ongoing.

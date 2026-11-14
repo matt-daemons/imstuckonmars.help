@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?xml-model
+    href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron" ?>
+<?xml-model
+    href="https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Collection
+	xmlns="http://pds.nasa.gov/pds4/pds/v1"
+    xmlns:pds="http://pds.nasa.gov/pds4/pds/v1"
+    xmlns:mars2020="http://pds.nasa.gov/pds4/mission/mars2020/v1"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1
+                        https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd
+                        http://pds.nasa.gov/pds4/mission/mars2020/v1
+                        https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.xsd">
+  <Identification_Area>
+        <logical_identifier>urn:nasa:pds:mars2020_moxie:data_derived</logical_identifier>
+        <version_id>8.0</version_id>
+        <title>Mars 2020 MOXIE Derived Data Collection</title>
+        <information_model_version>1.16.0.0</information_model_version>
+        <product_class>Product_Collection</product_class>
+        <Citation_Information>
+            <author_list>Hecht, M. H.; Hoffman, J. A.</author_list>
+            <editor_list>Huber, L.; Khopkar P.; Liu A. M.; Hariharan S.; McClean, J. B.</editor_list>
+            <publication_year>2023</publication_year>
+            <keyword>Mars, oxygen, carbon dioxide</keyword>
+            <description>Mars 2020 MOXIE Derived Data Collection</description>
+        </Citation_Information>
+        <Modification_History>
+            <Modification_Detail>
+                <modification_date>2023-11-03</modification_date>
+                <version_id>8.0</version_id>
+                <description>PDS release 8</description>
+            </Modification_Detail>
+        </Modification_History>
+    </Identification_Area>
+    <Context_Area>
+        <Time_Coordinates>
+          <start_date_time>2021-02-22T20:31:10Z</start_date_time>
+          <stop_date_time>2023-09-02T20:30:01Z</stop_date_time>
+        </Time_Coordinates>
+        <Primary_Result_Summary>
+            <purpose>Science</purpose>
+            <processing_level>Derived</processing_level>
+            <Science_Facets>
+                <domain>Atmosphere</domain>
+                <discipline_name>Atmospheres</discipline_name>
+            </Science_Facets>
+        </Primary_Result_Summary>
+        <Investigation_Area>
+            <name>Mars 2020</name>
+            <type>Mission</type>
+            <Internal_Reference>
+                <lid_reference>urn:nasa:pds:context:investigation:mission.mars2020</lid_reference>
+                <reference_type>collection_to_investigation</reference_type>
+            </Internal_Reference>
+        </Investigation_Area>
+        <Observing_System>
+            <name>Mars 2020</name>
+            <Observing_System_Component>
+                <name>Mars 2020</name>
+                <type>Host</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.mars2020</lid_reference>
+                    <reference_type>is_instrument_host</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+            <Observing_System_Component>
+                <name>Mars Oxygen In-Situ Resource Utilization Experiment</name>
+                <type>Instrument</type>
+                <Internal_Reference>
+                    <lid_reference>urn:nasa:pds:context:instrument:mars2020.moxie</lid_reference>
+                    <reference_type>is_instrument</reference_type>
+                </Internal_Reference>
+            </Observing_System_Component>
+        </Observing_System>
+        <Target_Identification>
+            <name>Mars</name>
+            <type>Planet</type>
+            <Internal_Reference>
+                <lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+                <reference_type>collection_to_target</reference_type>
+            </Internal_Reference>
+        </Target_Identification>
+    </Context_Area>
+    <Reference_List>
+      <Internal_Reference>
+          <lid_reference>urn:nasa:pds:mars2020_moxie:document:bundlesis</lid_reference>
+          <reference_type>collection_to_document</reference_type>
+      </Internal_Reference>
+      <Internal_Reference>
+          <lid_reference>urn:nasa:pds:mars2020_moxie:document:dpsis</lid_reference>
+          <reference_type>collection_to_document</reference_type>
+      </Internal_Reference>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:mars2020_moxie:document:instrumentpaper</lid_reference>
+        <reference_type>collection_to_document</reference_type>
+      </Internal_Reference>
+      <External_Reference>
+        <reference_text>Hecht, M., Hoffman, J., Rapp, D. et al. Mars Oxygen ISRU Experiment (MOXIE). Space Sci Rev 217, 9 (2021). https://doi.org/10.1007/s11214-020-00782-8</reference_text>
+      </External_Reference>
+    </Reference_List>
+    <Collection>
+        <collection_type>Data</collection_type>
+    </Collection>
+    <File_Area_Inventory>
+        <File>
+            <file_name>collection_moxie_data_derived_inventory.csv</file_name>
+            <local_identifier>data_derived_inventory</local_identifier>
+            <creation_date_time>2023-11-03T14:29:14</creation_date_time>
+        </File>
+        <Inventory>
+            <local_identifier>inventory</local_identifier>
+            <offset unit="byte">0</offset>
+            <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+            <records>22</records>
+            <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+            <field_delimiter>Comma</field_delimiter>
+            <Record_Delimited>
+                <fields>2</fields>
+                <groups>0</groups>
+                <maximum_record_length unit="byte">256</maximum_record_length>
+                <Field_Delimited>
+                    <name>Member Status</name>
+                    <field_number>1</field_number>
+                    <data_type>ASCII_String</data_type>
+                    <maximum_field_length unit="byte">1</maximum_field_length>
+                    <description>
+                        P indicates primary member of the collection
+                        S indicates secondary member of the collection
+                    </description>
+                </Field_Delimited>
+                <Field_Delimited>
+                    <name>LIDVID_LID</name>
+                    <field_number>2</field_number>
+                    <data_type>ASCII_LIDVID_LID</data_type>
+                    <maximum_field_length unit="byte">255</maximum_field_length>
+                    <description>This column specifies the LID of the files that comprise the collection.</description>
+                </Field_Delimited>
+            </Record_Delimited>
+            <reference_type>inventory_has_member_product</reference_type>
+        </Inventory>
+    </File_Area_Inventory>
+</Product_Collection>

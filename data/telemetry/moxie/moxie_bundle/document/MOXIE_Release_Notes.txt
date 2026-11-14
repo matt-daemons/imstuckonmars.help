@@ -1,0 +1,784 @@
+Mars 2020 MOXIE Release Notes
+
+Users are encouraged to provide comments to the PDS Atmospheres Node
+if errors are found either in data or in documentation in this archive.
+Please send comments by e-mail or U.S. mail to:
+
+          PDS Atmospheres Node
+          Astronomy Department
+          New Mexico State University
+          P.O. Box 30001, Dept 4500
+          Las Cruces, NM 88003
+          U.S.A.
+
+          Web:   http://pds-atmospheres.nmsu.edu/
+
+
+
+This document, MOXIE_Release_Notes.txt, contains release notes and errata
+concerning the Mars 2020 MOXIE archives. It is updated with each release of
+MOXIE data.
+
+Section A of this document contains an entry for each MOXIE release with
+general information about the contents of the release, in order from newest
+to oldest.  Updates to previously released files are reported in these
+entries, along with any known errata.
+
+Section B of this file contains general notes, if any, concerning the archive
+as a whole.
+
+
+******** SECTION A ********
+------------------------------------------------------------
+Release Number: 8
+Release Date: 2023-11-27
+Data Coverage: 2021-02-18 to 2023-09-02 (Sols 0-901)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052MOXI00101J03.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000MOXI00010J04.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110MOXI00102J03.csv
+OX__0015_0668238195EDR0000030110MOXI00102J03.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046MOXI00001J03.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046MOXI00003J04.csv
+OX__0060_0672233811EDR0000032046MOXI00003J04.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430MOXI00001J03.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430MOXI00004J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136MOXI00001J04.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218MOXI00005J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296MOXI00107J03.csv
+OX__0155_0680672279EDR0000052296MOXI00107J03.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752MOXI00108J04.csv
+OX__0176_0682533243EDR0000061752MOXI00108J04.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389311EDR0000072440MOXI00109J04.csv
+OX__0242_0688389778EDR0000072440MOXI00109J04.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000MOXI00110J03.csv
+OX__0276_0691450327EDR0000080000MOXI00110J04.csv
+
+Sol 317 (reference and generic segments, minimum density)
+OX__0317_0695101034EDR0000090000MOXI00111J02.csv
+OX__0317_0695101501EDR0000090000MOXI00111J02.csv
+
+Sol 444 (reference and unequal stack current)
+OX__0444_0706335571EDR0000250214MOXI00112J02.csv
+OX__0444_0706336039EDR0000250214MOXI00112J02.csv
+
+Sol 467 (voltage control mode)
+OX__0467_0708368902EDR0000260756MOXI00113J02.csv
+OX__0467_0708369369EDR0000260756MOXI00113J02.csv
+
+Sol 535 (maximum atmospheric density, night)
+OX__0535_0714394410EDR0000261222MOXI00114J02.csv
+OX__0535_0714394877EDR0000261222MOXI00114J02.csv
+
+Sol 631 (maximum atmospheric density, night, max O2)
+OX__0631_0722915903EDR0000302188MOXI00115J02.csv
+OX__0631_0722916374EDR0000302188MOXI00115J02.csv
+
+Sol 710 (extended purity sweep, night)
+OX__0710_0730009330EDR0000332864MOXI00116J01.csv
+OX__0710_0730009797EDR0000332864MOXI00116J01.csv
+
+Sol 771 (p4 control, low flow, day)
+OX__0771_0735377929EDR0000390650MOXI00117J01.csv
+OX__0771_0735378401EDR0000390650MOXI00117J01.csv
+
+Sol 816 (Max O2, high flow, high temp, night)
+OX__0816_0739347714EDR0000391170MOXI00118J01.csv
+OX__0816_0739348180EDR0000391170MOXI00118J01.csv
+
+Sol 877 (Max O2 extended, high flow, high temp, night)
+OX__0877_0744761978EDR0000430000MOXI00119J01.csv
+OX__0877_0744762446EDR0000430000MOXI00119J01.csv
+
+Sol 901 (extended I-V sweep, high flow, night)
+OX__0911_0747844831EDR0000450000MOXI09999J01.csv
+
+
+Note: These input files are the most recent IDS-processed EDRs of the MOXIE data.
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate. [continuing]
+   
+2. The run listed under Sol 631 was started on Sol 630.
+
+3. The run listed under Sol 901 was started on Sol 901 but incurred a fault. Data were
+   downloaded on Sol 911 after MOXIE was marked HEALTHY.
+   
+4. Total MOXIE power usage for the DDR files was recalculated due to an error in the
+   equations (double counted compressor power)
+   
+
+------------------------------------------------------------
+Release Number: 7
+Release Date: 2023-07-27
+Data Coverage: 2021-02-18 to 2023-04-21 (Sols 0-771)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052MOXI00101J03.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000MOXI00010J04.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110MOXI00102J03.csv
+OX__0015_0668238195EDR0000030110MOXI00102J03.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046MOXI00001J03.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046MOXI00003J04.csv
+OX__0060_0672233811EDR0000032046MOXI00003J04.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430MOXI00001J03.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430MOXI00004J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136MOXI00001J04.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218MOXI00005J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296MOXI00107J03.csv
+OX__0155_0680672279EDR0000052296MOXI00107J03.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752MOXI00108J04.csv
+OX__0176_0682533243EDR0000061752MOXI00108J04.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389311EDR0000072440MOXI00109J04.csv
+OX__0242_0688389778EDR0000072440MOXI00109J04.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000MOXI00110J03.csv
+OX__0276_0691450327EDR0000080000MOXI00110J04.csv
+
+Sol 317 (reference and generic segments, minimum density)
+OX__0317_0695101034EDR0000090000MOXI00111J02.csv
+OX__0317_0695101501EDR0000090000MOXI00111J02.csv
+
+Sol 444 (reference and unequal stack current)
+OX__0444_0706335571EDR0000250214MOXI00112J02.csv
+OX__0444_0706336039EDR0000250214MOXI00112J02.csv
+
+Sol 467 (voltage control mode)
+OX__0467_0708368902EDR0000260756MOXI00113J02.csv
+OX__0467_0708369369EDR0000260756MOXI00113J02.csv
+
+Sol 535 (maximum atmospheric density, night)
+OX__0535_0714394410EDR0000261222MOXI00114J02.csv
+OX__0535_0714394877EDR0000261222MOXI00114J02.csv
+
+Sol 631 (maximum atmospheric density, night, max O2)
+OX__0631_0722915903EDR0000302188MOXI00115J02.csv
+OX__0631_0722916374EDR0000302188MOXI00115J02.csv
+
+Sol 710 (extended purity sweep, night)
+OX__0710_0730009330EDR0000332864MOXI00116J01.csv
+OX__0710_0730009797EDR0000332864MOXI00116J01.csv
+
+Sol 771 (p4 control, low flow, day)
+OX__0771_0735377929EDR0000390650MOXI00117J01.csv
+OX__0771_0735378401EDR0000390650MOXI00117J01.csv
+
+
+Note: These input files are the most recent IDS-processed EDRs of the MOXIE data.
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate. [continuing]
+   
+2. The run listed under Sol 631 was started on Sol 630.
+   
+
+
+------------------------------------------------------------
+Release Number: 6
+Release Date: 2023-03-21
+Data Coverage: 2021-02-18 to 2022-12-28 (Sols 0-659)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052MOXI00101J03.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000MOXI00010J04.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110MOXI00102J03.csv
+OX__0015_0668238195EDR0000030110MOXI00102J03.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046MOXI00001J03.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046MOXI00003J04.csv
+OX__0060_0672233811EDR0000032046MOXI00003J04.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430MOXI00001J03.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430MOXI00004J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136MOXI00001J04.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218MOXI00005J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296MOXI00107J03.csv
+OX__0155_0680672279EDR0000052296MOXI00107J03.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752MOXI00108J04.csv
+OX__0176_0682533243EDR0000061752MOXI00108J04.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389311EDR0000072440MOXI00109J04.csv
+OX__0242_0688389778EDR0000072440MOXI00109J04.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000MOXI00110J03.csv
+OX__0276_0691450327EDR0000080000MOXI00110J04.csv
+
+Sol 317 (reference and generic segments, minimum density)
+OX__0317_0695101034EDR0000090000MOXI00111J02.csv
+OX__0317_0695101501EDR0000090000MOXI00111J02.csv
+
+Sol 444 (reference and unequal stack current)
+OX__0444_0706335571EDR0000250214MOXI00112J02.csv
+OX__0444_0706336039EDR0000250214MOXI00112J02.csv
+
+Sol 467 (voltage control mode)
+OX__0467_0708368902EDR0000260756MOXI00113J02.csv
+OX__0467_0708369369EDR0000260756MOXI00113J02.csv
+
+Sol 535 (maximum atmospheric density, night)
+OX__0535_0714394410EDR0000261222MOXI00114J02.csv
+OX__0535_0714394877EDR0000261222MOXI00114J02.csv
+
+Sol 631 (maximum atmospheric density, night, max O2)
+OX__0631_0722915903EDR0000302188MOXI00115J02.csv
+OX__0631_0722916374EDR0000302188MOXI00115J02.csv
+
+
+Note: These input files are the most recent IDS-processed EDRs of the MOXIE data.
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate. [continuing]
+   
+2. The run listed under Sol 631 was started on Sol 630.
+   
+
+
+
+------------------------------------------------------------
+Release Number: 5
+Release Date: 2022-11-21
+Data Coverage: 2021-02-18 to 2022-08-21 (Sols 0-535)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052MOXI00101J03.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000MOXI00010J04.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110MOXI00102J03.csv
+OX__0015_0668238195EDR0000030110MOXI00102J03.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046MOXI00001J03.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046MOXI00003J04.csv
+OX__0060_0672233811EDR0000032046MOXI00003J04.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430MOXI00001J03.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430MOXI00004J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136MOXI00001J04.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218MOXI00005J03.csv
+OX__0100_0675824847EDR0000040218MOXI00005J03.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296MOXI00107J03.csv
+OX__0155_0680672279EDR0000052296MOXI00107J03.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752MOXI00108J04.csv
+OX__0176_0682533243EDR0000061752MOXI00108J04.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389311EDR0000072440MOXI00109J04.csv
+OX__0242_0688389778EDR0000072440MOXI00109J04.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000MOXI00110J03.csv
+OX__0276_0691450327EDR0000080000MOXI00110J04.csv
+
+Sol 317 (reference and generic segments, minimum density)
+OX__0317_0695101034EDR0000090000MOXI00111J02.csv
+OX__0317_0695101501EDR0000090000MOXI00111J02.csv
+
+Sol 444 (reference and unequal stack current)
+OX__0444_0706335571EDR0000250214MOXI00112J02.csv
+OX__0444_0706336039EDR0000250214MOXI00112J02.csv
+
+Sol 467 (voltage control mode)
+OX__0467_0708368902EDR0000260756MOXI00113J02.csv
+OX__0467_0708369369EDR0000260756MOXI00113J02.csv
+
+Sol 535 (maximum atmospheric density, night)
+OX__0535_0714394410EDR0000261222MOXI00114J02.csv
+OX__0535_0714394877EDR0000261222MOXI00114J02.csv
+
+Note: These input files are the most recent IDS-processed EDRs of the MOXIE data.
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate.
+   
+2. The following RDR column headers have changed to explicitly reflect the calibrated 
+   nature of the parameter. 
+   		- P1 has been renamed to P1_cal
+   		- P2 has been renamed to P2_cal
+   		- P3 has been renamed to P3_cal
+   		- P4 has been renamed to P4_cal
+   		- P5 has been renamed to P5_cal
+   		- CS4_MBAR has been renamed to CS4_MBAR_cal
+   Please update any analysis tools that may operate on the older column headings.
+
+3. The field name- VF_S_RPM_CM3_S, mentioned in the <Table_Delimited> section of the the Derived Data product xml file has been correct to VF_SC_RPM_CM3_S
+
+
+------------------------------------------------------------
+Release Number: 4
+Release Date: 2022-07-22
+Data Coverage: 2021-02-18 to 2022-01-10 (Sols 0-317)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052moxi00101J02.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000moxi00010J03.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110moxi00102J02.csv
+OX__0015_0668238195EDR0000030110moxi00102J02.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046moxi00001J02.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046moxi00003J03.csv
+OX__0060_0672233811EDR0000032046moxi00003J03.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430moxi00001J02.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430moxi00004J02.csv
+OX__0081_0674107733EDR0000032430moxi00004J02.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136moxi00001J03.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218moxi00005J02.csv
+OX__0100_0675824847EDR0000040218moxi00005J02.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296moxi00107J02.csv
+OX__0155_0680672279EDR0000052296moxi00107J02.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752moxi00108J03.csv
+OX__0176_0682533243EDR0000061752moxi00108J03.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389778EDR0000072440moxi00109J01.csv
+OX__0242_0688389311EDR0000072440moxi00109J01.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000moxi00110J01.csv
+OX__0276_0691450327EDR0000080000moxi00110J01.csv
+
+Sol 317 (reference and generic segments, minimum density)
+OX__0317_0695101034EDR0000090000moxi00111J01.csv
+OX__0317_0695101501EDR0000090000moxi00111J01.csv
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate.
+
+2. All calibrated and derived data products in the archive were rounded to 3 decimal
+   places which limits the precision of some variables such as pressure and current.
+   This issue will be corrected in Release 5 for all data products.
+
+
+------------------------------------------------------------
+Release Number: 3
+Release Date: 2021-03-22
+Data Coverage: 2021-02-18 to 2021-12-21 (Sols 0-299)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+    urn:nasa:pds:mars2020_moxie:xml_schema
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052moxi00101J02.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000moxi00010J03.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110moxi00102J02.csv
+OX__0015_0668238195EDR0000030110moxi00102J02.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046moxi00001J02.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046moxi00003J03.csv
+OX__0060_0672233811EDR0000032046moxi00003J03.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430moxi00001J02.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430moxi00004J02.csv
+OX__0081_0674107733EDR0000032430moxi00004J02.csv
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136moxi00001J03.csv
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218moxi00005J02.csv
+OX__0100_0675824847EDR0000040218moxi00005J02.csv
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296moxi00107J02.csv
+OX__0155_0680672279EDR0000052296moxi00107J02.csv
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752moxi00108J03.csv
+OX__0176_0682533243EDR0000061752moxi00108J03.csv
+
+Sol 242 (reference and generic segments, night)
+OX__0242_0688389778EDR0000072440moxi00109J01.csv
+OX__0242_0688389311EDR0000072440moxi00109J01.csv
+
+Sol 276 (reference and generic segments, day)
+OX__0276_0691449857EDR0000080000moxi00110J01.csv
+OX__0276_0691450327EDR0000080000moxi00110J01.csv
+
+Errata:
+
+1. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate.
+
+
+------------------------------------------------------------
+Release Number: 2
+Release Date: 2021-11-22
+Data Coverage: 2021-05-22 to 2021-08-19 (Sols 90-179)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+
+Products have been revised in these collections:
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+    urn:nasa:pds:mars2020_moxie:xml_schema
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 96 (compressor sweep)
+OX__0096_0675469127EDR0000040136moxi00001J03.CSV
+
+Sol 100 (P4-P5 variation and maximum oxygen)
+OX__0100_0675824380EDR0000040218moxi00005J02.CSV
+OX__0100_0675824847EDR0000040218moxi00005J02.CSV
+
+Sol 155 (thermal sweep and reference segment)
+OX__0155_0680671812EDR0000052296moxi00107J02.CSV
+OX__0155_0680672279EDR0000052296moxi00107J02.CSV
+
+Sol 176 (extended purity sweep)
+OX__0176_0682532774EDR0000061752moxi00108J03.CSV
+OX__0176_0682533243EDR0000061752moxi00108J03.CSV
+
+
+Errata:
+
+1. P1-P5 in the calibrated data product have been corrected for temperature
+   dependence using T16 in the calibrated data product. However, quantities in
+   the derived data product that depend on P1-P5 use P1-P5 without the
+   temperature correction applied. The effect of this is to introduce an
+   additional error of up to 2% in the quantities in the derived data product
+   that depend on P1-P5.
+
+2. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate.
+
+3. X_CO2_IN, X_CO_IN, X_CO2_OUT, and X_CO_OUT in the derived data product
+   are set to reference values for Mars atmosphere when the scroll compressor
+   speed (RPMM1 in the calibrated data product) is zero. These reference values
+   take account of inert gases. However, when the scroll compressor speed is
+   non-zero, X_CO2_IN, X_CO_IN, X_CO2_OUT, and X_CO_OUT do not take account of
+   inert gases.
+
+
+------------------------------------------------------------
+Release Number: 1
+Release Date: 2021-08-20
+Data Coverage: 2021-02-18 to 2021-05-20 (Sols 0-89)
+
+New products have been added to these collections:
+    urn:nasa:pds:mars2020_moxie:context
+    urn:nasa:pds:mars2020_moxie:data_calibrated
+    urn:nasa:pds:mars2020_moxie:data_derived
+    urn:nasa:pds:mars2020_moxie:data_raw
+    urn:nasa:pds:mars2020_moxie:document
+    urn:nasa:pds:mars2020_moxie:xml_schema
+
+Products have been revised in these collections:
+    None.
+
+MOXIE data products are produced by the MOXIE science team using inputs from the
+NASA/JPL Instrument Data System (IDS). For traceability, the input files used
+for this release are listed below:
+
+Sol 4 (aliveness check)
+OX__0004_0667297793EDR0000010052moxi00101J02.csv
+
+Sol 12 (battleshort check)
+OX__0012_0668014536EDR0000030000moxi00010J03.csv
+
+Sol 15 (health check)
+OX__0015_0668237729EDR0000030110moxi00102J02.csv
+OX__0015_0668238195EDR0000030110moxi00102J02.csv
+
+Sol 55 (compressor sweep)
+OX__0055_0671794494EDR0000032046moxi00001J02.csv
+
+Sol 60 (first oxygen)
+OX__0060_0672233345EDR0000032046moxi00003J03.csv
+OX__0060_0672233811EDR0000032046moxi00003J03.csv
+
+Sol 79 (compressor sweep)
+OX__0079_0673927097EDR0000032430moxi00001J02.csv
+
+Sol 81 (reference and default segments)
+OX__0081_0674107266EDR0000032430moxi00004J02.csv
+OX__0081_0674107733EDR0000032430moxi00004J02.csv
+
+Errata:
+
+1. P1-P5 in the calibrated data product have been corrected for temperature
+   dependence using T16 in the calibrated data product. However, quantities in
+   the derived data product that depend on P1-P5 use P1-P5 without the
+   temperature correction applied. The effect of this is to introduce an
+   additional error of up to 2% in the quantities in the derived data product
+   that depend on P1-P5.
+
+2. F_S_FM_G_HR and F_S_FM_SCCM in the derived data product exhibit oscillatory
+   behavior because of aliasing in P2 and P3 in the calibrated data product, and
+   therefore should be interpreted with caution. Use F_S_P4_G_HR as the
+   preferred measure of total SOXE inlet mass flow rate.
+
+3. X_CO2_IN, X_CO_IN, X_CO2_OUT, and X_CO_OUT in the derived data product
+   are set to reference values for Mars atmosphere when the scroll compressor
+   speed (RPMM1 in the calibrated data product) is zero. These reference values
+   take account of inert gases. However, when the scroll compressor speed is
+   non-zero, X_CO2_IN, X_CO_IN, X_CO2_OUT, and X_CO_OUT do not take account of
+   inert gases.
+
+
+******** SECTION B ********
+
+Release 8 is a complete reprocessing of all MOXIE data files (sols 4 - 901) using the 
+latest EDRs provided by JPL IDSO and the updated calibration equations defined in the SIS.  
+One change to the reduced and derived data products should be noted:
+1. The P_TOT_W column is now computed correctly as the sum of MOXIE Main and SOXE power
+   consumption (P_MAIN_W + P_SOXE_W). In previous bundles total power included a value 
+   for the compressor power, but this was already included in the Main Power value.
+   
+
+   
+Release 6 is a complete reprocessing of all MOXIE data files (sols 4 - 631) using the 
+updated EDRs provided by JPL IDSO and the updated calibration equations defined in SIS.  
+Two changes to the calibrated data products should be noted:
+1. The calibrate data products now include columns for pressure calibrated with EICD, Rev H 
+   equations (P1, P2, P3, P4, P5) and temperature-corrected pressure (P1_cal, P2_cal, P3_cal, 
+   P4_cal, P5_cal). Please updated any analysis tools to use the appropriate columns.
+   
+2. The calibrated data products include columns for the oxygen partial pressure (in microbar) 
+   measured by the anode oxygen sensor (CS4_MBAR) and a temperature-corrected oxygen 
+   partial pressure (in millibar) (CS4_MBAR_cal). Please updated any analysis tools to use
+   the appropriate columns.
+   
+
+
+Release 5 is a complete reprocessing of all MOXIE data files (sols 4 - 535) using the updated EDRs
+provided by JPL IDSO. All data products are now represented in scientific notation
+with 4 decimal places precision. For clarity in interpreting the calibrated data
+in the RDR files, the column headers for pressures have been changed from P1, P2,
+P3, P4, and P5 to P1_cal, P2_cal, P3_cal, P4_cal, and P5_cal. Similarly, the column
+header for composition sensor 4 O2 sensor pressure has changed from CS4_MBAR to CS4_MBAR_cal.
+
+Release 3 consists of updates to the calibrated and derived data in both Release 1 and Release 2,
+to include revised calibrations and corrections to errata.

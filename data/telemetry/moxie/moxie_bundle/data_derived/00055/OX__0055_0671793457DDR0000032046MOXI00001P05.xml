@@ -1,0 +1,1617 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<?xml-model href="https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<?xml-model href="https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.sch"
+    schematypens="http://purl.oclc.org/dsdl/schematron"?>
+<Product_Observational xmlns="http://pds.nasa.gov/pds4/pds/v1" xmlns:mars2020="http://pds.nasa.gov/pds4/mission/mars2020/v1" xmlns:pds="http://pds.nasa.gov/pds4/pds/v1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pds.nasa.gov/pds4/pds/v1 https://pds.nasa.gov/pds4/pds/v1/PDS4_PDS_1G00.xsd http://pds.nasa.gov/pds4/mission/mars2020/v1 https://pds.nasa.gov/pds4/mission/mars2020/v1/PDS4_MARS2020_1G00_1000.xsd">
+  <Identification_Area>
+    <logical_identifier>urn:nasa:pds:mars2020_moxie:data_derived:ox__0055_0671793457ddr0000032046moxi00001p05</logical_identifier>
+    <version_id>5.0</version_id>
+    <title>Mars 2020 MOXIE Derived Data</title>
+    <information_model_version>1.16.0.0</information_model_version>
+    <product_class>Product_Observational</product_class>
+    <Modification_History>
+        <Modification_Detail>
+            <modification_date>2023-10-11</modification_date>
+            <version_id>5.0</version_id>
+            <description>Derived data</description>
+        </Modification_Detail>
+    </Modification_History>
+</Identification_Area>  
+  <Observation_Area>
+    <Time_Coordinates>
+      <start_date_time>2021-04-15T21:19:46Z</start_date_time>
+      <stop_date_time>2021-04-15T21:37:58Z</stop_date_time>
+</Time_Coordinates>    
+    <Primary_Result_Summary>
+      <purpose>Science</purpose>
+      <processing_level>Derived</processing_level>
+      <Science_Facets>
+        <domain>Atmosphere</domain>
+        <discipline_name>Atmospheres</discipline_name>
+        <facet1>Meteorology</facet1>
+    </Science_Facets>
+</Primary_Result_Summary>    
+    <Investigation_Area>
+      <name>Mars 2020</name>
+      <type>Mission</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:investigation:mission.mars2020</lid_reference>
+        <reference_type>data_to_investigation</reference_type>
+    </Internal_Reference>
+</Investigation_Area>    
+    <Observing_System>
+      <name>Mars 2020</name>
+      <Observing_System_Component>
+        <name>Mars Oxygen In-Situ Resource Utilization Experiment</name>
+        <type>Instrument</type>
+        <Internal_Reference>
+            <lid_reference>urn:nasa:pds:context:instrument:mars2020.moxie</lid_reference>
+            <reference_type>is_instrument</reference_type>
+        </Internal_Reference>
+    </Observing_System_Component>
+      <Observing_System_Component>
+        <name>Mars 2020</name>
+        <type>Host</type>
+        <Internal_Reference>
+            <lid_reference>urn:nasa:pds:context:instrument_host:spacecraft.mars2020</lid_reference>
+            <reference_type>is_instrument_host</reference_type>
+        </Internal_Reference>
+    </Observing_System_Component>
+</Observing_System>    
+    <Target_Identification>
+      <name>Mars</name>
+      <type>Planet</type>
+      <Internal_Reference>
+        <lid_reference>urn:nasa:pds:context:target:planet.mars</lid_reference>
+        <reference_type>data_to_target</reference_type>
+    </Internal_Reference>
+</Target_Identification>    
+    <Mission_Area>
+      <mars2020:Mars2020_Parameters>
+        <mars2020:Observation_Information>
+          <mars2020:release_number>0001</mars2020:release_number>
+          <mars2020:mission_phase_name>Surface Mission</mars2020:mission_phase_name>
+          <mars2020:spacecraft_clock_start>671793457</mars2020:spacecraft_clock_start>
+          <mars2020:spacecraft_clock_stop>671794549</mars2020:spacecraft_clock_stop>
+          <mars2020:spacecraft_clock_partition>1</mars2020:spacecraft_clock_partition>
+          <mars2020:start_sol_number>00055</mars2020:start_sol_number>
+          <mars2020:stop_sol_number>00055</mars2020:stop_sol_number>
+          <mars2020:start_local_mean_solar_time>00055M04:30:44</mars2020:start_local_mean_solar_time>
+          <mars2020:stop_local_mean_solar_time>00055M04:48:27</mars2020:stop_local_mean_solar_time>
+          <mars2020:start_local_true_solar_time>00055 04:12:26</mars2020:start_local_true_solar_time>
+          <mars2020:stop_local_true_solar_time>00055 04:30:09</mars2020:stop_local_true_solar_time>
+          <mars2020:start_solar_longitude unit="deg">32.107</mars2020:start_solar_longitude>
+          <mars2020:stop_solar_longitude unit="deg">32.113</mars2020:stop_solar_longitude>
+          <mars2020:start_mars_year>36</mars2020:start_mars_year>
+          <mars2020:stop_mars_year>36</mars2020:stop_mars_year>
+</mars2020:Observation_Information>        
+        <mars2020:MOXIE_Parameters>
+          <mars2020:Experiment_Configuration>
+            <mars2020:Experiment_Configuration_Metadata>
+              <mars2020:run_id>09</mars2020:run_id>
+              <mars2020:experiment_name>Compressor Sweep</mars2020:experiment_name>
+              <mars2020:major_version_number>02</mars2020:major_version_number>
+              <mars2020:minor_version_number>0</mars2020:minor_version_number>
+              <mars2020:file_name_stem>000_compresweep_v02p0</mars2020:file_name_stem>
+              <mars2020:primary_objective>Demonstrate the relationship between compressor RPM and SOXE total inlet mass flow rate, allowing time for KONZ2 and flowmeter readings to settle</mars2020:primary_objective>
+</mars2020:Experiment_Configuration_Metadata>            
+            <mars2020:Run_Control_Table>
+              <mars2020:Run_Control_Table_Metadata>
+                <mars2020:file_name_experiment_intent>000_compresweep_v02p0_RCT_EI.csv</mars2020:file_name_experiment_intent>
+                <mars2020:file_name_digital_numbers>000_compresweep_v02p0_RCT_DN_019FMv06.csv</mars2020:file_name_digital_numbers>
+                <mars2020:file_name_binary>000_compresweep_v02p0_RCT_DN_019FMv06_m2020.bin</mars2020:file_name_binary>
+</mars2020:Run_Control_Table_Metadata>              
+              <mars2020:Run_Control_Table_Fields>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>STEP_NUMBER</mars2020:name>
+                  <mars2020:description>Step number</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>STEP_DURATION</mars2020:name>
+                  <mars2020:description>Step duration</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZTT_SP</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature control loop setpoint</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZTB_SP</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature control loop setpoint</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZP4_SP</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop setpoint</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZP4_OS</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop scroll compressor RPM offset</mars2020:description>
+                  <mars2020:unit>RPM</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZIT_SP</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop setpoint</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZIT_OS</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop voltage offset</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZIB_SP</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop setpoint</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>ZIB_OS</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop voltage offset</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_TT_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature upper operational limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_TT_L</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature lower operational limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_TB_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature upper operational limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_TB_L</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature lower operational limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_P4_H</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure upper operational limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_P4_L</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure lower operational limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_XITP4_H</mars2020:name>
+                  <mars2020:description>Ratio of SOXE top half-stack current to SOXE cathode pressure upper operational limit</mars2020:description>
+                  <mars2020:unit>A/bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_XITP4_L</mars2020:name>
+                  <mars2020:description>Ratio of SOXE top half-stack current to SOXE cathode pressure lower operational limit</mars2020:description>
+                  <mars2020:unit>A/bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_XIBP4_H</mars2020:name>
+                  <mars2020:description>Ratio of SOXE bottom half-stack current to SOXE cathode pressure upper operational limit</mars2020:description>
+                  <mars2020:unit>A/bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>OL_XIBP4_L</mars2020:name>
+                  <mars2020:description>Ratio of SOXE bottom half-stack current to SOXE cathode pressure lower operational limit</mars2020:description>
+                  <mars2020:unit>A/bar</mars2020:unit>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>HS_en</mars2020:name>
+                  <mars2020:description>SOXE heater enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>CS123_en</mars2020:name>
+                  <mars2020:description>Gas composition sensors 1, 2, and 3 enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>CS4_en</mars2020:name>
+                  <mars2020:description>Gas composition sensor 4 enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>M1_en</mars2020:name>
+                  <mars2020:description>Scroll compressor motor enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>VT_en</mars2020:name>
+                  <mars2020:description>SOXE top half-stack power supply enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>VB_en</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack power supply enable bit</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+                <mars2020:Run_Control_Table_Field>
+                  <mars2020:name>Comments</mars2020:name>
+                  <mars2020:description>Comments</mars2020:description>
+    </mars2020:Run_Control_Table_Field>
+</mars2020:Run_Control_Table_Fields>              
+              <mars2020:Run_Control_Table_Values>
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>0</mars2020:step_number>
+                  <mars2020:step_duration unit="s">145</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">-0.14146</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>0</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>0</mars2020:cs123_en>
+                  <mars2020:cs4_en>0</mars2020:cs4_en>
+                  <mars2020:m1_en>0</mars2020:m1_en>
+                  <mars2020:vt_en>0</mars2020:vt_en>
+                  <mars2020:vb_en>0</mars2020:vb_en>
+                  <mars2020:comments>sit with everything off collect telemetry and wait for SCAM power on</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>1</mars2020:step_number>
+                  <mars2020:step_duration unit="s">30</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">-0.14146</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>0</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>0</mars2020:cs4_en>
+                  <mars2020:m1_en>0</mars2020:m1_en>
+                  <mars2020:vt_en>0</mars2020:vt_en>
+                  <mars2020:vb_en>0</mars2020:vb_en>
+                  <mars2020:comments>enable smartGAS sensors</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>2</mars2020:step_number>
+                  <mars2020:step_duration unit="s">10</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">-0.14146</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>0</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>0</mars2020:m1_en>
+                  <mars2020:vt_en>0</mars2020:vt_en>
+                  <mars2020:vb_en>0</mars2020:vb_en>
+                  <mars2020:comments>enable pyroscience sensor</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>3</mars2020:step_number>
+                  <mars2020:step_duration unit="s">10</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">-0.14146</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>0</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>enable motor controller and SOXE power supplies</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>4</mars2020:step_number>
+                  <mars2020:step_duration unit="s">60</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>1499.92</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>764</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>1500 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>5</mars2020:step_number>
+                  <mars2020:step_duration unit="s">150</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>1997.8549</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>996</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>2000 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>6</mars2020:step_number>
+                  <mars2020:step_duration unit="s">60</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>2497.9361</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>1229</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>2500 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>7</mars2020:step_number>
+                  <mars2020:step_duration unit="s">60</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>2998.0172</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>1462</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>3000 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>8</mars2020:step_number>
+                  <mars2020:step_duration unit="s">60</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>2497.9361</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>1229</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>2500 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>9</mars2020:step_number>
+                  <mars2020:step_duration unit="s">150</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>1997.8549</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>996</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>2000 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>10</mars2020:step_number>
+                  <mars2020:step_duration unit="s">60</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>1499.92</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>764</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>1500 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>11</mars2020:step_number>
+                  <mars2020:step_duration unit="s">30</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">0.99974</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>2217</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>1</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>0 rpm</mars2020:comments>
+</mars2020:Run_Control_Table_Step>                
+                <mars2020:Run_Control_Table_Step>
+                  <mars2020:step_number>12</mars2020:step_number>
+                  <mars2020:step_duration unit="s">30</mars2020:step_duration>
+                  <mars2020:ztt_sp_calibrated unit="degC">-228.8351</mars2020:ztt_sp_calibrated>
+                  <mars2020:ztt_sp_digital_number>0</mars2020:ztt_sp_digital_number>
+                  <mars2020:ztb_sp_calibrated unit="degC">-213.4313</mars2020:ztb_sp_calibrated>
+                  <mars2020:ztb_sp_digital_number>0</mars2020:ztb_sp_digital_number>
+                  <mars2020:zp4_sp_calibrated unit="bar">-0.14146</mars2020:zp4_sp_calibrated>
+                  <mars2020:zp4_sp_digital_number>0</mars2020:zp4_sp_digital_number>
+                  <mars2020:zp4_os_calibrated>-139.831</mars2020:zp4_os_calibrated>
+                  <mars2020:zp4_os_digital_number>0</mars2020:zp4_os_digital_number>
+                  <mars2020:zit_sp_calibrated unit="A">0</mars2020:zit_sp_calibrated>
+                  <mars2020:zit_sp_digital_number>0</mars2020:zit_sp_digital_number>
+                  <mars2020:zit_os_calibrated unit="V">1.7334</mars2020:zit_os_calibrated>
+                  <mars2020:zit_os_digital_number>0</mars2020:zit_os_digital_number>
+                  <mars2020:zib_sp_calibrated unit="A">0</mars2020:zib_sp_calibrated>
+                  <mars2020:zib_sp_digital_number>0</mars2020:zib_sp_digital_number>
+                  <mars2020:zib_os_calibrated unit="V">1.7334</mars2020:zib_os_calibrated>
+                  <mars2020:zib_os_digital_number>0</mars2020:zib_os_digital_number>
+                  <mars2020:ol_tt_h_calibrated unit="degC">99.6791</mars2020:ol_tt_h_calibrated>
+                  <mars2020:ol_tt_h_digital_number>871</mars2020:ol_tt_h_digital_number>
+                  <mars2020:ol_tt_l_calibrated unit="degC">-228.8351</mars2020:ol_tt_l_calibrated>
+                  <mars2020:ol_tt_l_digital_number>0</mars2020:ol_tt_l_digital_number>
+                  <mars2020:ol_tb_h_calibrated unit="degC">99.6247</mars2020:ol_tb_h_calibrated>
+                  <mars2020:ol_tb_h_digital_number>873</mars2020:ol_tb_h_digital_number>
+                  <mars2020:ol_tb_l_calibrated unit="degC">-213.4313</mars2020:ol_tb_l_calibrated>
+                  <mars2020:ol_tb_l_digital_number>0</mars2020:ol_tb_l_digital_number>
+                  <mars2020:ol_p4_h_calibrated unit="bar">1.2</mars2020:ol_p4_h_calibrated>
+                  <mars2020:ol_p4_h_digital_number>2606</mars2020:ol_p4_h_digital_number>
+                  <mars2020:ol_p4_l_calibrated unit="bar">-0.14146</mars2020:ol_p4_l_calibrated>
+                  <mars2020:ol_p4_l_digital_number>0</mars2020:ol_p4_l_digital_number>
+                  <mars2020:ol_xitp4_h_calibrated>8191.875</mars2020:ol_xitp4_h_calibrated>
+                  <mars2020:ol_xitp4_h_digital_number>65535</mars2020:ol_xitp4_h_digital_number>
+                  <mars2020:ol_xitp4_l_calibrated>0</mars2020:ol_xitp4_l_calibrated>
+                  <mars2020:ol_xitp4_l_digital_number>0</mars2020:ol_xitp4_l_digital_number>
+                  <mars2020:ol_xibp4_h_calibrated>8191.875</mars2020:ol_xibp4_h_calibrated>
+                  <mars2020:ol_xibp4_h_digital_number>65535</mars2020:ol_xibp4_h_digital_number>
+                  <mars2020:ol_xibp4_l_calibrated>0</mars2020:ol_xibp4_l_calibrated>
+                  <mars2020:ol_xibp4_l_digital_number>0</mars2020:ol_xibp4_l_digital_number>
+                  <mars2020:hs_en>0</mars2020:hs_en>
+                  <mars2020:cs123_en>1</mars2020:cs123_en>
+                  <mars2020:cs4_en>1</mars2020:cs4_en>
+                  <mars2020:m1_en>0</mars2020:m1_en>
+                  <mars2020:vt_en>1</mars2020:vt_en>
+                  <mars2020:vb_en>1</mars2020:vb_en>
+                  <mars2020:comments>disable motor controller</mars2020:comments>
+</mars2020:Run_Control_Table_Step>              
+              </mars2020:Run_Control_Table_Values>
+            </mars2020:Run_Control_Table>
+            <mars2020:Algorithm_Parameter_Table>
+              <mars2020:Algorithm_Parameter_Table_Metadata>
+                <mars2020:file_name_experiment_intent>000_compresweep_v02p0_APT_EI.csv</mars2020:file_name_experiment_intent>
+                <mars2020:file_name_digital_numbers>000_compresweep_v02p0_APT_DN_019FMv06.csv</mars2020:file_name_digital_numbers>
+                <mars2020:file_name_binary>000_compresweep_v02p0_APT_DN_019FMv06.bin</mars2020:file_name_binary>
+        </mars2020:Algorithm_Parameter_Table_Metadata>
+              <mars2020:Algorithm_Parameter_Table_Fields>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>Persistence_en</mars2020:name>
+                  <mars2020:description>Persistence time enable flag</mars2020:description>     
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZTT_P</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature control loop proportional gain</mars2020:description>
+                  <mars2020:unit>V/degC</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZTB_P</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature control loop proportional gain</mars2020:description>
+                  <mars2020:unit>V/degC</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZTT_I</mars2020:name>
+                  <mars2020:description>SOXE top half-stack heater temperature control loop integral gain</mars2020:description>
+                  <mars2020:unit>V/degC/s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZTB_I</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack heater temperature control loop integral gain</mars2020:description>
+                  <mars2020:unit>V/degC/s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZP4_P</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop proportional gain</mars2020:description>
+                  <mars2020:unit>RPM/bar</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZP4_I</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop integral gain</mars2020:description>
+                  <mars2020:unit>RPM/bar/s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZP4_L</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop scroll compressor RPM output lower limit</mars2020:description>     
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZP4_H</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure control loop scroll compressor RPM output upper limit</mars2020:description>           
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIT_P</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop proportional gain</mars2020:description>
+                  <mars2020:unit>V/A</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIB_P</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop proportional gain</mars2020:description>
+                  <mars2020:unit>V/A</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIT_I</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop integral gain</mars2020:description>
+                  <mars2020:unit>V/A/s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIB_I</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop integral gain</mars2020:description>
+                  <mars2020:unit>V/A/s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIT_L</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop voltage output lower limit</mars2020:description>            
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIB_L</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop voltage output lower limit</mars2020:description>            
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIT_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current control loop voltage output upper limit</mars2020:description>            
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>ZIB_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current control loop voltage output upper limit</mars2020:description>            
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>HT_VTL_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack heater temperature control loop heater PWM duty cycle upper limit when SOXE top half-stack power supply is off</mars2020:description>           
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>HT_VTH_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack heater temperature control loop heater PWM duty cycle upper limit when SOXE top half-stack power supply is on</mars2020:description>            
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>HB_VBL_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack heater temperature control loop heater PWM duty cycle upper limit when SOXE bottom half-stack power supply is off</mars2020:description>           
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>HB_VBH_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack heater temperature control loop heater PWM duty cycle upper limit when SOXE bottom half-stack power supply is on</mars2020:description>           
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>OL_TT_T</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature operational limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>OL_TB_T</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature operational limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>OL_P4_T</mars2020:name>
+                  <mars2020:description>SOXE cathode pressure operational limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>OL_XITP4_T</mars2020:name>
+                  <mars2020:description>Ratio of SOXE top half-stack current to SOXE cathode pressure operational limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+                <mars2020:Algorithm_Parameter_Table_Field>
+                  <mars2020:name>OL_XIBP4_T</mars2020:name>
+                  <mars2020:description>Ratio of SOXE bottom half-stack current to SOXE cathode pressure operational limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+          </mars2020:Algorithm_Parameter_Table_Field>
+        </mars2020:Algorithm_Parameter_Table_Fields>
+              <mars2020:Algorithm_Parameter_Table_Values>
+                <mars2020:persistence_en>1</mars2020:persistence_en>
+                <mars2020:ztt_p_calibrated>16</mars2020:ztt_p_calibrated>
+                <mars2020:ztt_p_digital_number>16</mars2020:ztt_p_digital_number>
+                <mars2020:ztb_p_calibrated>16</mars2020:ztb_p_calibrated>
+                <mars2020:ztb_p_digital_number>16</mars2020:ztb_p_digital_number>
+                <mars2020:ztt_i_calibrated>1</mars2020:ztt_i_calibrated>
+                <mars2020:ztt_i_digital_number>1</mars2020:ztt_i_digital_number>
+                <mars2020:ztb_i_calibrated>1</mars2020:ztb_i_calibrated>
+                <mars2020:ztb_i_digital_number>1</mars2020:ztb_i_digital_number>
+                <mars2020:zp4_p_calibrated>0</mars2020:zp4_p_calibrated>
+                <mars2020:zp4_p_digital_number>0</mars2020:zp4_p_digital_number>
+                <mars2020:zp4_i_calibrated>0</mars2020:zp4_i_calibrated>
+                <mars2020:zp4_i_digital_number>0</mars2020:zp4_i_digital_number>
+                <mars2020:zp4_l_calibrated>0</mars2020:zp4_l_calibrated>
+                <mars2020:zp4_l_digital_number>0</mars2020:zp4_l_digital_number>
+                <mars2020:zp4_h_calibrated>0</mars2020:zp4_h_calibrated>
+                <mars2020:zp4_h_digital_number>0</mars2020:zp4_h_digital_number>
+                <mars2020:zit_p_calibrated>0</mars2020:zit_p_calibrated>
+                <mars2020:zit_p_digital_number>0</mars2020:zit_p_digital_number>
+                <mars2020:zib_p_calibrated>0</mars2020:zib_p_calibrated>
+                <mars2020:zib_p_digital_number>0</mars2020:zib_p_digital_number>
+                <mars2020:zit_i_calibrated>0</mars2020:zit_i_calibrated>
+                <mars2020:zit_i_digital_number>0</mars2020:zit_i_digital_number>
+                <mars2020:zib_h_calibrated unit="V">0</mars2020:zib_h_calibrated>
+                <mars2020:zib_h_digital_number>0</mars2020:zib_h_digital_number>
+                <mars2020:zib_i_calibrated>0</mars2020:zib_i_calibrated>
+                <mars2020:zib_i_digital_number>0</mars2020:zib_i_digital_number>
+                <mars2020:zib_l_calibrated unit="V">0</mars2020:zib_l_calibrated>
+                <mars2020:zib_l_digital_number>0</mars2020:zib_l_digital_number>
+                <mars2020:zit_h_calibrated unit="V">0</mars2020:zit_h_calibrated>
+                <mars2020:zit_h_digital_number>0</mars2020:zit_h_digital_number>
+                <mars2020:zit_l_calibrated unit="V">0</mars2020:zit_l_calibrated>
+                <mars2020:zit_l_digital_number>0</mars2020:zit_l_digital_number>
+                <mars2020:ht_vtl_h_calibrated>52</mars2020:ht_vtl_h_calibrated>
+                <mars2020:ht_vtl_h_digital_number>52</mars2020:ht_vtl_h_digital_number>
+                <mars2020:ht_vth_h_calibrated>45</mars2020:ht_vth_h_calibrated>
+                <mars2020:ht_vth_h_digital_number>45</mars2020:ht_vth_h_digital_number>
+                <mars2020:hb_vbl_h_calibrated>51</mars2020:hb_vbl_h_calibrated>
+                <mars2020:hb_vbl_h_digital_number>51</mars2020:hb_vbl_h_digital_number>
+                <mars2020:hb_vbh_h_calibrated>35</mars2020:hb_vbh_h_calibrated>
+                <mars2020:hb_vbh_h_digital_number>35</mars2020:hb_vbh_h_digital_number>
+                <mars2020:ol_tt_t unit="s">8</mars2020:ol_tt_t>
+                <mars2020:ol_tb_t unit="s">8</mars2020:ol_tb_t>
+                <mars2020:ol_p4_t unit="s">1</mars2020:ol_p4_t>
+                <mars2020:ol_xitp4_t unit="s">255</mars2020:ol_xitp4_t>
+                <mars2020:ol_xibp4_t unit="s">255</mars2020:ol_xibp4_t>
+        </mars2020:Algorithm_Parameter_Table_Values>
+  </mars2020:Algorithm_Parameter_Table>          
+            <mars2020:Safety_Parameter_Table>
+              <mars2020:Safety_Parameter_Table_Metadata>
+                <mars2020:file_name_experiment_intent>000_compresweep_v02p0_SPT_EI.csv</mars2020:file_name_experiment_intent>
+                <mars2020:file_name_digital_numbers>000_compresweep_v02p0_SPT_DN_019FMv06.csv</mars2020:file_name_digital_numbers>
+                <mars2020:file_name_binary>000_compresweep_v02p0_SPT_DN_019FMv06.bin</mars2020:file_name_binary>
+    </mars2020:Safety_Parameter_Table_Metadata>
+              <mars2020:Safety_Parameter_Table_Fields>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>Persistence_en</mars2020:name>
+                  <mars2020:description>Persistence time enable flag</mars2020:description>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P2_H</mars2020:name>
+                  <mars2020:description>Pressure upstream of flowmeter orifice upper safety limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P3_H</mars2020:name>
+                  <mars2020:description>Pressure downstream of flowmeter orifice upper safety limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P4_H</mars2020:name>
+                  <mars2020:description>Pressure at CO/CO2 VFCD inlet (SOXE cathode pressure) upper safety limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P5_H</mars2020:name>
+                  <mars2020:description>Pressure at O2 VFCD inlet (SOXE anode pressure) upper safety limit</mars2020:description>
+                  <mars2020:unit>bar</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_VT_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack voltage upper safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_VB_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack voltage upper safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VM_L</mars2020:name>
+                  <mars2020:description>Main 28 V power supply lower voltage safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VM_H</mars2020:name>
+                  <mars2020:description>Main 28 V power supply upper voltage safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VS_L</mars2020:name>
+                  <mars2020:description>SOXE heaters 28 V power supply lower voltage safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VS_H</mars2020:name>
+                  <mars2020:description>SOXE heaters 28 V power supply upper voltage safety limit</mars2020:description>
+                  <mars2020:unit>V</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_IT_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current upper safety limit</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_IB_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current upper safety limit</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_TT_H</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_TB_H</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T3_H</mars2020:name>
+                  <mars2020:description>Temperature at compressor housing upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T4_H</mars2020:name>
+                  <mars2020:description>Temperature at compressor motor upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T1_H</mars2020:name>
+                  <mars2020:description>Temperature at sensor panel upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T22_H</mars2020:name>
+                  <mars2020:description>Temperature at electronics control board upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T7_L</mars2020:name>
+                  <mars2020:description>Temperature at baseplate lower safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T7_H</mars2020:name>
+                  <mars2020:description>Temperature at baseplate upper safety limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P2_T</mars2020:name>
+                  <mars2020:description>Pressure upstream of flowmeter orifice safety limit persistent time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P3_T</mars2020:name>
+                  <mars2020:description>Pressure downstream of flowmeter orifice safety limit persistent time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P4_T</mars2020:name>
+                  <mars2020:description>Pressure at CO/CO2 VFCD inlet (SOXE cathode pressure) safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_P5_T</mars2020:name>
+                  <mars2020:description>Pressure at O2 VFCD inlet (SOXE anode pressure) safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_VT_T</mars2020:name>
+                  <mars2020:description>SOXE top half-stack voltage safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_VB_T</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack voltage safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VM_T</mars2020:name>
+                  <mars2020:description>Main 28 V power supply voltage safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_V28VS_T</mars2020:name>
+                  <mars2020:description>SOXE heaters 28 V power supply voltage safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_IT_T</mars2020:name>
+                  <mars2020:description>SOXE top half-stack current safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_IB_T</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack current safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_TT_T</mars2020:name>
+                  <mars2020:description>SOXE top half-stack temperature safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_TB_T</mars2020:name>
+                  <mars2020:description>SOXE bottom half-stack temperature safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T3_T</mars2020:name>
+                  <mars2020:description>Temperature at compressor housing safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T4_T</mars2020:name>
+                  <mars2020:description>Temperature at compressor motor safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T1_T</mars2020:name>
+                  <mars2020:description>Temperature at sensor panel safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T22_T</mars2020:name>
+                  <mars2020:description>Temperature at electronics control board safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+                <mars2020:Safety_Parameter_Table_Field>
+                  <mars2020:name>SL_T7_T</mars2020:name>
+                  <mars2020:description>Temperature at baseplate safety limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Safety_Parameter_Table_Field>
+    </mars2020:Safety_Parameter_Table_Fields>
+              <mars2020:Safety_Parameter_Table_Values>
+                <mars2020:persistence_en>1</mars2020:persistence_en>
+                <mars2020:sl_p2_h_calibrated unit="bar">1.1999</mars2020:sl_p2_h_calibrated>
+                <mars2020:sl_p2_h_digital_number>2637</mars2020:sl_p2_h_digital_number>
+                <mars2020:sl_p3_h_calibrated unit="bar">1.1997</mars2020:sl_p3_h_calibrated>
+                <mars2020:sl_p3_h_digital_number>2574</mars2020:sl_p3_h_digital_number>
+                <mars2020:sl_p4_h_calibrated unit="bar">1.2</mars2020:sl_p4_h_calibrated>
+                <mars2020:sl_p4_h_digital_number>2606</mars2020:sl_p4_h_digital_number>
+                <mars2020:sl_p5_h_calibrated unit="bar">1.1998</mars2020:sl_p5_h_calibrated>
+                <mars2020:sl_p5_h_digital_number>2656</mars2020:sl_p5_h_digital_number>
+                <mars2020:sl_vt_h_calibrated unit="V">8.9982</mars2020:sl_vt_h_calibrated>
+                <mars2020:sl_vt_h_digital_number>3545</mars2020:sl_vt_h_digital_number>
+                <mars2020:sl_vb_h_calibrated unit="V">8.9982</mars2020:sl_vb_h_calibrated>
+                <mars2020:sl_vb_h_digital_number>3545</mars2020:sl_vb_h_digital_number>
+                <mars2020:sl_v28vm_l_calibrated unit="V">25.9972</mars2020:sl_v28vm_l_calibrated>
+                <mars2020:sl_v28vm_l_digital_number>2401</mars2020:sl_v28vm_l_digital_number>
+                <mars2020:sl_v28vm_h_calibrated unit="V">32.9918</mars2020:sl_v28vm_h_calibrated>
+                <mars2020:sl_v28vm_h_digital_number>3047</mars2020:sl_v28vm_h_digital_number>
+                <mars2020:sl_v28vs_l_calibrated unit="V">25.9972</mars2020:sl_v28vs_l_calibrated>
+                <mars2020:sl_v28vs_l_digital_number>2401</mars2020:sl_v28vs_l_digital_number>
+                <mars2020:sl_v28vs_h_calibrated unit="V">32.9918</mars2020:sl_v28vs_h_calibrated>
+                <mars2020:sl_v28vs_h_digital_number>3047</mars2020:sl_v28vs_h_digital_number>
+                <mars2020:sl_it_h_calibrated unit="A">0.099106</mars2020:sl_it_h_calibrated>
+                <mars2020:sl_it_h_digital_number>68</mars2020:sl_it_h_digital_number>
+                <mars2020:sl_ib_h_calibrated unit="A">0.099106</mars2020:sl_ib_h_calibrated>
+                <mars2020:sl_ib_h_digital_number>68</mars2020:sl_ib_h_digital_number>
+                <mars2020:sl_tt_h_calibrated unit="degC">149.5827</mars2020:sl_tt_h_calibrated>
+                <mars2020:sl_tt_h_digital_number>990</mars2020:sl_tt_h_digital_number>
+                <mars2020:sl_tb_h_calibrated unit="degC">149.6215</mars2020:sl_tb_h_calibrated>
+                <mars2020:sl_tb_h_digital_number>997</mars2020:sl_tb_h_digital_number>
+                <mars2020:sl_t3_h_calibrated unit="degC">3319</mars2020:sl_t3_h_calibrated>
+                <mars2020:sl_t3_h_digital_number>3319</mars2020:sl_t3_h_digital_number>
+                <mars2020:sl_t4_h_calibrated unit="degC">3493</mars2020:sl_t4_h_calibrated>
+                <mars2020:sl_t4_h_digital_number>3493</mars2020:sl_t4_h_digital_number>
+                <mars2020:sl_t1_h_calibrated unit="degC">59.9124</mars2020:sl_t1_h_calibrated>
+                <mars2020:sl_t1_h_digital_number>2923</mars2020:sl_t1_h_digital_number>
+                <mars2020:sl_t22_h_calibrated unit="degC">59.9124</mars2020:sl_t22_h_calibrated>
+                <mars2020:sl_t22_h_digital_number>2923</mars2020:sl_t22_h_digital_number>
+                <mars2020:sl_t7_l_calibrated unit="degC">-45.0689</mars2020:sl_t7_l_calibrated>
+                <mars2020:sl_t7_l_digital_number>1974</mars2020:sl_t7_l_digital_number>
+                <mars2020:sl_t7_h_calibrated unit="degC">59.9124</mars2020:sl_t7_h_calibrated>
+                <mars2020:sl_t7_h_digital_number>2923</mars2020:sl_t7_h_digital_number>
+                <mars2020:sl_p2_t unit="s">1</mars2020:sl_p2_t>
+                <mars2020:sl_p3_t unit="s">1</mars2020:sl_p3_t>
+                <mars2020:sl_p4_t unit="s">1</mars2020:sl_p4_t>
+                <mars2020:sl_p5_t unit="s">1</mars2020:sl_p5_t>
+                <mars2020:sl_vt_t unit="s">1</mars2020:sl_vt_t>
+                <mars2020:sl_vb_t unit="s">1</mars2020:sl_vb_t>
+                <mars2020:sl_v28vm_t unit="s">1</mars2020:sl_v28vm_t>
+                <mars2020:sl_v28vs_t unit="s">1</mars2020:sl_v28vs_t>
+                <mars2020:sl_it_t unit="s">1</mars2020:sl_it_t>
+                <mars2020:sl_ib_t unit="s">1</mars2020:sl_ib_t>
+                <mars2020:sl_tt_t unit="s">16</mars2020:sl_tt_t>
+                <mars2020:sl_tb_t unit="s">16</mars2020:sl_tb_t>
+                <mars2020:sl_t3_t unit="s">16</mars2020:sl_t3_t>
+                <mars2020:sl_t4_t unit="s">16</mars2020:sl_t4_t>
+                <mars2020:sl_t1_t unit="s">16</mars2020:sl_t1_t>
+                <mars2020:sl_t22_t unit="s">16</mars2020:sl_t22_t>
+                <mars2020:sl_t7_t unit="s">16</mars2020:sl_t7_t>
+    </mars2020:Safety_Parameter_Table_Values>
+  </mars2020:Safety_Parameter_Table>          
+            <mars2020:Run_Parameter_Table>
+              <mars2020:Run_Parameter_Table_Metadata>
+                <mars2020:file_name_experiment_intent>000_compresweep_v02p0_RPT_EI.csv</mars2020:file_name_experiment_intent>
+                <mars2020:file_name_digital_numbers>000_compresweep_v02p0_RPT_DN_019FMv06.csv</mars2020:file_name_digital_numbers>
+                <mars2020:file_name_binary>000_compresweep_v02p0_RPT_DN_019FMv06.bin</mars2020:file_name_binary>
+    </mars2020:Run_Parameter_Table_Metadata>
+              <mars2020:Run_Parameter_Table_Fields>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>Persistence_en</mars2020:name>
+                  <mars2020:description>Persistence time enable flag</mars2020:description>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>TL_ICS1234_H</mars2020:name>
+                  <mars2020:description>Gas composition sensors CS1, CS2, CS3 and CS4 upper temperature limit</mars2020:description>
+                  <mars2020:unit>degC</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>CL_ICS123_H</mars2020:name>
+                  <mars2020:description>Gas composition sensors CS1, CS2 and CS3 upper current limit</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>CL_ICS4_H</mars2020:name>
+                  <mars2020:description>Gas composition sensor CS4 upper current limit</mars2020:description>
+                  <mars2020:unit>A</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>TL_ICS1234_T</mars2020:name>
+                  <mars2020:description>Gas composition sensors CS1, CS2, CS3 and CS4  temperature limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>CL_ICS123_T</mars2020:name>
+                  <mars2020:description>Gas composition sensors CS1, CS2 and CS3 current limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+                <mars2020:Run_Parameter_Table_Field>
+                  <mars2020:name>CL_ICS4_T</mars2020:name>
+                  <mars2020:description>Gas composition sensor CS4 current limit persistence time</mars2020:description>
+                  <mars2020:unit>s</mars2020:unit>
+      </mars2020:Run_Parameter_Table_Field>
+    </mars2020:Run_Parameter_Table_Fields>
+              <mars2020:Run_Parameter_Table_Values>
+                <mars2020:persistence_en>1</mars2020:persistence_en>
+                <mars2020:tl_ics1234_h_calibrated unit="degC">69.9691</mars2020:tl_ics1234_h_calibrated>
+                <mars2020:tl_ics1234_h_digital_number>3012</mars2020:tl_ics1234_h_digital_number>
+                <mars2020:cl_ics123_h_calibrated unit="A">0.99963</mars2020:cl_ics123_h_calibrated>
+                <mars2020:cl_ics123_h_digital_number>1769</mars2020:cl_ics123_h_digital_number>
+                <mars2020:cl_ics4_h_calibrated unit="A">0.19985</mars2020:cl_ics4_h_calibrated>
+                <mars2020:cl_ics4_h_digital_number>284</mars2020:cl_ics4_h_digital_number>
+                <mars2020:tl_ics1234_t unit="s">16</mars2020:tl_ics1234_t>
+                <mars2020:cl_ics123_t unit="s">1</mars2020:cl_ics123_t>
+                <mars2020:cl_ics4_t unit="s">1</mars2020:cl_ics4_t>
+    </mars2020:Run_Parameter_Table_Values>
+  </mars2020:Run_Parameter_Table>        
+          </mars2020:Experiment_Configuration>
+        </mars2020:MOXIE_Parameters>
+      </mars2020:Mars2020_Parameters>
+    </Mission_Area>
+  </Observation_Area>
+  <Reference_List>
+    <Internal_Reference>
+        <lid_reference>urn:nasa:pds:mars2020_moxie:document:bundlesis</lid_reference>
+        <reference_type>data_to_document</reference_type>
+    </Internal_Reference>
+    <Internal_Reference>
+        <lid_reference>urn:nasa:pds:mars2020_moxie:document:dpsis</lid_reference>
+        <reference_type>data_to_document</reference_type>
+    </Internal_Reference>
+    <Internal_Reference>
+        <lid_reference>urn:nasa:pds:mars2020_moxie:document:instrumentpaper</lid_reference>
+        <reference_type>data_to_document</reference_type>
+    </Internal_Reference>
+    <External_Reference>
+        <reference_text>Hecht, M., Hoffman, J., Rapp, D. et al. Mars Oxygen ISRU Experiment (MOXIE). Space Sci Rev 217, 9 (2021). https://doi.org/10.1007/s11214-020-00782-8</reference_text>
+    </External_Reference>
+</Reference_List>  
+  <File_Area_Observational>
+    <File>
+        <file_name>OX__0055_0671793457DDR0000032046MOXI00001P05.csv</file_name>
+        <local_identifier>OX__0055_0671793457DDR0000032046MOXI00001P05_file</local_identifier>
+        <creation_date_time>2023-10-11T11:29:51.000Z</creation_date_time>
+        <file_size unit="byte">313336</file_size>
+        <records>1093</records>
+    </File>
+    <Header>
+        <name>Column headings for TABLE</name>
+        <local_identifier>HEADER</local_identifier>
+        <offset unit="byte">0</offset>
+        <object_length unit="byte">264</object_length>
+        <parsing_standard_id>7-Bit ASCII Text</parsing_standard_id>
+        <description>Column headings</description>
+    </Header>
+    <Table_Delimited>
+        <name>MOXIE Derived Data</name>
+        <local_identifier>TABLE</local_identifier>
+        <offset unit="byte">264</offset>
+        <parsing_standard_id>PDS DSV 1</parsing_standard_id>
+        <records>1093</records>
+        <record_delimiter>Carriage-Return Line-Feed</record_delimiter>
+        <field_delimiter>Comma</field_delimiter>
+        <Record_Delimited>
+            <fields>26</fields>
+            <groups>0</groups>
+            <Field_Delimited>
+                <name>T</name>
+                <field_number>1</field_number>
+                <data_type>ASCII_Integer</data_type>
+                <maximum_field_length unit="byte">9</maximum_field_length>
+                <unit>s</unit>
+                <description>Time</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_S_P4_G_HR</name>
+                <field_number>2</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>g/hr</unit>
+                <description>SOXE inlet mass flow rate derived using P4</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_S_P4_SCCM</name>
+                <field_number>2</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>sccm</unit>
+                <description>SOXE inlet mass flow rate derived using P4</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_S_FM_G_HR</name>
+                <field_number>4</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>g/hr</unit>
+                <description>SOXE inlet mass flow rate derived using flowmeter</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_S_FM_SCCM</name>
+                <field_number>5</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>sccm</unit>
+                <description>SOXE inlet mass flow rate derived using flowmeter</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>VF_SC_RPM_CM3_S</name>
+                <field_number>6</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>cm3/s</unit>
+                <description>Scroll compressor inlet volumetric flow rate derived using scroll compressor RPM</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_O2_I_G_HR</name>
+                <field_number>7</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>g/hr</unit>
+                <description>Oxygen mass production rate derived using SOXE current</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>F_O2_I_SCCM</name>
+                <field_number>8</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>sccm</unit>
+                <description>Oxygen mass production rate derived using SOXE current</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>U_CO2_1_I_P4</name>
+                <field_number>9</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>CO2 utilization, single pass, derived from current and P4</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>U_CO2_O_I_P4</name>
+                <field_number>10</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>CO2 utilization, overall, derived from current and P4</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>X_CO2_IN</name>
+                <field_number>11</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>Mole fraction of carbon dioxide at SOXE inlet</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>X_CO_IN</name>
+                <field_number>12</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>Mole fraction of carbon monoxide at SOXE inlet</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>X_CO2_OUT</name>
+                <field_number>13</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>Mole fraction of carbon dioxide at SOXE cathode outlet</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>X_CO_OUT</name>
+                <field_number>14</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>Mole fraction of carbon monoxide at SOXE cathode outlet</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>V_N_CO_IN</name>
+                <field_number>15</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>V</unit>
+                <description>Nernst potential for the reaction 2CO2 -&gt; O2 + 2CO at SOXE cathode inlet</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>V_N_CO_AVG</name>
+                <field_number>16</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>V</unit>
+                <description>Integral average Nernst potential for the reaction 2CO2 -&gt; O2 + 2CO</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>V_N_CO_OUT</name>
+                <field_number>17</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>V</unit>
+                <description>Nernst potential for the reaction 2CO2 -&gt; O2 + 2CO at SOXE cathode outlet</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>V_N_C_OUT</name>
+                <field_number>18</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>V</unit>
+                <description>Nernst potential for the reaction 2CO -&gt; O2 + 2C at SOXE cathode outlet</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>CCASR_T</name>
+                <field_number>21</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>Ohm cm2</unit>
+                <description>SOXE top half-stack conversion-corrected area specific resistance</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>CCASR_B</name>
+                <field_number>22</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>Ohm cm2</unit>
+                <description>SOXE bottom half-stack conversion-corrected area specific resistance</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>ETA_SC_V</name>
+                <field_number>23</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>None</unit>
+                <description>Scroll compressor volumetric efficiency</description>
+                <Special_Constants>
+                    <not_applicable_constant>-1.000</not_applicable_constant>
+                </Special_Constants>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>P_MAIN_W</name>
+                <field_number>24</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>W</unit>
+                <description>Power draw from main power supply</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>P_SOXE_W</name>
+                <field_number>25</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>W</unit>
+                <description>Power draw from SOXE power supply</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>P_SC_W</name>
+                <field_number>26</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>W</unit>
+                <description>Scroll compressor power</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>P_TOT_W</name>
+                <field_number>27</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>W</unit>
+                <description>Total power</description>
+            </Field_Delimited>
+            <Field_Delimited>
+                <name>E_TOT_W_HR</name>
+                <field_number>28</field_number>
+                <data_type>ASCII_Real</data_type>
+                <maximum_field_length unit="byte">15</maximum_field_length>
+                <unit>Wh</unit>
+                <description>Cumulative energy consumption</description>
+            </Field_Delimited>
+        </Record_Delimited>
+    </Table_Delimited>
+</File_Area_Observational></Product_Observational>

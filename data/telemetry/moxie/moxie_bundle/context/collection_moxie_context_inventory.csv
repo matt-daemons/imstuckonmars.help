@@ -1,0 +1,5 @@
+S,urn:nasa:pds:context:investigation:mission.mars2020
+S,urn:nasa:pds:context:instrument:mars2020.moxie
+S,urn:nasa:pds:context:instrument_host:spacecraft.mars2020
+S,urn:nasa:pds:context:target:planet.mars
+

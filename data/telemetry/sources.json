@@ -1,0 +1,932 @@
+{
+  "schema_version": 1,
+  "authority": "NASA Planetary Data System Atmospheres Node",
+  "node_directory": "https://pds.nasa.gov/home/about/node-descriptions.shtml",
+  "moxie_archive_sha256": "7f53d7a20003b7a023f49f8d648a68fa3de5b1cf0aece985762246a5d63dd166",
+  "sources": [
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/bundle_moxie.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/bundle_moxie.xml",
+      "sha256": "8ab3937d617d0cce332a75ba0e616c9d27745af4a72feff7cf90859af198bc26",
+      "bytes": 7898,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/context/collection_moxie_context.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/context/collection_moxie_context.xml",
+      "sha256": "db9520dc2ba996b80df7894259d828d65a8b715e2498289c56303534e3f138a7",
+      "bytes": 7324,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/context/collection_moxie_context_inventory.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/context/collection_moxie_context_inventory.csv",
+      "sha256": "01a8fde6e2693cbe72a27651c589072e354573bd327ac7b25ccd4090cb51be94",
+      "bytes": 210,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00004/OX__0004_0667297777RDR___0010052MOXI00101P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00004/OX__0004_0667297777RDR___0010052MOXI00101P04.csv",
+      "sha256": "c3f76b3a5d52a9b61e95a6cf8f874f712d7f26ca9d665db26df86abf4b0e76b5",
+      "bytes": 11336,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00004/OX__0004_0667297777RDR___0010052MOXI00101P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00004/OX__0004_0667297777RDR___0010052MOXI00101P04.xml",
+      "sha256": "38e05716c1a9015b0d57106d8b45c040f814c10b738bf5310373d1947fdfa067",
+      "bytes": 127369,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00012/OX__0012_0668014462RDR0010030000MOXI00010P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00012/OX__0012_0668014462RDR0010030000MOXI00010P04.csv",
+      "sha256": "1da7dcaadc3296859a111072968b56579837b6de6439d49d7c9183cb207dfc37",
+      "bytes": 48926,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00012/OX__0012_0668014462RDR0010030000moxi00010P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00012/OX__0012_0668014462RDR0010030000moxi00010P04.xml",
+      "sha256": "aec647af23308b13f6c80d4c47c122e06a9571493d3728cf030d8d8397ed8a28",
+      "bytes": 136091,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00015/OX__0015_0668228792RDR0020030110MOXI00102P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00015/OX__0015_0668228792RDR0020030110MOXI00102P04.csv",
+      "sha256": "055d89bf687ec496fcf844f6ba23fcf764ca1a4522fe6d88eda088051048a8a0",
+      "bytes": 5963385,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00015/OX__0015_0668228792RDR0020030110moxi00102P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00015/OX__0015_0668228792RDR0020030110moxi00102P04.xml",
+      "sha256": "40711aa3511c892611d4a0191f5136acd17e18264d5842225198ddee2c2c0b33",
+      "bytes": 218935,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00055/OX__0055_0671793457RDR0000032046MOXI00001P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00055/OX__0055_0671793457RDR0000032046MOXI00001P04.csv",
+      "sha256": "cbc34c0a31d19919b428d2f3f807c32be40598de60867852abbd8896155f265f",
+      "bytes": 686614,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00055/OX__0055_0671793457RDR0000032046MOXI00001P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00055/OX__0055_0671793457RDR0000032046MOXI00001P04.xml",
+      "sha256": "30ad8515af2f5e2f1d254dc04d10d2bc39099fa59b3fc30eebdb444724b902f1",
+      "bytes": 175836,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00060/OX__0060_0672220723RDR0030032046MOXI00003P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00060/OX__0060_0672220723RDR0030032046MOXI00003P04.csv",
+      "sha256": "5adc54d911b6a42d817702ac7f266ac97f4d991bb1ea1072ee6767f4b47e7b48",
+      "bytes": 8286812,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00060/OX__0060_0672220723RDR0030032046MOXI00003P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00060/OX__0060_0672220723RDR0030032046MOXI00003P04.xml",
+      "sha256": "c7b050789e4b7e3f390f1ab121c039a44cd8653ef149effe7391a6c6d7d58a53",
+      "bytes": 200543,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00079/OX__0079_0673925900RDR0000032430MOXI00001P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00079/OX__0079_0673925900RDR0000032430MOXI00001P04.csv",
+      "sha256": "9ca54be51fcff4750a25cf1a8044d8d3dbc538a63d7b80a92c5bc44bf8405739",
+      "bytes": 793610,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00079/OX__0079_0673925900RDR0000032430MOXI00001P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00079/OX__0079_0673925900RDR0000032430MOXI00001P04.xml",
+      "sha256": "e1e091a4503e09464c70a6708bc0b1d7e870aa8110955df3c2b540a64ea257ce",
+      "bytes": 175838,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00081/OX__0081_0674094449RDR0040032430MOXI00004P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00081/OX__0081_0674094449RDR0040032430MOXI00004P04.csv",
+      "sha256": "9740a6bd600e2c38e5d9b2131be8a9af9f390f69c3eb060234ef642b2bec3a70",
+      "bytes": 8537499,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00081/OX__0081_0674094449RDR0040032430moxi00004P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00081/OX__0081_0674094449RDR0040032430moxi00004P04.xml",
+      "sha256": "fa2e99102e6d232a7363a61a6f8a22418c6470aa12b9e4dc092ea7c17221ad07",
+      "bytes": 247838,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00096/OX__0096_0675467929RDR0000040136MOXI00001P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00096/OX__0096_0675467929RDR0000040136MOXI00001P04.csv",
+      "sha256": "f28e304c72bbfb49dcaed1a75708420d43ffea30af42876c8ef8b70fa29aaefe",
+      "bytes": 793133,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00096/OX__0096_0675467929RDR0000040136MOXI00001P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00096/OX__0096_0675467929RDR0000040136MOXI00001P04.xml",
+      "sha256": "38193ba79c67ea10eafcf5cf023f131238d0a85f912640cbd2536f6b330ee875",
+      "bytes": 175837,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00100/OX__0100_0675811743RDR0110040218MOXI00005P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00100/OX__0100_0675811743RDR0110040218MOXI00005P04.csv",
+      "sha256": "e70e970c0368e40e593f50d877724353d8a3ced63596ce35aa5550b5f56ee6f2",
+      "bytes": 8411103,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00100/OX__0100_0675811743RDR0110040218MOXI00005P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00100/OX__0100_0675811743RDR0110040218MOXI00005P04.xml",
+      "sha256": "e93e6bc897b4feb9ade3a0314f496daa99d4db41136e00adc84e1c56c5918a2f",
+      "bytes": 220400,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00155/OX__0155_0680657970RDR0130052296MOXI00107P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00155/OX__0155_0680657970RDR0130052296MOXI00107P04.csv",
+      "sha256": "865ad304739e737bff8c55b6f60f33b20d7149bcd51da09b44738c72cfeb51b4",
+      "bytes": 9220559,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00155/OX__0155_0680657970RDR0130052296MOXI00107P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00155/OX__0155_0680657970RDR0130052296MOXI00107P04.xml",
+      "sha256": "f82e57a4ead30fdfa9b31e4c5b340bd9eebd7a621bebd09b0abe72419eb664d7",
+      "bytes": 236722,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00176/OX__0176_0682519741RDR0130061752MOXI00108P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00176/OX__0176_0682519741RDR0130061752MOXI00108P04.csv",
+      "sha256": "adecef583221d03cbfa884745d7686b3a33b40135f23301e6ca2b93ce8e8565a",
+      "bytes": 8661598,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00176/OX__0176_0682519741RDR0130061752MOXI00108P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00176/OX__0176_0682519741RDR0130061752MOXI00108P04.xml",
+      "sha256": "a2be2ea94587884b5d4b38da660a6958006bb4ba680ad0c99d21c6b93598c047",
+      "bytes": 224480,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00242/OX__0242_0688376734RDR0140072440MOXI00109P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00242/OX__0242_0688376734RDR0140072440MOXI00109P04.csv",
+      "sha256": "3c80c1057b0b85c542ffdfe05696d9b2d402cd2d6ec1a7f1d9440309aaaa5144",
+      "bytes": 8375669,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00242/OX__0242_0688376734RDR0140072440MOXI00109P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00242/OX__0242_0688376734RDR0140072440MOXI00109P04.xml",
+      "sha256": "3f01a98d8c34ba2e23b3277aeefaad1617e3b16f02baf3175f81ad75b546723e",
+      "bytes": 224446,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00276/OX__0276_0691437279RDR0150080000MOXI00110P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00276/OX__0276_0691437279RDR0150080000MOXI00110P04.csv",
+      "sha256": "117cab29f59fc070632d84f71d06784ee5b3aa838ba4c01fc04251211af0c5e3",
+      "bytes": 8370867,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00276/OX__0276_0691437279RDR0150080000MOXI00110P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00276/OX__0276_0691437279RDR0150080000MOXI00110P04.xml",
+      "sha256": "947c1906dd7817ad12b42fcc2dac6cbe800bf2353932c6a2b67c445b6e5cc2c1",
+      "bytes": 224444,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00317/OX__0317_0695088457RDR0160090000MOXI00111P03.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00317/OX__0317_0695088457RDR0160090000MOXI00111P03.csv",
+      "sha256": "570c0ebcf654dc57be74eb345d554bbe59b0fdf02b3c6b1dfb3d9987ac39a76b",
+      "bytes": 8368968,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00317/OX__0317_0695088457RDR0160090000MOXI00111P03.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00317/OX__0317_0695088457RDR0160090000MOXI00111P03.xml",
+      "sha256": "13f1ba69b4ad46de70f1a13176af1b0c32e306cb841067f3dc4529b54d020095",
+      "bytes": 224491,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00444/OX__0444_0706321654RDR0170250214MOXI00112P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00444/OX__0444_0706321654RDR0170250214MOXI00112P02.csv",
+      "sha256": "d657528d9bff476f451a8183e3e5c8a026ff708e8607854cafcb4c001492b9e7",
+      "bytes": 9270078,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00444/OX__0444_0706321654RDR0170250214MOXI00112P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00444/OX__0444_0706321654RDR0170250214MOXI00112P02.xml",
+      "sha256": "332500df28b761fb3551e31c10e5a8d549223802724a6e9a936c11daf4fa7214",
+      "bytes": 220768,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00467/OX__0467_0708355644RDR0180260756MOXI00113P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00467/OX__0467_0708355644RDR0180260756MOXI00113P02.csv",
+      "sha256": "fc510eb5895073c3c387ed5efd651ab627ff2fa7b8eaa1a82bac46f276cb02bd",
+      "bytes": 8829530,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00467/OX__0467_0708355644RDR0180260756MOXI00113P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00467/OX__0467_0708355644RDR0180260756MOXI00113P02.xml",
+      "sha256": "426e5bb9413eb37e502d44f1ae4d97cfcfc093ee31d7252c636d579a6f349a42",
+      "bytes": 252814,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00535/OX__0535_0714382072RDR0190261222MOXI00114P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00535/OX__0535_0714382072RDR0190261222MOXI00114P02.csv",
+      "sha256": "5493493a55830ac4df9a0798de7a67d572809f077ad435b395c4a40d936cfe1c",
+      "bytes": 8217082,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00535/OX__0535_0714382072RDR0190261222MOXI00114P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00535/OX__0535_0714382072RDR0190261222MOXI00114P02.xml",
+      "sha256": "e8470902328adddc9a2d3d63e19212c2d15e5113470f9d268be2899acf7ab4a3",
+      "bytes": 200511,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00631/OX__0631_0722903564RDR0200302188MOXI00115P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00631/OX__0631_0722903564RDR0200302188MOXI00115P02.csv",
+      "sha256": "12827664dd1a2643080007aff6f08593c6abbc0703ae2bc2910d753f6f1bbcf1",
+      "bytes": 8111804,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00631/OX__0631_0722903564RDR0200302188MOXI00115P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00631/OX__0631_0722903564RDR0200302188MOXI00115P02.xml",
+      "sha256": "5eaa7ad3aa4d5a51cc69c613a55a0ba1a8ad837cf3fbcf42b7f816a0cd566524",
+      "bytes": 200651,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00710/OX__0710_0729996273RDR0210332864MOXI00116P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00710/OX__0710_0729996273RDR0210332864MOXI00116P02.csv",
+      "sha256": "b28eea49c45bc4e2f267124f05fbb0c7b64fd33f67f5d3debb28cf4d15d13df9",
+      "bytes": 8691150,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00710/OX__0710_0729996273RDR0210332864MOXI00116P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00710/OX__0710_0729996273RDR0210332864MOXI00116P02.xml",
+      "sha256": "d1d9d9a0a839b830b6aea8f068bb65145140945548181bfdb84bceca85c9df78",
+      "bytes": 224461,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00771/OX__0771_0735365292RDR0220390650MOXI00117P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00771/OX__0771_0735365292RDR0220390650MOXI00117P02.csv",
+      "sha256": "b195aed0af369f179bd8be338498bde954b908189fcbd4e44d9f2305f3b26e2c",
+      "bytes": 8419401,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00771/OX__0771_0735365292RDR0220390650MOXI00117P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00771/OX__0771_0735365292RDR0220390650MOXI00117P02.xml",
+      "sha256": "4e45bf4d713fc801e72eda2d83027aebd82a3c2c70b4e87c1cbf999a70e08598",
+      "bytes": 212411,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00816/OX__0816_0739336096RDR0230391170MOXI00118P01.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00816/OX__0816_0739336096RDR0230391170MOXI00118P01.csv",
+      "sha256": "4a4479fa6ae10170922ed6a87a362ba4a28965943b84b1f9bc805fd82951271b",
+      "bytes": 7736340,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00816/OX__0816_0739336096RDR0230391170MOXI00118P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00816/OX__0816_0739336096RDR0230391170MOXI00118P01.xml",
+      "sha256": "b75a9def95018f044cfbc7ee35c34cbbbbe8a06346a241f3ca23c2fd4b31e414",
+      "bytes": 208488,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00877/OX__0877_0744749520RDR0240430000MOXI00119P01.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00877/OX__0877_0744749520RDR0240430000MOXI00119P01.csv",
+      "sha256": "c6f7aec2e9b7f4ace064a5485535f29bcf78e39146909cb7d89998643af67f1b",
+      "bytes": 8297177,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00877/OX__0877_0744749520RDR0240430000MOXI00119P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00877/OX__0877_0744749520RDR0240430000MOXI00119P01.xml",
+      "sha256": "0d7f92a6132e33faf112fd99871cdddc83708e72e4c8ab8c09ded1cba78cc7cc",
+      "bytes": 192726,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00901/OX__0901_0746950366RDR0250450000MOXI09999P01.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00901/OX__0901_0746950366RDR0250450000MOXI09999P01.csv",
+      "sha256": "7c238c7066f014b19b98401f0789332492068c36c6d5a7924b9506922391461a",
+      "bytes": 4997189,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/00901/OX__0901_0746950366RDR0250450000MOXI09999P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/00901/OX__0901_0746950366RDR0250450000MOXI09999P01.xml",
+      "sha256": "0fe3adbbae33263891b9e9732fd2bef301419611cc72dcd27d9df3ad63d5f9fd",
+      "bytes": 236845,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/collection_moxie_data_calibrated.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/collection_moxie_data_calibrated.xml",
+      "sha256": "79a000ab18d4bd43d9fb17b8d9085c8ab324ea112ed1e29474dfd837ccdc11f1",
+      "bytes": 7254,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_calibrated/collection_moxie_data_calibrated_inventory.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_calibrated/collection_moxie_data_calibrated_inventory.csv",
+      "sha256": "8d1f6ce1792e39c9b8ccdbae085bc3b6d21bc0de5fd16bfe139b186e7e834726",
+      "bytes": 2231,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00004/OX__0004_0667297777DDR___0010052MOXI00101P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00004/OX__0004_0667297777DDR___0010052MOXI00101P05.csv",
+      "sha256": "f5d46473e45f6eb1e3e748c31f6d5431389824da0da89abb49112584c90a6c35",
+      "bytes": 5402,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00004/OX__0004_0667297777DDR___0010052MOXI00101P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00004/OX__0004_0667297777DDR___0010052MOXI00101P05.xml",
+      "sha256": "872d57aab1161351666081b5307ca7b77565756b86852fbe890b16a4c2c6fa24",
+      "bytes": 67552,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00012/OX__0012_0668014462DDR0010030000MOXI00010P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00012/OX__0012_0668014462DDR0010030000MOXI00010P05.csv",
+      "sha256": "2d3c2b733a761dd9191e84d1b26c7b6d8a90bab082f9db2a7c87a895c5134d45",
+      "bytes": 22848,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00012/OX__0012_0668014462DDR0010030000moxi00010P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00012/OX__0012_0668014462DDR0010030000moxi00010P05.xml",
+      "sha256": "1c3582425e246b747232f006413fad3e82cf8baac353a0e254d83229f7cfd7d3",
+      "bytes": 76275,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00015/OX__0015_0668228792DDR0020030110MOXI00102P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00015/OX__0015_0668228792DDR0020030110MOXI00102P05.csv",
+      "sha256": "af5218a512462065afd4dc60014b85402b8650bbfec75a0150da12b81c19106c",
+      "bytes": 2709310,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00015/OX__0015_0668228792DDR0020030110moxi00102P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00015/OX__0015_0668228792DDR0020030110moxi00102P05.xml",
+      "sha256": "51ef766aa2452ad9d886fbd569bd9340673a4e543c8d98663d5c44c99545d589",
+      "bytes": 159120,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00055/OX__0055_0671793457DDR0000032046MOXI00001P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00055/OX__0055_0671793457DDR0000032046MOXI00001P05.csv",
+      "sha256": "51475dac26c8cdcdda86f47a61ae489a34b5be54b41ae80ecda051a8c731ceb2",
+      "bytes": 313336,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00055/OX__0055_0671793457DDR0000032046MOXI00001P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00055/OX__0055_0671793457DDR0000032046MOXI00001P05.xml",
+      "sha256": "d3d89e92a2ecb108b79bcc2e437dadda7313697144d52761e70379b38d3b0809",
+      "bytes": 116019,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00060/OX__0060_0672220723DDR0030032046MOXI00003P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00060/OX__0060_0672220723DDR0030032046MOXI00003P05.csv",
+      "sha256": "5b0c718216819e3e509aabe9f8ad76adebc85a789a1262a54912ef8de3915a43",
+      "bytes": 3804026,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00060/OX__0060_0672220723DDR0030032046MOXI00003P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00060/OX__0060_0672220723DDR0030032046MOXI00003P05.xml",
+      "sha256": "420e08ea5198a730903fcf2469e1efaf2bdfd388f4e618e44470e615f853fd3a",
+      "bytes": 140726,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00079/OX__0079_0673925900DDR0000032430MOXI00001P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00079/OX__0079_0673925900DDR0000032430MOXI00001P05.csv",
+      "sha256": "c1676c776b40fd6e742f340a6d23ea8c03615cefe91abeaffeacf6180b97b621",
+      "bytes": 362008,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00079/OX__0079_0673925900DDR0000032430MOXI00001P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00079/OX__0079_0673925900DDR0000032430MOXI00001P05.xml",
+      "sha256": "1f22518f00613fe112b3a7b216d5e69084f9b96363317446da2419db7377cece",
+      "bytes": 116021,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00081/OX__0081_0674094449DDR0040032430MOXI00004P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00081/OX__0081_0674094449DDR0040032430MOXI00004P05.csv",
+      "sha256": "3d51e289bcc0e27cbbdafca8124ce5547fa3710e01f4e610d89946ea80f38eec",
+      "bytes": 3858409,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00081/OX__0081_0674094449DDR0040032430moxi00004P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00081/OX__0081_0674094449DDR0040032430moxi00004P05.xml",
+      "sha256": "8d6caa7926455e168c05967b52658a21b03ff38a0920a12247deb921f8337a62",
+      "bytes": 188016,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00096/OX__0096_0675467929DDR0000040136MOXI00001P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00096/OX__0096_0675467929DDR0000040136MOXI00001P05.csv",
+      "sha256": "7f7fbd9a39e36f73efa566995df9b3d716c2d422c8264b2417eaa431178ad79d",
+      "bytes": 362296,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00096/OX__0096_0675467929DDR0000040136MOXI00001P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00096/OX__0096_0675467929DDR0000040136MOXI00001P05.xml",
+      "sha256": "075abfd32643ba15da3aa2e472c1c1ccb3e0b8a0967802da86853042cda7b18d",
+      "bytes": 116020,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00100/OX__0100_0675811743DDR0110040218MOXI00005P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00100/OX__0100_0675811743DDR0110040218MOXI00005P05.csv",
+      "sha256": "7de4a7a963d026ffea24576bdf479b07107532e5a75f5dcc51b5dfd24baf6bd1",
+      "bytes": 3805343,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00100/OX__0100_0675811743DDR0110040218MOXI00005P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00100/OX__0100_0675811743DDR0110040218MOXI00005P05.xml",
+      "sha256": "1535e604c9cbef09a6bac4ae4a398f382bc88d193859b05138fb7ecb69f8b579",
+      "bytes": 160583,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00155/OX__0155_0680657970DDR0130052296MOXI00107P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00155/OX__0155_0680657970DDR0130052296MOXI00107P05.csv",
+      "sha256": "4340e2763bcba5c616ffa2577ed423ea810790444c5653cb7e4a18c4d3448a8f",
+      "bytes": 4161296,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00155/OX__0155_0680657970DDR0130052296MOXI00107P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00155/OX__0155_0680657970DDR0130052296MOXI00107P05.xml",
+      "sha256": "21624489fa7edffa429364ecdfd43cede00ac5b74b53c539f9ced29a43f5b572",
+      "bytes": 136821,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00176/OX__0176_0682519741DDR0130061752MOXI00108P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00176/OX__0176_0682519741DDR0130061752MOXI00108P05.csv",
+      "sha256": "a45063974fab7e9aab56410053ee933acb308c80052a2b9e6526580afd813d42",
+      "bytes": 3911982,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00176/OX__0176_0682519741DDR0130061752MOXI00108P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00176/OX__0176_0682519741DDR0130061752MOXI00108P05.xml",
+      "sha256": "b6d8cc0ce76eff702149c0e09ec900f0189fb3c500a54ed31ab67426ef0532ad",
+      "bytes": 164663,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00242/OX__0242_0688376734DDR0140072440MOXI00109P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00242/OX__0242_0688376734DDR0140072440MOXI00109P05.csv",
+      "sha256": "22d37a31019f495426edc4fdc7e0d631f3ec29b7c5cabb9d60a5621c5c2b8984",
+      "bytes": 3785298,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00242/OX__0242_0688376734DDR0140072440MOXI00109P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00242/OX__0242_0688376734DDR0140072440MOXI00109P05.xml",
+      "sha256": "e24b743b98c8ffc76598ee2de298a0924d2b8df8be10c5f536c6a16e0a311f64",
+      "bytes": 164629,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00276/OX__0276_0691437279DDR0150080000MOXI00110P05.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00276/OX__0276_0691437279DDR0150080000MOXI00110P05.csv",
+      "sha256": "cedae3ace1e6f1877a3273e42c7b74e9650a839e1ab3f50573c36d0843f7129d",
+      "bytes": 3786454,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00276/OX__0276_0691437279DDR0150080000MOXI00110P05.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00276/OX__0276_0691437279DDR0150080000MOXI00110P05.xml",
+      "sha256": "6184af3bf6daa3014d304a19266a4c8924d118d6bd0d11eb2ff3c528cae5609f",
+      "bytes": 164627,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00317/OX__0317_0695088457DDR0160090000MOXI00111P04.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00317/OX__0317_0695088457DDR0160090000MOXI00111P04.csv",
+      "sha256": "2c263912c2e4e6dab357234dec38fee7ac735cfd43cbb87e9d450e511d99b01d",
+      "bytes": 3785587,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00317/OX__0317_0695088457DDR0160090000MOXI00111P04.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00317/OX__0317_0695088457DDR0160090000MOXI00111P04.xml",
+      "sha256": "fb9a5fe6bfeaa932732302910fa8aa75ecfd5ef51cf111d146c875287823d616",
+      "bytes": 164674,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00444/OX__0444_0706321654DDR0170250214MOXI00112P03.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00444/OX__0444_0706321654DDR0170250214MOXI00112P03.csv",
+      "sha256": "6a6e6acf505bb6c363fed9fb924d91cd2a87b5d1a06b55b4947530db891459f3",
+      "bytes": 4184997,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00444/OX__0444_0706321654DDR0170250214MOXI00112P03.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00444/OX__0444_0706321654DDR0170250214MOXI00112P03.xml",
+      "sha256": "3972c0883db3122bbab61158d1aaf9a628f225055b7dc458e083730d5fb1a05f",
+      "bytes": 160951,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00467/OX__0467_0708355644DDR0180260756MOXI00113P03.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00467/OX__0467_0708355644DDR0180260756MOXI00113P03.csv",
+      "sha256": "f7b13f7d3f188568331cc04f1432f73d6ac6b28ac34dc55ed42785d733693b2d",
+      "bytes": 3987675,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00467/OX__0467_0708355644DDR0180260756MOXI00113P03.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00467/OX__0467_0708355644DDR0180260756MOXI00113P03.xml",
+      "sha256": "d174cab6ac595dd45182467bbbc816f8533fc38c6e768bbf64a2f895efd0dfb5",
+      "bytes": 192997,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00535/OX__0535_0714382072DDR0190261222MOXI00114P03.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00535/OX__0535_0714382072DDR0190261222MOXI00114P03.csv",
+      "sha256": "74fd4c913deb212add6f5104feb9beac853cbd9a215ce5df4c277031afa978ed",
+      "bytes": 3714729,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00535/OX__0535_0714382072DDR0190261222MOXI00114P03.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00535/OX__0535_0714382072DDR0190261222MOXI00114P03.xml",
+      "sha256": "68a5ca922dd002599f5173b521cd78cd2b8caa0d1cc54dd7a8f3cacc1db3c723",
+      "bytes": 140694,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00631/OX__0631_0722903564DDR0200302188MOXI00115P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00631/OX__0631_0722903564DDR0200302188MOXI00115P02.csv",
+      "sha256": "48e596f8258a8a3a75f3dff1c2b9e7f96662bbd391adef59bdbf37539de9b8da",
+      "bytes": 3667044,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00631/OX__0631_0722903564DDR0200302188MOXI00115P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00631/OX__0631_0722903564DDR0200302188MOXI00115P02.xml",
+      "sha256": "b2f6d09cc25d2d3381cab96b24da0477e4ed6239c4b8dd3fe30cc44d00e541a3",
+      "bytes": 140834,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00710/OX__0710_0729996273DDR0210332864MOXI00116P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00710/OX__0710_0729996273DDR0210332864MOXI00116P02.csv",
+      "sha256": "1ecf66b564c492468d5893c343397ff1dd9d932202d7a842832b1f031c388767",
+      "bytes": 3927883,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00710/OX__0710_0729996273DDR0210332864MOXI00116P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00710/OX__0710_0729996273DDR0210332864MOXI00116P02.xml",
+      "sha256": "c43665fe80cddac9321d0a9b4f7cc369d655f8ab5a419c5f580ac37eaabe5b42",
+      "bytes": 164644,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00771/OX__0771_0735365292DDR0220390650MOXI00117P02.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00771/OX__0771_0735365292DDR0220390650MOXI00117P02.csv",
+      "sha256": "fb52ea3b1b4491757cabfd7602b509df7d4441996d6dd130f78aef769d6e36d8",
+      "bytes": 3805094,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00771/OX__0771_0735365292DDR0220390650MOXI00117P02.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00771/OX__0771_0735365292DDR0220390650MOXI00117P02.xml",
+      "sha256": "d01cb8cc0b67783c73f510e197d11d3b677f1808a506d3fd1839ea2a29f66777",
+      "bytes": 152594,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00816/OX__0816_0739336096DDR0230391170MOXI00118P01.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00816/OX__0816_0739336096DDR0230391170MOXI00118P01.csv",
+      "sha256": "1773e19619740ef8727b936b75f02d5e7af056a6858b3d6c3e7ee33976561c06",
+      "bytes": 3500129,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00816/OX__0816_0739336096DDR0230391170MOXI00118P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00816/OX__0816_0739336096DDR0230391170MOXI00118P01.xml",
+      "sha256": "8d896b9e0eaa391da7760443267b04f1f8894feb43bdb078673037ad7351382c",
+      "bytes": 148671,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00877/OX__0877_0744749520DDR0240430000MOXI00119P01.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00877/OX__0877_0744749520DDR0240430000MOXI00119P01.csv",
+      "sha256": "36212344fe4743ce5cbef2ff200ed0f75d455ae6bd3db26498c0beb659fd7ce9",
+      "bytes": 3750303,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/00877/OX__0877_0744749520DDR0240430000MOXI00119P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/00877/OX__0877_0744749520DDR0240430000MOXI00119P01.xml",
+      "sha256": "cdb9d80742c58d5391e07146324a65a326d45dce7eea6187889d97b194f914f6",
+      "bytes": 132909,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/collection_moxie_data_derived.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/collection_moxie_data_derived.xml",
+      "sha256": "3e7e91da881eb5784a96d81ea1c6c1bb39fefe372dea49a4b047ab9ed2034dd1",
+      "bytes": 7236,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/data_derived/collection_moxie_data_derived_inventory.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/data_derived/collection_moxie_data_derived_inventory.csv",
+      "sha256": "cff131f7f6bd42c9f2ae370f54b084689c1adb47ed5c6f812a6e2901433b4899",
+      "bytes": 2068,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/MOXIE_Bundle_SIS_v1.0.pdf",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/MOXIE_Bundle_SIS_v1.0.pdf",
+      "sha256": "530a02b454db77bff72e95d5033715f217106413c1a777a674326f249479aaea",
+      "bytes": 698547,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/MOXIE_Data_Product_SIS_v7.0.pdf",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/MOXIE_Data_Product_SIS_v7.0.pdf",
+      "sha256": "247a3843ed8749b3015e280fcce05a4ecbb6aec0b8dc6a4dd9532e5c59d04e8e",
+      "bytes": 1390068,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/MOXIE_Instrument_Paper.pdf",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/MOXIE_Instrument_Paper.pdf",
+      "sha256": "641738396e26e548c369062b054eb99e69af6c208191f942a6df01270b7da3f7",
+      "bytes": 10174602,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/MOXIE_Release_Notes.txt",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/MOXIE_Release_Notes.txt",
+      "sha256": "33ec7f9bd60a04505a58c2d6636aa8a8748c345dcc41aaa05b6df7332412ba40",
+      "bytes": 29334,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/collection_moxie_document.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/collection_moxie_document.xml",
+      "sha256": "c0488464666d8dbbf7c2f710bd4e9a19aec55f82d2c2963689f07ebc111d98fe",
+      "bytes": 8390,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/collection_moxie_document_inventory.csv",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/collection_moxie_document_inventory.csv",
+      "sha256": "9437b78b9d2e2ed071905ff4e3b37bc0954af98e1283b6860ef7b90de4ec3d16",
+      "bytes": 481,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/moxie_bundle_sis.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/moxie_bundle_sis.xml",
+      "sha256": "73a93848efeeeb9f5abbdb2efc0a6473582bbe187d37e3d6262ae4b27d2913ef",
+      "bytes": 2501,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/moxie_data_product_sis.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/moxie_data_product_sis.xml",
+      "sha256": "e5f962d2da3ccc846e522ee337242d3f9a47a899b06a18faea2ef413e7989ec0",
+      "bytes": 2473,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/moxie_instrument_paper.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/moxie_instrument_paper.xml",
+      "sha256": "ab025c99bebf68791236aaaad63542a1378d89d1dfd0198c27a9552d54973a2c",
+      "bytes": 2300,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/document/moxie_release_notes.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/document/moxie_release_notes.xml",
+      "sha256": "391bf26c525528c694c1c00649976f7fbb65e1963c695532a57c2f34e438f672",
+      "bytes": 2311,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/moxie/moxie_bundle/readme_moxie.txt",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/moxie_bundle/readme_moxie.txt",
+      "sha256": "46c4184ad91772af8f495509325bf2de3b20ebfc8fdc33bd6edb06b1a71f1412",
+      "bytes": 2265,
+      "verification": "official_archive_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_ATS_________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_ATS_________________P01.xml",
+      "sha256": "8078285020e477bb806c3361f7b2df09b1349772d64b5534877a8f87556f5792",
+      "bytes": 9805,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_ATS_________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_ATS_________________P01.CSV",
+      "sha256": "4fc88b0206f9ac047ff619968260fd22d55ef24102d70be0becfa338e4ba3331",
+      "bytes": 3774242,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_ENG_________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_ENG_________________P01.xml",
+      "sha256": "529b120041291fbaf6f5c9f0ffd0bcd1b01b157a79f9657b18795df9873e3b43",
+      "bytes": 17389,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_ENG_________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_ENG_________________P01.CSV",
+      "sha256": "d268e47bbcfe70ef86be8e74f4d09dc313691936f99992b6e0fff131cc24403e",
+      "bytes": 8697604,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_PS__________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_PS__________________P01.xml",
+      "sha256": "465886121921e695c8c9f59a3301226fced112da9aece9f79488749ca273fd29",
+      "bytes": 12356,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_PS__________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_PS__________________P01.CSV",
+      "sha256": "af2b81fe34b38773a1c44f49644290871b50a72d6f541aace8459a9344358d93",
+      "bytes": 4449511,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_RDS_________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_RDS_________________P01.xml",
+      "sha256": "e4726a1a520d3a7c162038e8177de5a5c5f2ee9db75c361c1abc1240503d2539",
+      "bytes": 19110,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_RDS_________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_RDS_________________P01.CSV",
+      "sha256": "b22cface3d94b8560cd903a6f54b74f6d22e6fe49f746ccd5bf3ce614111bfbb",
+      "bytes": 11780045,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_RHS_________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_RHS_________________P01.xml",
+      "sha256": "23e7c5f0f97eef020f1c40062bea0e1f5656bf2f03659259f9ec3f0991b9ecea",
+      "bytes": 11764,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_RHS_________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_RHS_________________P01.CSV",
+      "sha256": "489496073d334b76903b49094b8aa4b6c3fa196c0f4e69c90e75a97d69b97f7b",
+      "bytes": 3343203,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_TIRS________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_TIRS________________P01.xml",
+      "sha256": "b9c1731f316b70047615ee1aec02f382194d7e0adfe6e73262f8d3abef156dc3",
+      "bytes": 14685,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________CAL_TIRS________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_calibrated_env/sol_0780_0899/sol_0816/WE__0816___________CAL_TIRS________________P01.CSV",
+      "sha256": "738b12f8adb3428de2ad37a3cf5296f49f96bef5122ff300cd3ff9779a210779",
+      "bytes": 5448611,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_PS__________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_PS__________________P01.xml",
+      "sha256": "1fdf9aef7c7f531829f28335a40b36ba946b1944fb156de33f412df70e4d0fe8",
+      "bytes": 9095,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_PS__________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_PS__________________P01.CSV",
+      "sha256": "0cc0c3ff141b9bf0c9f2d417bf42457180a356b396d6ee9f1127fce09edb475c",
+      "bytes": 2555991,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_RHS_________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_RHS_________________P01.xml",
+      "sha256": "3fb48edb372da0708bdc62360bb79fb6af3c227390dd74d178bceffc61bcc513",
+      "bytes": 10305,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_RHS_________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_RHS_________________P01.CSV",
+      "sha256": "7ec38c8afd8ffbe3290bc0216b3cf8002fe101bb0fa1c28ac4921f2e80faf3c8",
+      "bytes": 2566617,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_TIRS________________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_TIRS________________P01.xml",
+      "sha256": "1952ac1f51332969caa1ecf45e2e1df5b94abbd43d85b03d921a94c4c8a7088b",
+      "bytes": 12915,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_TIRS________________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_TIRS________________P01.CSV",
+      "sha256": "084a71b71e907e2c30ce33affef7e797f96d117212d89a6347a4d60777acbf3e",
+      "bytes": 3812856,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_ANCILLARY___________P01.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_ANCILLARY___________P01.xml",
+      "sha256": "6d7ba92741e5569b81417a043f8418e432f973b14a0ac6c2cf43cc19f873c510",
+      "bytes": 15714,
+      "verification": "official_label_byte_match"
+    },
+    {
+      "path": "data/telemetry/meda/measurements/sol_0816/WE__0816___________DER_ANCILLARY___________P01.CSV",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/data_derived_env/sol_0780_0899/sol_0816/WE__0816___________DER_ANCILLARY___________P01.CSV",
+      "sha256": "7e9ed710b1e941d30717701a31e0c1042d187349c514d85c63f835a2fc4818fc",
+      "bytes": 4988268,
+      "verification": "official_label_md5_match"
+    },
+    {
+      "path": "data/telemetry/meda/document/meda_env_rdr_sis.pdf",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/document/meda_env_rdr_sis.pdf",
+      "sha256": "5d1e4d71c33c4fc3888fab21324878e5d192a2058279ea3d034a6b48763d66fb",
+      "bytes": 1733894,
+      "verification": "official_https_download"
+    },
+    {
+      "path": "data/telemetry/meda/document/meda_env_rdr_sis.pdf.xml",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/document/meda_env_rdr_sis.pdf.xml",
+      "sha256": "d180e6423cc207b0f2a4e459f98c32dd597c76dcaf073a1aa53a45f562bb8d0b",
+      "bytes": 4943,
+      "verification": "official_https_download"
+    },
+    {
+      "path": "data/telemetry/meda/document/meda_release_notes.txt",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/document/meda_release_notes.txt",
+      "sha256": "5c042139cfb1bfeae89b59761f79fd42c6dea8e1f8776f255d9b7f402e8a5e96",
+      "bytes": 26127,
+      "verification": "official_https_download"
+    },
+    {
+      "path": "data/telemetry/meda/readme.txt",
+      "url": "https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/mars2020_meda/readme.txt",
+      "sha256": "c32e17b081984383dde8ed132f877397e664d40762457588bcc11310053a0d80",
+      "bytes": 6621,
+      "verification": "official_https_download"
+    }
+  ]
+}
