@@ -77,6 +77,33 @@ export default function DesignSystemPage() {
         </header>
 
         <main className="mx-auto flex w-full max-w-5xl flex-col gap-14 px-6 py-10">
+          <nav aria-labelledby="contents-title" className="flex flex-col gap-4">
+            <h2 id="contents-title" className="border-b pb-2 font-heading text-2xl font-semibold">
+              Contents
+            </h2>
+            <div className="columns-2 gap-6 sm:columns-3 lg:columns-4">
+              {sectionGroups.map((group) => (
+                <div key={group.title} className="mb-6 flex break-inside-avoid flex-col gap-1.5">
+                  <a
+                    href={`#${groupId(group.title)}`}
+                    className="font-heading font-semibold hover:underline"
+                  >
+                    {group.title}
+                  </a>
+                  <ul className="flex flex-col gap-1 text-sm">
+                    {group.sections.map((section) => (
+                      <li key={section.id}>
+                        <a href={`#${section.id}`} className="hover:underline">
+                          {section.title}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </div>
+          </nav>
+
           {sectionGroups.map((group) => {
             const Content = groupContent[group.title];
             return (
