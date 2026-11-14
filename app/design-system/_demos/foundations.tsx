@@ -38,6 +38,8 @@ const colorGroups = [
       "success-foreground",
       "warning",
       "warning-foreground",
+      "hazard",
+      "hazard-contrast",
     ],
   },
   { title: "Lines", tokens: ["border", "input", "ring"] },

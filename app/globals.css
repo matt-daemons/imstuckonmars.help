@@ -37,6 +37,8 @@
   --success-foreground: #74f0b0;
   --warning: #f5c542;
   --warning-foreground: #ffd873;
+  --hazard: var(--warning);
+  --hazard-contrast: #010405;
   --chart-1: var(--hermes-cyan);
   --chart-2: #3ee08f;
   --chart-3: #e6f3f3;
@@ -346,6 +348,50 @@
   & > [data-slot="alert-description"] {
     color: var(--foreground);
   }
+}
+
+/*
+ * Emergency alerts (variant="error" with data-level="emergency"): reverse
+ * video, 6.2:1. The icon flashes at 3 Hz with 50% on for 10 s, and stays
+ * static under reduced motion.
+ */
+[data-slot="alert"][data-level="emergency"] {
+  border-color: var(--destructive);
+  background-color: var(--destructive);
+
+  & > svg,
+  & > [data-slot="alert-title"],
+  & > [data-slot="alert-description"] {
+    color: var(--destructive-contrast);
+  }
+
+  & > svg {
+    animation: alert-flash-high 333ms steps(1) 30;
+  }
+}
+@keyframes alert-flash-high {
+  50% {
+    opacity: 0.4;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="alert"][data-level="emergency"] > svg {
+    animation: none;
+  }
+}
+
+/*
+ * Confirmations of hazardous or irreversible actions (data-hazard): thin black
+ * and yellow hazard tape. It sits outside the popup edge, so child surfaces
+ * such as the tinted header never paint over it.
+ */
+[data-slot="alert-dialog-popup"][data-hazard] {
+  border-image: repeating-linear-gradient(
+      -45deg,
+      var(--hazard) 0 3px,
+      var(--hazard-contrast) 3px 6px
+    )
+    3 / 3px / 2px;
 }
 
 /* The neutral alert stays quieter than every status alert. */

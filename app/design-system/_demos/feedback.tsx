@@ -6,6 +6,7 @@ import {
   CircleXIcon,
   InboxIcon,
   InfoIcon,
+  SirenIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 
@@ -29,12 +30,41 @@ import { toastManager } from "@/components/ui/toast";
 
 import { Section } from "../_components/section";
 
+// Alert levels from highest priority, then non-level statuses. See "UI standards" in AGENTS.md.
 const alertVariants = [
-  { variant: "default", title: "Default", Icon: BellIcon },
-  { variant: "info", title: "Info", Icon: InfoIcon },
-  { variant: "success", title: "Success", Icon: CircleCheckIcon },
-  { variant: "warning", title: "Warning", Icon: TriangleAlertIcon },
-  { variant: "error", title: "Error", Icon: CircleXIcon },
+  {
+    variant: "error",
+    level: "emergency",
+    title: "Emergency",
+    Icon: SirenIcon,
+    description: "Hab pressure 61 kPa and falling. Seal the airlock and don your suit.",
+  },
+  {
+    variant: "error",
+    title: "Error",
+    Icon: CircleXIcon,
+    description:
+      "Route not saved: segment 3 crosses a no-go zone. Edit segment 3, then save again.",
+  },
+  {
+    variant: "warning",
+    title: "Warning",
+    Icon: TriangleAlertIcon,
+    description: "Dust storm expected at sol 550. Plan EVAs before then.",
+  },
+  {
+    variant: "info",
+    title: "Info",
+    Icon: InfoIcon,
+    description: "Supply drop scheduled for sol 600, 14:00 MTC.",
+  },
+  {
+    variant: "success",
+    title: "Success",
+    Icon: CircleCheckIcon,
+    description: "Rover battery charged to 100%.",
+  },
+  { variant: "default", title: "Default", Icon: BellIcon, description: "No new messages." },
 ] as const;
 
 const badgeVariants = [
@@ -54,11 +84,15 @@ export function Feedback() {
   return (
     <>
       <Section id="alert" title="Alert" className="flex-col">
-        {alertVariants.map(({ variant, title, Icon }) => (
-          <Alert key={variant} variant={variant}>
-            <Icon />
-            <AlertTitle>{title}</AlertTitle>
-            <AlertDescription>Dust storm expected at sol 550.</AlertDescription>
+        {alertVariants.map((alert) => (
+          <Alert
+            key={alert.title}
+            variant={alert.variant}
+            data-level={"level" in alert ? alert.level : undefined}
+          >
+            <alert.Icon aria-hidden />
+            <AlertTitle>{alert.title}</AlertTitle>
+            <AlertDescription>{alert.description}</AlertDescription>
           </Alert>
         ))}
       </Section>

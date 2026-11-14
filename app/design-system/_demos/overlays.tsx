@@ -123,7 +123,7 @@ export function Overlays() {
           <AlertDialogTrigger render={<Button variant="destructive-outline" />}>
             Abort mission
           </AlertDialogTrigger>
-          <AlertDialogPopup>
+          <AlertDialogPopup data-hazard>
             <AlertDialogHeader>
               <AlertDialogTitle>Abort the mission?</AlertDialogTitle>
               <AlertDialogDescription>
