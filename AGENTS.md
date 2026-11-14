@@ -54,8 +54,10 @@ Keep commits small, with messages formatted as `feature-name(action): Brief desc
   red is error. Do not add a light theme or rounded, shadowed surfaces.
 - Theme lives in `app/globals.css`: tokens in `:root`, and Hermes treatments applied to coss
   `data-slot` selectors. Rules that must beat coss utility classes go outside `@layer`.
-- Fonts: Barlow (`--font-sans`), Barlow Condensed (`--font-heading`), and JetBrains Mono
-  (`--font-mono`), set in `app/layout.tsx`.
+- Fonts: Atkinson Hyperlegible Next (`--font-sans`), IBM Plex Sans Condensed (`--font-heading`),
+  and JetBrains Mono (`--font-mono`), set in `app/layout.tsx`. Each was chosen to pass T-1
+  (lookalike characters). Check any replacement on `/design-system#lookalike-characters` first.
+  IDs, values, and numbers always use `--font-mono`.
 - pnpm 12 and Node.js 24.
 
 ## UI standards
