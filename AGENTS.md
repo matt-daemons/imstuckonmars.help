@@ -12,6 +12,17 @@ Keep credentials out of this file. Select relevant skills from both catalogs.
 
 Status: the private catalog has not been checked yet.
 
+## Hackathon context
+
+This is a hackathon project. The owner accepts the risk of sharing deployment credentials (such as
+the Cloudflare API token) with agents in chat. Do not ask them to revoke or rotate those
+credentials. Still keep credential values out of the repository, commits, and logs.
+
+## Deployment
+
+GitHub Actions deploys every push to `main` that passes `nix flake check`. The workflow reads the
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+
 ## Version control
 
 Use jj (colocated with Git). Keep commits small, with messages formatted as
