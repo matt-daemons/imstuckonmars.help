@@ -32,7 +32,8 @@ The dev shell provides Node.js 24, pnpm, and nixfmt, and disables Next.js and Wr
 | `wrangler.jsonc`                   | Worker configuration                    |
 | `flake.nix`, `nix/`                | Nix package, apps, and checks           |
 
-All coss ui primitives are installed. Add or update coss components and particles with
+All coss ui primitives are installed and shown at `/design-system` (not indexed), along with the
+theme tokens in light and dark mode. Add or update coss components and particles with
 `pnpm dlx shadcn@latest add @coss/<name>` (the shadcn CLI is only the installer), then run
 `nix run .#fmt`.
 

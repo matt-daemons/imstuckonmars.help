@@ -45,6 +45,8 @@ Use jj (colocated with Git). Keep commits small, with messages formatted as
   `pnpm dlx shadcn@latest add @coss/<name>`. Do not add shadcn/ui registry components.
   Keep coss files unmodified so they can be updated in place; customize through theme tokens in
   `app/globals.css` or wrapper components. Reference: https://coss.com/ui/llms.txt
+- `/design-system` (`app/design-system/`) shows every component and theme token. When you add a
+  component, variant, or token, add it there too.
 - Fonts: Inter (`--font-sans`, also used for `--font-heading`) and Geist Mono (`--font-mono`),
   set in `app/layout.tsx`.
 - pnpm 12 and Node.js 24 from the Nix dev shell.
