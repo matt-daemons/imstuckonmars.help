@@ -1,0 +1,5 @@
+# Create a local .dev.vars with your own randomly generated creation/diagnostic access key.
+# Never expose this key to a public browser client. Session capabilities are returned at creation.
+MISSION_WRITE_KEY=
+# Optional server-side OpenAI key. Set DIAGNOSTICS_MODEL in Wrangler vars to enable AI mode.
+DIAGNOSTICS_API_KEY=

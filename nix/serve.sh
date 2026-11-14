@@ -6,7 +6,9 @@ set -euo pipefail
 work=$(mktemp -d "${TMPDIR:-/tmp}/imstuckonmars-help.XXXXXX")
 trap 'rm -rf "$work"' EXIT
 
-cp -r --no-preserve=mode "$DIST_DIR"/. "$work"/
+# Use portable options: macOS may provide BSD cp even when Wrangler is from Nix.
+cp -R "$DIST_DIR"/. "$work"/
+chmod -R u+w "$work"
 
 wrangler dev --config "$work/server/wrangler.json" "$@" &
 server=$!

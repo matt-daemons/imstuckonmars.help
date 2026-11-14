@@ -47,6 +47,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     dist=$out/share/${finalAttrs.pname}
     mkdir -p $dist
     cp -r dist/. $dist/
+    cp -r migrations $dist/migrations
 
     # Drop absolute paths to the build sandbox's wrangler.jsonc.
     node --input-type=module - $dist/server/wrangler.json <<'JS'
@@ -55,6 +56,7 @@ stdenvNoCC.mkDerivation (finalAttrs: {
     const config = JSON.parse(fs.readFileSync(path, "utf8"));
     delete config.configPath;
     delete config.userConfigPath;
+    for (const binding of config.d1_databases ?? []) binding.migrations_dir = "../migrations";
     fs.writeFileSync(path, JSON.stringify(config, null, 2));
     JS
 

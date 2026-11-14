@@ -1,0 +1,52 @@
+{
+  "model_version": "ares-resource-v1",
+  "assumptions_acknowledged": true,
+  "run_id": "nasa-v1-moxie-00816",
+  "source_start_row": 1,
+  "duration_s": 12000,
+  "base": { "id": "hypothetical-base", "latitude_deg": 18.44, "longitude_deg": 77.45 },
+  "crew_count": 2,
+  "capture_efficiency": 0.8,
+  "generation_w": 600,
+  "base_load_w": 50,
+  "transfer_efficiency": 0.9,
+  "eva_limit_s": 14400,
+  "oxygen": {
+    "base": { "initial_g": 10000, "capacity_g": 12000, "reserve_g": 2000, "leak_g_h": 0 },
+    "eva": { "initial_g": 1500, "capacity_g": 2000, "reserve_g": 300, "leak_g_h": 0 }
+  },
+  "battery": {
+    "base": {
+      "initial_wh": 2000,
+      "capacity_wh": 3000,
+      "reserve_wh": 500,
+      "charge_efficiency": 0.9,
+      "discharge_efficiency": 0.9,
+      "max_charge_w": 500,
+      "max_discharge_w": 1000
+    },
+    "eva": {
+      "initial_wh": 1000,
+      "capacity_wh": 1200,
+      "reserve_wh": 150,
+      "charge_efficiency": 0.9,
+      "discharge_efficiency": 0.85,
+      "max_charge_w": 200,
+      "max_discharge_w": 400
+    }
+  },
+  "profiles": {
+    "base": { "oxygen_g_h_per_person": 30, "power_w": 10 },
+    "travel": { "oxygen_g_h_per_person": 60, "power_w": 150 },
+    "science": { "oxygen_g_h_per_person": 45, "power_w": 180 },
+    "rest": { "oxygen_g_h_per_person": 30, "power_w": 80 },
+    "return": { "oxygen_g_h_per_person": 60, "power_w": 150 }
+  },
+  "schedule": [
+    { "start_s": 0, "end_s": 600, "activity": "base" },
+    { "start_s": 600, "end_s": 1800, "activity": "travel" },
+    { "start_s": 1800, "end_s": 2400, "activity": "science" },
+    { "start_s": 2400, "end_s": 3600, "activity": "return" },
+    { "start_s": 3600, "end_s": 12000, "activity": "base" }
+  ]
+}

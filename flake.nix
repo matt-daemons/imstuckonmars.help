@@ -24,6 +24,7 @@
           ./components
           ./lib
           ./server
+          ./migrations
           ./.oxfmtrc.json
           ./.oxlintrc.json
           ./components.json
