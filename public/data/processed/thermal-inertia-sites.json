@@ -1,0 +1,176 @@
+{
+  "units": "J m^-2 K^-1 s^-1/2",
+  "source": "THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px (USGS Astrogeology / ASU; Fergason et al. 2006)",
+  "attribution": "NASA/JPL-Caltech/Arizona State University/USGS",
+  "coverage": {
+    "aoi_percent": 57,
+    "aoi_bbox_0_360": [170, 43, 196, 48],
+    "note": "THEMIS mosaic has gaps; pixels without data are unknown, not safe. Per-site coverage is in sites[].coverage_percent."
+  },
+  "uncertainty": {
+    "absolute_accuracy": 0.2,
+    "note": "mean_range = mean ±20 % (Fergason et al. 2006). class_robust = false when that range crosses a class break."
+  },
+  "caveats": [
+    "Incomplete coverage: THEMIS has no data for part of the area (see coverage).",
+    "Thermal inertia is ~20 % accurate and describes only the top few centimetres of the surface.",
+    "100 m pixels average over rocks, sand and dust; classes are indicative, not a trafficability guarantee.",
+    "Not ground-truthed: no rover has operated in Arcadia Planitia."
+  ],
+  "class_breaks": [
+    {
+      "below": 150,
+      "label": "fine dust / loose fines"
+    },
+    {
+      "below": 400,
+      "label": "sand / crusted soil"
+    },
+    {
+      "below": null,
+      "label": "firm ground / rock"
+    }
+  ],
+  "sites": [
+    {
+      "id": "ESP_033225_2250",
+      "lon": -176.33383,
+      "lat": 44.41589,
+      "radius_m": 5000,
+      "coverage_percent": 100,
+      "mean": 94,
+      "mean_range": [75, 113],
+      "p10": 61,
+      "p50": 77,
+      "p90": 155,
+      "class": "fine dust / loose fines",
+      "class_robust": true,
+      "classes": [
+        {
+          "label": "fine dust / loose fines",
+          "percent": 84.6
+        },
+        {
+          "label": "sand / crusted soil",
+          "percent": 15.4
+        },
+        {
+          "label": "firm ground / rock",
+          "percent": 0
+        }
+      ]
+    },
+    {
+      "id": "ESP_034082_2260",
+      "lon": -171.38243,
+      "lat": 45.64829,
+      "radius_m": 5000,
+      "coverage_percent": 100,
+      "mean": 186,
+      "mean_range": [149, 224],
+      "p10": 173,
+      "p50": 186,
+      "p90": 200,
+      "class": "sand / crusted soil",
+      "class_robust": false,
+      "classes": [
+        {
+          "label": "fine dust / loose fines",
+          "percent": 0
+        },
+        {
+          "label": "sand / crusted soil",
+          "percent": 100
+        },
+        {
+          "label": "firm ground / rock",
+          "percent": 0
+        }
+      ]
+    },
+    {
+      "id": "ESP_037352_2245",
+      "lon": -166.14298,
+      "lat": 44.39035,
+      "radius_m": 5000,
+      "coverage_percent": 100,
+      "mean": 190,
+      "mean_range": [152, 228],
+      "p10": 173,
+      "p50": 190,
+      "p90": 208,
+      "class": "sand / crusted soil",
+      "class_robust": true,
+      "classes": [
+        {
+          "label": "fine dust / loose fines",
+          "percent": 0.2
+        },
+        {
+          "label": "sand / crusted soil",
+          "percent": 99.8
+        },
+        {
+          "label": "firm ground / rock",
+          "percent": 0
+        }
+      ]
+    },
+    {
+      "id": "ESP_054060_2265",
+      "lon": 172.56388,
+      "lat": 46.07022,
+      "radius_m": 5000,
+      "coverage_percent": 100,
+      "mean": 367,
+      "mean_range": [293, 440],
+      "p10": 335,
+      "p50": 363,
+      "p90": 405,
+      "class": "sand / crusted soil",
+      "class_robust": false,
+      "classes": [
+        {
+          "label": "fine dust / loose fines",
+          "percent": 0
+        },
+        {
+          "label": "sand / crusted soil",
+          "percent": 87.9
+        },
+        {
+          "label": "firm ground / rock",
+          "percent": 12.1
+        }
+      ]
+    },
+    {
+      "id": "habitat",
+      "lon": -176.05,
+      "lat": 45.97,
+      "radius_m": 5000,
+      "coverage_percent": 100,
+      "mean": 126,
+      "mean_range": [101, 151],
+      "p10": 111,
+      "p50": 126,
+      "p90": 141,
+      "class": "fine dust / loose fines",
+      "class_robust": false,
+      "classes": [
+        {
+          "label": "fine dust / loose fines",
+          "percent": 97.6
+        },
+        {
+          "label": "sand / crusted soil",
+          "percent": 2.4
+        },
+        {
+          "label": "firm ground / rock",
+          "percent": 0
+        }
+      ]
+    }
+  ]
+}

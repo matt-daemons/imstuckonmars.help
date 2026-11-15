@@ -31,3 +31,6 @@ public/data/terrain/
 # HiRISE site tiles and slope COGs (large; regenerate with pnpm pipe:sites / pipe:slope).
 public/data/sites/
 data/processed/sites/
+# THEMIS thermal inertia COG + overlay tiles (~70 MB; regenerate with pnpm pipe:thermal-inertia).
+public/data/thermal-inertia/
+data/processed/thermal-inertia/

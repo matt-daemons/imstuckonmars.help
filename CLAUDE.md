@@ -59,7 +59,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Landing & base location | **Arcadia Planitia** (plains) — **final**. Chosen because it's a much more favorable base location (smooth terrain, good access to subsurface water ice, sunlight for power), **despite sparse surface data** (no rover has operated there). Landing and base in the same general area, with distance between them for landing safety.                                                                                                                         |
 | Live data for Arcadia   | Use Gale (Curiosity: REMS weather, RAD radiation) and/or Jezero (Perseverance: MEDA) data as a **clearly labeled proxy feed**, optionally adjusted with Mars Climate Database values for Arcadia. Orbital imagery (HiRISE/CTX) replaces rover imagery.                                                                                                                                                                                                         |
 | Product name            | **LARA** (only name — the assessment engine is part of LARA, not a separate "ARES")                                                                                                                                                                                                                                                                                                                                                                            |
-| Map library             | **⚠ Switching to MapLibre GL JS (M is porting, Sun Nov 15, due to an unexpected ruling).** Previously **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre.                                                                                                                                   |
+| Map library             | **⚠ Switching to MapLibre GL JS (M is porting, Sun Nov 15, due to an unexpected ruling).** Previously **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre.                             |
 | Toolchain               | No jj; Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI; Mapbox GL v3. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                         |
 | Data home               | Telemetry in **D1** (teammate's backend). Static map rasters/tiles in `public/data/`. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                       |
 | Mapbox account          | Owned by **M**; public token in `NEXT_PUBLIC_MAPBOX_TOKEN`. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -147,9 +147,9 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 2. **HiRISE DTM coverage in Arcadia Planitia:** check which DTMs exist, then pick an AOI that fits.
 3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
 4. **Fill in flight rules:** suit/walk rules stay (EVA legs) + **rover rules** (slope limit, range/battery reserve, drive hours per sol); radiation thresholds done.
-6. **Journey structure (Role C + team):** 2-leg drive+walk journeys, or one mode per journey with EVA only for short distances? Define "short" (walk-back ≤ 2 km rule is the candidate).
-7. **MapLibre port (M):** Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
-5. **Role A owner** and owners for C and D: confirm names.
+5. **Journey structure (Role C + team):** 2-leg drive+walk journeys, or one mode per journey with EVA only for short distances? Define "short" (walk-back ≤ 2 km rule is the candidate).
+6. **MapLibre port (M):** Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
+7. **Role A owner** and owners for C and D: confirm names.
 
 ## 8. Working agreements
 
@@ -164,6 +164,47 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 > These 1/2/3 are perspectives Claude advises Jess from. They are not the team roles A–D/M in §3. To avoid confusion, refer to them as **Advisor 1 (geospatial), Advisor 2 (data scientist / data pipelines & I/O), Advisor 3 (space mission-planning veteran)**.
 
 Respond from these perspectives/expertise: A: You are a geospatial professional (10+ years of experience with GIS, working with agentic workflows and constantly keeping your skills up-to-date since 2024) whom I've hired to complete simpler tasks I want to offload, and can advise me on the best workflows to complete these tasks if I need to be the one doing them. B. A data scientist with 15 years of experience and great enthusiasm about automating data pipelines and aggregating data to extract value, especially in the age of Gen AI. Most of your expertise has been in creating CLEAN data pipelines. 3 years ago, you pivoted your career to education and have been tutoring adults who want to make the career transition to data science, so you know how to tailor individual education plans. C. NASA veteran who's been chief engineer in mission planning for various Apollo and Artemis missions, and has experience from the Moon landing in 1969.
+
+## 10. References (cite every external source — required for submission)
+
+> Keep this list in sync whenever a dataset, paper or rule source is added. Each map layer also shows its credit in the UI.
+> ⚠ Citation details marked **(verify)** were written from memory. Check the DOI/pages before they go on slides.
+
+### Datasets (NASA and partners)
+
+- **HiRISE imagery + DTMs** (4 water-ice sites): NASA/JPL/University of Arizona. DTMs DTEEC_033225_2250_033146_2250_A01, DTEEC_034082_2260_033014_2260_A01, DTEEC_037352_2245_037418_2245_A01, DTEEC_054060_2265_054126_2265_A01 + RED orthos. https://www.uahirise.org/dtm/ — found via PDS Geosciences Node ODE REST API (https://oderest.rsl.wustl.edu/). Download URLs: `data/raw/README.md`.
+- **THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px**, tiles 30N120E + 30N180E: USGS Astrogeology / Arizona State University (NASA Mars Odyssey THEMIS). https://astrogeology.usgs.gov/search/map/themis_thermal_inertia_mosaic_quantitative_30n180e_100mpp (and …_30n120e_100mpp). Credit: NASA/JPL-Caltech/Arizona State University/USGS.
+- **MOLA** global elevation (Mars Global Surveyor): NASA/GSFC; and **MOLA/HRSC blended DEM 200 m** (NASA/ESA/DLR/FU Berlin, USGS Astrogeology). Used by teammates' terrain + MOLA pads around sites.
+- **Viking global colour mosaic** (teammates' basemap): NASA/JPL/USGS.
+- **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
+- **Curiosity RAD** (radiation) and **REMS** (weather), Gale crater; **Perseverance MEDA** (weather) and **MOXIE**, Jezero: NASA PDS (teammates' telemetry — owners add exact PDS bundle IDs).
+- **NASA DONKI** space-weather API: https://kauai.ccmc.gsfc.nasa.gov/DONKI/ (via api.nasa.gov).
+- **Mars Climate Database** (if used): LMD/CNES/ESA — Forget et al. 1999.
+
+### Papers
+
+- Allison, M. & McEwen, M. (2000). A post-Pathfinder evaluation of areocentric solar coordinates… _Planetary and Space Science_ 48, 215–235. (Mars24 clock) **(verify)**
+- Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130:22. (Mars 2000 sphere, R = 3,396,190 m) **(verify)**
+- Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115, E00F03. (Spirit embedded at "Troy" — soft-ground pitch line) **(verify)**
+- Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. (terraced craters → buried ice)
+- Christensen, P. R. et al. (2004). The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission. _Space Science Reviews_ 110, 85–130.
+- Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
+- Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. (MCD) **(verify)**
+- Guo, J. et al. (2015). Variations of dose rate observed by MSL/RAD in the first 300 sols on the surface of Mars. _ApJ_ 810, 24. (radiation threshold basis — via role A) **(verify)**
+- Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24.
+- Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49. (dust thresholds — via role A) **(verify)**
+- McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
+- Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
+- Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
+- Smith, D. E. et al. (2001). Mars Orbiter Laser Altimeter: experiment summary after the first year of global mapping of Mars. _JGR_ 106(E10), 23689–23722.
+
+### Flight-rule sources (owned by team role A — full wording in `config.yaml`)
+
+NASA xEVA ConOps (NTRS 20200001071) · NASA EVA-EXP-0042 Rev B · ISS suit timeline (NTRS 20140009556) · NASA field test (NTRS 20080014286) · NASA radiation action levels (NTRS 20230004380) · NASA OCHMO-TB-020 · Posner et al. (NTRS 20250001542).
+
+### Software
+
+GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · Mapbox GL JS v3 → MapLibre GL JS (porting) · three.js · Turf.js · geotiff.js · DuckDB.
 
 # Project Handoff/Next Steps as of 14:32 on 14 November 2026
 
@@ -182,8 +223,20 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Mobility (Sun Nov 15, with Role C): driving AND walking** — see §4 "Mobility" (2-leg vs one-mode-per-journey still open). No new POI.
 - **Map library: M is replacing Mapbox with MapLibre** (unexpected ruling). Re-check site layers (imagery/terrain/slope, attribution, terrain switching) after the port.
 
-**Next step for Role B:** Step 4a data layers — **SWIM** ice consistency (swim.psi.edu was down, HTTP 523; NASA PIA26045 PNG is slide-only),
-then **THEMIS thermal inertia**, then geology / roughness / dust (see "Future data layers").
+**Thermal inertia ✅ (Sun Nov 15):** `pnpm pipe:thermal-inertia` (`pipelines/stable/thermal-inertia.ts`, ~4 min) reads THEMIS quantitative TI
+(100 m) over HTTP for 170–196°E, 43–48°N. Outputs: `data/processed/thermal-inertia/thermal-inertia.tif` (Int16 TI, nodata −9999, **lon 0..360 °E**
+because the AOI crosses ±180; ~57 % of the box has THEMIS data, gaps are mosaic holes), overlay tiles `public/data/thermal-inertia/` z5–11
+(both gitignored, ~70 MB; ✅ **uploaded to R2** — Jess, Sun Nov 15), committed summary `public/data/processed/thermal-inertia-sites.json`.
+Classes (indicative, ±20 %): < 150 fine dust/loose fines · 150–400 sand/crusted soil · ≥ 400 firm/rock. Mean within 5 km:
+**ESP_033225 94 (85 % fine dust)** · habitat 126 · ESP_034082 186 · ESP_037352 190 · **ESP_054060 367 (12 % firm/rock)**.
+**Always present with the uncertainty:** the run prints and the JSON stores AOI coverage (**57.4 %** — say "~57 %", the rest is _no data_,
+not safe ground), per-site `coverage_percent` (100 % within 5 km of every site), `mean_range` (±20 %) and `class_robust`. The class is
+**not robust** for the habitat, ESP_034082 and ESP_054060 (±20 % crosses a break) — only ESP_033225 (dust) and ESP_037352 (sand) are firm calls.
+JSON also carries `caveats[]` (incomplete coverage, ±20 %, top few cm only, 100 m pixels, not ground-truthed) for the UI/slides.
+Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/suits); firmest ground is farthest away.
+Not yet wired into the map (wait for M's MapLibre port) or into C's cost surface.
+
+**Next step for Role B:** **SWIM** (still down, HTTP 523) → wire TI into map (show coverage + caveats) → geology. Roughness / rock abundance: **another agent is on it** (see "Future data layers").
 
 **How to run (from repo root, Node 24 via fnm, GDAL via brew)**
 

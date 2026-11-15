@@ -27,7 +27,8 @@
     "maps:restore": "node pipelines/restore-map-archive.ts",
     "pipe:sites": "node pipelines/stable/hirise-sites.ts",
     "pipe:slope": "node pipelines/stable/slope.ts",
-    "sites:package": "node pipelines/package-sites-release.ts"
+    "sites:package": "node pipelines/package-sites-release.ts",
+    "pipe:thermal-inertia": "node pipelines/stable/thermal-inertia.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
