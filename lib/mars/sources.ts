@@ -149,7 +149,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         kind: "observation",
         credit: "NASA/JPL/University of Arizona",
         detail: `0.25 m RED orthoimages shown at about 0.45 m; 1 m DTMs. ${HIRISE_DTMS.join(", ")}`,
-        use: "Four candidate ice sites: terraced craters and ridges in Arcadia Planitia.",
+        use: "Four candidate ice sites in Arcadia Planitia: three terraced craters and one ridges site with regional evidence only.",
         caveats: [
           "Each site marker is a crater-bowl centre refined on the 1 m DTM (about ±50 m). One crater was suggested with AI assistance and confirmed by a team member. The ridges site uses the DTM centre.",
           "Terraced craters are indirect evidence of buried ice. No lander has confirmed ice at these sites.",
@@ -161,8 +161,8 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         citations: [
           "McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). JGR 112, E05S02.",
           "Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. JGR 113, E00A24.",
-          "Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. GRL 42, 6566–6574.",
-          "Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. Nature Astronomy 5, 230–236.",
+          "Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. GRL 42, 6566–6574. doi:10.1002/2015GL064844",
+          "Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. Nature Astronomy 5, 230–236. doi:10.1038/s41550-020-01290-z",
         ],
         links: [{ label: "HiRISE DTM catalog", url: "https://www.uahirise.org/dtm/" }],
         layerIds: ["sites"],
