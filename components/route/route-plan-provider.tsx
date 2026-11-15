@@ -16,6 +16,8 @@ import { useRoutePlanResult, type RoutePlanResult } from "./use-route-plan-resul
 export type RoutePlan = RoutePlanResult & {
   inputs: RoutePlanInputs;
   dispatch: Dispatch<RoutePlanAction>;
+  /** The habitat, so readers can tell whether a walk starts there. */
+  base: LngLat;
 };
 
 const RoutePlanContext = createContext<RoutePlan | null>(null);
@@ -34,7 +36,9 @@ export function RoutePlanProvider({
 }) {
   const [inputs, dispatch] = useReducer(routePlanReducer, initialRoutePlan(base, target));
   const result = useRoutePlanResult(inputs, base, sites);
-  return <RoutePlanContext value={{ ...result, inputs, dispatch }}>{children}</RoutePlanContext>;
+  return (
+    <RoutePlanContext value={{ ...result, inputs, dispatch, base }}>{children}</RoutePlanContext>
+  );
 }
 
 export function useRoutePlan(): RoutePlan {

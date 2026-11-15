@@ -4,7 +4,7 @@ import type { Plan } from "@/components/map/route-layers";
 import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import { parseRoute } from "@/lib/mission/validation";
 
-import { plannedReturn, returnRequest } from "./return-route";
+import { plannedReturn, returnCheckKey, returnRequest } from "./return-route";
 
 const path = (time_min: number) => ({ status: "ok", time_min }) as Plan["back"];
 
@@ -48,24 +48,30 @@ const trip = {
 
 describe("plannedReturn", () => {
   it("sends a walk as one return leg: the planned walk back to the habitat", () => {
-    expect(plannedReturn("walking", walk, null)).toEqual({
+    expect(plannedReturn("walking", walk, null, true)).toEqual({
       id: "walk-back-to-habitat",
       duration_s: 3516,
     });
   });
 
   it("sends a drive + walk as the walk back to the rover only", () => {
-    expect(plannedReturn("drive-walk", walk, trip)).toEqual({
+    expect(plannedReturn("drive-walk", walk, trip, true)).toEqual({
       id: "drive-walk-ESP_033225-walk-back",
       duration_s: 1764,
     });
   });
 
+  it("names a walk that starts away from the habitat as the walk back to the start", () => {
+    expect(plannedReturn("walking", walk, null, false)?.id).toBe("walk-back-to-start");
+  });
+
   it("sends nothing without a planned route", () => {
-    expect(plannedReturn("walking", null, null)).toBeNull();
-    expect(plannedReturn("walking", { ...walk, summary: null }, null)).toBeNull();
-    expect(plannedReturn("drive-walk", walk, null)).toBeNull();
-    expect(plannedReturn("drive-walk", walk, { collection: null } as DriveWalkPlan)).toBeNull();
+    expect(plannedReturn("walking", null, null, true)).toBeNull();
+    expect(plannedReturn("walking", { ...walk, summary: null }, null, true)).toBeNull();
+    expect(plannedReturn("drive-walk", walk, null, true)).toBeNull();
+    expect(
+      plannedReturn("drive-walk", walk, { collection: null } as DriveWalkPlan, true),
+    ).toBeNull();
   });
 });
 
@@ -84,5 +90,21 @@ describe("returnRequest", () => {
       legs: [{ activity: "return", duration_s: 3516 }],
       warnings: [],
     });
+  });
+});
+
+describe("returnCheckKey", () => {
+  const planned = { id: "walk-back-to-habitat", duration_s: 3516 };
+  const key = (playing: boolean, atS: number, revision = 3) =>
+    returnCheckKey(planned, { revision, playing, atS });
+
+  it("changes every 5 mission minutes while the clock plays", () => {
+    expect(key(true, 0)).toBe(key(true, 299));
+    expect(key(true, 299)).not.toBe(key(true, 300));
+  });
+
+  it("ignores the clock while paused, but not a new revision", () => {
+    expect(key(false, 0)).toBe(key(false, 900));
+    expect(key(false, 0)).not.toBe(key(false, 0, 4));
   });
 });
