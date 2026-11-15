@@ -5,7 +5,7 @@ import { evaluateEva, type EvaPlan } from "./evaluate";
 // A short, flat walk in clear weather with plenty of daylight.
 const safePlan: EvaPlan = {
   route: { est_time_min: 180, max_slope: 8, farthest_from_base_km: 1.2 },
-  live: { solar_alert_level: "none", dust_opacity: 0.4 },
+  live: { solar_alert_level: "none", radiation_dose_rate: 9, dust_opacity: 0.4 },
   minutes_until_sunset: 480,
 };
 
@@ -44,6 +44,11 @@ describe("evaluateEva", () => {
       changes: { live: { solar_alert_level: "warning" as const } },
       factor: "radiation",
     },
+    {
+      name: "dose rate of 90 µGy/h",
+      changes: { live: { radiation_dose_rate: 90 } },
+      factor: "dose_rate",
+    },
     { name: "dust opacity of 2", changes: { live: { dust_opacity: 2 } }, factor: "dust" },
     // 180 min x 1.3 = 234 min, but the sun sets in 200.
     {
@@ -74,6 +79,16 @@ describe("evaluateEva", () => {
       factor: "radiation",
     },
     {
+      name: "dose rate of 18 µGy/h",
+      changes: { live: { radiation_dose_rate: 18 } },
+      factor: "dose_rate",
+    },
+    {
+      name: "dose rate between 18 and 90 µGy/h",
+      changes: { live: { radiation_dose_rate: 50 } },
+      factor: "dose_rate",
+    },
+    {
       name: "dust opacity between 1 and 2",
       changes: { live: { dust_opacity: 1.2 } },
       factor: "dust",
@@ -95,6 +110,10 @@ describe("evaluateEva", () => {
   it.each([
     { name: "slope of exactly 15°", changes: { route: { max_slope: 15 } } },
     { name: "exactly 2 km from base", changes: { route: { farthest_from_base_km: 2 } } },
+    {
+      name: "dose rate just under 18 µGy/h",
+      changes: { live: { radiation_dose_rate: 17.9 } },
+    },
     { name: "dust opacity just under 1", changes: { live: { dust_opacity: 0.99 } } },
     // 180 min x 1.3 = 234 min, exactly 60 min before a sunset in 294.
     { name: "return exactly an hour before sunset", changes: { minutes_until_sunset: 294 } },

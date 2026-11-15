@@ -41,6 +41,15 @@ export const FLIGHT_RULES = {
     source:
       "NASA radiation group action levels: flares of M5 or stronger, particle events above 10 and 100 MeV. On alert, stay within 1 hour of the lander (NTRS 20230004380). End the walk and reach shelter within 2 hours (NASA OCHMO-TB-020).",
   },
+  dose_rate: {
+    // Radiation dose rate measured at the surface, in micrograys per hour.
+    // A quiet day is about 9. Caution is twice that, and no-go is ten times.
+    caution_at_micrograys_per_hour: 18,
+    no_go_at_micrograys_per_hour: 90,
+    applies_to: "assumption",
+    source:
+      "No NASA limit exists. A quiet day at Gale crater is about 9 µGy/h (Curiosity RAD, Guo et al. 2015). The September 2017 solar event reached about 24 µGy/h and the May 2024 event about 309 (Posner et al., NTRS 20250001542).",
+  },
   dust: {
     // Dust opacity is how much the dust in the air dims the Sun (optical depth, tau).
     caution_at_opacity: 1,

@@ -50,7 +50,7 @@ export interface LiveSnapshot {
   lmst: string;
   /** RAD absorbed-dose rate, µGy/h. */
   radiation_dose_rate: number;
-  /** PLACEHOLDER — levels to be defined from DONKI + flight rules. */
+  /** Defined in lib/flight-rules/solar-alert.ts from NASA DONKI flares, particle events and storm arrivals. */
   solar_alert_level: "none" | "watch" | "warning";
   /** MEDA dust optical depth, dimensionless (τ). */
   dust_opacity: number;
@@ -58,7 +58,7 @@ export interface LiveSnapshot {
   temp: number;
   /** MEDA wind speed, m/s. */
   wind: number;
-  /** PLACEHOLDER — sun elevation, degrees above horizon (unit not in the telemetry table). */
+  /** Sun elevation in degrees above the horizon. Negative at night. */
   sun_elevation: number;
   /** Proxy site the values came from, e.g. "Jezero (Perseverance MEDA)". */
   proxy_source: string;

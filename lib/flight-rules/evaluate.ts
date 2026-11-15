@@ -20,6 +20,8 @@ export const evaPlanSchema = zod.object({
   }),
   live: zod.object({
     solar_alert_level: zod.enum(SOLAR_ALERT_LEVELS),
+    // Radiation dose rate at the surface, in micrograys per hour.
+    radiation_dose_rate: zod.number().min(0),
     // How much the dust in the air dims the Sun (optical depth, tau).
     dust_opacity: zod.number().min(0),
   }),
@@ -127,6 +129,26 @@ function checkRadiation(plan: EvaPlan): Finding | null {
   return null;
 }
 
+function checkDoseRate(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.dose_rate;
+  const doseRate = plan.live.radiation_dose_rate;
+  if (doseRate >= rule.no_go_at_micrograys_per_hour) {
+    return makeFinding(
+      "dose_rate",
+      "NO_GO",
+      `Radiation dose rate is ${doseRate} µGy/h, at or above ${rule.no_go_at_micrograys_per_hour}`,
+    );
+  }
+  if (doseRate >= rule.caution_at_micrograys_per_hour) {
+    return makeFinding(
+      "dose_rate",
+      "CAUTION",
+      `Radiation dose rate is ${doseRate} µGy/h, at or above ${rule.caution_at_micrograys_per_hour}`,
+    );
+  }
+  return null;
+}
+
 function checkDust(plan: EvaPlan): Finding | null {
   const rule = FLIGHT_RULES.dust;
   const dustOpacity = plan.live.dust_opacity;
@@ -172,6 +194,7 @@ const CHECKS = [
   checkWalkBack,
   checkSuitSupply,
   checkRadiation,
+  checkDoseRate,
   checkDust,
   checkDaylight,
 ];

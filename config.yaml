@@ -14,10 +14,12 @@ crs:
   resolution_m: TBD # set from the chosen DTM
 
 thresholds:
-  # Every value below is a PLACEHOLDER default so the code can run — none is an agreed flight rule.
-  # Find them all with: grep -rn PLACEHOLDER. Team role A replaces them before the demo.
-  slope_max_deg: 20 # PLACEHOLDER — Artemis lunar planning value, unverified for Mars
-  suit_budget_h: 8 # PLACEHOLDER — nominal EVA suit consumables budget (hours)
-  radiation_caution_ugy_per_h: 50 # PLACEHOLDER — RAD absorbed-dose rate that flips GO → CAUTION
-  radiation_no_go_ugy_per_h: 500 # PLACEHOLDER — RAD absorbed-dose rate that flips → NO_GO
-  walk_back_reserve_pct: 30 # PLACEHOLDER — consumables kept in reserve for the return at degraded pace
+  # Flight rules, set by team role A. They mirror lib/flight-rules/rules.ts, which holds the full
+  # source for each value. A test (lib/flight-rules/config.test.ts) fails if the two disagree.
+  # NASA has published no limits for Mars, so Moon and ISS values are assumptions here.
+  slope_max_deg: 20 # NASA lunar suit limit (xEVA concept of operations, NTRS 20200001071, slide 6)
+  suit_budget_h: 8 # Artemis suit main supply; walks are planned at 6 h (EVA-EXP-0042 Rev B, p.29)
+  suit_reserve_min: 30 # Main supply left on return (ISS suit timeline, NTRS 20140009556, slide 11)
+  radiation_caution_ugy_per_h: 18 # ASSUMPTION — twice the quiet rate of about 9 (Curiosity RAD)
+  radiation_no_go_ugy_per_h: 90 # ASSUMPTION — ten times the quiet rate; May 2024 peaked near 309
+  walk_back_max_km: 2 # 2 km at 2 km/h is 1 h of backup oxygen (EVA-EXP-0042 Rev B, p.40)

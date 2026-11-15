@@ -5,7 +5,7 @@ import { api } from "./app";
 // A short, flat walk in clear weather with plenty of daylight.
 const safePlan = {
   route: { est_time_min: 180, max_slope: 8, farthest_from_base_km: 1.2 },
-  live: { solar_alert_level: "none", dust_opacity: 0.4 },
+  live: { solar_alert_level: "none", radiation_dose_rate: 9, dust_opacity: 0.4 },
   minutes_until_sunset: 480,
 };
 
@@ -63,6 +63,10 @@ describe("POST /api/verdict", () => {
     {
       name: "an unknown solar alert level",
       body: { ...safePlan, live: { ...safePlan.live, solar_alert_level: "severe" } },
+    },
+    {
+      name: "a missing radiation dose rate",
+      body: { ...safePlan, live: { solar_alert_level: "none", dust_opacity: 0.4 } },
     },
     { name: "a body that is not JSON", body: "not json" },
   ])("rejects $name with a 400 and an error message", async ({ body }) => {
