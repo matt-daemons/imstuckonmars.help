@@ -21,12 +21,14 @@ export function formatNumber(value: number, digits: number): string {
 export function DriveAssumptions({
   grid,
   plan,
+  cellM: suppliedCellM,
 }: {
   grid: RouteGrid | null;
   plan: DrivePlan | null;
+  cellM?: number;
 }) {
   const { slope } = ROVER_RULES;
-  const cellM = grid ? cellSize(grid, 0).dy : null;
+  const cellM = suppliedCellM ?? (grid ? cellSize(grid, 0).dy : null);
   return (
     <>
       <p>

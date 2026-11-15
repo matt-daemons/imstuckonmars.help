@@ -80,6 +80,7 @@ export function FitButtons({
 
 /** Why no trip can be planned yet, or null once both terrains are in. */
 function waitingLine(journey: DriveWalk, destination: SitePoi | null): ReactNode {
+  if (journey.error) return <ErrorAlert message={journey.error} />;
   if (journey.driveFailed) {
     return (
       <ErrorAlert message="Rover terrain did not load, so no drive can be planned. Reload the page to retry." />
@@ -99,8 +100,8 @@ function waitingLine(journey: DriveWalk, destination: SitePoi | null): ReactNode
       />
     );
   }
-  if (!journey.driveGrid) return <p className="text-muted-foreground">Loading rover terrain…</p>;
-  if (!journey.siteGrid) return <p className="text-muted-foreground">Loading site terrain…</p>;
+  if (!journey.plan)
+    return <p className="text-muted-foreground">Calculating route on the server…</p>;
   return null;
 }
 
@@ -135,15 +136,17 @@ function walkPoints(collection: RouteCollection, boulders: Boulder[] = []): LngL
 export function DriveWalkAssumptions({
   grid,
   plan,
+  cellM,
 }: {
   grid: RouteGrid | null;
   plan: DriveWalkPlan | null;
+  cellM?: number;
 }) {
   const { slope } = FLIGHT_RULES;
   const parking = plan?.parking ?? null;
   return (
     <>
-      <DriveAssumptions grid={grid} plan={plan?.drive ?? null} />
+      <DriveAssumptions grid={grid} plan={plan?.drive ?? null} cellM={cellM} />
       <p>
         Walk: HiRISE 1 m slope, each {SITE_CELL_M} m cell taking its steepest value. Ground over{" "}
         {slope.no_go_above_degrees}° is impassable ({slope.applies_to} limit, assumed for Mars).

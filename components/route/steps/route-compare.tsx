@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useMemo } from "react";
+import { useId } from "react";
 
 import { VERDICT_STYLES } from "@/components/map/route-result";
 import { Badge } from "@/components/ui/badge";
@@ -19,7 +19,6 @@ import type { Verdict } from "@/lib/mars/types";
 import { cn } from "@/lib/utils";
 
 import { chooseRoute } from "../route-choice";
-import { driveWalkComparison, walkComparison } from "../route-comparison";
 import { useRoutePlan } from "../route-plan-provider";
 import { RouteProfile } from "./route-profile";
 
@@ -35,18 +34,11 @@ const VALUE = cn(COLUMN, "font-mono tabular-nums");
  * operator, or LARA, chooses which one the expedition follows.
  */
 export function RouteCompare() {
-  const { inputs, dispatch, walk, journey } = useRoutePlan();
+  const { inputs, dispatch, comparison } = useRoutePlan();
   const { mission, showShortest, route } = inputs;
   const titleId = useId();
   const switchLabelId = useId();
   const choiceLabelId = useId();
-  const comparison = useMemo(
-    () =>
-      mission === "walking"
-        ? walkComparison(walk.plan, walk.shortest, walk.terrain)
-        : driveWalkComparison(journey),
-    [mission, walk.plan, walk.shortest, walk.terrain, journey],
-  );
   if (!comparison) return null;
   const { rows, verdicts, profiles } = comparison;
 

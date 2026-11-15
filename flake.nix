@@ -28,6 +28,7 @@
           ./server
           ./migrations
           ./scripts/models
+          ./scripts/route-version.mjs
           ./pipelines/lib/native-imagery.test.ts
           ./pipelines/viking-native-release.json
           ./.oxfmtrc.json

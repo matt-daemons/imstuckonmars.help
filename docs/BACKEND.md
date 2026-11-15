@@ -116,6 +116,11 @@ The HTTP test creates and deletes only its own disposable mission. It exercises 
 
 ## API and frontend handoff
 
+Route planning now also runs in this Worker at `POST /api/routes/plan`, with
+versioned, evictable result caching. See [ROUTE_PLANNING.md](ROUTE_PLANNING.md)
+for the request contract, validation, cache semantics and Workers Paid rollout
+prerequisite. It does not replace the D1 mission-state owner.
+
 Hono owns all routes. `app/api/[[...route]]/route.ts` forwards actual `cloudflare:workers` bindings to it. `server/api/app.ts` applies a 64 KiB request-body limit, no-store responses, input validation and sanitized errors.
 
 ### Telemetry

@@ -11,6 +11,7 @@ import { copilot } from "./copilot";
 import { spaceWeather } from "./space-weather";
 import type { LiveSnapshot } from "@/lib/mars/types";
 import { missingDatabaseSchema } from "../db/errors";
+import { routes } from "./routes";
 
 export const api = new Hono<{ Bindings: ApiBindings }>().basePath("/api");
 
@@ -63,6 +64,7 @@ api.route("/expeditions", expeditions);
 api.route("/verdict", verdict);
 api.route("/copilot", copilot);
 api.route("/space-weather", spaceWeather);
+api.route("/routes", routes);
 
 // Stub until team role D's replay.ts output lands in data/processed/live/.
 api.get("/live", (c) => {

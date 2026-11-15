@@ -80,7 +80,7 @@ function planStatus({ inputs, journey, walk, destination }: RoutePlanView) {
     if (!walk.plan) return "planning";
     return walk.plan.summary ? "ok" : "walk_failed";
   }
-  if (journey.driveFailed || journey.siteFailed) return "terrain_failed";
+  if (journey.driveFailed || journey.siteFailed || journey.error) return "terrain_failed";
   if (!destination) return "no_destination";
   return journey.plan?.status ?? "planning";
 }

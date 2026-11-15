@@ -25,6 +25,8 @@ import { useConditions } from "@/components/route/conditions-provider";
 import { missingChoice } from "@/components/route/route-plan";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { Preflight } from "@/components/expedition/preflight";
+import { ErrorAlert } from "@/components/map/route-result";
+import { Button } from "@/components/ui/button";
 import {
   Accordion,
   AccordionItem,
@@ -44,10 +46,19 @@ const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 
 /** Step ③: the verdict and its reasons, three headline numbers, then the rest one click down. */
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
-  const { inputs, walk, journey, destination } = useRoutePlan();
+  const { inputs, walk, journey, destination, planningError, retryPlanning } = useRoutePlan();
   const { conditions } = useConditions();
   const missing = missingChoice(inputs);
   if (missing) return <p role="status">{missing}</p>;
+  if (planningError)
+    return (
+      <div className="flex flex-col gap-3">
+        <ErrorAlert message={planningError} />
+        <Button variant="outline" onClick={retryPlanning}>
+          Retry route calculation
+        </Button>
+      </div>
+    );
   if (inputs.mission === "walking") {
     const summary = walk.plan?.summary ?? null;
     const check = summary && walkWithStorms(summary, conditions);
@@ -86,7 +97,13 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
       headline={DRIVE_WALK_HEADLINE}
       fit={<FitButtons journey={journey} onFit={(points) => fitPoints(map, points)} />}
       source={journey.plan?.collection?.route?.source}
-      assumptions={<DriveWalkAssumptions grid={journey.driveGrid} plan={journey.plan} />}
+      assumptions={
+        <DriveWalkAssumptions
+          grid={journey.driveGrid}
+          plan={journey.plan}
+          cellM={journey.driveCellM}
+        />
+      }
     />
   );
 }

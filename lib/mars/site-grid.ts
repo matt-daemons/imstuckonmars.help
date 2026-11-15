@@ -163,12 +163,32 @@ export async function loadSiteGrid(site: SiteInfo, signal?: AbortSignal): Promis
       ? readWindow(`${ROUGHNESS_DATA_ROOT}/roughness/${site.hiriseId}_roughness.tif`, site, signal)
       : null,
   ]);
+  if (roughness) assertAlignedSiteRasters(meta, roughness.meta);
   return siteGridFromSlope(meta, slopeTenths, boulders, SITE_CELL_M, roughness?.values ?? null);
 }
 
+/** Roughness must describe the same pixels before the arrays can be pooled together. */
+export function assertAlignedSiteRasters(slope: EquirectMeta, roughness: EquirectMeta): void {
+  if (
+    slope.width !== roughness.width ||
+    slope.height !== roughness.height ||
+    slope.west !== roughness.west ||
+    slope.north !== roughness.north ||
+    slope.degreesPerPixel !== roughness.degreesPerPixel ||
+    slope.nodata !== roughness.nodata
+  ) {
+    throw new Error("Site slope and roughness rasters are not aligned");
+  }
+}
+
 /** Range-reads only the window around the POI, placed with the COG's own origin and pixel size. */
-async function readWindow(url: string, site: SiteInfo, signal?: AbortSignal) {
-  const tiff = await fromUrl(url, {}, signal);
+export async function readWindow(
+  url: string,
+  site: SiteInfo,
+  signal?: AbortSignal,
+  openTiff: typeof fromUrl = fromUrl,
+) {
+  const tiff = await openTiff(url, {}, signal);
   const image = await tiff.getImage();
   const [originLng, originLat] = image.getOrigin();
   const [degreesPerPixel] = image.getResolution(); // the COGs have square pixels in degrees
@@ -184,6 +204,9 @@ async function readWindow(url: string, site: SiteInfo, signal?: AbortSignal) {
     col(lng + halfLngDeg),
     row(lat - halfLatDeg),
   ];
+  if ((window[2] - window[0]) * (window[3] - window[1]) > 16_000_000) {
+    throw new Error("Site window exceeds the planner raster limit");
+  }
   const [values] = await image.readRasters({ window, samples: [0], signal });
   const meta: EquirectMeta = {
     width: window[2] - window[0],

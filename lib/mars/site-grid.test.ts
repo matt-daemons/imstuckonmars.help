@@ -4,6 +4,7 @@ import { cellAt, cellCenter, type EquirectMeta, type RouteGrid } from "./route-g
 import { marsDistanceM } from "./routing";
 import {
   findStagingPoint,
+  assertAlignedSiteRasters,
   PARKING_FALLBACK_SLOPE_DEG,
   PARKING_MAX_ROUGHNESS_M,
   PARKING_MAX_SLOPE_DEG,
@@ -27,6 +28,36 @@ function rasterMeta(width: number, height: number): EquirectMeta {
 }
 
 describe("siteGridFromSlope", () => {
+  it("requires aligned slope and roughness pixels and missing-value masks", () => {
+    const meta = rasterMeta(4, 4);
+    expect(() => assertAlignedSiteRasters(meta, { ...meta })).not.toThrow();
+    for (const changed of [
+      { width: 5 },
+      { height: 5 },
+      { west: DEG_PER_M },
+      { north: DEG_PER_M },
+      { degreesPerPixel: DEG_PER_M * 2 },
+      { nodata: -32768 },
+    ]) {
+      expect(() => assertAlignedSiteRasters(meta, { ...meta, ...changed })).toThrow("not aligned");
+    }
+  });
+
+  it("preserves missing roughness rather than treating it as smooth", () => {
+    const meta = rasterMeta(4, 2);
+    const site = siteGridFromSlope(meta, new Int16Array(8), [], 2, [
+      10,
+      30,
+      0,
+      NODATA,
+      20,
+      15,
+      0,
+      0,
+    ]);
+    expect(Array.from(site.roughness ?? [])).toEqual([expect.closeTo(0.3), NaN]);
+    expect(Array.from(site.walls)).toEqual([0, 0]);
+  });
   it("max-pools 1 m pixels to 2 m cells, keeping the steepest and walling steep or missing slope", () => {
     // Three 2 × 2 blocks: steepest 5°, steepest 25° (over the 20° limit), one pixel without data.
     const tenths = [10, 50, 250, 10, 0, NODATA, 30, 20, 40, 10, 0, 0];

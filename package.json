@@ -4,8 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "build": "vite build",
+    "dev": "node scripts/route-version.mjs && vite dev",
+    "build": "node scripts/route-version.mjs && vite build",
     "start": "wrangler dev --config dist/server/wrangler.json",
     "deploy": "vinext-cloudflare deploy --config dist/server/wrangler.json",
     "typecheck": "wrangler types --include-runtime=false && tsc --noEmit",

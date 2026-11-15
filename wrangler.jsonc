@@ -22,12 +22,18 @@
   // Public expedition sessions: 20 per minute per client address.
   "ratelimits": [
     {
+      "name": "ROUTE_LIMITER",
+      "namespace_id": "1002",
+      "simple": { "limit": 12, "period": 60 },
+    },
+    {
       "name": "EXPEDITION_LIMITER",
       "namespace_id": "1001",
       "simple": { "limit": 20, "period": 60 },
     },
   ],
   "observability": { "enabled": true },
+  "limits": { "cpu_ms": 30000 },
   "assets": {
     "directory": "dist/client",
     "html_handling": "none",
