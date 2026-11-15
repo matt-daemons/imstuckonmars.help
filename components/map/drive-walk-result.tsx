@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
+import { ROVER_RULES } from "@/lib/flight-rules/rover-rules";
 import type { RouteGrid } from "@/lib/mars/route-grid";
 import { fallbackParkingReason, type DriveWalkPlan } from "@/lib/mars/drive-walk";
 import { BOULDER_CLEARANCE_M, SITE_CELL_M, STAGING_RULE, type Boulder } from "@/lib/mars/site-grid";
@@ -12,7 +13,13 @@ import { MAX_DURATION_S } from "@/lib/mission/types";
 import { DriveAssumptions } from "./drive-result";
 import { JourneyStatus, journeyReadouts } from "./journey-result";
 import type { DriveWalk } from "./route-hooks";
-import { ErrorAlert, SolarAlertAssumption, type ReadoutItem } from "./route-result";
+import {
+  ErrorAlert,
+  failureMessages,
+  pathFailureMessage,
+  SolarAlertAssumption,
+  type ReadoutItem,
+} from "./route-result";
 import type { SitePoi } from "./scene-panel";
 
 /** The trip's verdict, or why there is no trip yet. */
@@ -28,15 +35,37 @@ export function DriveWalkStatus({
   check: EvaVerdict<string> | null;
   notChecked: string;
 }) {
+  const failure = journey.plan && !check ? journeyFailureMessage(journey.plan) : null;
   return (
-    waitingLine(journey, destination) ?? (
+    waitingLine(journey, destination) ??
+    (failure ? (
+      <ErrorAlert message={failure} />
+    ) : (
       <JourneyStatus
         check={check}
         notChecked={notChecked}
         status={journey.plan?.status ?? "planning"}
       />
-    )
+    ))
   );
+}
+
+/** Surface the failed leg's actual endpoint/mask status instead of blaming every drive on slope. */
+export function journeyFailureMessage(plan: DriveWalkPlan): string | null {
+  const driving = plan.status === "drive_failed";
+  const leg = driving ? plan.drive : plan.status === "walk_failed" ? plan.walk : null;
+  if (!leg) return null;
+  const failed = leg.outbound.status !== "ok" ? leg.outbound : leg.back;
+  const maxSlopeDeg = driving
+    ? ROVER_RULES.slope.no_go_above_degrees
+    : FLIGHT_RULES.slope.no_go_above_degrees;
+  return `${driving ? "Drive" : "Walk"}: ${pathFailureMessage(failed, {
+    maxSlopeDeg,
+    failures: failureMessages(
+      maxSlopeDeg,
+      "Start or end is outside this leg's terrain grid. Choose a point inside coverage.",
+    ),
+  })}`;
 }
 
 /** The trip's readouts, empty until there is a verdict. */

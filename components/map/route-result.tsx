@@ -64,14 +64,35 @@ export function failureMessages(maxSlopeDeg: number, outsideGrid: string): Recor
   };
 }
 
+/** Keep a blocked endpoint distinct from a slope violation; old cached plans use the generic copy. */
+export function pathFailureMessage(
+  path: PlannedPath,
+  copy: Pick<StatusCopy, "maxSlopeDeg" | "failures">,
+): string {
+  if (path.status === "ok") return "";
+  if (path.status === "start_blocked" || path.status === "goal_blocked") {
+    const endpoint = path.status === "start_blocked" ? "Start" : "End";
+    const field = endpoint.toLowerCase();
+    if (path.blocked_by === "zone_or_obstacle")
+      return `${endpoint} is blocked by a no-go zone or mapped obstacle. Move the ${field} or clear overlapping zones.`;
+    if (path.blocked_by === "no_data")
+      return `${endpoint} has no usable terrain data. Move the ${field} inside terrain coverage.`;
+    if (path.blocked_by === "slope")
+      return `${endpoint} is on ground steeper than ${copy.maxSlopeDeg}°. Move the ${field} to gentler ground.`;
+  }
+  return copy.failures[path.status];
+}
+
 /** What the status slot says when the terrain fails to load and when a leg fails. */
 export interface StatusCopy {
   loadFailed: string;
+  maxSlopeDeg: number;
   failures: Record<Failure, string>;
 }
 
 const WALK_COPY: StatusCopy = {
   loadFailed: "Elevation grid did not load, so no route can be planned. Reload the page to retry.",
+  maxSlopeDeg: MAX_SLOPE_DEG,
   failures: failureMessages(
     MAX_SLOPE_DEG,
     "Start or end is outside the elevation grid around the habitat. Pick a point inside it.",
@@ -122,14 +143,12 @@ export function StatusLine({
   if (!plan) return <p className="text-muted-foreground">{pending}</p>;
   if (!check) {
     // Safe: there is no check only when a leg failed, so this status is never "ok".
-    const failed = (
-      plan.outbound.status !== "ok" ? plan.outbound.status : plan.back.status
-    ) as Failure;
+    const failed = plan.outbound.status !== "ok" ? plan.outbound : plan.back;
     // The key replays the shake each time the reason changes.
     return (
       <ErrorAlert
-        key={failed}
-        message={copy.failures[failed]}
+        key={`${failed.status}-${failed.blocked_by ?? "unknown"}`}
+        message={pathFailureMessage(failed, copy)}
         className="animate-toast-error-odd motion-reduce:animate-none"
       />
     );
@@ -232,7 +251,7 @@ export function walkReadouts(summary: RouteSummary, check: EvaVerdict): ReadoutI
       id: "time",
       label: "Walk + sampling time",
       value: `${Math.round(summary.est_time_min)} min`,
-      note: "Walking by Tobler off-path hiking (Earth), not a suited Mars walk",
+      note: "Excludes prep, recovery, reserve and terrain margin. Tobler off-path hiking (Earth), assumed for Mars.",
       mark: limitMark(check, "suit_supply"),
     },
     {

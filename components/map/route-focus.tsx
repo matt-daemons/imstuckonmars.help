@@ -108,7 +108,7 @@ export function RouteFocus({ map }: { map: MapLibreMap | null }) {
       ? `Inspecting ${ACTIVITY_LABEL[inspectedLeg].toLowerCase()}`
       : `Selected route · ${selection.choice}`;
     const detail = document.createElement("span");
-    detail.textContent = `${metres(pathLengthM(expedition.outbound.path) + pathLengthM(expedition.back.path))} on foot · ${span(expeditionDuration(expedition))} sortie`;
+    detail.textContent = `${metres(pathLengthM(expedition.outbound.path) + pathLengthM(expedition.back.path))} on foot · ${span(expeditionDuration(expedition))} incl. prep + recovery`;
     element.append(title, detail);
     void import("maplibre-gl").then(({ Marker }) => {
       if (cancelled) return;

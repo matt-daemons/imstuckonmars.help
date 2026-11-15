@@ -16,7 +16,8 @@ export interface WalkSummary {
 // Why there is no journey, by the planner's status.
 const FAILURES: Partial<Record<string, string>> = {
   no_staging: `No flat, boulder-free parking spot within ${FLIGHT_RULES.walk_back.max_distance_km} km of the site.`,
-  drive_failed: "No drivable route to the parking spot.",
+  drive_failed:
+    "No drivable route to the parking spot: the rover planner found no path within its slope limits. Choose another destination in 02 Where.",
   walk_failed: "No walkable route from the parking spot to the site.",
 };
 
@@ -87,9 +88,9 @@ export function journeyReadouts(
         },
         {
           id: "suit-time",
-          label: "Suit time",
+          label: "Suit budget incl. reserve",
           value: `${formatNumber(walk.suit_time_min, 0)} min`,
-          note: `Walking, sampling and the ${FLIGHT_RULES.suit_supply.reserve_minutes} min reserve`,
+          note: `${formatNumber(walk.suit_time_min - FLIGHT_RULES.suit_supply.reserve_minutes, 0)} min walking + sampling; ${FLIGHT_RULES.suit_supply.reserve_minutes} min reserve. No terrain margin.`,
           mark: limitMark(route, "suit_supply"),
         },
         {
