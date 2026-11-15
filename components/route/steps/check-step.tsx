@@ -3,6 +3,8 @@
 import type { Map as MapLibreMap } from "maplibre-gl";
 import type { ReactNode } from "react";
 
+import type { Verdict } from "@/lib/mars/types";
+
 import {
   DriveWalkAssumptions,
   DriveWalkStatus,
@@ -21,6 +23,7 @@ import { fitPoints } from "@/components/route/camera";
 import { notCheckedText, tripWithStorms, walkWithStorms } from "@/components/route/conditions";
 import { useConditions } from "@/components/route/conditions-provider";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
+import { Preflight } from "@/components/expedition/preflight";
 import {
   Accordion,
   AccordionItem,
@@ -30,7 +33,6 @@ import {
 
 import { splitHeadline } from "./headline";
 import { MissionSummary } from "./mission-summary-dialog";
-import { ReturnCheck } from "./return-check";
 import { RouteCompare } from "./route-compare";
 import { SpaceWeatherLine } from "./space-weather-line";
 import { StormDrill } from "./storm-drill";
@@ -57,6 +59,7 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
             loadFailed={walk.loadFailed}
           />
         }
+        verdict={check}
         readouts={summary && check ? walkReadouts(summary, check) : []}
         headline={WALK_HEADLINE}
         assumptions={<WalkAssumptions plan={walk.plan} />}
@@ -75,6 +78,7 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
           notChecked={notChecked}
         />
       }
+      verdict={trip}
       readouts={driveWalkReadouts(journey.plan)}
       headline={DRIVE_WALK_HEADLINE}
       fit={<FitButtons journey={journey} onFit={(points) => fitPoints(map, points)} />}
@@ -86,6 +90,7 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
 
 function CheckLayout({
   status,
+  verdict,
   readouts,
   headline,
   fit,
@@ -93,6 +98,7 @@ function CheckLayout({
   assumptions,
 }: {
   status: ReactNode;
+  verdict: { verdict: Verdict; reasons: string[] } | null;
   readouts: ReadoutItem[];
   headline: string[];
   fit?: ReactNode;
@@ -106,13 +112,13 @@ function CheckLayout({
       {/* One live region that stays mounted, so screen readers announce every change in it. */}
       <div role="status">{status}</div>
       <SpaceWeatherLine />
-      <ReturnCheck />
       {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
       <div className="flex flex-wrap gap-2">
         {fit}
         <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />
       </div>
       <RouteCompare />
+      <Preflight verdict={verdict} />
       <Accordion multiple>
         <AccordionItem value="details">
           <AccordionTrigger>Details</AccordionTrigger>

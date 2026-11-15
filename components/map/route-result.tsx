@@ -230,9 +230,9 @@ export function walkReadouts(summary: RouteSummary, check: EvaVerdict): ReadoutI
     { id: "distance", label: "Distance one way", value: `${summary.distance_km.toFixed(2)} km` },
     {
       id: "time",
-      label: "Out-and-back time",
+      label: "Walk + sampling time",
       value: `${Math.round(summary.est_time_min)} min`,
-      note: "Tobler off-path hiking (Earth), not a suited Mars walk",
+      note: "Walking by Tobler off-path hiking (Earth), not a suited Mars walk",
       mark: limitMark(check, "suit_supply"),
     },
     {

@@ -12,7 +12,21 @@ import type { LngLat } from "@/lib/mars/types";
 export function HomebaseMapEntry({ map, habitat }: { map: MapLibreMap | null; habitat: LngLat }) {
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
+  const [shortcut, setShortcut] = useState<HTMLDivElement | null>(null);
   const [lng, lat] = habitat;
+  // A map control, so the button stacks above the credits however many lines they wrap to.
+  useEffect(() => {
+    if (!map) return;
+    const element = document.createElement("div");
+    element.className = "maplibregl-ctrl homebase-map-shortcut";
+    const control = { onAdd: () => element, onRemove: () => element.remove() };
+    map.addControl(control, "bottom-left");
+    setShortcut(element);
+    return () => {
+      map.removeControl(control);
+      setShortcut(null);
+    };
+  }, [map]);
   useEffect(() => {
     if (!map) return;
     let cancelled = false;
@@ -52,12 +66,14 @@ export function HomebaseMapEntry({ map, habitat }: { map: MapLibreMap | null; ha
   return (
     <>
       {target && createPortal(trigger, target)}
-      <div className="homebase-map-shortcut">
-        <button type="button" className="homebase-map-trigger" onClick={() => setOpen(true)}>
-          <Home aria-hidden />
-          Mission dashboard
-        </button>
-      </div>
+      {shortcut &&
+        createPortal(
+          <button type="button" className="homebase-map-trigger" onClick={() => setOpen(true)}>
+            <Home aria-hidden />
+            Mission dashboard
+          </button>,
+          shortcut,
+        )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogPopup
           className="homebase-map-dialog"

@@ -28,6 +28,39 @@ export function siteLabel(site: SitePoi): string {
   return site.confirmed ? site.title : `${site.title} (unconfirmed)`;
 }
 
+/** Minutes at the site. Replans on commit (blur, Enter, step), not on every keystroke. */
+export function SamplingField({
+  samplingMin,
+  onSamplingMin,
+}: {
+  samplingMin: number;
+  onSamplingMin: (minutes: number) => void;
+}) {
+  // What the field shows while typing; the planner only sees committed values.
+  const [sampling, setSampling] = useState<number | null>(samplingMin);
+  // Sampling can't outlast the suit's main supply. An emptied field commits as 0 min.
+  return (
+    <NumberField
+      size="sm"
+      value={sampling}
+      onValueChange={setSampling}
+      min={0}
+      max={FLIGHT_RULES.suit_supply.primary_minutes}
+      onValueCommitted={(minutes) => {
+        setSampling(minutes ?? 0);
+        onSamplingMin(minutes ?? 0);
+      }}
+    >
+      <NumberFieldScrubArea label="Sampling time (min)" />
+      <NumberFieldGroup>
+        <NumberFieldDecrement />
+        <NumberFieldInput className="text-right" />
+        <NumberFieldIncrement />
+      </NumberFieldGroup>
+    </NumberField>
+  );
+}
+
 /** The power and sampling-time choices of a drive + walk mission. */
 export function DriveControls({
   power,
@@ -41,8 +74,6 @@ export function DriveControls({
   onSamplingMin: (minutes: number) => void;
 }) {
   const powerLabel = useId();
-  // What the field shows while typing; the planner only sees committed values.
-  const [sampling, setSampling] = useState<number | null>(samplingMin);
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-col gap-2">
@@ -62,26 +93,7 @@ export function DriveControls({
           <ToggleGroupItem value="solar">Solar</ToggleGroupItem>
         </ToggleGroup>
       </div>
-      {/* Replans on commit (blur, Enter, step), not on every keystroke: a long drive takes seconds.
-          Sampling can't outlast the suit's main supply. An emptied field commits as 0 min. */}
-      <NumberField
-        size="sm"
-        value={sampling}
-        onValueChange={setSampling}
-        min={0}
-        max={FLIGHT_RULES.suit_supply.primary_minutes}
-        onValueCommitted={(minutes) => {
-          setSampling(minutes ?? 0);
-          onSamplingMin(minutes ?? 0);
-        }}
-      >
-        <NumberFieldScrubArea label="Sampling time (min)" />
-        <NumberFieldGroup>
-          <NumberFieldDecrement />
-          <NumberFieldInput className="text-right" />
-          <NumberFieldIncrement />
-        </NumberFieldGroup>
-      </NumberField>
+      <SamplingField samplingMin={samplingMin} onSamplingMin={onSamplingMin} />
     </div>
   );
 }

@@ -1,9 +1,10 @@
 "use client";
 
-import { TriangleAlertIcon } from "lucide-react";
+import { CircleXIcon, InfoIcon, SirenIcon, TriangleAlertIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 
-import { useLaraContext } from "@/components/copilot/lara-context";
-import { fmtMin } from "@/components/copilot/lara-panel";
+import { useExpedition } from "@/components/expedition/expedition-provider";
+import { PHASE_LABEL, missionTime } from "@/components/expedition/present";
 import type { DriveWalk } from "@/components/map/route-hooks";
 import { VERDICT_STYLES } from "@/components/map/route-result";
 import { Badge } from "@/components/ui/badge";
@@ -22,14 +23,38 @@ interface StripVerdict {
   fields: StripField[];
 }
 
+const ALERT_ICON = {
+  emergency: SirenIcon,
+  error: CircleXIcon,
+  warning: TriangleAlertIcon,
+  info: InfoIcon,
+};
+const ALERT_TONE = {
+  emergency: "text-destructive-foreground",
+  error: "text-destructive-foreground",
+  warning: "text-warning-foreground",
+  info: "text-info-foreground",
+};
+
+/** The current time, updated every intervalMs. */
+function useNow(intervalMs: number) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(timer);
+  }, [intervalMs]);
+  return now;
+}
+
 /**
- * The always-visible line over the map: the route verdict at a glance, then LARA's mission clock
- * and latest alert. Clicking it opens step ③.
+ * The always-visible line over the map: the route verdict at a glance, then the expedition's
+ * mission clock and its highest active alert. Clicking it opens step ③, or ④ while one runs.
  */
 export function VerdictStrip() {
   const { inputs, dispatch, walk, journey, destination, base } = useRoutePlan();
-  const lara = useLaraContext();
-  const { conditions, drill, laraNotAnswering } = useConditions();
+  const expedition = useExpedition();
+  const { conditions, drill } = useConditions();
+  const now = useNow(500);
   const { isMobile, open, openMobile, setOpen, setOpenMobile } = useSidebar();
 
   const verdict =
@@ -38,18 +63,22 @@ export function VerdictStrip() {
       : tripVerdict(journey, conditions);
   const drilling = isDrillSet(drill);
   const noRoute = noRouteText(inputs.mission, walk, journey, destination !== null);
-  // A stale clock would look current, so it gives way to the state while LARA is not answering.
-  const clock = lara.snapshot && !laraNotAnswering && fmtMin(lara.snapshot.clock.position_s);
-  const alert = lara.turns.findLast((turn) => turn.alert)?.content;
-  const laraState = laraNotAnswering
-    ? "LARA not answering"
-    : lara.error && !lara.ready
-      ? "LARA unavailable"
-      : "LARA starting…";
+  const route = expedition.snapshot?.config.route;
+  // A stale clock would look current, so it gives way to the link state when the link drops.
+  const linkDown = expedition.link === "stale" || expedition.link === "offline";
+  const at = expedition.clockAt(now);
+  const clock = route && !linkDown ? missionTime(at) : null;
+  const phase = expedition.snapshot?.state.position?.phase;
+  const alert = expedition.alerts.find((a) => a.active && !a.inhibited);
+  const missionState = linkDown
+    ? `Mission link ${expedition.link}`
+    : expedition.snapshot
+      ? "No expedition running"
+      : "Opening mission…";
 
   const fieldsText = verdict?.fields.map(({ label, value }) => `${label} ${value}`).join(" · ");
   const verdictText = `${drilling ? "DRILL · " : ""}${verdict ? `${verdict.status.label} · ${fieldsText}` : noRoute}`;
-  const laraText = clock ? `Mission ${clock} · ${alert ?? "No alerts"}` : laraState;
+  const laraText = clock ? `Mission ${clock} · ${alert?.name ?? "No alerts"}` : missionState;
 
   // Step ③ announces the verdict with its reasons, so this region stays quiet while step ③ shows.
   const checkShown = inputs.step === "check" && (isMobile ? openMobile : open);
@@ -57,14 +86,14 @@ export function VerdictStrip() {
   function openCheck() {
     if (isMobile) setOpenMobile(true);
     else setOpen(true);
-    dispatch({ type: "goTo", step: "check" });
+    dispatch({ type: "goTo", step: route ? "run" : "check" });
   }
 
   return (
     // While a drill runs, a dashed frame and the DRILL tag keep it from passing for real data.
     <div
       className={cn(
-        "absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur",
+        "absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur",
         drilling && "border-2 border-dashed border-info",
       )}
     >
@@ -76,7 +105,8 @@ export function VerdictStrip() {
       <p
         role="status"
         aria-live={checkShown ? "off" : "polite"}
-        className="flex min-w-0 items-center gap-2"
+        // A narrow screen fits one half: while an expedition runs, the mission wins.
+        className={cn("flex min-w-0 items-center gap-2", clock && "max-sm:hidden")}
       >
         {verdict ? (
           <>
@@ -97,27 +127,32 @@ export function VerdictStrip() {
           <span className="text-muted-foreground">{noRoute}</span>
         )}
       </p>
-      <p className="flex min-w-0 items-center gap-1.5 border-l pl-3">
+      <p
+        className={cn(
+          "flex min-w-0 items-center gap-1.5 border-l pl-3",
+          clock && "max-sm:border-l-0 max-sm:pl-0",
+        )}
+      >
         {clock ? (
           <>
             <span className="shrink-0">
-              Mission <span className="font-mono">{clock}</span> ·
+              Mission <span className="font-mono">{clock}</span>
+              {phase && (
+                <span className="max-sm:hidden">
+                  {" "}
+                  · {expedition.snapshot?.clock.mode === "ended" ? "Ended" : PHASE_LABEL[phase]}
+                </span>
+              )}{" "}
+              ·
             </span>{" "}
             {alert ? (
-              <span className="flex min-w-0 items-center gap-1 text-warning-foreground">
-                <TriangleAlertIcon
-                  role="img"
-                  aria-label="Latest alert"
-                  className="size-3.5 shrink-0"
-                />
-                <span className="max-w-64 truncate">{alert}</span>
-              </span>
+              <AlertSummary level={alert.level} name={alert.name} />
             ) : (
               <span className="truncate text-muted-foreground">No alerts</span>
             )}
           </>
         ) : (
-          <span className="truncate text-muted-foreground">{laraState}</span>
+          <span className="truncate text-muted-foreground">{missionState}</span>
         )}
       </p>
       {/* Covers the whole strip, so a click anywhere opens step ③; the title holds the full text. */}
@@ -127,9 +162,21 @@ export function VerdictStrip() {
         onClick={openCheck}
         className="absolute inset-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring"
       >
-        <span className="sr-only">Open the route check</span>
+        <span className="sr-only">
+          {route ? "Open the running expedition" : "Open the route check"}
+        </span>
       </button>
     </div>
+  );
+}
+
+function AlertSummary({ level, name }: { level: keyof typeof ALERT_ICON; name: string }) {
+  const Icon = ALERT_ICON[level];
+  return (
+    <span className={cn("flex min-w-0 items-center gap-1", ALERT_TONE[level])}>
+      <Icon role="img" aria-label={`Highest alert, ${level}`} className="size-3.5 shrink-0" />
+      <span className="max-w-64 truncate">{name}</span>
+    </span>
   );
 }
 

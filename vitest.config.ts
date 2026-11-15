@@ -14,6 +14,6 @@ export default defineConfig({
   test: {
     include: ["**/*.test.ts", "**/*.test.tsx"],
     // .direnv/ links flake inputs, including nixpkgs and its own test files.
-    exclude: ["node_modules/**", "dist/**", ".direnv/**", ".wrangler/**", "result/**"],
+    exclude: ["node_modules/**", "dist/**", ".direnv/**", ".wrangler/**", "result/**", ".cache/**"],
   },
 });

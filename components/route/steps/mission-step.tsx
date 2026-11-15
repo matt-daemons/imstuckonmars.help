@@ -2,7 +2,7 @@
 
 import type { Map as MapLibreMap } from "maplibre-gl";
 
-import { DriveControls } from "@/components/map/drive-controls";
+import { DriveControls, SamplingField } from "@/components/map/drive-controls";
 import { fitPoints } from "@/components/route/camera";
 import type { MissionType } from "@/components/route/route-plan";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
@@ -47,10 +47,15 @@ export function MissionStep({
           By rover to a water-ice site, then on foot from where the rover parks.
         </ChoiceCard>
       </RadioGroup>
-      {mission === "drive-walk" && (
+      {mission === "drive-walk" ? (
         <DriveControls
           power={power}
           onPower={(next) => dispatch({ type: "setPower", power: next })}
+          samplingMin={samplingMin}
+          onSamplingMin={(minutes) => dispatch({ type: "setSampling", minutes })}
+        />
+      ) : (
+        <SamplingField
           samplingMin={samplingMin}
           onSamplingMin={(minutes) => dispatch({ type: "setSampling", minutes })}
         />

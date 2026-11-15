@@ -12,6 +12,8 @@ import type { LngLat } from "@/lib/mars/types";
 import { MapPlacementHint } from "./placement-hint";
 import type { Step } from "./route-plan";
 import { useRoutePlan } from "./route-plan-provider";
+import { RunStep } from "@/components/expedition/run-step";
+
 import { CheckStep } from "./steps/check-step";
 import { MissionStep } from "./steps/mission-step";
 import { WhereStep } from "./steps/where-step";
@@ -21,6 +23,7 @@ const STEPS: { step: Step; number: string; label: string }[] = [
   { step: "mission", number: "①", label: "Mission" },
   { step: "where", number: "②", label: "Where" },
   { step: "check", number: "③", label: "Check" },
+  { step: "run", number: "④", label: "Run" },
 ];
 
 const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
@@ -92,6 +95,9 @@ export function RouteSidebar({
             </TabsPanel>
             <TabsPanel value="check">
               <CheckStep map={map} />
+            </TabsPanel>
+            <TabsPanel value="run">
+              <RunStep />
             </TabsPanel>
             <div className="flex justify-between gap-2">
               <Button

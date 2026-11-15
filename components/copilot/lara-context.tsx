@@ -2,6 +2,8 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
+import { useExpeditionAccess } from "@/components/expedition/expedition-provider";
+
 import { useLara } from "./use-lara";
 
 export type Lara = ReturnType<typeof useLara>;
@@ -9,11 +11,12 @@ export type Lara = ReturnType<typeof useLara>;
 const LaraContext = createContext<Lara | null>(null);
 
 /**
- * Calls useLara once, since it opens a mission session on the backend and polls it, and shares it
- * with the chat, the verdict strip and the Ask LARA button.
+ * Calls useLara once and shares it with the chat, the verdict strip and the Ask LARA button.
+ * LARA reads the page's expedition session (ExpeditionProvider), so the map, the HUD and LARA
+ * describe the same mission.
  */
 export function LaraProvider({ children }: { children: ReactNode }) {
-  return <LaraContext value={useLara()}>{children}</LaraContext>;
+  return <LaraContext value={useLara(useExpeditionAccess())}>{children}</LaraContext>;
 }
 
 export function useLaraContext(): Lara {

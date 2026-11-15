@@ -24,6 +24,7 @@ import { LayoutData } from "./_demos/layout-data";
 import { Operational } from "./_demos/operational";
 import { Overlays } from "./_demos/overlays";
 import { HomebaseComponents } from "./_demos/homebase";
+import { ExpeditionComponents } from "./_demos/expedition";
 import { sectionGroups } from "./_lib/sections";
 
 const groupContent: Record<string, ComponentType> = {
@@ -35,6 +36,7 @@ const groupContent: Record<string, ComponentType> = {
   Overlays,
   "Layout & data": LayoutData,
   "Homebase dashboard": HomebaseComponents,
+  Expedition: ExpeditionComponents,
 };
 
 function groupId(title: string) {

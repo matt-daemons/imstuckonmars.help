@@ -4,7 +4,7 @@ import type { NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 export type MissionType = "walking" | "drive-walk";
-export type Step = "mission" | "where" | "check";
+export type Step = "mission" | "where" | "check" | "run";
 
 /** The operator's route choices. The destination is not stored: it is the site the end is on. */
 export interface RoutePlanInputs {

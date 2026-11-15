@@ -7,6 +7,8 @@ import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { LayerPanelBody } from "@/components/map/layer-panel";
+import { CrewLayer } from "@/components/expedition/crew-layer";
+import { ExpeditionHud } from "@/components/expedition/expedition-hud";
 import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import {
   type SiteProps,
@@ -239,37 +241,43 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               scene={<ScenePanelBody map={loaded} habitat={HABITAT} sites={sites} />}
             />
           </RouteSidebar>
-          <div className="relative h-svh min-w-0 flex-1">
-            {/* The renderer positions the container relatively, so size it with h-full. */}
-            <div ref={container} className="h-full w-full" />
-            <RouteMapLayers map={loaded} />
-            <HomebaseMapEntry map={loaded} habitat={HABITAT} />
-            <Tooltip>
-              <TooltipTrigger
-                render={
-                  <SidebarTrigger
-                    variant="outline"
-                    aria-keyshortcuts="H"
-                    className="absolute top-4 left-4"
-                  />
-                }
-              />
-              <TooltipPopup side="right">
-                Mission sidebar. Shortcut: <Kbd>H</Kbd>
-              </TooltipPopup>
-            </Tooltip>
-            {error && (
-              <div className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
-                {error}
-              </div>
-            )}
-            {cursor && (
-              <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
-                {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
-                °E
-              </div>
-            )}
-            {children}
+          {/* The map above, the expedition display below: overlays stay clear of the display. */}
+          <div className="relative flex h-svh min-w-0 flex-1 flex-col">
+            <div className="relative min-h-0 flex-1">
+              {/* The renderer positions the container relatively, so size it with h-full. */}
+              <div ref={container} className="h-full w-full" />
+              <RouteMapLayers map={loaded} />
+              <CrewLayer map={loaded} />
+              <HomebaseMapEntry map={loaded} habitat={HABITAT} />
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <SidebarTrigger
+                      variant="outline"
+                      aria-keyshortcuts="H"
+                      className="absolute top-4 left-4"
+                    />
+                  }
+                />
+                <TooltipPopup side="right">
+                  Mission sidebar. Shortcut: <Kbd>H</Kbd>
+                </TooltipPopup>
+              </Tooltip>
+              {error && (
+                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+                  {error}
+                </div>
+              )}
+              {cursor && (
+                <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                  {cursor[1].toFixed(5)}°N{" "}
+                  {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
+                  °E
+                </div>
+              )}
+              {children}
+            </div>
+            <ExpeditionHud />
           </div>
         </ConditionsProvider>
       </RoutePlanProvider>

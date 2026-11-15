@@ -49,7 +49,7 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
         variant={open ? "default" : "outline"}
         aria-expanded={open}
         aria-controls={chatId}
-        className="absolute right-4 bottom-12"
+        className={open ? "absolute right-4 bottom-12" : "absolute right-4 bottom-12 bg-background"}
         onClick={toggle}
       >
         <MessageSquareIcon aria-hidden />

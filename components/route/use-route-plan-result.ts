@@ -48,17 +48,26 @@ export function useRoutePlanResult(
 
   const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
   const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);
-  const plan = useMemo(
+  const path = useMemo(
     () => grid && slope && walls && planWalk(grid, slope, walls, start, end, gentleWalkCost(slope)),
     [grid, slope, walls, start, end],
   );
   const walkCompared = compare && mission === "walking";
-  const shortest = useMemo(
+  const shortestPath = useMemo(
     () =>
       walkCompared && grid && slope && walls ? planWalk(grid, slope, walls, start, end) : null,
     [walkCompared, grid, slope, walls, start, end],
   );
   const terrain = useMemo(() => (grid && slope ? { grid, slope } : null), [grid, slope]);
+  // Time at the end counts towards suit time, as it does for a drive + walk.
+  const plan = useMemo(
+    () => withSamplingTime(path, samplingMin),
+    [path, samplingMin],
+  );
+  const shortest = useMemo(
+    () => withSamplingTime(shortestPath, samplingMin),
+    [shortestPath, samplingMin],
+  );
   const journey = useDriveWalk(
     { start, destination, power, samplingMin, zones, compare },
     mission === "drive-walk",
@@ -73,4 +82,11 @@ export function useRoutePlanResult(
 
 export function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
   return lngA === lngB && latA === latB;
+}
+
+function withSamplingTime(plan: Plan | null, minutes: number): Plan | null {
+  return plan && {
+    ...plan,
+    summary: plan.summary && { ...plan.summary, est_time_min: plan.summary.est_time_min + minutes },
+  };
 }

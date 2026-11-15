@@ -6,6 +6,7 @@ Only disposable missions created by this test are deleted.
 
 from concurrent.futures import ThreadPoolExecutor
 import json
+import math
 import os
 from pathlib import Path
 import time
@@ -33,6 +34,93 @@ def request(path, body=None, token=None, method=None, expected=200, extra_header
         status, value = error.code, json.loads(error.read())
     assert status in (expected if isinstance(expected, tuple) else (expected,)), (path, status, value)
     return value
+
+
+def expedition():
+    # Browser-safe admission ignores caller configuration; the capability stays per session.
+    public = request("/api/expeditions", {"config": {"crew_count": 20}}, expected=201)
+    path, token = "/api/missions/" + public["id"], public["token"]
+    revision = public["revision"]
+
+    def command(kind, **args):
+        nonlocal revision
+        body = {"type": kind, "expected_revision": revision, "command_id": str(uuid.uuid4()), **args}
+        result = request(path + "/commands", body, token)
+        revision = result["revision"]
+        return body, result
+
+    try:
+        assert public["config"]["crew_count"] == 2
+        assert public["config"]["base"]["id"] == "arcadia-habitat"
+        assert public["clock"]["mode"] == "paused"
+        assert public["trace_rows"] == 12233
+        assert 5.9 * 3600000 < public["expires_ms"] - public["clock"]["anchor_ms"] <= 6 * 3600000
+        start = [-176.05, 45.97]
+        end = [start[0] + 1200 / (3396190 * math.cos(math.radians(start[1]))) * 180 / math.pi, start[1]]
+        plan = {"id": "e2e-walk", "mode": "walking", "shelter_lnglat": start,
+                "outbound": {"path": [start, end], "duration_s": 1800}, "sampling_s": 3600,
+                "back": {"path": [end, start], "duration_s": 1800}}
+        request(path + "/preview", {"plan": plan}, expected=401)
+        preview = request(path + "/preview", {"plan": plan}, token)
+        assert preview["options"][0]["status"] == "modeled_resource_feasible"
+        assert request(path, token=token)["revision"] == revision
+        _, planned = command("plan", plan=plan)
+        assert planned["config"]["route"]["planned_sampling_s"] == 3600
+        command("speed", speed=60)
+        command("play")
+        time.sleep(0.1)
+        _, moving = command("pause")
+        assert moving["state"]["elapsed_s"] > 0
+        _, walking = command("seek", at_s=1500)
+        assert walking["state"]["position"]["phase"] == "outbound"
+        assert walking["state"]["position"]["travelled_m"] > 0
+        assert walking["state"]["oxygen"]["eva"]["remaining_g"] < preview["suits"]["oxygen_g"]
+        assert walking["state"]["battery"]["eva"]["remaining_wh"] < preview["suits"]["energy_wh"]
+        body, fault = command("event", event={"id": "leak", "type": "oxygen_leak", "target": "eva", "value": 600, "at_s": "now"})
+        assert fault["events"][-1]["at_s"] == 1500
+        assert request(path + "/commands", body, token)["idempotent_replay"]
+        outlook = request(path + "/outlook", token=token)
+        assert outlook["options"][0]["status"] == "modeled_constraint_violation"
+        alternatives = outlook["options"][1:]
+        assert all(option["available"] for option in alternatives)
+        assert alternatives[0]["arrival_s"] < alternatives[1]["arrival_s"]
+        assert alternatives[0]["margins"]["oxygen_g"] > alternatives[1]["margins"]["oxygen_g"]
+        request(path + "/commands", {"type": "replan", "option": "turn_back", "expected_revision": revision - 1, "command_id": str(uuid.uuid4())}, token, expected=409)
+        _, replanned = command("replan", option="turn_back")
+        assert replanned["config"]["route"]["planned_sampling_s"] == 3600
+        assert replanned["config"]["route"]["decisions"][0]["option"] == "turn_back"
+        command("seek", at_s=replanned["config"]["duration_s"])
+        report = request(path + "/report", token=token)
+        assert report["final"]["position"]["phase"] == "shelter"
+        assert report["final"]["oxygen"]["eva"]["first_reserve_crossing_s"] is None
+        assert report["final"]["battery"]["eva"]["first_reserve_crossing_s"] is None
+        assert 1 < len(report["series"]) <= 700
+        assert report["series"][-1]["t"] == report["at_s"]
+        assert all(a["t"] < b["t"] for a, b in zip(report["series"], report["series"][1:]))
+        # Ending is a persistent stop at the current state, not a seek to a successful return.
+        command("reset")
+        _, walking = command("seek", at_s=1200)
+        end_body, ended = command("end")
+        assert ended["clock"]["mode"] == "ended"
+        assert ended["state"] == walking["state"]
+        assert request(path + "/commands", end_body, token)["idempotent_replay"]
+        assert request(path, token=token)["clock"]["mode"] == "ended"
+        ended_report = request(path + "/report", token=token)
+        assert ended_report["ended_by_operator"]
+        assert ended_report["final"]["position"]["phase"] == "outbound"
+        for change in [{"type": "play"}, {"type": "seek", "at_s": 500}, {"type": "pause"},
+                       {"type": "speed", "speed": 10}, {"type": "replan", "option": "turn_back"},
+                       {"type": "event", "event": {"id": "after-end", "type": "generator_failure", "at_s": "now"}}]:
+            error = request(path + "/commands", {**change, "expected_revision": revision, "command_id": str(uuid.uuid4())}, token, expected=409)
+            assert error["error"]["code"] == "simulation_ended"
+        _, reset = command("reset")
+        assert reset["clock"]["mode"] == "paused" and reset["state"]["elapsed_s"] == 0
+        command("end")
+        _, new_plan = command("plan", plan=plan)
+        assert new_plan["clock"]["mode"] == "paused"
+        print(json.dumps({"expedition": "passed", "checks": "admission, preview, position/resources/clock, leak, alternatives, stale revision, replan, report, persistent end, idempotent end, blocked changes, restart/new plan"}))
+    finally:
+        request(path, token=token, method="DELETE")
 
 
 def main():
@@ -86,6 +174,7 @@ def main():
     assert rollups["samples"] and rollups["samples"][0]["count"] > 0
     request("/api/telemetry/environment?sensor=ats&fields=not_a_field", expected=400)
     request("/api/missions", {"config": {}}, expected=401)
+    expedition()
     preset = json.loads((ROOT / "lib/mission/demo-preset.json").read_text())
     preset["run_id"] = f"{RELEASE}-moxie-00816"
     created = request("/api/missions", {"config": preset}, KEY, expected=201)
@@ -104,6 +193,13 @@ def main():
         initial = request(path, token=token)
         assert initial["state"]["elapsed_s"] == 0
         assert initial["observed"]["environment"]["status"] != "unavailable"
+        request(path + "/series", expected=401)
+        series = request(path + "/series", token=token)
+        assert len(series["moxie"]["oxygen_rate_g_h"]) == preset["duration_s"]
+        assert {row["unit"] for row in series["environment"]} == {"K", "Pa", "ppm"}
+        assert series["start"]["utc_ms"] == initial["observed"]["moxie"]["utc_ms"]
+        assert all(row["at_s"] == (row["utc_ms"] - series["start"]["utc_ms"]) / 1000
+                   for row in series["radiation"]["observations"])
         _, state = command("seek", at_s=1800)
         saved = state["state"]
         # Radiation follows the replay by UTC: the latest RAD observation started at or before it.
@@ -125,6 +221,13 @@ def main():
         command("speed", speed=10)
         command("play")
         time.sleep(0.15)
+        now_body, now_event = command("event", event={"id": "failure-now", "type": "generator_failure", "at_s": "now"})
+        assert now_event["events"][-1]["at_s"] > 1
+        assert now_event["events"][-1]["at_s"] == now_event["state"]["elapsed_s"]
+        assert not now_event["state"]["generator_available"]
+        replayed = request(path + "/commands", now_body, token)
+        assert replayed["idempotent_replay"]
+        assert replayed["events"][-1]["at_s"] == now_event["events"][-1]["at_s"]
         _, paused = command("pause")
         assert paused["state"]["elapsed_s"] > 1
         frozen = request(path, token=token)["state"]

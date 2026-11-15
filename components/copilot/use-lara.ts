@@ -50,8 +50,11 @@ async function json<T>(response: Response): Promise<T> {
   return body;
 }
 
-/** Owns one demo mission, its polled snapshot, and the ask → speak loop for LARA. */
-export function useLara() {
+/**
+ * The polled mission snapshot and the ask → speak loop for LARA. With `shared`, LARA reads the
+ * page's expedition session instead of opening its own demo mission, so there is one owner.
+ */
+export function useLara(shared?: { id: string; token: string } | null) {
   const [mission, setMission] = useState<{ id: string; token: string } | null>(null);
   const [snapshot, setSnapshot] = useState<MissionSnapshot | null>(null);
   const [turns, setTurns] = useState<Turn[]>([]);
@@ -76,7 +79,17 @@ export function useLara() {
     [mission],
   );
 
+  const sharedId = shared?.id;
+  const sharedToken = shared?.token;
   useEffect(() => {
+    if (shared === undefined) return;
+    setMission(sharedId && sharedToken ? { id: sharedId, token: sharedToken } : null);
+    if (sharedId) setStatus("idle");
+    // Keyed on the credentials, not the object identity.
+  }, [sharedId, sharedToken]);
+
+  useEffect(() => {
+    if (shared !== undefined) return;
     let cancelled = false;
     const scenario = new URLSearchParams(window.location.search).get("scenario");
     fetch("/api/copilot/session", {

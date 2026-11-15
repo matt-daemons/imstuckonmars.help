@@ -101,6 +101,15 @@ export const sectionGroups: SectionGroup[] = [
     ],
   },
   {
+    title: "Expedition",
+    sections: [
+      { id: "expedition-gauges", title: "Expedition supplies" },
+      { id: "expedition-alerts", title: "Return alert" },
+      { id: "expedition-end", title: "End simulation" },
+      { id: "expedition-report", title: "Report chart" },
+    ],
+  },
+  {
     title: "Layout & data",
     sections: [
       { id: "card", title: "Card" },
