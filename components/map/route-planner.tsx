@@ -2,40 +2,26 @@
 
 import { ChevronDownIcon } from "lucide-react";
 import type { LngLat as MapLibreLngLat, Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
-import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
+import type { MissionType } from "@/components/route/route-plan";
+import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Kbd } from "@/components/ui/kbd";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import type { PowerSource } from "@/lib/mars/driving";
-import { loadBaseGrid } from "@/lib/mars/load-route-grid";
-import { appendCorner, EXAMPLE_ZONE } from "@/lib/mars/route-zones";
-import { planWalk, slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
+import { appendCorner } from "@/lib/mars/route-zones";
 import type { LngLat } from "@/lib/mars/types";
 
 import { ClearZonesButton } from "./clear-zones-button";
-import { DriveControls, nearestFirst } from "./drive-controls";
+import { DriveControls } from "./drive-controls";
 import { DriveWalkAssumptions, DriveWalkResult } from "./drive-walk-result";
 import { MapPanel } from "./map-panel";
-import { useDriveWalk, useLoadedGrid } from "./route-hooks";
-import {
-  boulderFeatures,
-  collection,
-  draftFeatures,
-  endFeatures,
-  journeyFeatures,
-  routeFeatures,
-  routeLayers,
-  setData,
-  SOURCES,
-  zoneFeature,
-} from "./route-layers";
+import { draftFeatures, setData } from "./route-layers";
 import { RouteLegend } from "./route-legend";
 import { RouteResult, WalkAssumptions } from "./route-result";
 import type { SitePoi } from "./scene-panel";
 
-type Mission = "walking" | "drive-walk";
 type Mode = "start" | "end" | "zone" | null;
 
 const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
@@ -44,85 +30,37 @@ const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
   zone: "Click the map to add corners. Double-click to finish.",
 };
 
-// Time at the site, a planning input like the walk-leg timing's, not a NASA value.
-const DEFAULT_SAMPLING_MIN = 60;
-
 interface RoutePlannerProps {
   map: MapLibreMap | null;
   base: LngLat;
   target: LngLat;
-  sites: SitePoi[];
 }
 
-/** A* walk, or drive + walk, from start to end and back, avoiding steep ground and no-go zones drawn on the map. */
-export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
-  const [mission, setMission] = useState<Mission>("walking");
-  const [power, setPower] = useState<PowerSource>("fission");
-  const [samplingMin, setSamplingMin] = useState(DEFAULT_SAMPLING_MIN);
-  const [start, setStart] = useState(base);
-  const [end, setEnd] = useState(target);
-  const [zones, setZones] = useState<NoGoZone[]>([EXAMPLE_ZONE]);
+/**
+ * The route choices and results of the shared route plan, with placing points and drawing no-go
+ * zones on the map. Placing is transient, so its mode and the zone draft stay here.
+ */
+export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
+  const { inputs, dispatch, walk, journey, destinations, destination } = useRoutePlan();
+  const { mission, start, power, samplingMin, zones } = inputs;
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [mode, setMode] = useState<Mode>(null);
   const zonesDrawn = useRef(0);
   const drawZoneItem = useRef<HTMLButtonElement>(null);
   const driving = mission === "drive-walk";
-  const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
-  const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
-  const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
 
-  const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
-  const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);
-  const walkPlan = useMemo(
-    () => grid && slope && walls && planWalk(grid, slope, walls, start, end),
-    [grid, slope, walls, start, end],
-  );
-  const journey = useDriveWalk({ start, destination, power, samplingMin, zones }, driving);
-
-  useEffect(() => {
-    if (!map) return;
-    const css = getComputedStyle(document.documentElement);
-    const layers = routeLayers((name) => css.getPropertyValue(name).trim());
-    for (const id of SOURCES) map.addSource(id, { type: "geojson", data: collection([]) });
-    // Under the stop labels, so text, the route ends and the habitat model stay on top.
-    const beforeId = map.getLayer("stops-label") ? "stops-label" : undefined;
-    for (const layer of layers) map.addLayer(layer, beforeId);
-    return () => {
-      if (!map.getStyle()) return; // the parent already called map.remove()
-      for (const layer of layers) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
-      for (const id of SOURCES) if (map.getSource(id)) map.removeSource(id);
-    };
-  }, [map]);
-
-  // Each mission draws only its own route: the walk's two lines, or the trip's legs and boulders.
-  const walkShown = !driving && walkPlan;
-  const trip = journey.plan?.collection;
-  const boulders = journey.siteGrid?.boulders;
-  useEffect(
-    () => setData(map, "planned-route", walkShown ? routeFeatures(walkShown) : []),
-    [map, walkShown],
-  );
-  useEffect(() => setData(map, "journey", trip ? journeyFeatures(trip) : []), [map, trip]);
-  useEffect(
-    () => setData(map, "boulders", boulders ? boulderFeatures(boulders) : []),
-    [map, boulders],
-  );
-  useEffect(() => setData(map, "no-go-zones", zones.map(zoneFeature)), [map, zones]);
   useEffect(() => setData(map, "zone-draft", draftFeatures(draft)), [map, draft]);
-  useEffect(() => setData(map, "route-ends", endFeatures(start, end)), [map, start, end]);
 
   // Each mission starts from its defaults: walking to the science stop, drive + walk to the nearest site.
-  function chooseMission(next: Mission) {
+  function chooseMission(next: MissionType) {
     const nextEnd = next === "drive-walk" ? (destinations[0]?.center ?? target) : target;
-    setMission(next);
-    setStart(base);
-    setEnd(nextEnd);
+    dispatch({ type: "setMission", mission: next, start: base, end: nextEnd });
     if (next === "drive-walk") frame([base, nextEnd]);
     else map?.flyTo({ center: base, zoom: 12 });
   }
 
   function chooseDestination(site: SitePoi) {
-    setEnd(site.center);
+    dispatch({ type: "setEnd", point: site.center });
     frame([start, site.center]);
   }
 
@@ -146,8 +84,8 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
       setDraft((corners) => appendCorner(corners, point));
       return;
     }
-    if (mode === "start") setStart(point);
-    if (mode === "end") setEnd(point);
+    if (mode === "start") dispatch({ type: "setStart", point });
+    if (mode === "end") dispatch({ type: "setEnd", point });
     chooseMode(null);
   });
   const cancelMode = useEffectEvent(() => chooseMode(null));
@@ -202,16 +140,16 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
     if (draft.length >= 3) {
       zonesDrawn.current += 1;
       const n = zonesDrawn.current;
-      setZones((current) => [
-        ...current,
-        { id: `zone-${n}`, name: `No-go zone ${n}`, ring: draft },
-      ]);
+      dispatch({
+        type: "addZone",
+        zone: { id: `zone-${n}`, name: `No-go zone ${n}`, ring: draft },
+      });
     }
     chooseMode(null);
   }
 
   function clearZones() {
-    setZones([]);
+    dispatch({ type: "clearZones" });
     setDraft([]);
   }
 
@@ -229,7 +167,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         value={[mission]}
         // Pressing the pressed item empties the value; the mission stays as it is then.
         // Safe cast: the only values are the two items below.
-        onValueChange={(value) => value[0] && chooseMission(value[0] as Mission)}
+        onValueChange={(value) => value[0] && chooseMission(value[0] as MissionType)}
       >
         <ToggleGroupItem value="walking">Walking</ToggleGroupItem>
         <ToggleGroupItem value="drive-walk">Drive + walk</ToggleGroupItem>
@@ -240,9 +178,9 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
           destination={destination}
           onDestination={chooseDestination}
           power={power}
-          onPower={setPower}
+          onPower={(next) => dispatch({ type: "setPower", power: next })}
           samplingMin={samplingMin}
-          onSamplingMin={setSamplingMin}
+          onSamplingMin={(minutes) => dispatch({ type: "setSampling", minutes })}
         />
       )}
       <div className="flex flex-col gap-1">
@@ -280,7 +218,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
       {driving ? (
         <DriveWalkResult journey={journey} destination={destination} onFit={frame} />
       ) : (
-        <RouteResult plan={walkPlan} loadFailed={loadFailed} />
+        <RouteResult plan={walk.plan} loadFailed={walk.loadFailed} />
       )}
       <div className="flex flex-col gap-1">
         <p className="text-xs">
@@ -300,16 +238,12 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
           {driving ? (
             <DriveWalkAssumptions grid={journey.driveGrid} plan={journey.plan} />
           ) : (
-            <WalkAssumptions plan={walkPlan} />
+            <WalkAssumptions plan={walk.plan} />
           )}
         </CollapsiblePanel>
       </Collapsible>
     </MapPanel>
   );
-}
-
-function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
-  return lngA === lngB && latA === latB;
 }
 
 /** South-west and north-east corners around the points, the short way round across ±180°. */

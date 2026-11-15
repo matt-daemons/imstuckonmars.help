@@ -17,6 +17,8 @@ import {
   setMarsSky,
 } from "@/components/map/scene";
 import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
+import { RouteMapLayers } from "@/components/route/route-map-layers";
+import { RoutePlanProvider } from "@/components/route/route-plan-provider";
 import { Button } from "@/components/ui/button";
 import { Kbd } from "@/components/ui/kbd";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
@@ -253,20 +255,24 @@ export function MarsMap({ children }: { children?: ReactNode }) {
           Shortcut: <Kbd>H</Kbd>
         </TooltipPopup>
       </Tooltip>
-      {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
-      <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
-      <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} sites={sites} />
-      {error && (
-        <div className="absolute bottom-22 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
-          {error}
-        </div>
-      )}
-      {cursor && (
-        <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
-          {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}°E
-        </div>
-      )}
-      {children}
+      {/* The route plan is shared by the panels over the map; it renders no DOM of its own. */}
+      <RoutePlanProvider base={HABITAT} target={SCIENCE_STOP} sites={sites}>
+        {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
+        <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
+        <RouteMapLayers map={loaded} />
+        <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} />
+        {error && (
+          <div className="absolute bottom-22 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+            {error}
+          </div>
+        )}
+        {cursor && (
+          <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+            {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}°E
+          </div>
+        )}
+        {children}
+      </RoutePlanProvider>
     </div>
   );
 }
