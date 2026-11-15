@@ -129,6 +129,12 @@ Keep commits small, with messages formatted as `feature-name(action): Brief desc
 - Telemetry uses the existing TypeScript Worker and D1 only. Do not revive the superseded
   FastAPI/WebSocket proposal, add R2, or introduce a second mission-state owner. Remote D1
   credentials/entitlement and a non-sentinel database ID are required before remote operations.
+- Use Drizzle's native D1 driver for application queries. `server/db/schema.ts` maps the existing
+  schema; Wrangler SQL migrations remain the DDL authority. Preserve atomic session admission
+  and revision/receipt batches. Do not reset populated databases or add a second migration history.
+- Production uses the `imstuckonmars` D1 database and the bounded release in `wrangler.jsonc`.
+  Keep imports below 50,000 total application rows and budget index writes against the account's
+  daily D1 quota. Never upload the full offline release or reimport data on every deployment.
 
 ## UI standards
 

@@ -1,20 +1,20 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "imstuckonmars-help",
+  "account_id": "c9f498eef7a97c90a87c47f676709e7d",
   "compatibility_date": "2026-10-30",
   "compatibility_flags": ["nodejs_compat"],
   "main": "vinext/server/fetch-handler",
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "ares-telemetry",
-      // Local-only sentinel. Replace with the ID from `wrangler d1 create` before deployment.
-      "database_id": "00000000-0000-0000-0000-000000000000",
+      "database_name": "imstuckonmars",
+      "database_id": "c871c402-d2a0-4ba3-8ed6-0e5509039c9e",
       "migrations_dir": "migrations",
     },
   ],
   "vars": {
-    "TELEMETRY_RELEASE": "nasa-v1",
+    "TELEMETRY_RELEASE": "nasa-demo-50k-v1",
     "DIAGNOSTICS_PROVIDER": "openrouter",
     "DIAGNOSTICS_MODEL": "openai/gpt-4.1-mini",
   },

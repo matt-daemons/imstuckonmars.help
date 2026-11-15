@@ -15,11 +15,13 @@ import uuid
 
 BASE = os.environ.get("ARES_TEST_URL", "http://localhost:8787")
 KEY = os.environ["MISSION_WRITE_KEY"]
+RELEASE = os.environ.get("ARES_TEST_RELEASE", "nasa-v1")
+BOUNDED = os.environ.get("ARES_TEST_BOUNDED") == "1"
 ROOT = Path(__file__).resolve().parents[2]
 
 
 def request(path, body=None, token=None, method=None, expected=200, extra_headers=None):
-    headers = {"Content-Type": "application/json", **(extra_headers or {})}
+    headers = {"Content-Type": "application/json", "User-Agent": "ARES-Backend-E2E/1.0", **(extra_headers or {})}
     if token:
         headers["Authorization"] = "Bearer " + token
     req = urllib.request.Request(BASE + path, method=method, headers=headers,
@@ -42,13 +44,25 @@ def main():
     assert abs(sum(row["oxygen_g"] or 0 for row in comparison) - 122.27199526472222) < 1e-8
     missing = next(row for row in comparison if row["directory_sol"] == 901)
     assert missing["oxygen_g"] is None
-    page = request("/api/telemetry/moxie/runs/nasa-v1-moxie-00901/samples?after_row=7517&limit=3")
-    assert [row["segment_id"] for row in page["samples"]] == [0, 1, 1]
+    page = request(f"/api/telemetry/moxie/runs/{RELEASE}-moxie-00901/samples?after_row=7517&limit=3")
+    if BOUNDED:
+        assert page["samples"] == [] and page["run"]["sample_count"] == 0
+    else:
+        assert [row["segment_id"] for row in page["samples"]] == [0, 1, 1]
     weather = request("/api/telemetry/environment?sensor=ats&limit=3")
     assert len(weather["samples"]) == 3
+    for sensor in ["ps", "rhs", "tirs", "rds", "eng", "ancillary"]:
+        sample_page = request("/api/telemetry/environment?sensor=" + sensor + "&limit=3")
+        assert len(sample_page["samples"]) == (3 if sample_page["product"]["sample_count"] else 0), sensor
+    quality = request("/api/telemetry/products/" + weather["product"]["id"] + "/quality")
+    assert quality["fields"] and "source_field" in quality["fields"][0]
+    bucket = weather["product"]["first_sclk_ms"] // 60000 * 60000
+    rollups = request("/api/telemetry/environment?sensor=ats&fields=ats_local_temp1&resolution=60s&from_ms=" + str(bucket))
+    assert rollups["samples"] and rollups["samples"][0]["count"] > 0
     request("/api/telemetry/environment?sensor=ats&fields=not_a_field", expected=400)
     request("/api/missions", {"config": {}}, expected=401)
     preset = json.loads((ROOT / "lib/mission/demo-preset.json").read_text())
+    preset["run_id"] = f"{RELEASE}-moxie-00816"
     created = request("/api/missions", {"config": preset}, KEY, expected=201)
     path, token = "/api/missions/" + created["id"], created["token"]
     revision = 0
@@ -88,7 +102,9 @@ def main():
         assert explanation["mode"] == "deterministic" and explanation["revision"] == revision
         unavailable = request(path + "/diagnostics", {"mode": "ai", "question": "Why did output change?"}, token,
                               expected=503, extra_headers={"X-Diagnostics-Authorization": "Bearer " + KEY})
-        assert unavailable["error"]["code"] == "ai_not_configured"
+        # Production may have a provider configured; either way the failure must be sanitized.
+        allowed = {"ai_not_configured", "ai_unavailable"} if os.environ.get("ARES_TEST_AI") == "any" else {"ai_not_configured"}
+        assert unavailable["error"]["code"] in allowed, unavailable
         command("reset")
         command("event", event={"id": "future-failure", "type": "battery_failure", "target": "eva", "value": 0, "at_s": 1})
         route = {"id": "external-planner", "revision": "r1", "mission_revision": revision,
@@ -112,18 +128,23 @@ def main():
         with ThreadPoolExecutor(max_workers=2) as pool:
             results = list(pool.map(race, candidates))
         assert sum(result is not None for result in results) == 1
-        other_config = {**preset, "run_id": "nasa-v1-moxie-00096", "duration_s": 100,
+        older_retry = request(path + "/commands", body, token)
+        assert older_retry["idempotent_replay"] and older_retry["revision"] > older_retry["applied_revision"]
+        other_config = {**preset, "run_id": f"{RELEASE}-moxie-00096", "duration_s": 100,
                         "schedule": [{"start_s": 0, "end_s": 100, "activity": "base"}]}
-        other = request("/api/missions", {"config": other_config}, KEY, expected=201)
-        other_path = "/api/missions/" + other["id"]
-        try:
-            other_state = request(other_path, token=other["token"])
-            assert other_state["observed"]["environment"]["status"] == "unavailable"
-            assert other_state["observed"]["moxie"]["utc_ms"] is None
-        finally:
-            request(other_path, token=other["token"], method="DELETE")
+        if BOUNDED:
+            request("/api/missions", {"config": other_config}, KEY, expected=422)
+        else:
+            other = request("/api/missions", {"config": other_config}, KEY, expected=201)
+            other_path = "/api/missions/" + other["id"]
+            try:
+                other_state = request(other_path, token=other["token"])
+                assert other_state["observed"]["environment"]["status"] == "unavailable"
+                assert other_state["observed"]["moxie"]["utc_ms"] is None
+            finally:
+                request(other_path, token=other["token"], method="DELETE")
         print(json.dumps({"status": "passed", "products": len(products), "experiments": len(comparison),
-                          "checks": "provenance, MEDA replay, missing output, reset segment, capabilities, replay, seek, clock, scenarios, stale revisions, concurrent commands, return uncertainty, deterministic diagnostics, missing AI credentials"}))
+                          "checks": "provenance, seven MEDA sensors, quality metadata, rollups, missing output, reset segment, capabilities, replay, seek, clock, scenarios, historical retries, stale revisions, concurrent commands, return uncertainty, deterministic diagnostics, missing AI credentials"}))
     finally:
         request(path, token=token, method="DELETE")
 

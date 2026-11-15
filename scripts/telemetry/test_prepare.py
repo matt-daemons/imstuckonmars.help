@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 from acquire import DATA, ROOT, digest
-from prepare import MEDA_TABLES, metadata, milliseconds
+from prepare import EXPORT_TABLES, MEDA_TABLES, bound_release, metadata, milliseconds
 
 OUTPUT = ROOT / "generated/telemetry"
 
@@ -92,6 +92,27 @@ class ReleaseTests(unittest.TestCase):
                 db.commit()
                 db.executescript(publish)
                 self.assertEqual(db.execute("SELECT status FROM data_releases").fetchone()[0], "staging")
+            finally:
+                db.close()
+
+    def test_bounded_release_preserves_trace_and_discloses_unavailable_rows(self):
+        with tempfile.TemporaryDirectory(prefix="subset-test-", dir=ROOT / ".cache/telemetry") as directory:
+            clone = ROOT / directory / "subset.sqlite"
+            shutil.copyfile(OUTPUT / "telemetry.sqlite", clone)
+            db = sqlite3.connect(clone)
+            try:
+                report = bound_release(db, 50000, 90000)
+                self.assertLessEqual(report["application_rows"], 50000)
+                self.assertLessEqual(report["estimated_import_write_units"], 90000)
+                self.assertEqual(sum(db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in EXPORT_TABLES), report["application_rows"])
+                self.assertEqual(db.execute("SELECT count(*) FROM moxie_samples").fetchone()[0], 12233)
+                self.assertEqual(db.execute("SELECT min(source_row),max(source_row) FROM moxie_samples").fetchone(), (1, 12233))
+                self.assertEqual(db.execute("SELECT sample_count FROM moxie_runs WHERE directory_sol=96").fetchone()[0], 0)
+                self.assertEqual(db.execute("PRAGMA foreign_key_check").fetchall(), [])
+                warnings = db.execute("SELECT warnings_json FROM moxie_runs WHERE directory_sol=96").fetchone()[0]
+                self.assertIn("original_source_rows=", warnings)
+                self.assertIn("stored_rows=0", warnings)
+                self.assertAlmostEqual(db.execute("SELECT sum(oxygen_g) FROM experiment_summaries").fetchone()[0], 122.27199526472222, places=9)
             finally:
                 db.close()
 

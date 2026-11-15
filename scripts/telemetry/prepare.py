@@ -269,11 +269,83 @@ class Builder:
                 start = end = row
 
 
+EXPORT_TABLES = ["data_releases", "source_products", "field_definitions", "quality_issues", *MEDA_TABLES.values(),
+                 "moxie_runs", "moxie_samples", "experiment_summaries", "metric_rollups", "scenario_presets"]
+
+
+def write_weight(db, table):
+    # WITHOUT ROWID primary keys are table storage, not an additional secondary index.
+    return 1 + sum(row[3] != "pk" or not db.execute(
+        "SELECT sql LIKE '%WITHOUT ROWID%' FROM sqlite_master WHERE name=?", (table,)).fetchone()[0]
+        for row in db.execute(f"PRAGMA index_list({table})"))
+
+
+def bound_release(db, max_rows, max_write_units):
+    """Keep one complete sortie trace plus matching MEDA windows within both budgets."""
+    run_id, trace_count = db.execute("SELECT id,sample_count FROM moxie_runs WHERE directory_sol=816").fetchone()
+    start, stop = db.execute("SELECT min(sclk_ms),max(sclk_ms) FROM moxie_samples WHERE run_id=?", (run_id,)).fetchone()
+    metadata_tables = [t for t in EXPORT_TABLES if t not in [*MEDA_TABLES.values(), "moxie_samples", "metric_rollups"]]
+    rows = sum(db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in metadata_tables) + trace_count
+    writes = sum(db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] * write_weight(db, t) for t in metadata_tables)
+    writes += trace_count * write_weight(db, "moxie_samples")
+    chosen = []
+    # Preserve the primary replay companions before contextual sensor inspection.
+    priority = [("ats", "calibrated"), ("ps", "derived"), ("rhs", "derived"),
+                ("tirs", "calibrated"), ("ancillary", "derived"), ("eng", "calibrated"), ("rds", "calibrated")]
+    rollup_fields = {}
+    for position, (sensor, level) in enumerate(priority):
+        product_id = db.execute("SELECT id FROM source_products WHERE instrument='meda' AND sensor=? AND processing_level=?", (sensor, level)).fetchone()[0]
+        table = MEDA_TABLES[sensor.upper()]
+        fields = [r[0] for r in db.execute("SELECT field FROM field_definitions WHERE product_id=?", (product_id,))]
+        numeric = {r[1] for r in db.execute(f"PRAGMA table_info({table})") if r[2] in ["INTEGER", "REAL"]}
+        fields = [f for f in fields if f in numeric and "uncertainty" not in f]
+        count = db.execute(f"SELECT count(*) FROM {table} WHERE product_id=? AND sclk_ms BETWEEN ? AND ?", (product_id, start, stop)).fetchone()[0]
+        rollups = sum(db.execute(f"SELECT count(DISTINCT CAST(sclk_ms/60000 AS INTEGER)) FROM {table} WHERE product_id=? AND sclk_ms BETWEEN ? AND ? AND {field} IS NOT NULL", (product_id, start, stop)).fetchone()[0] for field in fields)
+        candidate_rows = rows + count + rollups
+        candidate_writes = writes + count * write_weight(db, table) + rollups * write_weight(db, "metric_rollups")
+        if candidate_rows <= max_rows and candidate_writes <= max_write_units:
+            chosen.append(product_id)
+            rollup_fields[product_id] = (table, fields)
+            rows, writes = candidate_rows, candidate_writes
+        elif position < 3:
+            raise ValueError("Budgets cannot retain the complete MOXIE trace and primary ATS/PS/RHS companions")
+    db.execute("DELETE FROM moxie_samples WHERE run_id<>?", (run_id,))
+    marks = ",".join("?" for _ in chosen)
+    for table in MEDA_TABLES.values():
+        db.execute(f"DELETE FROM {table} WHERE product_id NOT IN ({marks}) OR sclk_ms<? OR sclk_ms>?", (*chosen, start, stop))
+    db.execute("DELETE FROM metric_rollups")
+    for product_id, (table, fields) in rollup_fields.items():
+        for field in fields:
+            db.execute(f"INSERT INTO metric_rollups SELECT product_id,?,CAST(sclk_ms/60000 AS INTEGER)*60000,count(*),min({field}),max({field}),avg({field}) FROM {table} WHERE product_id=? AND {field} IS NOT NULL GROUP BY product_id,CAST(sclk_ms/60000 AS INTEGER)", (field, product_id))
+    for product_id, instrument, sensor, original_count, warnings_json in db.execute(
+            "SELECT id,instrument,sensor,sample_count,warnings_json FROM source_products").fetchall():
+        if instrument == "meda":
+            table = MEDA_TABLES[sensor.upper()]
+            count, first, last = db.execute(f"SELECT count(*),min(sclk_ms),max(sclk_ms) FROM {table} WHERE product_id=?", (product_id,)).fetchone()
+        else:
+            count, first, last = db.execute("SELECT count(*),min(s.sclk_ms),max(s.sclk_ms) FROM moxie_samples s JOIN moxie_runs r ON r.id=s.run_id WHERE r.calibrated_product_id=? OR r.derived_product_id=?", (product_id, product_id)).fetchone()
+        warnings = json.loads(warnings_json)
+        warnings += [f"deployment_subset: stored_rows={count}; original_source_rows={original_count}",
+                     "whole_archive_summaries_retained; raw_traces_outside_sol_816_not_deployed"]
+        db.execute("UPDATE source_products SET sample_count=?,first_sclk_ms=?,last_sclk_ms=?,warnings_json=? WHERE id=?", (count, first, last, json.dumps(warnings), product_id))
+    for rid, original_count, warnings_json in db.execute("SELECT id,sample_count,warnings_json FROM moxie_runs").fetchall():
+        count = trace_count if rid == run_id else 0
+        warnings = json.loads(warnings_json) + [f"deployment_subset: stored_rows={count}; original_source_rows={original_count}",
+                                               "comparison_summaries_are_whole_archive_not_subset_integrals"]
+        db.execute("UPDATE moxie_runs SET sample_count=?,warnings_json=? WHERE id=?", (count, json.dumps(warnings), rid))
+    actual_rows = sum(db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] for t in EXPORT_TABLES)
+    actual_writes = sum(db.execute(f"SELECT count(*) FROM {t}").fetchone()[0] * write_weight(db, t) for t in EXPORT_TABLES)
+    if actual_rows != rows or actual_writes != writes or rows > max_rows or writes > max_write_units:
+        raise ValueError(f"Subset budget audit failed: rows={actual_rows}/{rows}, writes={actual_writes}/{writes}")
+    return {"max_rows": max_rows, "max_import_write_units": max_write_units, "application_rows": rows,
+            "estimated_import_write_units": writes, "source_run": run_id,
+            "sclk_window_ms": [start, stop], "meda_products": chosen,
+            "scope": "complete sol-816 MOXIE trace; selected matching MEDA windows; whole-archive comparison summaries"}
+
+
 def export_sql(db, path):
-    tables = ["data_releases", "source_products", "field_definitions", "quality_issues", *MEDA_TABLES.values(),
-              "moxie_runs", "moxie_samples", "experiment_summaries", "metric_rollups", "scenario_presets"]
     with path.open("w") as output:
-        for table in tables:
+        for table in EXPORT_TABLES:
             prefix = f'INSERT INTO "{table}" VALUES '
             statement = prefix
             rows = db.execute(f'SELECT * FROM "{table}"')
@@ -292,8 +364,12 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--release", default="nasa-v1")
     parser.add_argument("--output", type=Path, default=ROOT / "generated/telemetry")
+    parser.add_argument("--max-rows", type=int, help="Bound deployment rows, including metadata and rollups")
+    parser.add_argument("--max-write-units", type=int, help="Bound estimated import writes including indexes")
     args = parser.parse_args()
     if not re.fullmatch(r"[a-z0-9-]{1,40}", args.release): raise ValueError("Invalid release ID")
+    if (args.max_rows is None) != (args.max_write_units is None):
+        raise ValueError("Supply both deployment row and write budgets")
     args.output.mkdir(parents=True, exist_ok=True)
     manifest_path = DATA / "sources.json"
     manifest = json.loads(manifest_path.read_text())
@@ -331,24 +407,31 @@ def main():
     totals = db.execute("SELECT sum(oxygen_g), sum(archive_energy_wh), sum(active_seconds) FROM experiment_summaries").fetchone()
     if not math.isclose(totals[0], 122.27199526472222, abs_tol=1e-8) or totals[2] != 72799:
         raise ValueError(f"MOXIE audit did not reproduce: {totals}")
+    subset = bound_release(db, args.max_rows, args.max_write_units) if args.max_rows is not None else None
+    if db.execute("PRAGMA foreign_key_check").fetchall(): raise ValueError("Broken subset source references")
+    if subset:
+        db.execute("UPDATE data_releases SET processing_version=?", (VERSION + "-bounded",))
     db.commit()
+    if subset:
+        db.execute("VACUUM")  # Compact only this generated local release, never source or remote data.
     export_sql(db, args.output / "release-data.sql")
     # A partial import must remain invisible. Check every imported observation table atomically.
     conditions = [f"(SELECT count(*) FROM source_products WHERE release_id='{args.release}')=55"]
     for table in MEDA_TABLES.values():
         count = db.execute(f"SELECT count(*) FROM {table}").fetchone()[0]
         conditions.append(f"(SELECT count(*) FROM {table} s JOIN source_products p ON p.id=s.product_id WHERE p.release_id='{args.release}')={count}")
-    conditions.append(f"(SELECT count(*) FROM moxie_samples s JOIN moxie_runs r ON r.id=s.run_id WHERE r.release_id='{args.release}')=235992")
+    moxie_count = db.execute("SELECT count(*) FROM moxie_samples").fetchone()[0]
+    conditions.append(f"(SELECT count(*) FROM moxie_samples s JOIN moxie_runs r ON r.id=s.run_id WHERE r.release_id='{args.release}')={moxie_count}")
     conditions.append(f"(SELECT count(*) FROM experiment_summaries s JOIN moxie_runs r ON r.id=s.run_id WHERE r.release_id='{args.release}')=23")
     (args.output / "publish.sql").write_text(f"UPDATE data_releases SET status='published' WHERE id='{args.release}' AND status='staging' AND " + " AND ".join(conditions) + ";\n")
-    report = {"release": args.release, "processing_version": VERSION,
+    report = {"release": args.release, "processing_version": VERSION + ("-bounded" if subset else ""),
               "source_products": db.execute("SELECT count(*) FROM source_products").fetchone()[0],
               "moxie_rows": db.execute("SELECT count(*) FROM moxie_samples").fetchone()[0],
               "meda_rows": sum(db.execute(f"SELECT count(*) FROM {table}").fetchone()[0] for table in MEDA_TABLES.values()),
               "oxygen_g": totals[0], "archive_energy_wh": totals[1], "active_seconds": totals[2],
               "database_bytes": db_path.stat().st_size,
               "sql_bytes": (args.output / "release-data.sql").stat().st_size,
-              "sql_sha256": digest(args.output / "release-data.sql")}
+              "sql_sha256": digest(args.output / "release-data.sql"), "deployment_subset": subset}
     (args.output / "report.json").write_text(json.dumps(report, indent=2) + "\n")
     print(json.dumps(report, indent=2))
     db.close()
