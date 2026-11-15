@@ -1,11 +1,24 @@
 "use client";
 
+import { ChevronDownIcon } from "lucide-react";
 import type { LngLat as MapboxLngLat, Map as MapboxMap, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
+import {
+  AlertDialog,
+  AlertDialogClose,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogPopup,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Kbd } from "@/components/ui/kbd";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import { loadBaseGrid } from "@/lib/mars/load-route-grid";
 import type { RouteGrid } from "@/lib/mars/route-grid";
 import { appendCorner, EXAMPLE_ZONE } from "@/lib/mars/route-zones";
@@ -111,7 +124,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
       if (event.key === "Enter") placePoint(map.getCenter());
     };
     const onWindowKeyDown = (event: KeyboardEvent) => {
-      // Skip an Escape another control already used, such as the chat's suggestion menu.
+      // Leave alone an Escape that a focused control already handled with preventDefault.
       if (event.key === "Escape" && !event.defaultPrevented) cancelMode();
     };
     const cursor = canvas.style.cursor;
@@ -158,51 +171,135 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     setDraft([]);
   }
 
+  const searchLine = plan?.summary
+    ? `Search: A*, ${(plan.outbound.expanded + plan.back.expanded).toLocaleString("en-US")} cells searched.`
+    : "Search: A*.";
+
   return (
     <aside
       aria-labelledby="route-title"
-      className="absolute right-4 bottom-12 flex max-h-[calc(100svh-31rem)] w-72 max-w-[calc(100%-2rem)] flex-col gap-3 overflow-y-auto rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur"
+      className="absolute right-4 bottom-12 flex max-h-[max(16rem,calc(100svh-31rem))] w-72 max-w-[calc(100%-2rem)] flex-col gap-3 overflow-y-auto rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur lg:top-4 lg:right-80 lg:bottom-auto lg:max-h-[calc(100svh-2rem)]"
     >
       <h2 id="route-title" className="font-heading text-sm font-semibold">
-        Route (A*)
+        Route
       </h2>
-      <div className="flex flex-wrap gap-2">
-        <ToggleGroup
-          aria-label="Place on map"
-          variant="outline"
-          size="sm"
-          value={mode ? [mode] : []}
-          // Safe cast: the only values are the three items below; [] means none is pressed.
-          onValueChange={(value) => chooseMode((value[0] ?? null) as Mode)}
-        >
-          <ToggleGroupItem value="start">Set start</ToggleGroupItem>
-          <ToggleGroupItem value="end">Set end</ToggleGroupItem>
-          <ToggleGroupItem value="zone">Draw no-go zone</ToggleGroupItem>
-        </ToggleGroup>
-        {drawing && (
-          <Button size="sm" disabled={draft.length < 3} onClick={finishZone}>
-            {draft.length < 3 ? `Finish zone (${draft.length}/3)` : "Finish zone"}
-          </Button>
-        )}
-        <Button size="sm" variant="outline" onClick={clearZones}>
-          Clear zones
-        </Button>
-      </div>
-      {mode && (
-        <p aria-live="polite" className="text-xs text-muted-foreground">
-          {MODE_HINTS[mode]} <Kbd>Enter</Kbd> map centre <Kbd>Esc</Kbd> cancel
+      <div className="flex flex-col gap-1">
+        <div className="flex flex-wrap gap-2">
+          <ToggleGroup
+            aria-label="Place on map"
+            variant="outline"
+            size="sm"
+            value={mode ? [mode] : []}
+            // Safe cast: the only values are the three items below; [] means none is pressed.
+            onValueChange={(value) => chooseMode((value[0] ?? null) as Mode)}
+          >
+            <ToggleGroupItem value="start">Set start</ToggleGroupItem>
+            <ToggleGroupItem value="end">Set end</ToggleGroupItem>
+            <ToggleGroupItem value="zone">Draw no-go zone</ToggleGroupItem>
+          </ToggleGroup>
+          {drawing && (
+            <Button
+              size="sm"
+              disabled={draft.length < 3}
+              onClick={() => {
+                finishZone();
+                map?.getCanvas().focus(); // the button unmounts, so focus would fall to the page
+              }}
+            >
+              {draft.length < 3 ? `Finish zone (${draft.length}/3)` : "Finish zone"}
+            </Button>
+          )}
+          <ClearZonesButton zones={zones} onClear={clearZones} map={map} />
+        </div>
+        {/* Always mounted, so screen readers announce the hint when it changes. */}
+        <p aria-live="polite" className={mode ? "text-xs text-muted-foreground" : "sr-only"}>
+          {mode && (
+            <>
+              {MODE_HINTS[mode]} <Kbd>Enter</Kbd> map centre <Kbd>Esc</Kbd> cancel
+            </>
+          )}
         </p>
-      )}
-      <p className="text-xs">
-        No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
-      </p>
+      </div>
       <RouteResult plan={plan} loadFailed={loadFailed} />
-      <p className="text-xs text-muted-foreground">
-        Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.
-      </p>
-      <p className="text-xs text-muted-foreground">
-        Slopes over {MAX_SLOPE_DEG}° are walls (lunar suit limit, assumed for Mars).
-      </p>
+      <div className="flex flex-col gap-1">
+        <p className="text-xs">
+          No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
+        </p>
+        <div className="flex gap-3 text-xs text-muted-foreground">
+          <span className="flex items-center gap-1">
+            <span aria-hidden className="h-1 w-4 bg-primary" />
+            Out
+          </span>
+          <span className="flex items-center gap-1">
+            <span aria-hidden className="w-4 border-t-2 border-dashed border-foreground" />
+            Back
+          </span>
+          <span className="flex items-center gap-1">
+            <span aria-hidden className="size-3 bg-destructive" />
+            No-go zone
+          </span>
+        </div>
+      </div>
+      <Collapsible>
+        <CollapsibleTrigger render={<Button variant="ghost" size="xs" />}>
+          Assumptions and data
+          <ChevronDownIcon aria-hidden />
+        </CollapsibleTrigger>
+        <CollapsiblePanel className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground">
+          <p>
+            Checks slope, walk-back distance and suit time only. The start point counts as base.
+          </p>
+          <p>Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.</p>
+          <p>
+            Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit,
+            assumed for Mars).
+          </p>
+          <p>{searchLine}</p>
+        </CollapsiblePanel>
+      </Collapsible>
     </aside>
+  );
+}
+
+/** Clearing zones can turn a NO-GO into a GO, so it asks first. */
+function ClearZonesButton({
+  zones,
+  onClear,
+  map,
+}: {
+  zones: NoGoZone[];
+  onClear: () => void;
+  map: MapboxMap | null;
+}) {
+  // The zones as they were when the dialog opened, so its copy holds still while it closes.
+  const [asked, setAsked] = useState<NoGoZone[]>([]);
+  const count = asked.length;
+  const includesExample = asked.some((zone) => zone.id === EXAMPLE_ZONE.id);
+  return (
+    <AlertDialog onOpenChange={(open) => open && setAsked(zones)}>
+      <AlertDialogTrigger
+        disabled={zones.length === 0}
+        render={<Button size="sm" variant="destructive-outline" />}
+      >
+        Clear zones
+      </AlertDialogTrigger>
+      {/* After clearing, the trigger is disabled and cannot take focus back, so the map gets it. */}
+      <AlertDialogPopup data-hazard finalFocus={() => zones.length > 0 || map?.getCanvas()}>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            Clear {count} no-go {count === 1 ? "zone" : "zones"}?
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            Routes will no longer avoid them.{includesExample && " This includes the example zone."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogClose render={<Button variant="ghost" />}>Cancel</AlertDialogClose>
+          <AlertDialogClose render={<Button variant="destructive" />} onClick={onClear}>
+            Clear zones
+          </AlertDialogClose>
+        </AlertDialogFooter>
+      </AlertDialogPopup>
+    </AlertDialog>
   );
 }
