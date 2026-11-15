@@ -37,3 +37,10 @@ data/processed/thermal-inertia/
 # Regional slope COG + overlay tiles for the drive corridor (regenerate with pnpm pipe:regional-slope).
 public/data/regional-slope/
 data/processed/regional-slope/
+
+# Local-only notes: prompts and reports for Claude Code agents.
+docs/agent-briefs/
+# OS / editor / tooling clutter.
+.DS_Store
+*.log
+.claude/settings.local.json
