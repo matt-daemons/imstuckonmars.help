@@ -13,28 +13,16 @@ export function HomebaseMapEntry({
   map,
   habitat,
   enlarged = false,
+  shortcutTarget,
 }: {
   map: MapLibreMap | null;
   habitat: LngLat;
   enlarged?: boolean;
+  shortcutTarget: HTMLDivElement | null;
 }) {
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
-  const [shortcut, setShortcut] = useState<HTMLDivElement | null>(null);
   const [lng, lat] = habitat;
-  // The bottom-left control column places this after the credits, regardless of their height.
-  useEffect(() => {
-    if (!map) return;
-    const element = document.createElement("div");
-    element.className = "maplibregl-ctrl homebase-map-shortcut";
-    const control = { onAdd: () => element, onRemove: () => element.remove() };
-    map.addControl(control, "bottom-left");
-    setShortcut(element);
-    return () => {
-      map.removeControl(control);
-      setShortcut(null);
-    };
-  }, [map]);
   useEffect(() => {
     if (!map) return;
     let cancelled = false;
@@ -78,13 +66,13 @@ export function HomebaseMapEntry({
   return (
     <>
       {target && createPortal(trigger, target)}
-      {shortcut &&
+      {shortcutTarget &&
         createPortal(
           <button type="button" className="homebase-map-trigger" onClick={() => setOpen(true)}>
             <Home aria-hidden />
             Mission dashboard
           </button>,
-          shortcut,
+          shortcutTarget,
         )}
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogPopup

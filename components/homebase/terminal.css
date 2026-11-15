@@ -978,9 +978,6 @@
   width: 18px;
   height: 18px;
 }
-.maplibregl-ctrl.homebase-map-shortcut {
-  margin: 0 0 8px 16px;
-}
 .homebase-dashboard.hb-inspector-shell {
   grid-template-rows: auto auto auto minmax(0, 1fr);
 }

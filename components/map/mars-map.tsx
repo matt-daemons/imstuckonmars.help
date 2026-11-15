@@ -76,6 +76,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [sites, setSites] = useState<SitePoi[]>([]);
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
   const [spaceEnabled, setSpaceEnabled] = useState(true);
+  const [dashboardShortcut, setDashboardShortcut] = useState<HTMLDivElement | null>(null);
   const fakeSensors = useFakeSensorMode();
 
   useEffect(() => {
@@ -313,7 +314,12 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                   <LaraRouteBridge map={loaded} />
                   <LaraExpeditionBridge />
                   <CrewLayer map={loaded} />
-                  <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
+                  <HomebaseMapEntry
+                    map={loaded}
+                    habitat={HABITAT}
+                    enlarged={habitatEnlarged}
+                    shortcutTarget={dashboardShortcut}
+                  />
                   <MapCompass map={loaded} />
                   <CompletionNotice />
                   <DebugMenu
@@ -381,20 +387,17 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                       ];
                     }}
                   />
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <SidebarTrigger
-                          variant="outline"
-                          aria-keyshortcuts="H"
-                          className="absolute top-4 left-4"
-                        />
-                      }
-                    />
-                    <TooltipPopup side="right">
-                      Mission sidebar. Shortcut: <Kbd>H</Kbd>
-                    </TooltipPopup>
-                  </Tooltip>
+                  <div className="map-top-left-controls">
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={<SidebarTrigger variant="outline" aria-keyshortcuts="H" />}
+                      />
+                      <TooltipPopup side="right">
+                        Mission sidebar. Shortcut: <Kbd>H</Kbd>
+                      </TooltipPopup>
+                    </Tooltip>
+                    <div ref={setDashboardShortcut} />
+                  </div>
                   {error && (
                     <div className="map-load-error" role="alert">
                       <CircleXIcon aria-hidden />

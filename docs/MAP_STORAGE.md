@@ -27,8 +27,9 @@ Overlay controls keep their existing positions in the unobstructed area.
 `components/map/map-overlay-viewport.tsx` measures that area and updates camera
 padding plus the built-in map-control offsets. Collapsing the sidebar returns its
 padding without resizing the canvas; route fitting retains these insets.
-Credits stack above Mission dashboard at the lower left. Coordinates sit above
-Ask LARA at the lower right. Both pairs stay above the expedition status strip.
+Mission dashboard sits beside the sidebar toggle at the upper left. Credits
+remain at the lower left. Coordinates sit above Ask LARA at the lower right,
+above the expedition status strip.
 
 Camera pitch is level through zoom 3, then smoothly permits tilt through zoom 5,
 where terrain begins. The camera constraint applies to gestures and camera-view
