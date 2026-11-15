@@ -1,0 +1,41 @@
+{
+  "units": "degrees (COG stores Int16 tenths of a degree: value / 10 = degrees)",
+  "source": "MOLA/HRSC blended DEM, 200 m/px (Mars_HRSC_MOLA_BlendDEM_Global_200mp_v2, USGS Astrogeology)",
+  "source_url": "https://planetarymaps.usgs.gov/mosaic/Mars/HRSC_MOLA_Blend/Mars_HRSC_MOLA_BlendDEM_Global_200mp_v2.tif",
+  "attribution": "NASA/JPL/GSFC (MOLA); ESA/DLR/FU Berlin (HRSC); USGS Astrogeology",
+  "files": {
+    "cog": "data/processed/regional-slope/regional-slope.tif",
+    "tiles": "public/data/regional-slope/{z}/{x}/{y}.webp (z5–10)"
+  },
+  "grid": {
+    "crs": "+proj=longlat +R=3396190 +lon_wrap=180 +no_defs",
+    "longitude_convention": "0..360 °E (the corridor crosses ±180; subtract 360 for −180..180)",
+    "bbox_0_360": [172.073414, 44.052522, 194.34936, 46.407658],
+    "size": [6602, 698],
+    "resolution_deg": 0.003374120830641,
+    "resolution_m": 200,
+    "nodata": -9999
+  },
+  "method": {
+    "corridor": "habitat (-176.05, 45.97) + 4 POIs from sites.geojson, buffered 20 km",
+    "slope_grid": "local equirectangular metre grid, +proj=eqc +lat_ts=45.5 +lon_0=183.21138698297565 +R=3396190 +units=m +no_defs, 200 m, bilinear",
+    "algorithm": "gdaldem slope (Horn 3×3), then bilinear back to lon/lat at the source resolution"
+  },
+  "stats": {
+    "mean_deg": 0.45,
+    "max_deg": 22.6
+  },
+  "percent_of_cells": {
+    "ge_10_deg": 0.04,
+    "ge_15_deg": 0.01,
+    "ge_20_deg": 0
+  },
+  "class_breaks_deg": [10, 15, 20],
+  "caveats": [
+    "200 m cells average out short steep slopes (crater walls, scarps, ridges narrower than a few hundred metres): use for drive-leg routing only, never for the final approach or the walking leg (use the 1 m HiRISE slope there).",
+    "Real local slopes are steeper than this layer shows; treat a 200 m slope near the limit as a likely hazard.",
+    "The slope threshold (20°, config.yaml slope_max_deg) is the suit/walking limit; the rover slope limit is not agreed yet.",
+    "The blended DEM is MOLA-only where HRSC has no coverage, so effective resolution can be coarser than 200 m between MOLA tracks.",
+    "Local metre grid is true-scale at 45.5°N; east-west distances are off by ≤ ~3 % at the corridor's north/south edges."
+  ]
+}

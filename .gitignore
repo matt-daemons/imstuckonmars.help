@@ -34,3 +34,6 @@ data/processed/sites/
 # THEMIS thermal inertia COG + overlay tiles (~70 MB; regenerate with pnpm pipe:thermal-inertia).
 public/data/thermal-inertia/
 data/processed/thermal-inertia/
+# Regional slope COG + overlay tiles for the drive corridor (regenerate with pnpm pipe:regional-slope).
+public/data/regional-slope/
+data/processed/regional-slope/

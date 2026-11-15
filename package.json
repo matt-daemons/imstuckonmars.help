@@ -31,7 +31,8 @@
     "sites:package": "node pipelines/package-sites-release.ts",
     "pipe:thermal-inertia": "node pipelines/stable/thermal-inertia.ts",
     "pipe:roughness": "node pipelines/stable/roughness.ts",
-    "pipe:boulders": "node pipelines/stable/boulders.ts"
+    "pipe:boulders": "node pipelines/stable/boulders.ts",
+    "pipe:regional-slope": "node pipelines/stable/regional-slope.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
