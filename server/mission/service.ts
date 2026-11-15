@@ -1,3 +1,4 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { timingSafeEqual } from "node:crypto";
 import { anchorClock, clockPosition, type MissionClock } from "../../lib/mission/clock";
 import { evaluateMission, assessReturn } from "../../lib/mission/engine";

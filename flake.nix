@@ -22,6 +22,7 @@
         fileset = lib.fileset.unions [
           ./app
           ./components
+          ./hooks
           ./lib
           ./server
           ./migrations

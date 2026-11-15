@@ -1,7 +1,10 @@
 # imstuckonmars.help
 
 A [vinext](https://github.com/cloudflare/vinext) App Router site with a [Hono](https://hono.dev)
-API and [shadcn/ui](https://ui.shadcn.com), deployed to Cloudflare Workers with Wrangler.
+API and [coss ui](https://coss.com/ui) components, deployed to Cloudflare Workers with Wrangler.
+
+Live at **https://imstuckonmars.help** (primary domain). The Worker is also reachable at
+https://imstuckonmars-help.hackrlabs.workers.dev.
 
 ## Prerequisites
 
@@ -20,16 +23,20 @@ The dev shell provides Node.js 24, pnpm, and nixfmt, and disables Next.js and Wr
 
 ## Layout
 
-| Path                     | Purpose                                 |
-| ------------------------ | --------------------------------------- |
-| `app/`                   | App Router pages and layouts            |
-| `app/api/[[...route]]/`  | Forwards every `/api/*` request to Hono |
-| `server/api/`            | Hono API app and its tests              |
-| `components/ui/`, `lib/` | shadcn/ui components and helpers        |
-| `wrangler.jsonc`         | Worker configuration                    |
-| `flake.nix`, `nix/`      | Nix package, apps, and checks           |
+| Path                               | Purpose                                 |
+| ---------------------------------- | --------------------------------------- |
+| `app/`                             | App Router pages and layouts            |
+| `app/api/[[...route]]/`            | Forwards every `/api/*` request to Hono |
+| `server/api/`                      | Hono API app and its tests              |
+| `components/ui/`, `hooks/`, `lib/` | coss ui components, hooks, and helpers  |
+| `wrangler.jsonc`                   | Worker configuration                    |
+| `flake.nix`, `nix/`                | Nix package, apps, and checks           |
 
-Add components with `pnpm dlx shadcn@latest add <component>`, then run `nix run .#fmt`.
+All coss ui primitives are installed and shown at `/design-system` (not indexed), along with the
+theme tokens. The dark-only Hermes theme in `app/globals.css` is modeled on the Hermes screens
+from [The Martian](https://territorystudio.com/project/the-martian). Add or update coss components and particles with
+`pnpm dlx shadcn@latest add @coss/<name>` (the shadcn CLI is only the installer), then run
+`nix run .#fmt`.
 
 ## Commands
 
@@ -69,8 +76,22 @@ workerd. Otherwise `nix run .` cannot start it.
 
 ## Deploying
 
-Deploys use Wrangler. Authenticate with `pnpm exec wrangler login`, or set `CLOUDFLARE_API_TOKEN`
-and `CLOUDFLARE_ACCOUNT_ID`, then run `nix run .#deploy`.
+GitHub Actions (`.github/workflows/ci.yml`) installs with pnpm and runs `pnpm fmt:check`,
+`pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm build` on every pull request and push.
+Pushes to `main` that pass deploy to Cloudflare with `pnpm run deploy`.
+
+The `imstuckonmars.help` custom domain is attached to the Worker in Cloudflare, not in
+`wrangler.jsonc`.
+
+The deploy job needs these repository secrets:
+
+| Secret                  | Value                                                                     |
+| ----------------------- | ------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | API token created from the **Edit Cloudflare Workers** template           |
+| `CLOUDFLARE_ACCOUNT_ID` | Account ID from the Cloudflare dashboard URL (`dash.cloudflare.com/<id>`) |
+
+To deploy manually, authenticate with `pnpm exec wrangler login` (or export the two variables
+above), then run `nix run .#deploy`.
 
 ## License
 

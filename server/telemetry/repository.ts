@@ -1,3 +1,4 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { MissionError, type MoxieSample } from "../../lib/mission/types";
 
 export interface Product {
@@ -86,7 +87,7 @@ export async function loadTrace(
   );
   const cache = typeof caches === "undefined" ? null : await caches.open("ares-source-traces-v1");
   const cached = await cache?.match(key);
-  if (cached) return cached.json<MoxieSample[]>();
+  if (cached) return (await cached.json()) as MoxieSample[];
   const { results } = await db
     .prepare("SELECT * FROM moxie_samples WHERE run_id=? ORDER BY source_row LIMIT 21601")
     .bind(runId)

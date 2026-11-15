@@ -1,46 +1,65 @@
 @import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
 
 @custom-variant dark (&:is(.dark *));
 
+/*
+ * Hermes theme: dark only, after the Hermes avionics screens Territory Studio
+ * designed for The Martian. Black surfaces, cyan hairlines, square panels.
+ */
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: dark;
+  --hermes-cyan: #33d6d9;
+  --hermes-teal: #0c2326;
+
+  --background: #010405;
+  --foreground: #e6f3f3;
+  --card: #020809;
+  --card-foreground: var(--foreground);
+  --popover: #03100f;
+  --popover-foreground: var(--foreground);
+  --primary: var(--hermes-cyan);
+  --primary-foreground: #001a1b;
+  --secondary: var(--hermes-teal);
+  --secondary-foreground: #c6f3f4;
+  --muted: #081719;
+  --muted-foreground: #7f9b9d;
+  --accent: #0f2e31;
+  --accent-foreground: #e8ffff;
+  --destructive: #ff4f4f;
+  --destructive-foreground: #ff8585;
+  --destructive-contrast: #1a0000;
+  --border: color-mix(in srgb, var(--hermes-cyan) 55%, transparent);
+  --input: color-mix(in srgb, var(--hermes-cyan) 65%, transparent);
+  --ring: var(--hermes-cyan);
+  --info: var(--hermes-cyan);
+  --info-foreground: #7beaec;
+  --success: #3ee08f;
+  --success-foreground: #74f0b0;
+  --warning: #f5c542;
+  --warning-foreground: #ffd873;
+  --hazard: var(--warning);
+  --hazard-contrast: #010405;
+  --chart-1: var(--hermes-cyan);
+  --chart-2: #3ee08f;
+  --chart-3: #e6f3f3;
+  --chart-4: #f5c542;
+  --chart-5: #ff4f4f;
+  --radius: 0rem;
+  --sidebar: #010405;
+  --sidebar-foreground: #a9c4c6;
+  --sidebar-primary: var(--hermes-cyan);
+  --sidebar-primary-foreground: #001a1b;
+  --sidebar-accent: var(--hermes-teal);
+  --sidebar-accent-foreground: #e8ffff;
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--hermes-cyan);
+  --code: #020809;
+  --code-foreground: var(--foreground);
+  --code-highlight: var(--hermes-teal);
 }
 
 @theme inline {
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-heading);
   --font-sans: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -80,40 +99,101 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-}
-
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --animate-skeleton: skeleton 2s -1s infinite linear;
+  --animate-caret-blink: 1s ease-out infinite caret-blink;
+  --animate-toast-success-odd: toast-success-odd 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-success-even: toast-success-even 0.32s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-odd: toast-error-odd 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  --animate-toast-error-even: toast-error-even 0.28s cubic-bezier(0.5, 1, 0.89, 1);
+  --font-mono: var(--font-mono);
+  --color-code-highlight: var(--code-highlight);
+  --code-foreground: var(--code-foreground);
+  --color-code: var(--code);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning: var(--warning);
+  --color-success-foreground: var(--success-foreground);
+  --color-success: var(--success);
+  --color-info-foreground: var(--info-foreground);
+  --color-info: var(--info);
+  --color-destructive-foreground: var(--destructive-foreground);
+  @keyframes skeleton {
+    to {
+      background-position: -200% 0;
+    }
+  }
+  @keyframes caret-blink {
+    0%,
+    70%,
+    to {
+      opacity: 1;
+    }
+    20%,
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes toast-success-odd {
+    0% {
+      scale: 1;
+    }
+    30% {
+      scale: 1.025;
+    }
+    60% {
+      scale: 0.99;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+  @keyframes toast-error-odd {
+    0% {
+      translate: 0 0;
+    }
+    25% {
+      translate: -3px 0;
+    }
+    50% {
+      translate: 3px 0;
+    }
+    75% {
+      translate: -3px 0;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
+  @keyframes toast-success-even {
+    0% {
+      scale: 1;
+    }
+    30% {
+      scale: 1.025;
+    }
+    60% {
+      scale: 0.99;
+    }
+    100% {
+      scale: 1;
+    }
+  }
+  @keyframes toast-error-even {
+    0% {
+      translate: 0 0;
+    }
+    25% {
+      translate: -3px 0;
+    }
+    50% {
+      translate: 3px 0;
+    }
+    75% {
+      translate: -3px 0;
+    }
+    100% {
+      translate: 0 0;
+    }
+  }
 }
 
 @layer base {
@@ -123,7 +203,320 @@
   body {
     @apply bg-background text-foreground;
   }
-  html {
-    @apply font-sans;
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
   }
+}
+
+/* Hermes surfaces are flat: hairlines separate panels, not shadows. */
+@theme {
+  --shadow-xs: 0 0 #0000;
+  --shadow-sm: 0 0 #0000;
+}
+
+@layer base {
+  body {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Panel and dialog titles: condensed, in mixed case. */
+  :where(h1, h2),
+  [data-slot$="-title"],
+  [data-slot="fieldset-legend"] {
+    font-family: var(--font-heading);
+  }
+
+  /* Control and column labels: condensed, in mixed case. */
+  [data-slot="button"],
+  [data-slot="toolbar-button"],
+  [data-slot="dialog-trigger"],
+  [data-slot="alert-dialog-trigger"],
+  [data-slot="sheet-trigger"],
+  [data-slot="drawer-trigger"],
+  [data-slot="popover-trigger"],
+  [data-slot="tooltip-trigger"],
+  [data-slot="menu-trigger"],
+  [data-slot="collapsible-trigger"],
+  [data-slot="command-dialog-trigger"],
+  [data-slot="badge"],
+  [data-slot="tabs-tab"],
+  [data-slot="toggle"],
+  [data-slot="label"],
+  [data-slot="field-label"],
+  [data-slot="table-head"],
+  [data-slot="group-text"],
+  [data-slot="meter-label"],
+  [data-slot="progress-label"],
+  [data-slot="pagination-link"],
+  [data-slot="segmented-control-item"],
+  [data-slot$="group-label"],
+  [data-slot$="menu-label"] {
+    font-family: var(--font-heading);
+  }
+
+  /* Numeric readouts use the data face. */
+  [data-slot="number-field-input"],
+  [data-slot="otp-field-input"],
+  [data-slot="meter-value"],
+  [data-slot="progress-value"],
+  [data-slot="slider-value"],
+  [data-slot="kbd"] {
+    font-family: var(--font-mono);
+  }
+
+  /* Tinted header bar under a cyan rule, like the Hermes panel headers. */
+  [data-slot="card-header"],
+  [data-slot="card-frame-header"],
+  [data-slot="dialog-header"],
+  [data-slot="alert-dialog-header"],
+  [data-slot="sheet-header"],
+  [data-slot="drawer-header"] {
+    background-color: var(--secondary);
+    border-bottom: 1px solid var(--border);
+  }
+}
+
+/*
+ * Hermes data fields are black boxes with a cyan outline. Unlayered so it
+ * outranks the dark:bg-input/32 utility coss puts on every field.
+ */
+.dark
+  :is(
+    [data-slot="input-control"],
+    [data-slot="textarea-control"],
+    [data-slot="select-trigger"],
+    [data-slot="select-button"],
+    [data-slot="number-field-group"],
+    [data-slot="otp-field"] input,
+    [data-slot="composer"]
+  ) {
+  background-color: color-mix(in srgb, var(--hermes-cyan) 5%, transparent);
+}
+
+/*
+ * Solid destructive fills take dark text, like primary: white on the
+ * Hermes red is 3.24:1. Unlayered so it outranks coss's text-white.
+ */
+:is([data-slot="button"], [data-slot="badge"]).bg-destructive,
+[data-slot="button"].bg-destructive > [data-slot="button-loading-indicator"] {
+  color: var(--destructive-contrast);
+}
+
+/*
+ * Status alerts: full-strength border, tinted surface, and a
+ * status-colored title. coss exposes the variant only through its classes.
+ */
+[data-slot="alert"][class~="bg-info/4"] {
+  --alert-tone: var(--info);
+  --alert-tone-foreground: var(--info-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-success/4"] {
+  --alert-tone: var(--success);
+  --alert-tone-foreground: var(--success-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-warning/4"] {
+  --alert-tone: var(--warning);
+  --alert-tone-foreground: var(--warning-foreground);
+  --alert-tint: 16%;
+}
+[data-slot="alert"][class~="bg-destructive/4"] {
+  --alert-tone: var(--destructive);
+  --alert-tone-foreground: var(--destructive-foreground);
+  --alert-tint: 22%;
+}
+[data-slot="alert"]:where(
+  [class~="bg-info/4"],
+  [class~="bg-success/4"],
+  [class~="bg-warning/4"],
+  [class~="bg-destructive/4"]
+) {
+  border-color: var(--alert-tone);
+  background-color: color-mix(in srgb, var(--alert-tone) var(--alert-tint), transparent);
+
+  & > [data-slot="alert-title"] {
+    color: var(--alert-tone-foreground);
+  }
+  & > [data-slot="alert-description"] {
+    color: var(--foreground);
+  }
+}
+
+/*
+ * Emergency alerts (variant="error" with data-level="emergency"): until
+ * acknowledged (data-acknowledged), reverse video at 6.2:1, flashing the whole
+ * alert at the low rate, 0.8 Hz with 70% in reverse video. The off phase and
+ * the acknowledged state use the error alert look. Static reverse video under
+ * reduced motion.
+ */
+[data-slot="alert"][data-level="emergency"]:not([data-acknowledged]) {
+  border-color: var(--destructive);
+  background-color: var(--destructive);
+  animation: emergency-flash 1.25s steps(1) infinite;
+
+  & > svg,
+  & > [data-slot="alert-title"],
+  & > [data-slot="alert-description"] {
+    color: var(--destructive-contrast);
+  }
+
+  & > svg {
+    animation: emergency-flash-icon 1.25s steps(1) infinite;
+  }
+  & > [data-slot="alert-title"] {
+    animation: emergency-flash-title 1.25s steps(1) infinite;
+  }
+  & > [data-slot="alert-description"] {
+    animation: emergency-flash-description 1.25s steps(1) infinite;
+  }
+}
+/* Actions stay dark and solid, so they read on both flash states. */
+[data-slot="alert"][data-level="emergency"] [data-slot="button"] {
+  border-color: var(--destructive-contrast);
+  background-color: var(--destructive-contrast);
+  color: var(--destructive-foreground);
+
+  &:hover {
+    border-color: var(--destructive-foreground);
+  }
+}
+@keyframes emergency-flash {
+  70%,
+  100% {
+    background-color: color-mix(in srgb, var(--destructive) 22%, transparent);
+  }
+}
+@keyframes emergency-flash-icon {
+  70%,
+  100% {
+    color: var(--destructive);
+  }
+}
+@keyframes emergency-flash-title {
+  70%,
+  100% {
+    color: var(--destructive-foreground);
+  }
+}
+@keyframes emergency-flash-description {
+  70%,
+  100% {
+    color: var(--foreground);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-slot="alert"][data-level="emergency"],
+  [data-slot="alert"][data-level="emergency"] > * {
+    animation: none !important;
+  }
+}
+
+/*
+ * Confirmations of hazardous or irreversible actions (data-hazard): thin black
+ * and yellow hazard tape. It sits outside the popup edge, so child surfaces
+ * such as the tinted header never paint over it.
+ */
+[data-slot="alert-dialog-popup"][data-hazard] {
+  border-image: repeating-linear-gradient(
+      -45deg,
+      var(--hazard) 0 3px,
+      var(--hazard-contrast) 3px 6px
+    )
+    3 / 3px / 2px;
+}
+
+/* The neutral alert stays quieter than every status alert. */
+.dark [data-slot="alert"][class~="dark:bg-input/32"] {
+  background-color: transparent;
+}
+
+/* Group text is a static label: panel-header tint, not the cyan control fill. */
+.dark [data-slot="group-text"] {
+  background-color: var(--secondary);
+  color: var(--secondary-foreground);
+}
+
+/*
+ * Selected states use the solid primary pairing. Light text on the 65% cyan
+ * input fill coss uses measures 3.78:1.
+ */
+.dark [data-slot="toggle"][data-pressed],
+.dark [data-slot="segmented-control-indicator"] {
+  background-color: var(--primary);
+}
+.dark [data-slot="toggle"][data-pressed],
+.dark [data-slot="segmented-control"] [aria-checked="true"] {
+  color: var(--primary-foreground);
+}
+
+/* Hover states for controls coss leaves without one. */
+@media (hover: hover) {
+  .dark
+    :is(
+      [data-slot="input-control"],
+      [data-slot="textarea-control"],
+      [data-slot="select-trigger"],
+      [data-slot="number-field-group"],
+      [data-slot="otp-field"] input,
+      [data-slot="composer"]
+    ):not([data-disabled], :has(:disabled)):hover {
+    background-color: color-mix(in srgb, var(--hermes-cyan) 12%, transparent);
+  }
+
+  :is([data-slot="checkbox"], [data-slot="radio"]):not([data-disabled]):is(
+      :hover,
+      :is([data-slot="label"], [data-slot="field-label"]):hover *
+    ) {
+    border-color: var(--primary);
+
+    &[data-checked] {
+      background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+    }
+  }
+
+  [data-slot="switch"]:not([data-disabled]):is(
+      :hover,
+      :is([data-slot="label"], [data-slot="field-label"]):hover *
+    ),
+  [data-slot="slider-thumb"]:not([data-disabled]):hover {
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 32%, transparent);
+  }
+
+  [data-slot="accordion-trigger"]:not([data-disabled]):hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  [data-slot="preview-card-trigger"]:hover {
+    color: var(--primary);
+  }
+
+  .dark [data-slot="toggle"][data-pressed]:hover {
+    background-color: color-mix(in srgb, var(--primary) 90%, transparent);
+  }
+}
+
+/* Choice controls and the labels that toggle them take the pointer, like buttons. */
+:is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"]),
+:is([data-slot="label"], [data-slot="field-label"]):has(
+  [data-slot="checkbox"],
+  [data-slot="radio"],
+  [data-slot="switch"]
+) {
+  cursor: pointer;
+}
+:is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"])[data-disabled],
+:is([data-slot="label"], [data-slot="field-label"]):has(
+  :is([data-slot="checkbox"], [data-slot="radio"], [data-slot="switch"])[data-disabled]
+) {
+  cursor: not-allowed;
+}
+
+/* coss's dark:bg-input/32 otherwise cancels the destructive-outline hover fill. */
+.dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
+  background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
 }

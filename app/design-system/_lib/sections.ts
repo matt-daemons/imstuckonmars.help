@@ -1,0 +1,112 @@
+export type SectionGroup = {
+  title: string;
+  sections: { id: string; title: string }[];
+};
+
+export const sectionGroups: SectionGroup[] = [
+  {
+    title: "Foundations",
+    sections: [
+      { id: "colors", title: "Colors" },
+      { id: "typography", title: "Typography" },
+      { id: "radius", title: "Radius" },
+      { id: "shadows", title: "Shadows" },
+    ],
+  },
+  {
+    title: "Actions",
+    sections: [
+      { id: "button", title: "Button" },
+      { id: "group", title: "Group" },
+      { id: "toggle", title: "Toggle" },
+      { id: "toggle-group", title: "Toggle Group" },
+      { id: "toolbar", title: "Toolbar" },
+      { id: "segmented-control", title: "Segmented Control" },
+    ],
+  },
+  {
+    title: "Forms",
+    sections: [
+      { id: "input", title: "Input" },
+      { id: "input-group", title: "Input Group" },
+      { id: "textarea", title: "Textarea" },
+      { id: "label", title: "Label" },
+      { id: "field", title: "Field" },
+      { id: "fieldset", title: "Fieldset" },
+      { id: "form", title: "Form" },
+      { id: "checkbox", title: "Checkbox" },
+      { id: "checkbox-group", title: "Checkbox Group" },
+      { id: "radio-group", title: "Radio Group" },
+      { id: "switch", title: "Switch" },
+      { id: "slider", title: "Slider" },
+      { id: "select", title: "Select" },
+      { id: "combobox", title: "Combobox" },
+      { id: "autocomplete", title: "Autocomplete" },
+      { id: "number-field", title: "Number Field" },
+      { id: "otp-field", title: "OTP Field" },
+      { id: "calendar", title: "Calendar" },
+      { id: "date-picker", title: "Date Picker" },
+      { id: "composer", title: "Composer" },
+    ],
+  },
+  {
+    title: "Feedback",
+    sections: [
+      { id: "alert", title: "Alert" },
+      { id: "badge", title: "Badge" },
+      { id: "toast", title: "Toast" },
+      { id: "progress", title: "Progress" },
+      { id: "meter", title: "Meter" },
+      { id: "spinner", title: "Spinner" },
+      { id: "skeleton", title: "Skeleton" },
+      { id: "empty", title: "Empty" },
+      { id: "kbd", title: "Kbd" },
+    ],
+  },
+  {
+    title: "Operational standards",
+    sections: [
+      { id: "lookalike-characters", title: "Lookalike characters" },
+      { id: "typeface-roles", title: "Typeface roles" },
+      { id: "text-size", title: "Text size" },
+      { id: "number-formatting", title: "Number formatting" },
+      { id: "data-states", title: "Data states" },
+      { id: "alert-levels", title: "Alert levels" },
+      { id: "messages", title: "Messages" },
+      { id: "time", title: "Time" },
+      { id: "color-table", title: "Color table" },
+    ],
+  },
+  {
+    title: "Overlays",
+    sections: [
+      { id: "dialog", title: "Dialog" },
+      { id: "alert-dialog", title: "Alert Dialog" },
+      { id: "sheet", title: "Sheet" },
+      { id: "drawer", title: "Drawer" },
+      { id: "popover", title: "Popover" },
+      { id: "preview-card", title: "Preview Card" },
+      { id: "tooltip", title: "Tooltip" },
+      { id: "menu", title: "Menu" },
+      { id: "context-menu", title: "Context Menu" },
+      { id: "command", title: "Command" },
+    ],
+  },
+  {
+    title: "Layout & data",
+    sections: [
+      { id: "card", title: "Card" },
+      { id: "frame", title: "Frame" },
+      { id: "accordion", title: "Accordion" },
+      { id: "collapsible", title: "Collapsible" },
+      { id: "tabs", title: "Tabs" },
+      { id: "separator", title: "Separator" },
+      { id: "scroll-area", title: "Scroll Area" },
+      { id: "table", title: "Table" },
+      { id: "avatar", title: "Avatar" },
+      { id: "breadcrumb", title: "Breadcrumb" },
+      { id: "pagination", title: "Pagination" },
+      { id: "sidebar", title: "Sidebar" },
+    ],
+  },
+];

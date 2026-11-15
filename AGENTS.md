@@ -79,45 +79,115 @@ technical-writing, architecture and tracing instructions consulted at ref main. 
 `hackr/agents-matt-daemons`, ref main, path `index.json`, remains unchecked: no authenticated
 access mechanism was available. Recheck when authorized access is available; never store tokens.
 
-## Version control
+## Hackathon context
 
-Use Git in this checkout; jj metadata is absent. Keep commits small, with messages formatted as
-`feature-name(action): Brief description`.
-Never discard others' changes, edit generated files/CHANGELOG.md manually, or auto-add an
-agent co-author. Use plain hyphens, not em dashes, in authored text.
+This is a hackathon project. The owner accepts the risk of sharing deployment credentials (such as
+the Cloudflare API token) with agents in chat. Do not ask them to revoke or rotate those
+credentials. Still keep credential values out of the repository, commits, and logs.
+
+## Deployment
+
+The primary domain is https://imstuckonmars.help. Use it in canonical URLs, metadata, and links.
+The Worker is also reachable at https://imstuckonmars-help.hackrlabs.workers.dev.
+
+The custom domain is attached to the Worker in Cloudflare, not in `wrangler.jsonc`. If you add
+`routes` to `wrangler.jsonc`, include the domain so a deploy does not detach it.
+
+GitHub Actions deploys every push to `main` that passes its checks. The workflow reads the
+`CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets.
+
+## Commits
+
+Keep commits small, with messages formatted as `feature-name(action): Brief description`.
 
 ## Stack
 
 - vinext (Next.js App Router API on Vite) deployed to Cloudflare Workers with Wrangler.
-  Do not reintroduce the `cf` CLI or `cloudflare.config.ts`: its build hangs in the Nix sandbox.
-  `cf` may be used later for authentication only.
+  Do not reintroduce the `cf` CLI or `cloudflare.config.ts`. `cf` may be used later for
+  authentication only.
 - Hono owns `/api/*`: add routes in `server/api/`, not as App Router route handlers.
-- shadcn/ui (base-nova, Base UI primitives) in `components/ui/`.
-- pnpm 12 and Node.js 24 from the Nix dev shell.
-- Reuse TypeScript, React, Tailwind, Vitest and existing state/component patterns. No geospatial
-  database, AI framework or mapping replacement is approved. Public `/api/*` remains Hono-owned.
-  Telemetry uses the existing TypeScript Worker and D1 only. Do not revive the superseded
+- coss ui (https://coss.com/ui, built on Base UI) in `components/ui/`, with its hooks in `hooks/`
+  and helpers in `lib/`. Install or update components from the `@coss` registry with
+  `pnpm dlx shadcn@latest add @coss/<name>`. Do not add shadcn/ui registry components.
+  Keep coss files unmodified so they can be updated in place; customize through theme tokens in
+  `app/globals.css` or wrapper components. Reference: https://coss.com/ui/llms.txt
+- `/design-system` (`app/design-system/`) shows every component and theme token. When you add a
+  component, variant, or token, add it there too.
+- Visual design: the Hermes theme, after Territory Studio's screen graphics for The Martian
+  (https://territorystudio.com/project/the-martian, the Hermes screens). Dark only (`dark` is
+  always set on `<html>`): black surfaces, cyan hairline borders, square corners (`--radius: 0`),
+  flat surfaces, tinted panel header bars, condensed titles and control labels in mixed case, and
+  monospace numeric readouts. Cyan is the primary/info accent, green is success, amber is warning,
+  red is error. Do not add a light theme or rounded, shadowed surfaces.
+- Theme lives in `app/globals.css`: tokens in `:root`, and Hermes treatments applied to coss
+  `data-slot` selectors. Rules that must beat coss utility classes go outside `@layer`.
+- Fonts: Atkinson Hyperlegible Next (`--font-sans`), IBM Plex Sans Condensed (`--font-heading`),
+  and JetBrains Mono (`--font-mono`), set in `app/layout.tsx`. Each was chosen to pass T-1
+  (lookalike characters). Check any replacement on `/design-system#lookalike-characters` first.
+  IDs, values, and numbers always use `--font-mono`.
+- pnpm 12 and Node.js 24.
+- Telemetry uses the existing TypeScript Worker and D1 only. Do not revive the superseded
   FastAPI/WebSocket proposal, add R2, or introduce a second mission-state owner. Remote D1
   credentials/entitlement and a non-sentinel database ID are required before remote operations.
 
+## UI standards
+
+Always load and follow `.agents/skills/operational-ui-standards/SKILL.md` when building, changing,
+or reviewing any UI in this repository, including components, theme tokens, and
+`/design-system`.
+
+The skill governs data, alerts, status, and commands. Where it conflicts with the Hermes theme
+above, it wins, with these accepted deviations:
+
+- K-1 and K-2: cyan is this project's advisory hue in place of blue. It also stays the chrome
+  accent (hairline borders, panel header bars, primary controls), so Info alerts always carry
+  their icon (K-4) to stand apart from chrome.
+- K-2: red also marks destructive actions (`destructive` button variants), and yellow also forms
+  the hazard tape below.
+- K-3: green means success only.
+
+Alert levels use coss variant names. In the skill's terms, from highest priority:
+
+| Level     | Skill level | Tokens        | Treatment beyond color                                |
+| --------- | ----------- | ------------- | ----------------------------------------------------- |
+| Emergency | Emergency   | `destructive` | Siren icon. Flashing reverse video until acknowledged |
+| Error     | Warning     | `destructive` | Error icon                                            |
+| Warning   | Caution     | `warning`     | Warning icon. Used as a note, not as a danger         |
+| Info      | Advisory    | `info`        | Info icon                                             |
+
+Warning is a note, so AL-5 (link to a procedure) applies to Emergency and Error only.
+
+Emergency alerts flash the whole alert until acknowledged, then take the static error alert look,
+keeping the siren icon and title. Mark acknowledgment with `data-acknowledged`. F-2 rates follow
+the element: anything containing text uses the low rate (0.8 Hz, 70% in reverse video), even at
+the highest priority. The high rate is for a standalone non-text indicator only. Never flash just
+the icon of an alert.
+
+Hazard is not an alert level. Black and yellow hazard tape (`data-hazard` on
+`AlertDialogPopup`) marks the confirmation dialog of a dangerous or irreversible action (C-1). It
+replaces C-3's striped border on the control itself: the trigger uses a `destructive` button
+variant instead. The tape goes on borders only, never behind text (K-5).
+
+Every other skill rule applies as written, including T-4 (mixed case) and K-5 (6:1 text
+contrast).
+
+Acronym glossary (T-4): API, EVA, MAV (Mars Ascent Vehicle), MTC (Mars Coordinated Time), OTP,
+and UI. Add an acronym here before using it in the UI.
+
 ## Formatting and checks
 
-- Formatter: oxfmt for TypeScript, CSS, JSON, and Markdown; nixfmt for Nix. Linter: oxlint.
-  Both were approved for this repository; use `nix run .#fmt`.
-- Before committing, run `nix run .#check`. Run `nix flake check` when changing Nix files,
-  dependencies, or anything the sandboxed build uses.
-- After changing `pnpm-lock.yaml`, update `pnpmDeps.hash` in `nix/package.nix`: set it to `""`,
-  run `nix build`, and copy the reported hash.
-- Keep `wrangler types --include-runtime=false`. Runtime type generation starts workerd, which
-  hangs in the Nix sandbox. Runtime types come from `@cloudflare/workers-types`.
-- Keep `compatibility_date` in `wrangler.jsonc` at or below the date the nixpkgs workerd supports,
-  or `nix run .` cannot serve the build.
-- Before geospatial integration, test Mars coordinate round trips, flat/planar slopes, missing
-  masks, no-path/corner-cutting, asymmetric returns, resource units/dwell/reserves, and stale
-  revisions. Begin bug fixes with end-user E2E reproduction. Validate real data/map alignment
-  and the packaged mission flow; synthetic fixtures prove algorithms, not scientific claims.
-- New scientific static assets must be included in the explicit `flake.nix` source fileset where
-  required. Prove the packaged build serves them, not just the development checkout.
+- Formatter: oxfmt for TypeScript, CSS, JSON, and Markdown. Linter: oxlint. Both were approved
+  for this repository; use `pnpm fmt`.
+- Before committing, run `pnpm fmt:check`, `pnpm lint`, `pnpm typecheck`, `pnpm test`, and
+  `pnpm build`.
+- Keep `wrangler types --include-runtime=false`.
+- Do not add `@cloudflare/workers-types` to `tsconfig.json` `types`: its globals override DOM types
+  that client components use. Import Worker types per file instead, for example
+  `import type { Fetcher } from "@cloudflare/workers-types"`.
+- Before geospatial integration, test Mars coordinate round trips, slopes, missing masks,
+  no-path/corner-cutting, asymmetric returns, resource units/dwell/reserves and stale revisions.
+  Validate real data/map alignment and the packaged mission flow; synthetic fixtures establish
+  algorithms, not scientific claims. New static assets must be included in packaged builds.
 
 ## Local servers
 

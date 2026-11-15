@@ -1,3 +1,4 @@
+import type { D1Database } from "@cloudflare/workers-types";
 import { MissionError } from "../../lib/mission/types";
 import { snapshot } from "./service";
 
