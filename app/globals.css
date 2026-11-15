@@ -520,3 +520,14 @@
 .dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
   background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
 }
+
+/* The map canvas fills the viewport, so its focus ring is drawn inside the edge. */
+.maplibregl-canvas:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* Hide map panels with CSS, not unmounting, so they keep their state (route, zones, chat). */
+[data-panels-hidden] [data-map-panel] {
+  display: none;
+}

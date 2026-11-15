@@ -2,11 +2,13 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
+import { Eye, EyeOff } from "lucide-react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { LayerPanel } from "@/components/map/layer-panel";
+import { RoutePlanner } from "@/components/map/route-planner";
 import {
   type SiteProps,
   addSites,
@@ -15,20 +17,31 @@ import {
   setMarsSky,
 } from "@/components/map/scene";
 import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
+import { Button } from "@/components/ui/button";
+import { Kbd } from "@/components/ui/kbd";
+import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
 
 const DATA_ROOT = "/data/processed";
 // Placeholder habitat site; matches the "base" stop in stops.geojson.
 const HABITAT: LngLat = [-176.05, 45.97];
+// Placeholder science stop; matches the "s1" stop in stops.geojson.
+const SCIENCE_STOP: LngLat = [-175.95, 46.03];
 
 // sites.geojson from pipelines/stable/hirise-sites.ts: a footprint polygon + a POI point per site.
 interface SitesGeoJSON {
   features: { properties: SiteProps; geometry: { type: string; coordinates: unknown } }[];
 }
 
+const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
+const isTyping = (target: EventTarget | null) =>
+  target instanceof HTMLElement &&
+  (target.isContentEditable || target.closest("input, textarea, select") !== null);
+
 // MapLibre assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
-export function MarsMap() {
+/** `children` are more panels over the map, such as LARA, so the hide toggle covers them too. */
+export function MarsMap({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const [loaded, setLoaded] = useState<MapLibreMap | null>(null);
@@ -37,6 +50,7 @@ export function MarsMap() {
   const [cursor, setCursor] = useState<LngLat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sites, setSites] = useState<SitePoi[]>([]);
+  const [panelsHidden, setPanelsHidden] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -174,9 +188,11 @@ export function MarsMap() {
               },
             });
             // Click a POI to fly in for the sub-metre HiRISE view.
-            m.on("click", `${layer.id}-point`, (e) =>
-              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 }),
-            );
+            m.on("click", `${layer.id}-point`, (e) => {
+              // The route panel is placing a point with this click, so stay put.
+              if (m.getCanvas().dataset.placing) return;
+              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 });
+            });
           }
         }
         m.addLayer(habitatLayer(maplibregl, HABITAT));
@@ -194,6 +210,18 @@ export function MarsMap() {
     };
   }, []);
 
+  // H shows or hides the panels, unless the operator is typing or using another shortcut.
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.key !== "h" && e.key !== "H") || e.repeat || hasModifier(e) || isTyping(e.target)) {
+        return;
+      }
+      setPanelsHidden((hidden) => !hidden);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
+
   function toggle(id: string, on: boolean) {
     setVisible((v) => ({ ...v, [id]: on }));
     const m = map.current;
@@ -203,14 +231,32 @@ export function MarsMap() {
     }
   }
 
+  // data-panels-hidden is set only while hidden, since the rule in globals.css matches its presence.
   return (
-    <div className="relative h-svh w-full">
+    <div className="relative h-svh w-full" data-panels-hidden={panelsHidden || undefined}>
       {/* The renderer positions the container relatively, so size it with h-full. */}
       <div ref={container} className="h-full w-full" />
+      {/* bottom-12 keeps it above the attribution and cursor readout, level with the bottom panels. */}
+      <Tooltip>
+        <TooltipTrigger
+          render={<Button size="sm" variant={panelsHidden ? "default" : "outline"} />}
+          aria-pressed={panelsHidden}
+          aria-keyshortcuts="H"
+          onClick={() => setPanelsHidden(!panelsHidden)}
+          className="absolute bottom-12 left-1/2 -translate-x-1/2"
+        >
+          {panelsHidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
+          {panelsHidden ? "Show panels" : "Hide panels"}
+        </TooltipTrigger>
+        <TooltipPopup side="top">
+          Shortcut: <Kbd>H</Kbd>
+        </TooltipPopup>
+      </Tooltip>
       {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
       <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
+      <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} sites={sites} />
       {error && (
-        <div className="absolute bottom-4 left-4 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+        <div className="absolute bottom-22 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
           {error}
         </div>
       )}
@@ -219,6 +265,7 @@ export function MarsMap() {
           {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}°E
         </div>
       )}
+      {children}
     </div>
   );
 }

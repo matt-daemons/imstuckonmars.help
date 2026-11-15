@@ -4,6 +4,7 @@ import { Ear, EarOff, Mic, Pause, Play, Send, Square, Volume2, VolumeOff } from 
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
+import { MapPanel } from "@/components/map/map-panel";
 import { useLara } from "@/components/copilot/use-lara";
 import { useWakeWord, type WakeState } from "@/components/copilot/use-wake-word";
 
@@ -94,13 +95,13 @@ export function LaraPanel() {
   const playing = s?.clock.mode === "playing";
 
   return (
-    <aside
-      aria-label="LARA copilot"
-      className="absolute bottom-12 left-4 flex max-h-[60svh] w-96 max-w-[calc(100%-2rem)] flex-col gap-3 rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur"
+    <MapPanel
+      title="LARA"
+      className="absolute bottom-12 left-4 flex max-h-[60svh] w-96 max-w-[calc(100%-2rem)] flex-col text-sm"
+      bodyClassName="flex min-h-0 flex-col gap-3"
     >
       <header className="flex items-start justify-between gap-2">
         <div>
-          <h2 className="font-heading text-sm font-semibold">LARA</h2>
           <p className="text-xs text-muted-foreground" aria-live="polite">
             {STATUS_TEXT[lara.status]}
           </p>
@@ -228,6 +229,6 @@ export function LaraPanel() {
           {listening ? <Square aria-hidden /> : <Mic aria-hidden />}
         </Button>
       </form>
-    </aside>
+    </MapPanel>
   );
 }

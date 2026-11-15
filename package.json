@@ -17,6 +17,7 @@
     "models:test": "node --test scripts/models/models.test.mjs",
     "pipe:check": "node pipelines/check-env.ts",
     "pipe:mola": "node pipelines/stable/mola-terrain.ts",
+    "pipe:mola-corridor": "node pipelines/stable/mola-corridor.ts",
     "pipe:hab-terrain": "node pipelines/stable/hab-terrain.ts",
     "pipe:hab-imagery": "node pipelines/stable/hab-imagery.ts",
     "pipe:display-terrain": "node pipelines/stable/display-terrain.ts",

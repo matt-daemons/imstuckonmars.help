@@ -10,6 +10,7 @@ import {
   setSlopeVisible,
   updateTerrain,
 } from "@/components/map/scene";
+import { MapPanel } from "@/components/map/map-panel";
 import { GLOBAL_TERRAIN_SOURCE, LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -58,9 +59,12 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
     map?.flyTo({ center: habitat, zoom, pitch, bearing, duration: 3500 });
 
   return (
-    <aside className="absolute top-4 right-4 max-h-[calc(100svh-2rem)] w-80 max-w-[calc(100%-2rem)] space-y-4 overflow-y-auto border bg-background/95 p-4 text-sm">
+    <MapPanel
+      title="Scene"
+      className="absolute top-4 right-4 max-h-[calc(100svh-2rem)] w-80 max-w-[calc(100%-2rem)] overflow-y-auto rounded-none bg-background/95 text-sm shadow-none backdrop-blur-none"
+      bodyClassName="space-y-4"
+    >
       <div>
-        <h2 className="font-heading text-sm font-semibold">Scene</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Terrain: {TERRAIN_SOURCE}. The habitat is an illustration. Planet image: NASA/Viking,
           USGS, and NASA Ames.
@@ -150,6 +154,6 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
           </div>
         </div>
       </details>
-    </aside>
+    </MapPanel>
   );
 }

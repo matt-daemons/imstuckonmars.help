@@ -99,9 +99,13 @@ const alertLevels = [
 ];
 
 const colorTable = [
-  { token: "destructive", meaning: "Emergency and Error alerts, destructive actions" },
+  {
+    token: "destructive",
+    meaning: "Emergency and Error alerts, destructive actions, no-go zones on the map",
+  },
   { token: "warning", meaning: "Warning alerts (a note), out-of-limit caution, field overflow" },
   { token: "info", meaning: "Info alerts (advisory). Also the chrome accent" },
+  { token: "primary", meaning: "Chrome accent; planned route line on the map" },
   { token: "success", meaning: "Success only" },
   { token: "hazard", meaning: "Hazard tape on confirmations of dangerous actions" },
 ];
