@@ -11,21 +11,6 @@
   "crs": "Equirectangular on Mars 2000 sphere (R = 3396190 m), centered on AOI",
   "layers": [
     {
-      "id": "mola-base",
-      "title": "Elevation-colored hillshade",
-      "kind": "raster",
-      "path": "https://tiles.imstuckonmars.help/mars-v2/catalog.json",
-      "tiles": ["https://tiles.imstuckonmars.help/mars-v2/legacy/mola/base/{z}/{x}/{y}.png"],
-      "tileBounds": [-180, 40, -168, 52],
-      "minzoom": 5,
-      "maxzoom": 8,
-      "opacity": 1,
-      "visible": false,
-      "source": {
-        "name": "MOLA elevation colors · illustrative shading, not surface color"
-      }
-    },
-    {
       "id": "ctx-context",
       "title": "Orbital imagery · 5 m source",
       "kind": "raster",

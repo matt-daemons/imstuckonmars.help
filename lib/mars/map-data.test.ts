@@ -48,7 +48,7 @@ describe("R2 map delivery", () => {
     expect(imagery?.maxzoom).toBe(14);
     expect(imagery?.tileBounds).toEqual([...ARCADIA_IMAGERY_BOUNDS]);
     expect(manifest.layers.some((layer) => layer.id === "ai-visual-preview")).toBe(false);
-    expect(manifest.layers.find((layer) => layer.id === "mola-base")?.visible).toBe(false);
+    expect(manifest.layers.some((layer) => layer.id === "mola-base")).toBe(false);
   });
 
   it("requests native-detail global imagery with matching tile dimensions", () => {

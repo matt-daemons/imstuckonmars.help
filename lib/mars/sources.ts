@@ -114,15 +114,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
       },
       {
-        id: "mola-base",
-        title: "Elevation-coloured hillshade",
-        kind: "illustration",
-        credit: "NASA/MGS/MOLA",
-        use: "Optional relief shading. Off by default.",
-        caveats: ["Colours encode height. They are not surface colour."],
-        layerIds: ["mola-base"],
-      },
-      {
         id: "ctx-context",
         title: "Orbital imagery around the habitat",
         kind: "observation",
