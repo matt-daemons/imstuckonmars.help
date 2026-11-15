@@ -3,13 +3,20 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 
-import { ARCADIA_IMAGERY_BOUNDS, MAP_DATA_ROOT, mapAsset } from "./map-data";
+import {
+  ARCADIA_IMAGERY_BOUNDS,
+  GLOBAL_COLOR_ROOT,
+  GLOBAL_COLOR_SOURCE,
+  MAP_DATA_ROOT,
+  mapAsset,
+} from "./map-data";
 
 describe("R2 map delivery", () => {
   it("pins public map objects to one immutable release", () => {
     expect(MAP_DATA_ROOT).toBe("https://tiles.imstuckonmars.help/mars-v2");
     expect(mapAsset("viking/{z}/{x}/{y}.jpg")).toBe(`${MAP_DATA_ROOT}/viking/{z}/{x}/{y}.jpg`);
     expect(mapAsset("global-dem/0/0/0.png")).toBe(`${MAP_DATA_ROOT}/global-dem/0/0/0.png`);
+    expect(GLOBAL_COLOR_ROOT).toBe("https://tiles.imstuckonmars.help/viking-native-v1");
   });
 
   it("uses bounded tiled imagery instead of downloading a whole regional image", async () => {
@@ -34,5 +41,13 @@ describe("R2 map delivery", () => {
     expect(imagery?.maxzoom).toBe(14);
     expect(imagery?.tileBounds).toEqual([...ARCADIA_IMAGERY_BOUNDS]);
     expect(manifest.layers.find((layer) => layer.id === "ai-visual-preview")?.visible).toBe(false);
+    expect(manifest.layers.find((layer) => layer.id === "mola-base")?.visible).toBe(false);
+  });
+
+  it("requests native-detail global imagery with matching tile dimensions", () => {
+    expect(GLOBAL_COLOR_SOURCE.tiles).toEqual([`${GLOBAL_COLOR_ROOT}/tiles/{z}/{x}/{y}.jpg`]);
+    expect(GLOBAL_COLOR_SOURCE.tileSize).toBe(1024);
+    expect(GLOBAL_COLOR_SOURCE.minzoom).toBe(0);
+    expect(GLOBAL_COLOR_SOURCE.maxzoom).toBe(7);
   });
 });

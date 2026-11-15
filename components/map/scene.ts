@@ -3,7 +3,7 @@ import type { CustomLayerInterface, Map as MapboxMap } from "mapbox-gl";
 import * as THREE from "three";
 
 import type { LngLat } from "@/lib/mars/types";
-import { mapAsset } from "@/lib/mars/map-data";
+import { GLOBAL_COLOR_SOURCE, mapAsset } from "@/lib/mars/map-data";
 import {
   LOCAL_TERRAIN_BOUNDS,
   LOCAL_TERRAIN_SOURCE,
@@ -43,14 +43,7 @@ export function updateTerrain(m: MapboxMap, exaggeration: number) {
 }
 
 export function addTerrain(m: MapboxMap, beforeId?: string) {
-  m.addSource("mars-global", {
-    type: "raster",
-    tiles: [mapAsset("viking/{z}/{x}/{y}.jpg")],
-    tileSize: 256,
-    minzoom: 0,
-    maxzoom: 5,
-    attribution: "NASA/USGS/Ames; NASA Trek",
-  });
+  m.addSource("mars-global", GLOBAL_COLOR_SOURCE);
   m.addLayer({ id: "mars-global", type: "raster", source: "mars-global" }, beforeId);
   m.addSource("global-dem", {
     type: "raster-dem",
@@ -70,15 +63,6 @@ export function addTerrain(m: MapboxMap, beforeId?: string) {
     maxzoom: 8,
     bounds: [-180, 40, -168, 52],
   });
-  m.addSource("mola-base", {
-    type: "raster",
-    tiles: [mapAsset("legacy/mola/base/{z}/{x}/{y}.png")],
-    tileSize: 256,
-    minzoom: 5,
-    maxzoom: 8,
-    bounds: [-180, 40, -168, 52],
-  });
-  m.addLayer({ id: "mola-base", type: "raster", source: "mola-base" }, beforeId);
   m.addSource(LOCAL_TERRAIN_SOURCE, {
     type: "raster-dem",
     tiles: [mapAsset("legacy/display/hab/{z}/{x}/{y}.png")],

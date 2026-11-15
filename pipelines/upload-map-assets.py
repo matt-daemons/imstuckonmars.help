@@ -17,7 +17,7 @@ import urllib.parse
 import urllib.request
 
 
-config = json.loads(Path("pipelines/map-release.json").read_text())
+config = json.loads(Path(os.environ.get("MAP_RELEASE_CONFIG", "pipelines/map-release.json")).read_text())
 root = Path(config["directory"])
 account = config["accountId"]
 bucket = config["bucket"]
@@ -52,21 +52,33 @@ for path in files:
     })
 if not files:
     raise SystemExit("No release files. Run maps:prepare first.")
+if sum(entry["bytes"] for entry in manifest) > config.get("outputLimitBytes", float("inf")):
+    raise SystemExit("Approved output storage budget exceeded.")
 
 rate_lock = threading.Lock()
 last_request = 0.0
+receipt_lock = threading.Lock()
+receipt_path = root / "upload-receipts.jsonl"
+receipts = {}
+if receipt_path.exists():
+    for line in receipt_path.read_text().splitlines():
+        receipt = json.loads(line)
+        receipts[receipt["path"]] = receipt["sha256"]
 
 
 def rate_limit():
     global last_request
     with rate_lock:
-        remaining = (0.02 if local_uploader else 1.0) - (time.monotonic() - last_request)
+        interval = config.get("uploadIntervalSeconds", 0.02) if local_uploader else 1.0
+        remaining = interval - (time.monotonic() - last_request)
         if remaining > 0:
             time.sleep(remaining)
         last_request = time.monotonic()
 
 
 def publish(entry):
+    if receipts.get(entry["path"]) == entry["sha256"]:
+        return entry
     key = version + "/" + entry["path"]
     url = (
         "https://api.cloudflare.com/client/v4/accounts/" + account
@@ -84,7 +96,7 @@ def publish(entry):
         headers = {
             "Content-Type": content_type,
             "Cache-Control": "public, max-age=31536000, immutable",
-    "User-Agent": "ARES offline map release",
+            "User-Agent": "ARES offline map release",
         }
         if token and not local_uploader:
             headers["Authorization"] = "Bearer " + token
@@ -93,6 +105,9 @@ def publish(entry):
             with urllib.request.urlopen(request, timeout=90) as response:
                 if response.status not in (200, 201):
                     raise RuntimeError("Unexpected upload status")
+            with receipt_lock:
+                with receipt_path.open("a") as receipt_file:
+                    receipt_file.write(json.dumps({"path": entry["path"], "sha256": entry["sha256"]}) + "\n")
             return entry
         except (urllib.error.URLError, TimeoutError):
             if attempt == 3:
@@ -124,7 +139,9 @@ except urllib.error.HTTPError as error:
     if error.code != 404:
         raise
     completed = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=config.get("uploadWorkers", 8) if local_uploader else 8
+    ) as executor:
         for _ in executor.map(publish, manifest):
             completed += 1
             if completed % 100 == 0:

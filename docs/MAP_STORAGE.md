@@ -1,7 +1,10 @@
 # Map imagery and terrain in R2
 
-The map reads immutable public objects from
-`https://tiles.imstuckonmars.help/mars-v2/`. The R2 bucket is `ares-mars-data`
+The map reads terrain and regional imagery from
+`https://tiles.imstuckonmars.help/mars-v2/` and native-resolution global color
+imagery from `https://tiles.imstuckonmars.help/viking-native-v1/`.
+The color release is described in [VIKING_NATIVE.md](VIKING_NATIVE.md).
+The R2 bucket is `ares-mars-data`
 in the Cloudflare account that owns `imstuckonmars.help`. The app does not
 proxy these requests, expose write credentials, or use R2 for telemetry or
 mission state. D1 remains their only backend store.
@@ -53,9 +56,9 @@ global or regional elevation and the local MOLA/HRSC grid as coverage allows.
 
 Requirements: Node 24, pnpm, GDAL, curl and Python 3.11 or later. Work from
 the repository root. The first release caps retained new source downloads
-at 500 MB; the scripts also enforce smaller per-product limits. The full
-multi-terabyte CTX mosaic and full-resolution global Viking file are not
-downloaded.
+at 500 MB; the scripts also enforce smaller per-product limits. Those commands
+do not download the full CTX mosaic or full-resolution Viking file. The separate
+native Viking release has an approved 13 GB source budget and 15 GB output budget.
 
 ```sh
 nix shell nixpkgs#gdal --command node pipelines/stable/r2-imagery.ts global
@@ -81,8 +84,9 @@ The publisher uses the Cloudflare API token from its environment or the
 current Wrangler OAuth login without logging credentials. It publishes
 only this configured bucket and prefix, then writes the release manifest
 last. An existing completed release with different hashes is rejected.
-Upload starts are limited to fewer than four per second, and a local inventory
-prevents changing bytes under a partially uploaded version.
+Management-API upload starts are limited to one per second. The loopback binding
+uploader uses bounded concurrency and a release-specific start interval. A local
+inventory prevents changing bytes under a partially uploaded version.
 For bulk uploads, the management API may rate-limit before completion. Use
 the loopback-only uploader instead of exposing a public write endpoint:
 

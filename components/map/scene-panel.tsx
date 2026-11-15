@@ -62,7 +62,7 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
         <h2 className="font-heading text-sm font-semibold">Scene</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Terrain: {TERRAIN_SOURCE}. Habitat and dust storm are illustrative, not data. Planet
-          image: NASA/USGS/Ames via NASA Trek.
+          image: NASA/Viking, USGS and NASA Ames.
         </p>
         <p className="mt-1 font-mono text-sm" role="status">
           {terrainSource === LOCAL_TERRAIN_SOURCE

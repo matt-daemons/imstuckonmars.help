@@ -1,0 +1,13 @@
+{
+  "version": "viking-native-v1",
+  "accountId": "c9f498eef7a97c90a87c47f676709e7d",
+  "bucket": "ares-mars-data",
+  "publicOrigin": "https://tiles.imstuckonmars.help",
+  "directory": "data/map-assets/viking-native-v1",
+  "sourceDownloadLimitBytes": 13000000000,
+  "outputLimitBytes": 15000000000,
+  "uploadWorkers": 32,
+  "uploadIntervalSeconds": 0.01,
+  "tileSize": 1024,
+  "maxZoom": 7
+}

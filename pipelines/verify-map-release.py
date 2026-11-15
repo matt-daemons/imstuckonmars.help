@@ -3,15 +3,23 @@
 import concurrent.futures
 import hashlib
 import json
+import os
+from pathlib import Path
 import time
 import urllib.error
 import urllib.request
 
 
-root = "https://tiles.imstuckonmars.help/mars-v2"
+root = os.environ.get("MAP_RELEASE_URL", "https://tiles.imstuckonmars.help/mars-v2")
 request = urllib.request.Request(root + "/release.json", headers={"User-Agent": "ARES map verifier"})
 with urllib.request.urlopen(request, timeout=30) as response:
     release = json.load(response)
+config_path = os.environ.get("MAP_RELEASE_CONFIG")
+if config_path:
+    config = json.loads(Path(config_path).read_text())
+    local = json.loads((Path(config["directory"]) / "upload-inventory.json").read_text())
+    if release != local:
+        raise RuntimeError("Public release inventory differs from the local upload inventory")
 
 
 def verify(entry):
@@ -42,7 +50,7 @@ def verify(entry):
             time.sleep(2 ** attempt)
 
 
-with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+with concurrent.futures.ThreadPoolExecutor(max_workers=16) as executor:
     for index, _ in enumerate(executor.map(verify, release["objects"]), 1):
         if index % 250 == 0:
             print(f"Verified {index}/{len(release['objects'])}", flush=True)

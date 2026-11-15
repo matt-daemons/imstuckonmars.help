@@ -1,5 +1,14 @@
 /** Public, immutable R2 release. No credentials or write endpoints reach the client. */
 export const MAP_DATA_ROOT = "https://tiles.imstuckonmars.help/mars-v2";
+export const GLOBAL_COLOR_ROOT = "https://tiles.imstuckonmars.help/viking-native-v1";
+export const GLOBAL_COLOR_SOURCE = {
+  type: "raster",
+  tiles: [`${GLOBAL_COLOR_ROOT}/tiles/{z}/{x}/{y}.jpg`],
+  tileSize: 1024,
+  minzoom: 0,
+  maxzoom: 7,
+  attribution: "NASA/Viking; USGS; NASA Ames",
+} satisfies import("mapbox-gl").RasterSourceSpecification;
 
 export const mapAsset = (path: string) => `${MAP_DATA_ROOT}/${path}`;
 
