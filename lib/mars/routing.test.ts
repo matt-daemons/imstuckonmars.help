@@ -177,6 +177,8 @@ describe("A* route", () => {
     expect(summary).not.toBeNull();
     expect(summary!.distance_km).toBeCloseTo(1.0, 6);
     expect(summary!.est_time_min).toBeCloseTo(outbound.time_min + back.time_min, 9);
+    // Tobler on flat ground: 3.6 · e^(−0.175) ≈ 3.022 km/h, so 1 km takes about 19.85 min.
+    expect(outbound.time_min).toBeCloseTo(19.85, 1);
     expect(summary!.farthest_from_base_km).toBeCloseTo(1.0, 6);
     expect(summary!.max_slope).toBe(0);
   });

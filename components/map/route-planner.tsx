@@ -9,6 +9,7 @@ import { loadBaseGrid } from "@/lib/mars/load-route-grid";
 import type { RouteGrid } from "@/lib/mars/route-grid";
 import { EXAMPLE_ZONE } from "@/lib/mars/route-zones";
 import {
+  MAX_SLOPE_DEG,
   planWalk,
   slopeDegrees,
   wallMask,
@@ -150,11 +151,14 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   useEffect(() => {
     if (!map || !mode) return;
     const onClick = ({ lngLat }: MapMouseEvent) => {
-      const clicked: LngLat = [lngLat.lng, lngLat.lat];
+      // unproject does not wrap, so a click on a world copy can read lng ≈ 184 instead of −176.
+      const { lng, lat } = lngLat.wrap();
+      const clicked: LngLat = [lng, lat];
       if (mode === "zone") {
         setDraft((corners) => [...corners, clicked]);
       } else {
-        (mode === "start" ? setStart : setEnd)(clicked);
+        if (mode === "start") setStart(clicked);
+        else setEnd(clicked);
         setMode(null);
       }
     };
@@ -207,9 +211,15 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
           Clear zones
         </Button>
       </div>
+      <p className="text-xs">
+        No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
+      </p>
       <RouteResult plan={plan} loadFailed={loadFailed} />
       <p className="text-xs text-muted-foreground">
         Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Slopes over {MAX_SLOPE_DEG}° are walls (lunar suit limit, assumed for Mars).
       </p>
     </aside>
   );
@@ -220,6 +230,7 @@ function RouteResult({ plan, loadFailed }: { plan: Plan | null; loadFailed: bool
   if (!plan) return <p role="status">Loading elevation…</p>;
   const { outbound, back, summary } = plan;
   if (!summary) {
+    // Safe: summary is null only when a leg failed, so this status is never "ok".
     const failed = outbound.status !== "ok" ? outbound.status : back.status;
     return <p role="status">{STATUS_MESSAGES[failed as Exclude<RouteStatus, "ok">]}</p>;
   }
@@ -264,9 +275,10 @@ function line(coordinates: LngLat[], properties: Record<string, string> = {}): F
 }
 
 function routeFeatures({ outbound, back }: Plan): Feature[] {
-  return Object.entries({ outbound, back })
-    .filter(([, leg]) => leg.status === "ok")
-    .map(([name, leg]) => line(leg.path, { leg: name }));
+  const features: Feature[] = [];
+  if (outbound.status === "ok") features.push(line(outbound.path, { leg: "outbound" }));
+  if (back.status === "ok") features.push(line(back.path, { leg: "back" }));
+  return features;
 }
 
 // Mapbox needs closed polygon rings; NoGoZone rings are stored open.
