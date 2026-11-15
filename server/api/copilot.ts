@@ -19,6 +19,7 @@ import { copilotTools } from "../copilot/tools";
 import { createSession, sessionFor } from "../mission/service";
 import { scenarioPresets } from "../db/schema";
 import { database, type ApiBindings } from "./bindings";
+import { readTimedSpeech } from "../copilot/timed-speech";
 
 export const DEFAULT_VOICE_ID = "5u41aNhyCU6hXOcjPPv0";
 /** Low stability and high style keep LARA's delivery lively on the low-latency Flash model. */
@@ -58,7 +59,10 @@ const askSchema = zod
     message: "Send exactly one field: question or alert",
   });
 
-const speakSchema = zod.object({ text: zod.string().trim().min(1).max(MAX_SPOKEN_CHARS) });
+const speakSchema = zod.object({
+  text: zod.string().trim().min(1).max(MAX_SPOKEN_CHARS),
+  timestamps: zod.boolean().default(false),
+});
 
 const sessionSchema = zod.object({
   scenario: zod.enum(DEMO_SCENARIO_IDS).default(DEFAULT_SCENARIO),
@@ -163,10 +167,10 @@ copilot.post("/:id/ask", async (c) => {
 copilot.post("/:id/speak", async (c) => {
   const db = database(c.env);
   await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
-  const { text } = parse(speakSchema, await c.req.json<unknown>());
+  const { text, timestamps } = parse(speakSchema, await c.req.json<unknown>());
   const voice = c.env.ELEVENLABS_VOICE_ID || DEFAULT_VOICE_ID;
   const upstream = await fetch(
-    `${ELEVENLABS}/text-to-speech/${voice}/stream?output_format=mp3_44100_128`,
+    `${ELEVENLABS}/text-to-speech/${voice}/${timestamps ? "with-timestamps" : "stream"}?output_format=mp3_44100_128`,
     {
       method: "POST",
       redirect: "manual",
@@ -177,6 +181,17 @@ copilot.post("/:id/speak", async (c) => {
   );
   if (!upstream.ok || !upstream.body)
     throw new MissionError("voice_unavailable", `Text to speech failed (${upstream.status})`, 503);
+  if (timestamps) {
+    try {
+      return c.json(await readTimedSpeech(upstream));
+    } catch {
+      throw new MissionError(
+        "voice_unavailable",
+        "Speech timing is unavailable. Retry the response.",
+        503,
+      );
+    }
+  }
   return new Response(upstream.body, {
     headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store" },
   });
