@@ -3,6 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import type { Model } from "vosk-browser";
 
+import { MAX_CAPTURE_MS, WakeSession, type WakeHandlers } from "./wake-session";
+
+export type { AfterUtterance, WakeHandlers } from "./wake-session";
+
 /** About 41 MB, fetched once per page load. Too large for Workers static assets. */
 const MODEL_URL =
   process.env.NEXT_PUBLIC_VOSK_MODEL_URL ??
@@ -10,22 +14,12 @@ const MODEL_URL =
 
 /** Restricting the grammar to the wake phrase keeps recognition cheap and false triggers rare. */
 const GRAMMAR = JSON.stringify(["hey lara", "okay lara", "[unk]"]);
-/**
- * Only final results are trusted: partial hypotheses briefly match "lara" on unrelated speech,
- * while the final result for the same audio is "[unk]".
- */
-const WAKE_PHRASE = /\b(hey|okay) lara\b/;
-/** Words after the wake phrase mean the question was asked in the same breath. */
-const WAKE_WITH_QUESTION = /\b(hey|okay) lara \S/;
 
-const COOLDOWN_MS = 2500;
-const SPEECH_RMS = 0.02;
-const END_SILENCE_MS = 1200;
-const NO_SPEECH_MS = 5000;
-const MAX_CAPTURE_MS = 15000;
+const FRAME_SAMPLES = 4096;
 const OUTPUT_RATE = 16000;
 
-export type WakeState = "off" | "loading" | "listening" | "paused" | "error";
+/** `follow-up` listens for the next question without the wake word, after LARA has answered. */
+export type WakeState = "off" | "loading" | "listening" | "paused" | "follow-up" | "error";
 
 let modelPromise: Promise<Model> | null = null;
 function loadModel() {
@@ -69,27 +63,15 @@ export function encodeWav(chunks: Float32Array[], rate: number): Blob {
   return new Blob([view], { type: "audio/wav" });
 }
 
-const rms = (samples: Float32Array) =>
-  Math.sqrt(samples.reduce((sum, v) => sum + v * v, 0) / samples.length);
-
-export interface WakeHandlers {
-  /** Called when the wake phrase is heard alone; resolve once the reply has finished playing. */
-  onAcknowledge: () => Promise<void>;
-  /** Called when the question is being captured. */
-  onCapturing: () => void;
-  /** The captured question as WAV, including any wake phrase spoken in the same breath. */
-  onUtterance: (wav: Blob) => void;
-  /** Capture ended without speech. */
-  onNoSpeech: () => void;
-}
-
 /**
  * Listens on-device for "hey LARA" with Vosk (WebAssembly), then captures the question from the
- * same microphone stream. No audio leaves the browser until a question is captured.
+ * same microphone stream, and the next questions too while `onUtterance` asks for a follow-up.
+ * No audio leaves the browser until a question is captured.
  * While `paused` is true (LARA busy), recognition results are ignored.
  */
 export function useWakeWord(options: { enabled: boolean; paused: boolean } & WakeHandlers) {
   const [state, setState] = useState<WakeState>("off");
+  const [conversing, setConversing] = useState(false);
   const latest = useRef(options);
   latest.current = options;
 
@@ -117,70 +99,29 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
         const context = new AudioContext();
         const rate = context.sampleRate;
         const recognizer = new model.KaldiRecognizer(rate, GRAMMAR);
-        const maxChunks = Math.ceil((MAX_CAPTURE_MS / 1000) * (rate / 4096));
-
-        // Audio since the last final result, so a question spoken with the wake phrase is kept.
-        let recent: Float32Array[] = [];
-        let capture: { chunks: Float32Array[]; started: number; spokeAt: number | null } | null =
-          null;
-        let lastWake = 0;
-
-        const finishCapture = () => {
-          if (!capture) return;
-          const { chunks, spokeAt } = capture;
-          capture = null;
-          if (spokeAt === null) latest.current.onNoSpeech();
-          else latest.current.onUtterance(encodeWav(chunks, rate));
-        };
-
-        const startCapture = (chunks: Float32Array[], spokeAt: number | null) => {
-          capture = { chunks, started: Date.now(), spokeAt };
-          latest.current.onCapturing();
-        };
+        const session = new WakeSession({
+          current: () => latest.current,
+          encode: (chunks) => encodeWav(chunks, rate),
+          maxRecentChunks: Math.ceil((MAX_CAPTURE_MS / 1000) * (rate / FRAME_SAMPLES)),
+          onConversationChange: setConversing,
+        });
 
         recognizer.on("result", (m) => {
-          if (m.event !== "result") return;
-          const text = m.result.text;
-          const heard = recent;
-          recent = [];
-          const now = Date.now();
-          if (capture || latest.current.paused || !WAKE_PHRASE.test(text)) return;
-          if (now - lastWake < COOLDOWN_MS) return;
-          lastWake = now;
-          if (WAKE_WITH_QUESTION.test(text)) {
-            startCapture(heard, now);
-          } else {
-            void latest.current.onAcknowledge().then(() => !stopped && startCapture([], null));
-          }
+          if (m.event === "result") session.hearResult(m.result.text);
         });
 
         const source = context.createMediaStreamSource(stream);
         // ScriptProcessorNode is deprecated but is what vosk-browser's waveform API expects.
-        const processor = context.createScriptProcessor(4096, 1, 1);
+        const processor = context.createScriptProcessor(FRAME_SAMPLES, 1, 1);
         processor.onaudioprocess = (event) => {
           const frame = new Float32Array(event.inputBuffer.getChannelData(0));
-          if (capture) {
-            const now = Date.now();
-            capture.chunks.push(frame);
-            if (rms(frame) > SPEECH_RMS) capture.spokeAt = now;
-            const { started, spokeAt } = capture;
-            if (
-              (spokeAt !== null && now - spokeAt > END_SILENCE_MS) ||
-              (spokeAt === null && now - started > NO_SPEECH_MS) ||
-              now - started > MAX_CAPTURE_MS
-            )
-              finishCapture();
-            return;
-          }
-          if (latest.current.paused) return;
-          recent.push(frame);
-          if (recent.length > maxChunks) recent.shift();
-          recognizer.acceptWaveform(event.inputBuffer);
+          if (session.hearFrame(frame)) recognizer.acceptWaveform(event.inputBuffer);
         };
         source.connect(processor);
         processor.connect(context.destination);
         setState("listening");
         cleanup = () => {
+          session.stop();
           processor.disconnect();
           source.disconnect();
           recognizer.remove();
@@ -198,5 +139,7 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
     };
   }, [options.enabled]);
 
-  return state === "listening" && options.paused ? "paused" : state;
+  if (state !== "listening") return state;
+  if (conversing) return "follow-up";
+  return options.paused ? "paused" : state;
 }

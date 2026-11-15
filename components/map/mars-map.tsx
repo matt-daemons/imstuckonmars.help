@@ -19,6 +19,7 @@ import {
 } from "@/components/map/scene";
 import { ScenePanelBody, type SitePoi } from "@/components/map/scene-panel";
 import { RouteMapLayers } from "@/components/route/route-map-layers";
+import { LaraRouteBridge } from "@/components/route/lara-route-bridge";
 import { ConditionsProvider } from "@/components/route/conditions-provider";
 import { RoutePlanProvider } from "@/components/route/route-plan-provider";
 import { RouteSidebar } from "@/components/route/route-sidebar";
@@ -247,6 +248,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               {/* The renderer positions the container relatively, so size it with h-full. */}
               <div ref={container} className="h-full w-full" />
               <RouteMapLayers map={loaded} />
+              <LaraRouteBridge map={loaded} />
               <CrewLayer map={loaded} />
               <HomebaseMapEntry map={loaded} habitat={HABITAT} />
               <Tooltip>

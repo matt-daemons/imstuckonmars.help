@@ -22,6 +22,7 @@ const WAKE_TEXT: Record<WakeState, string> = {
   loading: "Loading wake word model (about 41 MB)…",
   listening: "Say “Hey LARA”",
   paused: "Wake word is paused while LARA is busy",
+  "follow-up": "Ask another question, or say “no thanks” to finish",
   error: "Wake word is not available. The microphone or the model did not load.",
 };
 

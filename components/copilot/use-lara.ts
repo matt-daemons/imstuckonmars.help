@@ -4,6 +4,17 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ReturnRoute } from "@/lib/mission/types";
 
+import { useLaraBridge, type LaraAction } from "./lara-bridge";
+import {
+  answerWakeQuestion,
+  FOLLOW_UP_PROMPTS,
+  pickPhrase,
+  SIGN_OFFS,
+  stripWakePhrase,
+  type WakeTurnSteps,
+} from "./follow-up";
+import type { AfterUtterance } from "./wake-session";
+
 export interface Turn {
   role: "user" | "assistant";
   content: string;
@@ -31,6 +42,13 @@ interface MissionSnapshot {
   };
 }
 
+/** The subset of POST /api/copilot/:id/ask the chat reads. */
+interface AskReply {
+  text: string;
+  /** App actions LARA named, for the browser to carry out. */
+  actions?: LaraAction[];
+}
+
 /** The subset of POST /api/missions/:id/assess-return the route check reads. */
 export interface ReturnAssessment {
   status: "modeled_resource_feasible" | "modeled_constraint_violation" | "unknown";
@@ -40,9 +58,11 @@ export interface ReturnAssessment {
 type Status = "starting" | "idle" | "listening" | "transcribing" | "thinking" | "speaking";
 
 const WAKE_REPLY = "Yes?";
-const LEADING_WAKE_PHRASE = /^\s*(hey|okay|ok)[\s,]+(lara|laura|lora)\b[\s,.!?]*/i;
+/** How often a follow-up waits for an alert LARA is still answering. */
+const ASK_DONE_CHECK_MS = 100;
 export const POLL_MS = 2000;
 const HISTORY_TURNS = 8;
+const ACTION_GAP_MS = 50;
 
 async function json<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & { error?: { message?: string } };
@@ -67,6 +87,11 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const recorder = useRef<MediaRecorder | null>(null);
   const audio = useRef<HTMLAudioElement | null>(null);
   const busy = useRef(false);
+  const bridge = useLaraBridge();
+  // Each line waits for the one before it, so a line never cuts off another.
+  const speechQueue = useRef<Promise<void>>(Promise.resolve());
+  /** Lines LARA repeats (the wake reply, follow-up prompts, sign-offs, fixed lines), synthesized once. */
+  const phraseClips = useRef(new Map<string, Promise<Blob>>());
 
   const authed = useCallback(
     (path: string, init: RequestInit = {}) => {
@@ -137,25 +162,76 @@ export function useLara(shared?: { id: string; token: string } | null) {
     [authed, mission],
   );
 
+  const phraseClip = useCallback(
+    (text: string) => {
+      const cached = phraseClips.current.get(text);
+      if (cached) return cached;
+      const clip = synthesize(text);
+      phraseClips.current.set(text, clip);
+      clip.catch(() => phraseClips.current.delete(text));
+      return clip;
+    },
+    [synthesize],
+  );
+
   const play = useCallback(async (clip: Blob) => {
     const url = URL.createObjectURL(clip);
     audio.current?.pause();
     const player = new Audio(url);
     audio.current = player;
     await new Promise<void>((resolve) => {
-      player.onended = player.onerror = () => resolve();
+      // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
+      player.onended = player.onerror = player.onpause = () => resolve();
       player.play().catch(() => resolve());
     });
     URL.revokeObjectURL(url);
   }, []);
 
+  const enqueueSpeech = useCallback(
+    (clip: Promise<Blob>) => {
+      const spoken = speechQueue.current.then(async () => {
+        setStatus("speaking");
+        await play(await clip);
+      });
+      speechQueue.current = spoken.catch(() => {});
+      return spoken;
+    },
+    [play],
+  );
+
   const speak = useCallback(
     async (text: string) => {
       if (!mission || !voice) return;
-      setStatus("speaking");
-      await play(await synthesize(text));
+      await enqueueSpeech(synthesize(text));
     },
-    [mission, play, synthesize, voice],
+    [enqueueSpeech, mission, synthesize, voice],
+  );
+
+  /** Says one of the app's fixed lines at once, keeping its clip for the next time. */
+  const say = useCallback(
+    (text: string) => {
+      setTurns((t) => [...t, { role: "assistant", content: text }]);
+      if (!mission || !voice) return;
+      enqueueSpeech(phraseClip(text)).catch(() => setError("LARA's voice is unavailable"));
+    },
+    [enqueueSpeech, mission, phraseClip, voice],
+  );
+
+  useEffect(() => bridge.speaker(say), [bridge, say]);
+
+  // A gap between actions lets React render the last one, so the next handler sees its result.
+  const runActions = useCallback(
+    async (actions: LaraAction[]) => {
+      for (const [index, action] of actions.entries()) {
+        if (index > 0) await afterRender();
+        try {
+          bridge.run(action);
+        } catch {
+          setError(`The app could not carry out ${action.type.replaceAll("_", " ")}`);
+        }
+      }
+    },
+    [bridge],
   );
 
   const ask = useCallback(
@@ -174,13 +250,14 @@ export function useLara(shared?: { id: string; token: string } | null) {
       setTurns((t) => [...t, userTurn]);
       setStatus("thinking");
       try {
-        const answer = await json<{ text: string }>(
+        const answer = await json<AskReply>(
           await authed(`copilot/${mission.id}/ask`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...input, history }),
+            body: JSON.stringify({ ...input, history, context: bridge.context() }),
           }),
         );
+        await runActions(answer.actions ?? []);
         setTurns((t) => [...t, { role: "assistant", content: answer.text, alert: userTurn.alert }]);
         await speak(answer.text);
       } catch (e) {
@@ -190,7 +267,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         setStatus("idle");
       }
     },
-    [authed, mission, speak, turns],
+    [authed, bridge, mission, runActions, speak, turns],
   );
 
   // Poll the mission; announce any finding that was not present before.
@@ -255,20 +332,28 @@ export function useLara(shared?: { id: string; token: string } | null) {
     [authed, mission],
   );
 
+  const transcribe = useCallback(
+    async (clip: Blob) => {
+      if (!mission) throw new Error("The mission is not ready yet");
+      setStatus("transcribing");
+      const { text } = await json<{ text: string }>(
+        await authed(`copilot/${mission.id}/transcribe`, {
+          method: "POST",
+          headers: { "Content-Type": clip.type.split(";")[0] },
+          body: clip,
+        }),
+      );
+      return text;
+    },
+    [authed, mission],
+  );
+
   /** Transcribes a recorded question and asks LARA, dropping a leading wake phrase. */
   const askFromAudio = useCallback(
     async (clip: Blob) => {
       if (!mission) return;
-      setStatus("transcribing");
       try {
-        const { text } = await json<{ text: string }>(
-          await authed(`copilot/${mission.id}/transcribe`, {
-            method: "POST",
-            headers: { "Content-Type": clip.type.split(";")[0] },
-            body: clip,
-          }),
-        );
-        const question = text.replace(LEADING_WAKE_PHRASE, "").trim();
+        const question = stripWakePhrase(await transcribe(clip));
         if (question) await ask({ question });
         else setStatus("idle");
       } catch (e) {
@@ -276,7 +361,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         setStatus("idle");
       }
     },
-    [ask, authed, mission],
+    [ask, mission, transcribe],
   );
 
   const startListening = useCallback(async () => {
@@ -306,25 +391,54 @@ export function useLara(shared?: { id: string; token: string } | null) {
 
   const stopListening = useCallback(() => recorder.current?.stop(), []);
 
+  const prefetchFollowUpPhrases = () => {
+    if (voice) [...FOLLOW_UP_PROMPTS, ...SIGN_OFFS].forEach(phraseClip);
+  };
+  /** Plays a short phrase. Resolves once it has finished, or at once with the voice off. */
+  const sayPhrase = async (text: string) => {
+    if (!voice) return;
+    try {
+      // Queued, so a phrase never cuts off a fixed line or an answer still playing.
+      await enqueueSpeech(phraseClip(text));
+    } catch {
+      // Without the clip, LARA skips the phrase and keeps going.
+    }
+  };
+
+  const lastPhrase = useRef<string | null>(null);
+  const wakeTurnSteps: WakeTurnSteps = {
+    waitForAskDone: async () => {
+      while (busy.current) await new Promise((r) => setTimeout(r, ASK_DONE_CHECK_MS));
+    },
+    transcribe,
+    ask: (question) => ask({ question }),
+    say: sayPhrase,
+    choose: (phrases) => (lastPhrase.current = pickPhrase(phrases, lastPhrase.current)),
+  };
+
   /** Handlers for the on-device wake word, which captures the question itself. */
-  const ackClip = useRef<Promise<Blob> | null>(null);
   const wakeHandlers = {
     onAcknowledge: async () => {
       setError(null);
       setStatus("speaking");
-      if (!voice) return;
-      try {
-        ackClip.current ??= synthesize(WAKE_REPLY);
-        await play(await ackClip.current);
-      } catch {
-        ackClip.current = null;
-      }
+      await sayPhrase(WAKE_REPLY);
     },
     onCapturing: () => {
       audio.current?.pause();
       setStatus("listening");
+      prefetchFollowUpPhrases();
     },
-    onUtterance: (clip: Blob) => void askFromAudio(clip),
+    onUtterance: async (clip: Blob): Promise<AfterUtterance> => {
+      try {
+        const next = await answerWakeQuestion(clip, wakeTurnSteps);
+        if (next === "end") setStatus("idle");
+        return next;
+      } catch (e) {
+        setError((e as Error).message);
+        setStatus("idle");
+        return "end";
+      }
+    },
     onNoSpeech: () => setStatus("idle"),
   };
 
@@ -344,6 +458,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
     stopListening,
     wakeHandlers,
   };
+}
+
+function afterRender(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ACTION_GAP_MS));
 }
 
 /** `crypto.randomUUID` exists only in secure contexts (HTTPS/localhost); LAN-IP dev over HTTP lacks it. */

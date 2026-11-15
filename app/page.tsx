@@ -1,3 +1,4 @@
+import { LaraBridgeProvider } from "@/components/copilot/lara-bridge";
 import { LaraProvider } from "@/components/copilot/lara-context";
 import { LaraLauncher } from "@/components/copilot/lara-launcher";
 import { LaraPanel } from "@/components/copilot/lara-panel";
@@ -10,6 +11,7 @@ export default function Home() {
     <main className="relative">
       {/* One mission session for the whole page: the map, the expedition HUD and LARA. */}
       <ExpeditionProvider>
+        <LaraBridgeProvider>
         <LaraProvider>
           <MarsMap>
             <VerdictStrip />
@@ -18,6 +20,7 @@ export default function Home() {
             </LaraLauncher>
           </MarsMap>
         </LaraProvider>
+        </LaraBridgeProvider>
       </ExpeditionProvider>
     </main>
   );

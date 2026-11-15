@@ -30,6 +30,7 @@ describe("initialRoutePlan", () => {
       zonesDrawn: 0,
       step: "mission",
       showShortest: false,
+      route: "safest",
     });
   });
 });
@@ -44,6 +45,7 @@ describe("routePlanReducer", () => {
     { action: { type: "clearZones" }, changed: { zones: [] } },
     { action: { type: "goTo", step: "check" }, changed: { step: "check" } },
     { action: { type: "showShortest", shown: true }, changed: { showShortest: true } },
+    { action: { type: "chooseRoute", route: "shortest" }, changed: { route: "shortest" } },
   ];
   it.each(cases)("$action.type changes only its own field", ({ action, changed }) => {
     expect(routePlanReducer(initial, action)).toEqual({ ...initial, ...changed });
