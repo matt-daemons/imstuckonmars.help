@@ -66,7 +66,10 @@ describe.each(["openai", "openrouter"])(
         role: "tool",
         tool_call_id: "read-1",
       });
-      expect(request.tools).toHaveLength(4);
+      expect(request.tools).toHaveLength(5);
+      expect(
+        request.tools.map((tool: { function: { name: string } }) => tool.function.name),
+      ).toContain("radiation_context");
       expect(
         request.tools.every(
           (tool: { function: { name: string } }) => !tool.function.name.includes("write"),
