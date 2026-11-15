@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sun Nov 15, 2026 (handoff written) (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -163,6 +163,42 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 Respond from these perspectives/expertise: A: You are a geospatial professional (10+ years of experience with GIS, working with agentic workflows and constantly keeping your skills up-to-date since 2024) whom I've hired to complete simpler tasks I want to offload, and can advise me on the best workflows to complete these tasks if I need to be the one doing them. B. A data scientist with 15 years of experience and great enthusiasm about automating data pipelines and aggregating data to extract value, especially in the age of Gen AI. Most of your expertise has been in creating CLEAN data pipelines. 3 years ago, you pivoted your career to education and have been tutoring adults who want to make the career transition to data science, so you know how to tailor individual education plans. C. NASA veteran who's been chief engineer in mission planning for various Apollo and Artemis missions, and has experience from the Moon landing in 1969.
 
 # Project Handoff/Next Steps as of 14:32 on 14 November 2026
+
+## ▶ Handoff — start here (Jess / team role B, as of Sun Nov 15, 2026)
+
+**Where things stand**
+
+- Role B work so far = **4 HiRISE water-ice sites** (science objective: water-ice procurement / ISRU) as POIs on the team's Mapbox globe map:
+  0.45 m imagery, 1 m 3D terrain, slope + 20° hazard overlay, NASA/JPL/University of Arizona attribution. Details: Steps 2–3 and
+  "Data quality & processing decisions" below.
+- **Local `main` is ahead of GitHub (sites work) — push it.** CI's `scripts/models/models.test.mjs` fails on `origin/main` too (teammates' model
+  byte-compare), not from our changes.
+- **Hosting:** M uploads `data/map-assets/sites-v1/` (from `pnpm sites:package`) to R2 and **sets `SITE_DATA_ROOT`** in
+  `lib/mars/map-data.ts` himself. Until then the site layers exist only on machines that ran the pipelines. Check with M that it's live.
+- **Role C** has the brief (below) and agreed a **slope-only cost surface first**; slope COGs are in `sites-v1/slope/` (Int16, value/10 = °).
+- **Team decision pending:** sites are **93–468 km** from the habitat but walk-back ≤ 2 km — rover traverse / forward camp / landing per site? (A + C + M.)
+
+**Next step for Role B:** Step 4a data layers — **SWIM** ice consistency (swim.psi.edu was down, HTTP 523; NASA PIA26045 PNG is slide-only),
+then **THEMIS thermal inertia**, then geology / roughness / dust (see "Future data layers").
+
+**How to run (from repo root, Node 24 via fnm, GDAL via brew)**
+
+- `pnpm dev` → http://localhost:5173 (needs `NEXT_PUBLIC_MAPBOX_TOKEN` in `.env.local`). **Restart it after running any tile pipeline.**
+- Site pipeline: `pnpm pipe:sites [dtm]` → `pnpm pipe:slope <dtm>` → `pnpm sites:package`. Raw inputs (1.8 GB) in `data/raw/hirise/`
+  (URLs in `data/raw/README.md`); intermediates in `data/interim/hirise/<dtm>/` (keep `dem.tif`, `ortho.tif`, `*.vrt`, `slope-deg.tif`,
+  `mola-pad.tif`, `footprint.geojson`, `dtm-srs.wkt`; the rest is regenerable scratch).
+- Checks before pushing: `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+
+**Key files (Role B)**
+
+- Pipelines: `pipelines/stable/hirise-sites.ts`, `pipelines/stable/slope.ts`, `pipelines/lib/xyz.ts`, `pipelines/package-sites-release.ts`,
+  `pipelines/sites-release.json`.
+- Map: `components/map/scene.ts` (`addSites`, `setSlopeVisible`, terrain switching), `components/map/scene-panel.tsx` (site list, slope switch),
+  `components/map/mars-map.tsx` (sites.geojson, labels, click-to-fly, attribution control), `lib/mars/terrain.ts` (`terrainSourceForView` + sites),
+  `lib/mars/map-data.ts` (`SITE_DATA_ROOT`).
+- Data: `public/data/processed/sites.geojson` (committed), `public/data/processed/manifest.json` (`sites` layer).
+
+**Working preferences (Jess):** work directly on `main`, no feature branches; ask before pushing; explain jargon in plain language.
 
 ## Toolchain (team-agreed Sat Nov 14)
 
