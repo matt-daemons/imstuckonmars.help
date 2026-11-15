@@ -65,7 +65,6 @@ export function fakeSensorFeatures(frame: number) {
         id: reading.sensor.id,
         ground: reading.ground,
         air: reading.air,
-        hardness: reading.hardness,
         pressure: reading.pressure,
         radiation: reading.radiation,
         humidity: reading.humidity,

@@ -23,6 +23,6 @@ describe("synthetic shaded fields", () => {
     expect(fieldBand(-200, -110, 5)).toBe(0);
     expect(fieldBand(500, -110, 5)).toBe(6);
     expect(Object.values(FAKE_FIELD_PALETTES).every((colors) => colors.length === 7)).toBe(true);
-    expect(new Set(Object.values(FAKE_FIELD_PALETTES).map((colors) => colors.join())).size).toBe(5);
+    expect(new Set(Object.values(FAKE_FIELD_PALETTES).map((colors) => colors.join())).size).toBe(4);
   });
 });

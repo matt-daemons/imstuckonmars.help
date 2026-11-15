@@ -3,6 +3,9 @@ import { fakeSensorFeatures, fakeWindFeatures, FAKE_LAYER_IDS } from "./fake-sen
 import { FAKE_LAST_FRAME } from "@/lib/mars/fake-sensors";
 
 describe("fake sensor map data", () => {
+  it("omits removed soil hardness from generated data", () => {
+    expect(fakeSensorFeatures(0).features[0].properties).not.toHaveProperty("hardness");
+  });
   it("draws a geographic vector with arrowhead for each station without long seam jumps", () => {
     const field = fakeWindFeatures(1000);
     expect(field.features).toHaveLength(580);
@@ -23,7 +26,6 @@ describe("fake sensor map data", () => {
         id: "FS-001",
         ground: expect.any(Number),
         air: expect.any(Number),
-        hardness: expect.any(Number),
         pressure: expect.any(Number),
         radiation: expect.any(Number),
         humidity: expect.any(Number),

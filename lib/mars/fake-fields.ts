@@ -4,7 +4,6 @@ export type FakeShadedField = Exclude<FakeScalar, "humidity">;
 export const FAKE_FIELD_PALETTES: Record<FakeShadedField, readonly string[]> = {
   ground: ["#405da8", "#81b3d2", "#d5e6eb", "#eee6d6", "#edbd78", "#dd824b", "#a93532"],
   air: ["#435899", "#8ab6d2", "#dce7ee", "#f3e8d3", "#eac58a", "#df945b", "#b54a36"],
-  hardness: ["#f0e5bd", "#d1bf87", "#b19663", "#8e754e", "#685b4a", "#484d4e", "#2e3b49"],
   pressure: ["#514987", "#7772a6", "#aaa4c2", "#e5e1e8", "#a6cbca", "#64a2ae", "#316b88"],
   radiation: ["#eee0c4", "#e7be85", "#d79669", "#ba6b66", "#96556b", "#70476b", "#493955"],
 };

@@ -13,8 +13,8 @@ generated on demand instead of keeping over 36 million readings in memory.
 The display clock divides a SOL into 24 equal synthetic hours, not Earth hours.
 There are no real dates or claims of observations from a future instrument.
 
-Eight layer controls show sensor locations, wind and sandstorm direction,
-ground temperature, above-ground temperature, soil hardness, pressure, radiation
+Seven layer controls show sensor locations, wind and sandstorm direction,
+ground temperature, above-ground temperature, pressure, radiation
 and relative humidity. The equations in `lib/mars/fake-sensors.ts` are invented,
 bounded and deterministic. They are not calibrated Mars models.
 Repeatable spherical noise adds broad regional weather, smaller moving fronts
@@ -25,8 +25,6 @@ less uniform without implying that the invented patterns are real observations.
 - Wind arrows point **toward** the travel heading, clockwise from north.
   Storm intensity is a unitless illustrative index, not measured dust opacity.
 - Temperatures use degrees Celsius. Sensor depth and height are unspecified.
-- Soil hardness is fictional penetration resistance in MPa. It does not certify
-  terrain traversability or replace the existing terrain and slope products.
 - Radiation is fictional detector absorbed dose rate in µGy per Earth day.
   It is not human dose equivalent, crew exposure or a radiation-safety forecast.
 - Relative humidity is fictional percent. It does not reinterpret the archived
@@ -40,9 +38,9 @@ label and per-layer units accompany every enabled fake-data view.
 ## Controls
 
 Open Debug with Shift+D and enable Fake data mode. A dashed frame and persistent
-map legend identify the synthetic view. Map layers then contains eight separate
+map legend identify the synthetic view. Map layers then contains seven separate
 toggles and the shared timeline. Only sensor locations start visible. Ground
-temperature, air temperature, hardness, pressure and radiation use seven-band
+temperature, air temperature, pressure and radiation use seven-band
 shaded fields with distinct palettes and darker contour boundaries. One shaded
 field is visible at a time; selecting another switches it. These fields evaluate
 the invented equations between sensors, not an observed global dataset. Four

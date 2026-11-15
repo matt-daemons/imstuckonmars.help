@@ -66,6 +66,6 @@ describe("fictional future sensor network", () => {
       fakeReading(FAKE_SENSORS[125], 4000).ground,
     );
     expect(Object.values(INITIAL_FAKE_VISIBILITY).filter(Boolean)).toHaveLength(1);
-    expect(FAKE_LAYERS).toHaveLength(8);
+    expect(FAKE_LAYERS).toHaveLength(7);
   });
 });

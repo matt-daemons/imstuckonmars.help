@@ -60,9 +60,8 @@ export function fakeSensorReducer(
         ...state,
         visible: {
           ...state.visible,
-          ...(action.visible &&
-          ["ground", "air", "hardness", "pressure", "radiation"].includes(action.layer)
-            ? { ground: false, air: false, hardness: false, pressure: false, radiation: false }
+          ...(action.visible && ["ground", "air", "pressure", "radiation"].includes(action.layer)
+            ? { ground: false, air: false, pressure: false, radiation: false }
             : {}),
           [action.layer]: action.visible,
         },

@@ -1,7 +1,7 @@
 import type { LngLat } from "./types";
 import { fakeFieldVariation } from "./fake-field-variation";
 
-export const FAKE_SENSOR_VERSION = "future-sensors-v2";
+export const FAKE_SENSOR_VERSION = "future-sensors-v3";
 export const FAKE_SOL_SECONDS = 88775.244;
 export const FAKE_SOL_COUNT = 7;
 export const FAKE_SENSOR_COUNT = 580;
@@ -19,7 +19,6 @@ export const FAKE_LAYERS = [
   { id: "wind", label: "Wind and sandstorm direction", unit: "m/s", low: 0, high: 35 },
   { id: "ground", label: "Ground temperature", unit: "°C", low: -110, high: 5 },
   { id: "air", label: "Above-ground temperature", unit: "°C", low: -100, high: 0 },
-  { id: "hardness", label: "Soil hardness", unit: "MPa", low: 0, high: 12 },
   { id: "pressure", label: "Atmospheric pressure", unit: "Pa", low: 400, high: 1100 },
   { id: "radiation", label: "Radiation absorbed dose rate", unit: "µGy/day", low: 100, high: 600 },
   { id: "humidity", label: "Relative humidity", unit: "%", low: 0, high: 100 },
@@ -33,7 +32,6 @@ export const INITIAL_FAKE_VISIBILITY: FakeVisibility = {
   wind: false,
   ground: false,
   air: false,
-  hardness: false,
   pressure: false,
   radiation: false,
   humidity: false,
@@ -63,8 +61,6 @@ export interface FakeReading {
   storm: number;
   ground: number;
   air: number;
-  /** Synthetic penetration resistance. Does not establish traversability. */
-  hardness: number;
   pressure: number;
   /** Synthetic detector absorbed dose, not human exposure or dose equivalent. */
   radiation: number;
@@ -124,15 +120,6 @@ export function fakeReading(sensor: FakeSensor, frame: number): FakeReading {
     storm,
     ground,
     air,
-    hardness: clamp(
-      5 +
-        3 * Math.sin(lon * 2) * Math.cos(lat * 3) +
-        1.5 * Math.cos(lat * 7) -
-        storm * 0.3 +
-        variation.terrain * 3,
-      0,
-      12,
-    ),
     pressure: clamp(
       720 +
         170 * Math.cos(lat) * Math.sin(lon + 0.7) +
