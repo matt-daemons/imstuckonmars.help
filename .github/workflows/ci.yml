@@ -36,7 +36,8 @@ jobs:
 
   deploy:
     needs: check
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    # Demo freeze: `gh variable set DEPLOY_PAUSED --body true` keeps checks running but stops deploys.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.DEPLOY_PAUSED != 'true'
     runs-on: ubuntu-latest
     environment: production
     # Deploy in push order; never cancel a deploy that is already running.
@@ -55,3 +56,9 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      # A successful upload doesn't prove the site serves; retry because a new version takes a few seconds to roll out.
+      - name: Smoke test production
+        run: |
+          for path in / /api/health; do
+            curl -fsS -o /dev/null --retry 5 --retry-delay 5 --retry-all-errors "https://imstuckonmars.help$path"
+          done
