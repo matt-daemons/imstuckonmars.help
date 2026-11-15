@@ -1,0 +1,193 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_033225_2250_033146_2250_A01",
+        "hirise_id": "ESP_033225_2250",
+        "title": "Possible Terraced Crater in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_033225_2250",
+        "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "footprint"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-176.388061562203, 44.460770828101936],
+              [-176.388061562203, 44.357640820604274],
+              [-176.2531304645478, 44.357640820604274],
+              [-176.2531304645478, 44.460770828101936],
+              [-176.388061562203, 44.460770828101936]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_033225_2250_033146_2250_A01",
+        "hirise_id": "ESP_033225_2250",
+        "title": "Possible Terraced Crater in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_033225_2250",
+        "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "poi",
+        "position_note": "DTM centre; crater centre approximate"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-176.3205960133754, 44.40920582435311]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_034082_2260_033014_2260_A01",
+        "hirise_id": "ESP_034082_2260",
+        "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_034082_2260",
+        "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "footprint"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-171.44872904500664, 45.69094997624189],
+              [-171.44872904500664, 45.583686670553995],
+              [-171.3020053945556, 45.583686670553995],
+              [-171.3020053945556, 45.69094997624189],
+              [-171.44872904500664, 45.69094997624189]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_034082_2260_033014_2260_A01",
+        "hirise_id": "ESP_034082_2260",
+        "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_034082_2260",
+        "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "poi",
+        "position_note": "DTM centre; crater centre approximate"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.37536721978114, 45.63731832339794]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_037352_2245_037418_2245_A01",
+        "hirise_id": "ESP_037352_2245",
+        "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
+        "confirmed": true,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_037352_2245",
+        "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "footprint"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [-166.1919574145736, 44.45142961544481],
+              [-166.1919574145736, 44.317190212588784],
+              [-166.08145495275295, 44.317190212588784],
+              [-166.08145495275295, 44.45142961544481],
+              [-166.1919574145736, 44.45142961544481]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_037352_2245_037418_2245_A01",
+        "hirise_id": "ESP_037352_2245",
+        "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
+        "confirmed": true,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_037352_2245",
+        "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "poi",
+        "position_note": "DTM centre; crater centre approximate"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-166.13670618366328, 44.3843099140168]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_054060_2265_054126_2265_A01",
+        "hirise_id": "ESP_054060_2265",
+        "title": "Ridges in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_054060_2265",
+        "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "footprint"
+      },
+      "geometry": {
+        "type": "MultiPolygon",
+        "coordinates": [
+          [
+            [
+              [172.48197438257688, 46.17772814666094],
+              [172.48197438257688, 45.9626954171394],
+              [172.6461422384512, 45.9626954171394],
+              [172.6461422384512, 46.17772814666094],
+              [172.48197438257688, 46.17772814666094]
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "DTEEC_054060_2265_054126_2265_A01",
+        "hirise_id": "ESP_054060_2265",
+        "title": "Ridges in Arcadia Planitia",
+        "confirmed": false,
+        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "url": "https://www.uahirise.org/ESP_054060_2265",
+        "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
+        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "kind": "poi",
+        "position_note": "DTM centre; crater centre approximate"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [172.56405831051404, 46.07021178190017]
+      }
+    }
+  ]
+}

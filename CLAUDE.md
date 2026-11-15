@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sat Nov 14, 2026 19:30 (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sat Nov 14, 2026 20:30 (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -89,7 +89,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | RAD     | Radiation absorbed-dose rate          | µGy/h                                         |
 
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
-| Science problem | **OPEN** — do we need one, or is it just routing/forecasting? (Expert view: yes — without science stops, the route only avoids hazards and has no purpose. Plan stops → route → timeline → walk-back check.) |
+| Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and suit resources. |
 | Flight rules / assumptions | Slope limit: **20°** (from Artemis lunar planning — label as assumption for Mars). Suit budget, radiation thresholds, walk-back reserve: **PLACEHOLDER defaults** in `config.yaml` (8 h · 50/500 µGy/h · 30 %) — not agreed, replace before demo. |
 
 ## 5. User story — "Plan a science mission and get home"
@@ -142,7 +142,7 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 
 ## 7. Open questions / known inconsistencies to resolve
 
-1. **Science objective — still open.** Candidates that fit Arcadia: subsurface ice / ice-exposing craters (ISRU, water theme), scalloped terrain, periglacial landforms.
+1. ~~**Science objective**~~ ✅ water-ice procurement (ISRU) — see §4.
 2. **HiRISE DTM coverage in Arcadia Planitia:** check which DTMs exist, then pick an AOI that fits.
 3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
 4. **Fill in flight rules:** suit supply budget, radiation thresholds, walk-back rule.
@@ -219,20 +219,40 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 - ~~1a–1g~~ ✅ install, build, tests, map verified in browser, pipeline skeleton (GDAL 3.13.3, `pnpm pipe:check`).
 - ~~1h. Port to Mapbox v3~~ ✅ (Sat ~19:30) — see Current state. Needs `NEXT_PUBLIC_MAPBOX_TOKEN` locally and in the CI build.
 
-### Step 2 — AOI (team role B / Jess, with Advisor A)
+### Step 2 — AOI → 4 HiRISE water-ice sites (team role B / Jess, with Advisor A)
 
-- 2a. ~~Verify −176°, 46°N is inside Arcadia~~ ✅ roughly (Gazetteer map readout 46.4°N 181.4°E is inside the outline; placeholder sits ~107 km east,
-  still inside). Still to do: copy Arcadia's **official center + N/S/E/W bounds** from the Gazetteer entry, then **search HiRISE DTMs** in those bounds
-  (Mars Orbital Data Explorer, ode.rsl.wustl.edu/mars) and pick the AOI near a science target (ice-exposing craters / scalloped terrain).
-- 2b. ~~Confirm Mars 2000 radius matches GDAL/PROJ~~ ✅ (`IAU_2015:49900` = `+R=3396190`). Still to do: record CRS, lat convention, lon direction per file in `data/raw/README.md`.
+- ~~2a. Pick AOI~~ ✅ **All 4 shortlisted DTMs are the AOI** (MVP: POIs we route to). ODE REST search (160–215°E, 30–65°N) → 59 HiRISE DTMs.
+  | DTM                                                                                                             | HiRISE obs      | POI (DTM centre) | Title (HiRISE team)                                          |
+  | --------------------------------------------------------------------------------------------------------------- | --------------- | ---------------- | ------------------------------------------------------------ |
+  | DTEEC_033225_2250_033146_2250_A01                                                                               | ESP_033225_2250 | 44.41°N 183.68°E | Possible Terraced Crater — **habitat site**                  |
+  | DTEEC_034082_2260_033014_2260_A01                                                                               | ESP_034082_2260 | 45.64°N 188.62°E | Possible Terraced Bullseye-Like Crater                       |
+  | DTEEC_037352_2245_037418_2245_A01                                                                               | ESP_037352_2245 | 44.38°N 193.86°E | Terraced Bullseye-Like Crater (confirmed; flat surroundings) |
+  | DTEEC_054060_2265_054126_2265_A01                                                                               | ESP_054060_2265 | 46.07°N 172.56°E | Ridges (west of ±180)                                        |
+  | POIs sit at the DTM centre (HiRISE targeted the crater; exact crater centre approximate — refine by eye later). |
+- ~~2b. CRS per file~~ ✅ logged in `data/raw/README.md`. **Gotchas found:** DTMs use local-radius spheres (3386–3388 km), not Mars 2000 —
+  reprojected to `+proj=longlat +R=3396190`; **two RED_A JP2s (034082, 037352) have a broken GeoJP2 standard parallel** (GDAL places them at
+  84–90°N) → pipeline assigns the DTM's CRS (metre coords match exactly). Sites straddle ±180 → MOLA cut in two pieces.
 - ~~2c. Data home~~ ✅ decided in 0e (telemetry in D1; map rasters in `public/data/`).
-- 2d. Update `manifest.json` + `config.yaml` AOI (and regenerate terrain tiles for the new AOI).
+- ~~2d. Manifest/config AOI~~ ✅ `manifest.json` AOI = the 4 sites (bounds cross ±180: west > east); `sites` layer added; base + placeholder
+  route moved to site 1 (both labelled PLACEHOLDER). `config.yaml` `aoi` still the old placeholder → update when team role A next touches config.
+- 2e. ✅ **Pipelines:** `pnpm pipe:mola` (MOLA z5–8, both sides of ±180, committed) then `pnpm pipe:sites` (per site: DTM → lon/lat; ortho
+  0.25 m → 0.45 m; imagery WebP z11–17; terrain z9–15 HiRISE + MOLA fill; `public/data/processed/sites.geojson`). ~2 min/site; ~1.8 GB raw.
+- 2f. **OPEN — Hosting the site tiles.** Measured: site imagery 204 MB + terrain 147 MB ≈ **350 MB, ~20.7k files** — **gitignored**, so they
+  exist only where `pnpm pipe:sites` ran; the deployed site shows MOLA only. Team rule: > 1 GB → M's Mapbox account, so this stays with us.
+  **Recommend a Cloudflare R2 bucket** (Workers static assets have a per-version file-count limit — unverified, believed ~20k — too close).
+  Note: Mapbox free-tier "200k" is (to our understanding, unverified) a monthly _request_ allowance, not a stored-tile cap.
+- 2g. **OPEN (polish)** HiRISE RED is greyscale; optionally tint it or blend with the MOLA colour base. Zoom 18 (0.22 m) possible but ~4× tiles.
 
 ### Step 3 — First real layers (team role B)
 
-- 3a. Hillshade, slope, hazard mask (20° — labeled assumption): COG + PNG/WebP preview + corners.
-- 3b. Check: overlay preview on a known feature for misalignment (tests the linear image-corner approximation at real AOI size).
-- 3c. Check: each layer's NASA source shows in the panel.
+- 3a. **Site 1 done** (`pnpm pipe:slope <dtm>` → `pipelines/stable/slope.ts`): slope computed on a local equirectangular **metre** grid (Mars 2000
+  sphere, centred on the site) from the 1 m DTM, warped back to lon/lat. COG with true degrees: `data/processed/sites/<dtm>/slope.tif`
+  (gitignored); classed overlay tiles z11–16: yellow 10–15°, orange 15°–limit, red ≥ limit (`config.yaml` `slope_max_deg`, PLACEHOLDER 20°).
+  **ESP_033225: mean 4.3°, 0.1 % ≥ 20°** — very walkable. HiRISE DTM edges are unreliable (fake 90° cliffs) → slope blanked within 10 m of
+  no-data. A few isolated 1-px spikes remain (max 72°); report percentiles, not max. **To do: run for the other 3 sites.**
+  Hillshade = Mapbox's native `hillshade` layer on the shared terrain source (no extra files). Map: "Slope hazard" switch in the Scene panel.
+- 3b. Check: overlay preview on a known feature for misalignment — HiRISE imagery vs DTM vs slope share one lon/lat grid; still eyeball it.
+- 3c. Check: each layer's NASA source shows in the panel (sites layer ✅; slope is in the Scene panel text).
 
 ### Step 4 — ≥3 NASA data types
 
