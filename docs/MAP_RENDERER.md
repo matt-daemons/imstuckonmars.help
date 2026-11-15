@@ -38,6 +38,14 @@ and Mars model scaling are unchanged.
 
 ## LARA listening indicator
 
+Explicit travel requests to one uniquely named destination, such as “Can we go
+to Ridges in Arcadia Planitia?”, resolve against the current validated
+destination list before model inference. They use the existing destination
+selection action, open Check and start route calculation. They never launch
+the expedition, choose a route or change resource settings. Ambiguous names,
+negated requests, comparisons and informational questions remain with the
+normal tool-assisted conversation.
+
 With wake listening enabled, final on-device recognition of “Hey LARA” or
 “LARA” starts the existing voice flow. During question capture, the chat opens,
 the launcher says LARA is listening, and a narrow cyan WebGL edge effect marks
