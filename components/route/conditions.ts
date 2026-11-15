@@ -1,3 +1,4 @@
+import type { SpaceWeatherReport } from "@/lib/flight-rules/donki";
 import { evaluateDrive } from "@/lib/flight-rules/drive";
 import {
   evaluateWithConditions,
@@ -41,6 +42,9 @@ export function isDrillSet(drill: Drill): boolean {
   return Object.values(drill).some((value) => value !== null);
 }
 
+/** NASA DONKI's last space-weather report, or where fetching it stands. */
+export type SpaceWeatherFeed = SpaceWeatherReport | "loading" | "failed";
+
 /** What the app reads for real, before any drill. */
 export interface RealReadings {
   /** The Mars clock at the habitat now. */
@@ -49,9 +53,15 @@ export interface RealReadings {
   doseRate: number | string;
   /** The dust simulation's opacity at the habitat, null while it is not loaded and shown. */
   simulatedDust: number | null;
+  spaceWeather: SpaceWeatherFeed;
 }
 
-export function realConditions({ clock, doseRate, simulatedDust }: RealReadings): Conditions {
+export function realConditions({
+  clock,
+  doseRate,
+  simulatedDust,
+  spaceWeather,
+}: RealReadings): Conditions {
   const conditions: Conditions = {
     solar_alert_level: null,
     radiation_dose_rate: null,
@@ -59,9 +69,15 @@ export function realConditions({ clock, doseRate, simulatedDust }: RealReadings)
     minutes_until_sunset: clock.minutes_until_sunset,
     start_time: clock.ltst.slice(0, 5),
     sources: {},
-    // There is no solar-alert feed: DONKI alerts are measured at Earth, so only a drill sets one.
-    reasons_unknown: { radiation: "no solar-alert feed" },
+    reasons_unknown: {},
   };
+  if (typeof spaceWeather === "object") {
+    conditions.solar_alert_level = spaceWeather.level;
+    conditions.sources.radiation = "real";
+  } else {
+    conditions.reasons_unknown.radiation =
+      spaceWeather === "failed" ? "DONKI unavailable" : "DONKI loading";
+  }
   if (typeof doseRate === "number") {
     conditions.radiation_dose_rate = doseRate;
     conditions.sources.dose_rate = "real";
@@ -140,6 +156,12 @@ function wrapHour(hour: number): number {
 
 const DRILL_LABEL = "Drill, not real data.";
 
+// Where each real value is measured. DONKI's flares and particle events are seen near Earth.
+const REAL_LABELS: Partial<Record<StormFactor, string>> = {
+  radiation: "NASA DONKI (measured at Earth).",
+  dose_rate: "Curiosity RAD at Gale, proxy for Arcadia.",
+};
+
 /** Where a known value came from, added to its rule's reason. */
 function sourceLabel(factor: StormFactor, { sources, start_time }: Conditions): string {
   const isDrill = sources[factor] === "drill";
@@ -150,7 +172,7 @@ function sourceLabel(factor: StormFactor, { sources, start_time }: Conditions): 
   }
   if (isDrill) return DRILL_LABEL;
   if (sources[factor] === "simulation") return "NASA Ames 2018 storm simulation.";
-  return factor === "dose_rate" ? "Curiosity RAD at Gale, proxy for Arcadia." : "";
+  return REAL_LABELS[factor] ?? "";
 }
 
 /** The walk's verdict with each known storm rule, every storm reason saying where its value came from. */
@@ -198,4 +220,12 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
     return reason ? `${FACTOR_NAMES[factor]} (${reason})` : FACTOR_NAMES[factor];
   });
   return `Not checked: ${items.join(", ")}.`;
+}
+
+/** Step ③'s line on the space-weather feed, such as "Space weather: none · NASA DONKI, updated 10:42 UTC". */
+export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
+  if (feed === "loading") return "Space weather: loading NASA DONKI…";
+  if (feed === "failed") return "Space weather: NASA DONKI unavailable";
+  // fetched_at is ISO 8601 UTC, so characters 11 to 16 are the hours and minutes.
+  return `Space weather: ${feed.level} · NASA DONKI, updated ${feed.fetched_at.slice(11, 16)} UTC`;
 }

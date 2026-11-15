@@ -18,7 +18,7 @@ import { MAX_DURATION_S } from "@/lib/mission/types";
 import { DriveAssumptions } from "./drive-result";
 import { JourneyStatus, journeyReadouts } from "./journey-result";
 import type { DriveWalk } from "./route-hooks";
-import { ErrorAlert, type ReadoutItem } from "./route-result";
+import { ErrorAlert, SolarAlertAssumption, type ReadoutItem } from "./route-result";
 import type { SitePoi } from "./scene-panel";
 
 /** The trip's verdict, or why there is no trip yet. */
@@ -167,6 +167,7 @@ export function DriveWalkAssumptions({
       {plan?.walk?.timing?.assumptions.map((line) => (
         <p key={line}>{line}</p>
       ))}
+      <SolarAlertAssumption />
       <p>
         LARA&apos;s resource check gets only the walk back to the rover, which is the shelter: its
         mission clock covers one EVA of up to {MAX_DURATION_S / 3600} h, so a drive of whole sols is

@@ -4,6 +4,7 @@
  * CLAUDE.md §10 References. Caveats are copied from each layer's provenance file or pipeline notes.
  */
 
+import { PARTICLE_EVENT_HOURS } from "../flight-rules/donki";
 import { GROUND, ROVER_RULES } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
 import { BOULDER_CLEARANCE_M, PARKING_SQUARE_M, SITE_CELL_M } from "./site-grid";
@@ -226,7 +227,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         title: "Route planner · walking and drive + walk",
         kind: "derived",
         credit:
-          "LARA routing (A*) on NASA/USGS MOLA terrain, NASA/JPL-Caltech/ASU/USGS THEMIS thermal inertia and NASA/JPL/University of Arizona HiRISE slope",
+          "LARA routing (A*) on NASA/USGS MOLA terrain, NASA/JPL-Caltech/ASU/USGS THEMIS thermal inertia and NASA/JPL/University of Arizona HiRISE slope; solar alert from NASA DONKI (CCMC)",
         detail: `Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Drive + walk: MOLA 463 m strip, 42.5–48.5°N, 171–196°E, with THEMIS thermal inertia on the same cells, for the drive; HiRISE 1 m slope max-pooled to ${SITE_CELL_M} m cells around the site, and the site's boulders, for the walk`,
         use: "Mission sidebar: walking and drive + walk routes, the route check, the rover trip and the suit time.",
         caveats: [
@@ -239,6 +240,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           `Walk boulders are the automated HiRISE shadow detections near each site. A sample review confirmed none as rocks (most are pits or trough shading), so walling every one off, with ${BOULDER_CLEARANCE_M} m clearance (our assumption), errs on the side of caution. Coverage differs by site: the ridges site has one.`,
           `The staging point is our rule: the rover parks where a ${PARKING_SQUARE_M} m square is no steeper than ${ROVER_RULES.slope.caution_above_degrees}° and clear of boulders, on the habitat side if it can, within the ${FLIGHT_RULES.walk_back.max_distance_km} km walk-back limit.`,
           "The example no-go zone is a placeholder.",
+          `The route check's solar alert comes from NASA DONKI: flares and particle events measured near Earth, and WSA-Enlil model arrival times at Mars. Mars may be on the far side of the Sun, so an alert at Earth may miss Mars and a storm at Mars may not show. DONKI gives when a particle event began, not when it ended; it counts as under way for ${PARTICLE_EVENT_HOURS} h (our assumption).`,
         ],
         citations: [
           "Chappell, Hoffman & Bekdash (2022). Mars Architecture Team paper on surface power and operations, incl. the pressurized rover (IEEE). NASA NTRS 20210022250.",
@@ -266,6 +268,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
             label: "Power study (NTRS)",
             url: "https://ntrs.nasa.gov/api/citations/20150006958/downloads/20150006958.pdf",
           },
+          { label: "NASA DONKI", url: "https://ccmc.gsfc.nasa.gov/DONKI/" },
         ],
       },
       {
