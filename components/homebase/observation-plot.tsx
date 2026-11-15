@@ -17,6 +17,8 @@ export function ObservationPlot({
   compact = false,
   onExpand,
   showReadout = true,
+  zoomed,
+  onZoomChange,
 }: {
   metric: HomebaseMetric;
   from: number;
@@ -25,8 +27,12 @@ export function ObservationPlot({
   compact?: boolean;
   onExpand?: () => void;
   showReadout?: boolean;
+  zoomed?: boolean;
+  onZoomChange?: (zoomed: boolean) => void;
 }) {
-  const [zoom, setZoom] = useState(false);
+  const [localZoom, setLocalZoom] = useState(false);
+  const zoom = zoomed ?? localZoom;
+  const setZoom = onZoomChange ?? setLocalZoom;
   const clipId = useId();
   const [cursor, setCursor] = useState<number | null>(null);
   const start = zoom ? Math.max(from, to - 30 * 60000) : from;
@@ -69,7 +75,7 @@ export function ObservationPlot({
           </Button>
         ) : (
           <Button variant="outline" aria-pressed={zoom} onClick={() => setZoom(!zoom)}>
-            {zoom ? "Full window" : "Last 30 min"}
+            {zoom ? "Show full window" : "Show last 30 min"}
           </Button>
         )}
       </header>
@@ -243,10 +249,12 @@ export function ObservationPlot({
         <span>{clockLabel(to)}</span>
       </div>
       <div className="hb-plot-caption">
-        <span>{compact ? "Archive · UTC*" : "Approx. UTC · available archive window"}</span>
+        <span>
+          {compact ? "Archive · UTC*" : `${zoom ? "Last 30 min" : "Full window"} · Approx. UTC`}
+        </span>
         <span className="hb-inspection">
           {cursor === null
-            ? `${valid.length} observations`
+            ? `${valid.length} observation${valid.length === 1 ? "" : "s"}`
             : `${clockLabel(cursor)} · ${selected?.value == null ? "No observation" : `${formatNumber(selected.value, metric.decimals)} ${metric.unit}`}`}
         </span>
       </div>
