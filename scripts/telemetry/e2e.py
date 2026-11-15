@@ -31,7 +31,7 @@ def request(path, body=None, token=None, method=None, expected=200, extra_header
             status, value = response.status, json.load(response)
     except urllib.error.HTTPError as error:
         status, value = error.code, json.loads(error.read())
-    assert status == expected, (path, status, value)
+    assert status in (expected if isinstance(expected, tuple) else (expected,)), (path, status, value)
     return value
 
 
@@ -100,11 +100,19 @@ def main():
         assert frozen == request(path, token=token)["state"]
         explanation = request(path + "/diagnostics", {"mode": "deterministic"}, token)
         assert explanation["mode"] == "deterministic" and explanation["revision"] == revision
-        unavailable = request(path + "/diagnostics", {"mode": "ai", "question": "Why did output change?"}, token,
-                              expected=503, extra_headers={"X-Diagnostics-Authorization": "Bearer " + KEY})
-        # Production may have a provider configured; either way the failure must be sanitized.
-        allowed = {"ai_not_configured", "ai_unavailable"} if os.environ.get("ARES_TEST_AI") == "any" else {"ai_not_configured"}
-        assert unavailable["error"]["code"] in allowed, unavailable
+        # Locally AI is unconfigured. With ARES_TEST_AI=any (production), accept a grounded answer
+        # or a sanitized provider failure; AI must never change mission state.
+        any_ai = os.environ.get("ARES_TEST_AI") == "any"
+        ai = request(path + "/diagnostics", {"mode": "ai", "question": "Why did output change?"}, token,
+                     expected=(200, 503) if any_ai else 503,
+                     extra_headers={"X-Diagnostics-Authorization": "Bearer " + KEY})
+        if "error" in ai:
+            allowed = {"ai_not_configured", "ai_unavailable"} if any_ai else {"ai_not_configured"}
+            assert ai["error"]["code"] in allowed, ai
+        else:
+            assert ai["mode"] == "ai_explanation" and ai["evidence"] and "Unverified" in ai["warning"], ai
+            print(json.dumps({"ai": "answered", "model": ai["model"], "tools": [e["tool"] for e in ai["evidence"]]}))
+        assert request(path, token=token)["revision"] == revision
         command("reset")
         command("event", event={"id": "future-failure", "type": "battery_failure", "target": "eva", "value": 0, "at_s": 1})
         route = {"id": "external-planner", "revision": "r1", "mission_revision": revision,
