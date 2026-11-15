@@ -43,13 +43,13 @@ export const TOOL_DEFINITIONS = [
   {
     name: "get_status",
     description:
-      "Current mission state at the replay cursor: clock, activity, simulated oxygen and battery for base and suit with reserves, active findings, archived MOXIE production, and historical Jezero sol-816 air temperature and pressure.",
+      "Returns the mission state at the replay cursor. The state includes the clock, the activity, simulated base and suit oxygen and battery with their reserves, and active findings. It also includes archived MOXIE oxygen production, and historical air temperature and pressure from Jezero crater, sol 816.",
     parameters: noArgs,
   },
   {
     name: "project_resources",
     description:
-      "Predict simulated oxygen and battery levels some minutes ahead, using only data ingested so far. Returns low/nominal/high and a confidence level.",
+      "Predicts simulated oxygen and battery levels a given number of minutes ahead. The prediction uses only data ingested up to the replay cursor. Returns low, nominal, and high values and a confidence level.",
     parameters: {
       type: "object",
       properties: { minutes_ahead: { type: "integer", minimum: 1, maximum: 360 } },
@@ -60,13 +60,13 @@ export const TOOL_DEFINITIONS = [
   {
     name: "time_to_reserve",
     description:
-      "Predict when each simulated resource (base and suit oxygen, base and suit battery) would cross its reserve before the mission ends, using only data ingested so far.",
+      "Predicts when each simulated resource (base oxygen, suit oxygen, base battery, and suit battery) would cross its reserve before the mission ends. The prediction uses only data ingested up to the replay cursor.",
     parameters: noArgs,
   },
   {
     name: "recent_trend",
     description:
-      "Trend of an archived MOXIE channel over the last N minutes of ingested data: oxygen production rate (g/h) or instrument power (W).",
+      "Returns the trend of one archived MOXIE channel over the last N minutes of ingested data. The channel is oxygen production rate (g/h) or instrument power (W).",
     parameters: {
       type: "object",
       properties: {
@@ -80,12 +80,12 @@ export const TOOL_DEFINITIONS = [
   {
     name: "radiation_status",
     description:
-      "Latest ingested radiation dose rate (Curiosity RAD at Gale crater, a distant proxy) converted to micrograys per hour, the last 3 hours of ingested readings, and the team's dose-rate flight rule.",
+      "Returns the latest ingested radiation dose rate in micrograys per hour. The source is Curiosity RAD at Gale crater, a distant proxy. The tool also returns the last 3 hours of ingested readings and the team's dose-rate flight rule.",
     parameters: noArgs,
   },
   {
     name: "flight_rule",
-    description: "Read one flight rule's limits and its cited source.",
+    description: "Returns the limits of one flight rule and the source that the rule cites.",
     parameters: {
       type: "object",
       properties: { factor: { type: "string", enum: FACTORS } },
@@ -96,7 +96,7 @@ export const TOOL_DEFINITIONS = [
   {
     name: "explain_findings",
     description:
-      "Deterministic reason codes behind the current mission state, with evidence paths and limitations.",
+      "Returns the deterministic reason codes for the current mission state, with evidence paths and limitations.",
     parameters: noArgs,
   },
 ].map((tool) => ({ type: "function" as const, function: { ...tool, strict: true } }));
@@ -128,7 +128,7 @@ function environmentSummary(result: Snapshot) {
         ? { min: round(Math.min(...temps) - 273.15), max: round(Math.max(...temps) - 273.15) }
         : null,
     pressure_pa: round(ps?.pressure ?? null),
-    humidity: "withheld: the archive does not state the humidity scale",
+    humidity: "withheld because the archive does not state the humidity scale",
   };
 }
 
@@ -237,7 +237,7 @@ export async function copilotTools(
         );
         const crossing = (s: number | null) =>
           s === null
-            ? "not before mission end"
+            ? "does not cross before mission end"
             : s <= nowS
               ? "already below reserve"
               : { in_min: minutes(s - nowS), at_mission_min: minutes(s) };
@@ -330,7 +330,7 @@ export async function copilotTools(
                   ? "CAUTION"
                   : "below caution",
           rule_check_channel:
-            "Detector E (tissue-equivalent plastic). Silicon detector B shown separately, never averaged.",
+            "The rule uses detector E (tissue-equivalent plastic). The tool shows silicon detector B separately and never averages the two.",
           recent_ingested: recent,
         };
       }

@@ -21,7 +21,9 @@
       "maxzoom": 8,
       "opacity": 1,
       "visible": false,
-      "source": { "name": "MOLA elevation colors · illustrative shading, not surface color" }
+      "source": {
+        "name": "MOLA elevation colors · illustrative shading, not surface color"
+      }
     },
     {
       "id": "ctx-context",
@@ -64,12 +66,25 @@
       }
     },
     {
+      "id": "sites",
+      "title": "Water-ice sites (HiRISE)",
+      "kind": "vector",
+      "path": "sites.geojson",
+      "visible": true,
+      "source": {
+        "name": "MRO HiRISE DTMs + RED orthoimages · NASA/JPL/University of Arizona",
+        "url": "https://www.uahirise.org/dtm/"
+      }
+    },
+    {
       "id": "stops",
       "title": "Science stops",
       "kind": "vector",
       "path": "stops.geojson",
       "visible": true,
-      "source": { "name": "Placeholder — Role C" }
+      "source": {
+        "name": "Placeholder — Role C"
+      }
     },
     {
       "id": "route",
@@ -77,7 +92,9 @@
       "kind": "vector",
       "path": "route.geojson",
       "visible": false,
-      "source": { "name": "Placeholder — Role C" }
+      "source": {
+        "name": "Placeholder — Role C"
+      }
     }
   ]
 }

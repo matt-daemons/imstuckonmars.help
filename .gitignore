@@ -28,3 +28,6 @@ data/interim/
 data/map-assets/
 # Retired generators must not accidentally restore large assets to the Worker bundle.
 public/data/terrain/
+# HiRISE site tiles and slope COGs (large; regenerate with pnpm pipe:sites / pipe:slope).
+public/data/sites/
+data/processed/sites/

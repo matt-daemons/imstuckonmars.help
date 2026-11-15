@@ -10,9 +10,24 @@ export const LOCAL_TERRAIN_SOURCE = "hab-dem";
 export const REGIONAL_TERRAIN_SOURCE = "mola-dem";
 export const GLOBAL_TERRAIN_SOURCE = "global-dem";
 
-export function terrainSourceForView(bounds: readonly number[], zoom: number): string | null {
+/** A HiRISE science site's 1 m terrain (pipelines/stable/hirise-sites.ts). */
+export interface SiteTerrain {
+  source: string;
+  bounds: readonly number[];
+}
+
+export function terrainSourceForView(
+  bounds: readonly number[],
+  zoom: number,
+  sites: readonly SiteTerrain[] = [],
+): string | null {
   const [west, south, east, north] = bounds;
   if (zoom < 5) return null;
+  // HiRISE site terrain wins when the whole view sits inside one site's padded coverage.
+  const site = sites.find(
+    ({ bounds: [w, s, e, n] }) => zoom >= 11 && west >= w && south >= s && east <= e && north <= n,
+  );
+  if (site) return site.source;
   if (west < -180 || east > -168 || south < 40 || north > 52) return GLOBAL_TERRAIN_SOURCE;
   const [localWest, localSouth, localEast, localNorth] = LOCAL_TERRAIN_BOUNDS;
   return zoom >= 10 &&

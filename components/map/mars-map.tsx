@@ -7,8 +7,14 @@ import { useEffect, useRef, useState } from "react";
 
 import { LayerPanel } from "@/components/map/layer-panel";
 import { RoutePlanner } from "@/components/map/route-planner";
-import { addTerrain, habitatLayer, setDustStorm } from "@/components/map/scene";
-import { ScenePanel } from "@/components/map/scene-panel";
+import {
+  type SiteProps,
+  addSites,
+  addTerrain,
+  habitatLayer,
+  setDustStorm,
+} from "@/components/map/scene";
+import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
 
 const DATA_ROOT = "/data/processed";
@@ -18,6 +24,11 @@ const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 const HABITAT: LngLat = [-176.05, 45.97];
 // Placeholder science stop; matches the "s1" stop in stops.geojson.
 const SCIENCE_STOP: LngLat = [-175.95, 46.03];
+
+// sites.geojson from pipelines/stable/hirise-sites.ts: a footprint polygon + a POI point per site.
+interface SitesGeoJSON {
+  features: { properties: SiteProps; geometry: { type: string; coordinates: unknown } }[];
+}
 
 // Mapbox assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
@@ -29,19 +40,32 @@ export function MarsMap() {
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const [cursor, setCursor] = useState<LngLat | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [sites, setSites] = useState<SitePoi[]>([]);
 
   useEffect(() => {
     if (!MAPBOX_TOKEN) return;
     let cancelled = false;
 
     (async () => {
-      const [{ default: mapboxgl }, data] = await Promise.all([
+      const [{ default: mapboxgl }, data, siteData] = await Promise.all([
         import("mapbox-gl"),
         fetch(`${DATA_ROOT}/manifest.json`).then((r) => r.json() as Promise<LayerManifest>),
+        fetch(`${DATA_ROOT}/sites.geojson`)
+          .then((r) => r.json() as Promise<SitesGeoJSON>)
+          .catch((): SitesGeoJSON => ({ features: [] })),
       ]);
+      const pois = siteData.features.filter((f) => f.properties.kind === "poi");
       if (cancelled || !container.current) return;
 
       setManifest(data);
+      setSites(
+        pois.map((f) => ({
+          id: f.properties.id,
+          title: f.properties.title,
+          confirmed: f.properties.confirmed,
+          center: f.geometry.coordinates as LngLat,
+        })),
+      );
       setVisible(Object.fromEntries(data.layers.map((l) => [l.id, l.visible ?? true])));
 
       mapboxgl.accessToken = MAPBOX_TOKEN;
@@ -52,6 +76,7 @@ export function MarsMap() {
         style: {
           version: 8,
           sources: {},
+          glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
           layers: [{ id: "bg", type: "background", paint: { "background-color": "#3a1f14" } }],
         },
         center: data.aoi.center,
@@ -62,11 +87,17 @@ export function MarsMap() {
         attributionControl: false,
       });
       map.current = m;
+      // Credits every source's attribution (HiRISE: NASA/JPL/University of Arizona).
+      m.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
 
       m.on("error", (e) => setError(e.error?.message ?? "Map error"));
       m.on("mousemove", (e) => setCursor([e.lngLat.lng, e.lngLat.lat]));
       m.on("load", () => {
         addTerrain(m);
+        addSites(
+          m,
+          pois.map((f) => f.properties),
+        );
         setDustStorm(m, 0, 270);
 
         for (const layer of data.layers) {
@@ -105,9 +136,13 @@ export function MarsMap() {
               id: `${layer.id}-line`,
               type: "line",
               source: layer.id,
-              filter: ["==", ["geometry-type"], "LineString"],
+              filter: ["match", ["geometry-type"], ["LineString", "Polygon"], true, false],
               layout: { visibility },
-              paint: { "line-color": "#f4a259", "line-width": 3 },
+              paint: {
+                // Site footprints: thin light outline; routes: orange.
+                "line-color": ["match", ["get", "kind"], "footprint", "#f5ede4", "#f4a259"],
+                "line-width": ["match", ["get", "kind"], "footprint", 1.5, 3],
+              },
             });
             m.addLayer({
               id: `${layer.id}-point`,
@@ -122,6 +157,29 @@ export function MarsMap() {
                 "circle-stroke-color": "#1c0f0a",
               },
             });
+            m.addLayer({
+              id: `${layer.id}-label`,
+              type: "symbol",
+              source: layer.id,
+              filter: ["==", ["geometry-type"], "Point"],
+              layout: {
+                visibility,
+                "text-field": ["coalesce", ["get", "title"], ["get", "name"], ""],
+                "text-size": 12,
+                "text-offset": [0, 1.2],
+                "text-anchor": "top",
+                "text-max-width": 14,
+              },
+              paint: {
+                "text-color": "#fbeee0",
+                "text-halo-color": "#1c0f0a",
+                "text-halo-width": 1.5,
+              },
+            });
+            // Click a POI to fly in for the sub-metre HiRISE view.
+            m.on("click", `${layer.id}-point`, (e) =>
+              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 }),
+            );
           }
         }
         m.addLayer(habitatLayer(mapboxgl, HABITAT));
@@ -141,7 +199,7 @@ export function MarsMap() {
     setVisible((v) => ({ ...v, [id]: on }));
     const m = map.current;
     if (!m) return;
-    for (const layerId of [id, `${id}-line`, `${id}-point`]) {
+    for (const layerId of [id, `${id}-line`, `${id}-point`, `${id}-label`]) {
       if (m.getLayer(layerId)) m.setLayoutProperty(layerId, "visibility", on ? "visible" : "none");
     }
   }
@@ -149,7 +207,8 @@ export function MarsMap() {
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex h-svh items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        Map unavailable: set NEXT_PUBLIC_MAPBOX_TOKEN in .env.local and restart the dev server.
+        The map is not available. Set NEXT_PUBLIC_MAPBOX_TOKEN in .env.local. Then restart the dev
+        server.
       </div>
     );
   }
@@ -159,7 +218,7 @@ export function MarsMap() {
       {/* mapbox-gl.css forces position: relative on the container, so size it with h-full, not inset-0. */}
       <div ref={container} className="h-full w-full" />
       {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
-      <ScenePanel map={loaded} habitat={HABITAT} />
+      <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
       <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} />
       {error && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">

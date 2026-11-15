@@ -24,7 +24,10 @@
     "maps:prepare": "node pipelines/prepare-map-release.ts",
     "maps:upload": "python3 pipelines/upload-map-assets.py",
     "maps:verify": "python3 pipelines/verify-map-release.py",
-    "maps:restore": "node pipelines/restore-map-archive.ts"
+    "maps:restore": "node pipelines/restore-map-archive.ts",
+    "pipe:sites": "node pipelines/stable/hirise-sites.ts",
+    "pipe:slope": "node pipelines/stable/slope.ts",
+    "sites:package": "node pipelines/package-sites-release.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

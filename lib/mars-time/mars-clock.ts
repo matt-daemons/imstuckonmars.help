@@ -19,6 +19,8 @@ export type MarsClockReading = {
   sol: number;
   /** Local mean solar time at the location, "HH:MM:SS" on a 24-hour Mars clock. */
   lmst: string;
+  /** Local true solar time, "HH:MM:SS". Follows the real Sun, so noon is when the Sun is highest. */
+  ltst: string;
   /** Degrees above the horizon. Negative at night. */
   sun_elevation: number;
   /** Compass direction of the Sun, in degrees clockwise from north. */
@@ -227,6 +229,7 @@ export function readMarsClock(
   return {
     sol: Math.floor(localSolCount(utc, location)) - Math.floor(localSolCount(landingUtc, location)),
     lmst: formatClock(localMeanSolarTimeHours),
+    ltst: formatClock(localTrueSolarTimeHours),
     sun_elevation: 90 - zenithAngleDegrees,
     sun_azimuth: wrap(azimuthDegrees, 360),
     minutes_until_sunset: minutesUntilSunset(

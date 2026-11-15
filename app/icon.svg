@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Hex values mirror the background and hermes-cyan tokens in app/globals.css: a favicon cannot read CSS variables. -->
+  <path d="M4.5 20C2.8 15 6 9 11.5 6.8C16 5 21 4.6 25 6.5C29 8.4 29.4 13 27.6 17C25.8 21 21.8 24.8 16.8 26.6C11.5 28.5 6.2 25 4.5 20Z" fill="#010405" stroke="#33d6d9" stroke-width="2.25" stroke-linejoin="round"/>
+  <g fill="#33d6d9">
+    <circle cx="11.5" cy="13.5" r="1.6"/>
+    <circle cx="20" cy="11" r="1.6"/>
+    <circle cx="17.5" cy="20" r="1.6"/>
+  </g>
+</svg>

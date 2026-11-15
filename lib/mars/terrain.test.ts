@@ -40,6 +40,13 @@ describe("Mars terrain display", () => {
     expect(terrainSourceForView([-179, 35, -165, 55], 6)).toBe("global-dem");
   });
 
+  it("uses a HiRISE site's terrain only when the whole view is inside it at close zoom", () => {
+    const sites = [{ source: "site-dem-a", bounds: [172.4, 45.9, 172.7, 46.2] }];
+    expect(terrainSourceForView([172.5, 46.0, 172.6, 46.1], 13, sites)).toBe("site-dem-a");
+    expect(terrainSourceForView([172.5, 46.0, 172.6, 46.1], 9, sites)).toBe("global-dem");
+    expect(terrainSourceForView([172.3, 46.0, 172.6, 46.1], 13, sites)).toBe("global-dem");
+  });
+
   it("masks missing samples and never clamps outside coverage to a fake edge", () => {
     const grid = {
       width: 2,
