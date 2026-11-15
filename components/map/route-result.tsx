@@ -8,7 +8,7 @@ import {
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { evaluateRoute, type EvaVerdict } from "@/lib/flight-rules/evaluate";
+import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import {
   MAX_SLOPE_DEG,
@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import type { Plan } from "./route-layers";
 
 // The icons /design-system#alert-levels assigns to each level.
-const VERDICT_STYLES: Record<
+export const VERDICT_STYLES: Record<
   Verdict,
   { variant: "success" | "warning" | "error"; Icon: LucideIcon; label: string }
 > = {
@@ -79,23 +79,24 @@ const WALK_COPY: StatusCopy = {
   notChecked: "Not checked: radiation, dust, daylight.",
 };
 
-export function RouteResult({ plan, loadFailed }: { plan: Plan | null; loadFailed: boolean }) {
-  const summary = plan?.summary ?? null;
-  const check = summary && evaluateRoute(summary);
+/** The walk's verdict, why no route was found, or the loading line. */
+export function WalkStatus({
+  plan,
+  check,
+  loadFailed,
+}: {
+  plan: Plan | null;
+  check: EvaVerdict | null;
+  loadFailed: boolean;
+}) {
   return (
-    <div className="flex flex-col gap-1">
-      {/* One live region that stays mounted, so screen readers announce every change in it. */}
-      <div role="status">
-        <StatusLine
-          plan={plan}
-          check={check}
-          loadFailed={loadFailed}
-          pending="Loading elevation…"
-          copy={WALK_COPY}
-        />
-      </div>
-      {summary && check && <Readouts summary={summary} check={check} />}
-    </div>
+    <StatusLine
+      plan={plan}
+      check={check}
+      loadFailed={loadFailed}
+      pending="Loading elevation…"
+      copy={WALK_COPY}
+    />
   );
 }
 
@@ -189,42 +190,54 @@ export function WalkAssumptions({ plan }: { plan: Plan | null }) {
   );
 }
 
-function Readouts({ summary, check }: { summary: RouteSummary; check: EvaVerdict }) {
+/** One readout as data, so the check step can choose which ones lead. */
+export interface ReadoutItem {
+  id: string;
+  label: string;
+  value: string;
+  note?: string;
+  /** Flags the value behind the verdict. */
+  mark?: LimitMark;
+}
+
+/** The walk's readouts. */
+export function walkReadouts(summary: RouteSummary, check: EvaVerdict): ReadoutItem[] {
+  return [
+    { id: "distance", label: "Distance one way", value: `${summary.distance_km.toFixed(2)} km` },
+    {
+      id: "time",
+      label: "Out-and-back time",
+      value: `${Math.round(summary.est_time_min)} min`,
+      note: "Tobler off-path hiking (Earth), not a suited Mars walk",
+      mark: limitMark(check, "suit_supply"),
+    },
+    {
+      id: "slope",
+      label: "Steepest slope",
+      value: `${summary.max_slope.toFixed(1)}°`,
+      mark: limitMark(check, "slope"),
+    },
+    {
+      id: "farthest",
+      label: "Farthest from start",
+      value: `${summary.farthest_from_base_km.toFixed(2)} km`,
+      mark: limitMark(check, "walk_back"),
+    },
+  ];
+}
+
+export function Readouts({ items, className }: { items: ReadoutItem[]; className?: string }) {
   return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-      <Readout label="Distance one way" value={`${summary.distance_km.toFixed(2)} km`} />
-      <Readout
-        label="Out-and-back time"
-        value={`${Math.round(summary.est_time_min)} min`}
-        note="Tobler off-path hiking (Earth), not a suited Mars walk"
-        mark={limitMark(check, "suit_supply")}
-      />
-      <Readout
-        label="Steepest slope"
-        value={`${summary.max_slope.toFixed(1)}°`}
-        mark={limitMark(check, "slope")}
-      />
-      <Readout
-        label="Farthest from start"
-        value={`${summary.farthest_from_base_km.toFixed(2)} km`}
-        mark={limitMark(check, "walk_back")}
-      />
+    <dl className={cn("grid grid-cols-2 gap-x-4 gap-y-2", className)}>
+      {items.map(({ id, ...item }) => (
+        <Readout key={id} {...item} />
+      ))}
     </dl>
   );
 }
 
-/** One readout, styled like the LARA panel's. A mark flags the value behind the verdict. */
-export function Readout({
-  label,
-  value,
-  note,
-  mark,
-}: {
-  label: string;
-  value: string;
-  note?: string;
-  mark?: LimitMark;
-}) {
+/** One readout, styled like the LARA panel's. */
+function Readout({ label, value, note, mark }: Omit<ReadoutItem, "id">) {
   return (
     <div className="min-w-0">
       <dt className="text-xs text-muted-foreground">{label}</dt>

@@ -1,6 +1,5 @@
 "use client";
 
-import { MapPanel } from "@/components/map/map-panel";
 import { Switch } from "@/components/ui/switch";
 import type { LayerManifest } from "@/lib/mars/types";
 
@@ -10,12 +9,11 @@ interface LayerPanelProps {
   onToggle: (id: string, on: boolean) => void;
 }
 
-export function LayerPanel({ manifest, visible, onToggle }: LayerPanelProps) {
+/** The map layers with their sources, for the sidebar's "Map layers" section. */
+export function LayerPanelBody({ manifest, visible, onToggle }: LayerPanelProps) {
   return (
-    <MapPanel
-      title={manifest.aoi.name}
-      className="absolute top-4 left-4 w-72 max-w-[calc(100%-2rem)]"
-    >
+    <div>
+      <p>{manifest.aoi.name}</p>
       <p className="mt-1 text-xs text-muted-foreground">{manifest.crs}</p>
       <ul className="mt-3 flex flex-col gap-3">
         {manifest.layers.map((layer) => (
@@ -38,6 +36,6 @@ export function LayerPanel({ manifest, visible, onToggle }: LayerPanelProps) {
       >
         Sources and caveats →
       </a>
-    </MapPanel>
+    </div>
   );
 }

@@ -20,7 +20,7 @@ import {
   type DustSimulation,
 } from "@/lib/mars/dust-simulation";
 import { hideDustSimulation, showDustSimulation } from "./dust-storm";
-import { DustLegend } from "./dust-legend";
+import { DustLegendOverlay } from "./dust-legend-overlay";
 
 type LoadState =
   | { kind: "idle" }
@@ -163,7 +163,7 @@ export function DustPlayback({ map }: { map: Map }) {
               Surface lifting
             </Button>
           </div>
-          <DustLegend field={field} />
+          {visible && <DustLegendOverlay map={map} field={field} />}
           <p className="font-mono">
             Global mean:{" "}
             {load.simulation.manifest.fields[field === "tau_current" ? 0 : 1].globalMean[

@@ -12,58 +12,65 @@ import {
   type Boulder,
 } from "@/lib/mars/site-grid";
 import type { LngLat, RouteCollection } from "@/lib/mars/types";
+import { MAX_DURATION_S } from "@/lib/mission/types";
 
 import { DriveAssumptions } from "./drive-result";
-import { JourneyResult } from "./journey-result";
+import { JourneyStatus, journeyReadouts } from "./journey-result";
 import type { DriveWalk } from "./route-hooks";
-import { ErrorAlert } from "./route-result";
+import { ErrorAlert, type ReadoutItem } from "./route-result";
 import type { SitePoi } from "./scene-panel";
 
-/** The drive + walk verdict and readouts, or why there is no trip yet; then the two fit buttons. */
-export function DriveWalkResult({
+/** The trip's verdict, or why there is no trip yet. */
+export function DriveWalkStatus({
   journey,
   destination,
-  onFit,
 }: {
   journey: DriveWalk;
   destination: SitePoi | null;
+}) {
+  const { plan } = journey;
+  return (
+    waitingLine(journey, destination) ?? (
+      <JourneyStatus route={plan?.collection?.route ?? null} status={plan?.status ?? "planning"} />
+    )
+  );
+}
+
+/** The trip's readouts, empty until there is a verdict. */
+export function driveWalkReadouts(plan: DriveWalkPlan | null): ReadoutItem[] {
+  const route = plan?.collection?.route;
+  if (!plan || !route) return [];
+  return journeyReadouts(route, plan.drive?.summary ?? null, walkSummary(plan));
+}
+
+/** Frames the whole trip, or the walk and its boulders. */
+export function FitButtons({
+  journey,
+  onFit,
+}: {
+  journey: DriveWalk;
   /** Fits the map to these points. */
   onFit: (points: LngLat[]) => void;
 }) {
-  const { plan } = journey;
-  const collection = plan?.collection ?? null;
-  const waiting = waitingLine(journey, destination);
+  const collection = journey.plan?.collection ?? null;
   return (
-    <div className="flex flex-col gap-2">
-      {waiting ? (
-        // A live region of its own, like JourneyResult's, so a failed load is announced.
-        <div role="status">{waiting}</div>
-      ) : (
-        <JourneyResult
-          collection={collection}
-          status={plan?.status ?? "planning"}
-          drive={plan?.drive?.summary ?? null}
-          walk={plan && walkSummary(plan)}
-        />
-      )}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!collection}
-          onClick={() => collection && onFit(tripPoints(collection))}
-        >
-          Fit whole trip
-        </Button>
-        <Button
-          size="sm"
-          variant="outline"
-          disabled={!collection}
-          onClick={() => collection && onFit(walkPoints(collection, journey.siteGrid?.boulders))}
-        >
-          Fit walk
-        </Button>
-      </div>
+    <div className="flex flex-wrap gap-2">
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={!collection}
+        onClick={() => collection && onFit(tripPoints(collection))}
+      >
+        Fit whole trip
+      </Button>
+      <Button
+        size="sm"
+        variant="outline"
+        disabled={!collection}
+        onClick={() => collection && onFit(walkPoints(collection, journey.siteGrid?.boulders))}
+      >
+        Fit walk
+      </Button>
     </div>
   );
 }
@@ -94,7 +101,7 @@ function waitingLine(journey: DriveWalk, destination: SitePoi | null): ReactNode
   return null;
 }
 
-/** The walk numbers JourneyResult shows, from the walked paths and walkLegTiming. */
+/** The walk numbers of the readouts, from the walked paths and walkLegTiming. */
 function walkSummary({ walk }: DriveWalkPlan) {
   if (!walk?.timing) return null;
   return {
@@ -138,8 +145,10 @@ export function DriveWalkAssumptions({
         {slope.no_go_above_degrees}° is impassable ({slope.applies_to} limit, assumed for Mars).
       </p>
       <p>
-        Boulders: automated HiRISE detections near the site, each walled off with{" "}
-        {BOULDER_CLEARANCE_M} m clearance (our assumption). Coverage differs by site.
+        Boulders: automated HiRISE shadow detections near the site, not checked by hand. A hand
+        review of a sample found mostly pits and trough shadows, so avoiding them is cautious. Each
+        is walled off with {BOULDER_CLEARANCE_M} m clearance (our assumption). Coverage differs by
+        site.
       </p>
       <p>
         Staging point (our rule): the rover parks where a {PARKING_SQUARE_M} m square is no steeper
@@ -149,6 +158,11 @@ export function DriveWalkAssumptions({
       {plan?.walk?.timing?.assumptions.map((line) => (
         <p key={line}>{line}</p>
       ))}
+      <p>
+        LARA&apos;s resource check gets only the walk back to the rover, which is the shelter: its
+        mission clock covers one EVA of up to {MAX_DURATION_S / 3600} h, so a drive of whole sols is
+        not sent.
+      </p>
     </>
   );
 }

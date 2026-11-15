@@ -19,7 +19,9 @@ export function RouteLegend({ mode }: { mode: "walking" | "drive-walk" }) {
             Return (dashed)
           </LegendItem>
           <LegendItem swatch="size-2.5 rounded-full bg-foreground">Staging point</LegendItem>
-          <LegendItem swatch="size-1.5 rounded-full bg-destructive">Boulder</LegendItem>
+          <LegendItem swatch="size-1.5 rounded-full bg-destructive">
+            Boulder (unverified)
+          </LegendItem>
         </>
       )}
       <LegendItem swatch="size-3 bg-destructive">No-go zone</LegendItem>

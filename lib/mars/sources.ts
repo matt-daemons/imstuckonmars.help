@@ -228,7 +228,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         credit:
           "LARA routing (A*) on NASA/USGS MOLA terrain and NASA/JPL/University of Arizona HiRISE slope",
         detail: `Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Drive + walk: MOLA 463 m strip, 42.5–48.5°N, 171–196°E, for the drive; HiRISE 1 m slope max-pooled to ${SITE_CELL_M} m cells around the site, and the site's boulders, for the walk`,
-        use: "Route panel: walking and drive + walk routes, the route check, the rover trip and the suit time.",
+        use: "Mission sidebar: walking and drive + walk routes, the route check, the rover trip and the suit time.",
         caveats: [
           "The 200 m and 463 m terrain cannot see rocks, boulders or small craters. A route is not a hazard clearance.",
           `Walking missions use Tobler's hiking model, an Earth model, not a suited Mars walk. Walks at a site use the flight-rule pace of ${FLIGHT_RULES.walk_back.walking_km_per_hour} km/h instead, as the walk-leg timing does.`,

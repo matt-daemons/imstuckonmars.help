@@ -1,0 +1,107 @@
+"use client";
+
+import type { Map as MapLibreMap } from "maplibre-gl";
+import type { ReactNode } from "react";
+
+import {
+  DriveWalkAssumptions,
+  DriveWalkStatus,
+  FitButtons,
+  driveWalkReadouts,
+} from "@/components/map/drive-walk-result";
+import { RouteLegend } from "@/components/map/route-legend";
+import {
+  Readouts,
+  WalkAssumptions,
+  WalkStatus,
+  walkReadouts,
+  type ReadoutItem,
+} from "@/components/map/route-result";
+import { fitPoints } from "@/components/route/camera";
+import { useRoutePlan } from "@/components/route/route-plan-provider";
+import {
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { evaluateRoute } from "@/lib/flight-rules/evaluate";
+
+import { splitHeadline } from "./headline";
+import { ReturnCheck } from "./return-check";
+
+// Each mission's headline readouts. The last one gives way to the verdict's own readout.
+const WALK_HEADLINE = ["slope", "time", "distance"];
+const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
+
+/** Step ③: the verdict and its reasons, three headline numbers, then the rest one click down. */
+export function CheckStep({ map }: { map: MapLibreMap | null }) {
+  const { inputs, walk, journey, destination } = useRoutePlan();
+  if (inputs.mission === "walking") {
+    const summary = walk.plan?.summary ?? null;
+    const check = summary && evaluateRoute(summary);
+    return (
+      <CheckLayout
+        status={<WalkStatus plan={walk.plan} check={check} loadFailed={walk.loadFailed} />}
+        readouts={summary && check ? walkReadouts(summary, check) : []}
+        headline={WALK_HEADLINE}
+        assumptions={<WalkAssumptions plan={walk.plan} />}
+      />
+    );
+  }
+  return (
+    <CheckLayout
+      status={<DriveWalkStatus journey={journey} destination={destination} />}
+      readouts={driveWalkReadouts(journey.plan)}
+      headline={DRIVE_WALK_HEADLINE}
+      fit={<FitButtons journey={journey} onFit={(points) => fitPoints(map, points)} />}
+      source={journey.plan?.collection?.route?.source}
+      assumptions={<DriveWalkAssumptions grid={journey.driveGrid} plan={journey.plan} />}
+    />
+  );
+}
+
+function CheckLayout({
+  status,
+  readouts,
+  headline,
+  fit,
+  source,
+  assumptions,
+}: {
+  status: ReactNode;
+  readouts: ReadoutItem[];
+  headline: string[];
+  fit?: ReactNode;
+  source?: string;
+  assumptions: ReactNode;
+}) {
+  const { mission, zones } = useRoutePlan().inputs;
+  const split = splitHeadline(readouts, headline);
+  return (
+    <div className="flex flex-col gap-3">
+      {/* One live region that stays mounted, so screen readers announce every change in it. */}
+      <div role="status">{status}</div>
+      <ReturnCheck />
+      {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
+      {fit}
+      <Accordion multiple>
+        <AccordionItem value="details">
+          <AccordionTrigger>Details</AccordionTrigger>
+          <AccordionPanel className="flex flex-col gap-2 text-foreground">
+            {split.details.length > 0 && <Readouts items={split.details} />}
+            {source && <p className="text-xs text-muted-foreground">Source: {source}</p>}
+            <p className="text-xs">
+              No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
+            </p>
+            <RouteLegend mode={mission} />
+          </AccordionPanel>
+        </AccordionItem>
+        <AccordionItem value="assumptions">
+          <AccordionTrigger>Assumptions and data</AccordionTrigger>
+          <AccordionPanel className="flex flex-col gap-1 text-xs">{assumptions}</AccordionPanel>
+        </AccordionItem>
+      </Accordion>
+    </div>
+  );
+}
