@@ -7,12 +7,14 @@ import {
   ChevronRightIcon,
   CircleIcon,
   CircleXIcon,
+  CloudFogIcon,
   DropletsIcon,
   FactoryIcon,
   FileTextIcon,
   InfoIcon,
   SirenIcon,
   SparklesIcon,
+  SnowflakeIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -333,6 +335,35 @@ function faults(snapshot: Snapshot): Fault[] {
       active: false,
     },
   ];
+  if (config.route)
+    list.push(
+      {
+        key: "dust",
+        title: "Dust front",
+        Icon: CloudFogIcon,
+        description:
+          "Start a simulated dust-front drill. Outside oxygen demand rises by 25%, with extra equipment energy demand. Walking speed is unchanged. No weather observations or visual effects are used.",
+        event: { type: "weather_risk", risk: "dust", active: true },
+        recovery: {
+          label: "Clear dust",
+          event: { type: "weather_risk", risk: "dust", active: false },
+        },
+        active: state.weather_risks?.dust ?? false,
+      },
+      {
+        key: "cold",
+        title: "Cold snap",
+        Icon: SnowflakeIcon,
+        description:
+          "Start a simulated cold-snap drill. Suit heater demand increases by 70 W per two crew while outside. This is an equipment assumption, not measured weather or a prediction of injury.",
+        event: { type: "weather_risk", risk: "cold", active: true },
+        recovery: {
+          label: "End cold snap",
+          event: { type: "weather_risk", risk: "cold", active: false },
+        },
+        active: state.weather_risks?.cold ?? false,
+      },
+    );
   if (config.route?.shelter !== "rover")
     list.push({
       key: "generator",
@@ -400,7 +431,9 @@ function Faults({ snapshot }: { snapshot: Snapshot }) {
                 setSelected(null);
               }}
             >
-              Inject simulated fault
+              {selected?.event.type === "weather_risk"
+                ? "Start weather drill"
+                : "Inject simulated fault"}
             </Button>
           </AlertDialogFooter>
         </AlertDialogPopup>
@@ -624,7 +657,8 @@ export function RunStep() {
       <Section title="Options from here" detail={departed ? undefined : "After departure"}>
         {ended ? (
           <p>
-            Simulation ended at {missionTime(at)}. Restart or launch a new expedition to run again.
+            Simulation ended at {missionTime(at)}. Launch a new expedition from ③ Check to run
+            again.
           </p>
         ) : departed ? (
           <Replan />
@@ -635,7 +669,7 @@ export function RunStep() {
         )}
       </Section>
       {!ended && (
-        <Section title="Inject a fault" detail="Simulated">
+        <Section title="Risk simulations" detail="Simulated">
           <Faults snapshot={snapshot} />
         </Section>
       )}

@@ -1,3 +1,5 @@
+import type { WeatherRisks, WeatherRiskEffects } from "./weather-risks";
+
 export const MODEL_VERSION = "ares-resource-v1";
 export const MAX_DURATION_S = 21_600;
 
@@ -98,6 +100,7 @@ export type ScenarioEvent = {
   | { type: "battery_failure"; target: Location; value: number }
   /** Multiplies crew oxygen demand and activity power at the target (1 restores nominal). */
   | { type: "consumption_change"; target: Location; value: number }
+  | { type: "weather_risk"; risk: "dust" | "cold"; active: boolean }
   | { type: "transfer_oxygen" | "transfer_energy"; value: number }
 );
 
@@ -164,6 +167,8 @@ export interface Evaluation {
   observed_sample: MoxieSample | null;
   effective_oxygen_rate_g_h: number | null;
   effective_generator_power_w: number | null;
+  weather_risks?: WeatherRisks;
+  weather_risk_effects?: WeatherRiskEffects;
 }
 
 export interface ReturnRoute {

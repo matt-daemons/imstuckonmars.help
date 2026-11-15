@@ -222,8 +222,6 @@ export function ExpeditionHud() {
         key: Date.now(),
         text: phase === "shelter" ? "Back at shelter" : PHASE_LABEL[phase],
       });
-      // The walk is over: open the report once, as the crew steps back into the shelter.
-      if (phase === "shelter" && lastPhase.current === "inbound") setReportOpen(true);
     }
     lastPhase.current = phase;
   }, [phase, route, setReportOpen]);
@@ -246,6 +244,9 @@ export function ExpeditionHud() {
   ) : (
     "Connecting…"
   );
+
+  // Keep the report mounted, but return the entire bottom display's space to the map.
+  if (expedition.finished) return <ReportDialog />;
 
   if (!snapshot || !route) {
     return (

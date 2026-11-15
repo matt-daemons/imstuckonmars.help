@@ -6,9 +6,13 @@ or Shift+D closes it. The shortcut ignores text fields, editable content,
 selection controls, composition, key repeat and extra modifiers. Other dialogs
 keep their keyboard focus; a map-opened mission console owns its own debug menu.
 
-Click the homebase marker or the **Mission dashboard** button on `/` to open the console over the existing map. Full map or Escape closes it without recreating the map or changing its simulation. `/mission` opens the overview directly, and `/mission/experiments` opens the experiment log. Inside the map dialog, both pages share the same fetched response and preserve the map underneath. There is no entry screen, mission creation, replay control, fault injection or simulation state in this dashboard.
+Click the homebase marker or the **Mission dashboard** button on `/` to open the console over the existing map. Full map or Escape closes it without recreating the map or changing its simulation. `/mission` opens the overview directly, `/mission/experiments` opens the NASA experiment log, and `/mission/reports` opens saved simulation reports. There is no entry screen, mission creation, replay control or fault injection in this dashboard.
+
+**Simulation reports** reads immutable browser-local copies saved when a run completes or is ended. It retains the latest 20 reports independently of the six-hour mission session and subsequent plans. It does not recompute simulations, require a live session, or query NASA observations. Search by date, outcome or report ID; open the shared read-only report viewer to inspect and print. Storage/fetch failures are explicit, with retry. These reports are not synced to another browser or device and are removed when site data is cleared. The NASA experiment log remains separate and unchanged. Keyboard shortcuts 1/2/3 select Overview, Experiments and Reports outside form controls.
 
 ## Data connection
+
+The dashboard shows a fixed, deterministic archived reference day. It is not synchronized to a simulation's clock or a selected weather date. Saved simulation reports are separate read-only browser records.
 
 `GET /api/telemetry/homebase` is public, read-only and requires no mission capability or write key. It:
 
@@ -66,4 +70,4 @@ Desktop viewing distance is assumed to be 600 mm and handheld 400 mm. Labels are
 
 Run the repository checks from `AGENTS.md`. The HTTP suite checks the read-only endpoint, four real metrics, matching sol, provenance and 23-run log. Browser checks cover direct page access without a gate, map entry/return, no dashboard mission commands, all four real plots, inspection/zoom, complete experiment pagination, filtering, missing output, sources, animations, reduced motion, failed connections and no-scroll layouts. Unit tests also round-trip tile placement and preserve readable source-warning boundaries.
 
-Earlier simulation helpers and APIs remain available for map integration, but the homebase dashboard neither imports their session hook nor invokes their command endpoints.
+The dashboard reads the shared provider's report-save status and offers a retry for failed archival; it never invokes simulation command endpoints. Archived reports remain viewable without a mission session.

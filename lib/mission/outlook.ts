@@ -14,6 +14,7 @@ import type {
   ScenarioEvent,
 } from "./types";
 import { parseConfig } from "./validation";
+import { weatherExertion, equipmentPower } from "./weather-risks";
 
 export type OutlookOption = "continue" | ReplanOption;
 export type OutlookStatus =
@@ -228,7 +229,7 @@ function evaluateOption(
       at_arrival: null,
       margins: null,
       limiting: null,
-      reasons: state.status !== "ok" ? ["source_unavailable"] : ["arrival_unknown"],
+      reasons: state.status !== "ok" ? state.reasons : ["arrival_unknown"],
     };
   // Unmet demand counts against the margin, so an empty tank still shows the full shortfall.
   const margins = {
@@ -354,15 +355,18 @@ function candidates(
   if (science && science.duration_s > 1) {
     const now = evaluateMission(config, samples, events, nowS);
     const plan = evaluateOption(config, samples, events, nowS);
-    const factor = now.demand_factor.eva;
+    const factor = now.demand_factor.eva * weatherExertion(now.weather_risks);
     const crew = config.crew_count;
     const o2Rate =
       config.profiles.science.oxygen_g_h_per_person * crew * factor + now.oxygen_leak_g_h.eva;
     const whRate =
-      (config.profiles.science.power_w * factor) / config.battery.eva.discharge_efficiency;
+      equipmentPower(config, "science", now.demand_factor.eva, now.weather_risks) /
+      config.battery.eva.discharge_efficiency;
     const o2Buffer = (config.profiles.travel.oxygen_g_h_per_person * crew * factor) / 6;
     const whBuffer =
-      (config.profiles.travel.power_w * factor) / config.battery.eva.discharge_efficiency / 6;
+      equipmentPower(config, "travel", now.demand_factor.eva, now.weather_risks) /
+      config.battery.eva.discharge_efficiency /
+      6;
     const needed = plan.margins
       ? Math.max(
           0,
@@ -437,7 +441,11 @@ export function missionOutlook(
         reasons: [],
         budget: [],
       };
-    return { ...base, available: true, ...evaluateOption(candidate.config, samples, events, nowS) };
+    return {
+      ...base,
+      available: true,
+      ...evaluateOption(candidate.config, samples, events, nowS),
+    };
   });
   const returned = departed && position.phase === "shelter";
   const usable = options.filter((o) => o.available && o.status !== "unknown");
@@ -480,7 +488,7 @@ export function missionOutlook(
     recommended,
     rationale,
     method:
-      "Deterministic replay of the mission engine for each option from now to the crew's return, including leaks, exertion and faults already scheduled. Predictions, not observations; not a safety verdict.",
+      "Deterministic replay of the mission engine for each option from now to the crew's return, including leaks, exertion and weather-risk drills already scheduled. Predictions, not observations; not a safety verdict.",
   };
 }
 

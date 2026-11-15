@@ -6,6 +6,7 @@ import {
 } from "next/font/google";
 
 import { cn } from "@/lib/utils";
+import { ExpeditionProvider } from "@/components/expedition/expedition-provider";
 
 import "./globals.css";
 
@@ -37,7 +38,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         jetbrainsMono.variable,
       )}
     >
-      <body>{children}</body>
+      <body>
+        <ExpeditionProvider>{children}</ExpeditionProvider>
+      </body>
     </html>
   );
 }

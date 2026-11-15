@@ -15,8 +15,9 @@ import { ReferenceInspector } from "./reference-inspector";
 import "./terminal.css";
 import faviconUrl from "@/app/icon.svg?url";
 import { DebugMenu } from "@/components/debug/debug-menu";
+import { SimulationReports } from "./simulation-reports";
 
-export type DashboardPage = "overview" | "experiments";
+export type DashboardPage = "overview" | "experiments" | "reports";
 const PLACEHOLDERS = [
   { id: "temperature", title: "Air temperature", unit: "K", source: "MEDA · Jezero" },
   { id: "pressure", title: "Atmospheric pressure", unit: "Pa", source: "MEDA · Jezero" },
@@ -85,12 +86,13 @@ export function HomebaseDashboard({
   const navigate = useCallback(
     (next: DashboardPage) => {
       if (onClose) setPage(next);
-      else router.push(next === "overview" ? "/mission" : "/mission/experiments");
+      else router.push(next === "overview" ? "/mission" : `/mission/${next}`);
     },
     [onClose, router],
   );
   useEffect(() => setPage(initialPage), [initialPage]);
   useEffect(() => {
+    if (page === "reports") return;
     const controller = new AbortController();
     setLoading(true);
     setError("");
@@ -120,7 +122,7 @@ export function HomebaseDashboard({
     }
     void load();
     return () => controller.abort();
-  }, [request]);
+  }, [request, page]);
   useEffect(() => {
     const shortcut = (e: KeyboardEvent) => {
       if (
@@ -132,9 +134,9 @@ export function HomebaseDashboard({
         (e.target as HTMLElement).closest("input,textarea,select,button,a,[contenteditable=true]")
       )
         return;
-      if (e.key === "1" || e.key === "2") {
+      if (e.key === "1" || e.key === "2" || e.key === "3") {
         e.preventDefault();
-        navigate(e.key === "1" ? "overview" : "experiments");
+        navigate(e.key === "1" ? "overview" : e.key === "2" ? "experiments" : "reports");
       }
     };
     window.addEventListener("keydown", shortcut);
@@ -163,7 +165,11 @@ export function HomebaseDashboard({
             </span>
           </span>
         </div>
-        <h1>Mission {page === "overview" ? "console" : "experiments"}</h1>
+        <h1>
+          {page === "reports"
+            ? "Simulation reports"
+            : `Mission ${page === "overview" ? "console" : "experiments"}`}
+        </h1>
         <nav aria-label="Mission dashboard navigation">
           <Button
             variant="ghost"
@@ -179,6 +185,13 @@ export function HomebaseDashboard({
           >
             Experiments
           </Button>
+          <Button
+            variant="ghost"
+            aria-current={page === "reports" ? "page" : undefined}
+            onClick={() => navigate("reports")}
+          >
+            Simulation reports
+          </Button>
           <Button variant="ghost" onClick={close}>
             Full map <ArrowUpRight aria-hidden />
           </Button>
@@ -187,13 +200,17 @@ export function HomebaseDashboard({
       <div className="hb-archive-bar">
         <span>
           <Info size={16} aria-hidden />
-          <strong>Historical NASA reference</strong>
+          <strong>{page === "reports" ? "Simulation archive" : "Historical NASA reference"}</strong>
           <span className="hb-banner-detail">
-            No live weather. No operational safety certification.
+            {page === "reports"
+              ? "Read-only results, not NASA observations."
+              : "No live weather. No operational safety certification."}
           </span>
         </span>
         <span>
-          {data ? (
+          {page === "reports" ? (
+            "Saved in this browser"
+          ) : data ? (
             <>
               Demo today · <time dateTime={data.demo_today.date}>{data.demo_today.date}</time> · sol{" "}
               <span className="font-mono">{data.demo_today.sol}</span>
@@ -203,8 +220,15 @@ export function HomebaseDashboard({
           )}
         </span>
       </div>
-      <main id="hb-content" className="hb-content" aria-busy={loading} tabIndex={-1}>
-        {page === "overview" ? (
+      <main
+        id="hb-content"
+        className="hb-content"
+        aria-busy={page !== "reports" && loading}
+        tabIndex={-1}
+      >
+        {page === "reports" ? (
+          <SimulationReports />
+        ) : page === "overview" ? (
           <div className="hb-workspace">
             <ReferencePanes
               data={data}
@@ -307,7 +331,12 @@ export function HomebaseDashboard({
       <footer className="hb-status">
         <div className="hb-status-metrics">
           <span role="status" aria-live="polite">
-            {error ? (
+            {page === "reports" ? (
+              <>
+                <Info size={16} aria-hidden />
+                Browser report archive
+              </>
+            ) : error ? (
               <>
                 <TriangleAlert size={16} aria-hidden />
                 {data ? "Stale archive view" : "Archive unavailable"}
@@ -325,7 +354,9 @@ export function HomebaseDashboard({
             )}
           </span>
           <span className="hb-status-time">
-            {data ? (
+            {page === "reports" ? (
+              "Saved times are UTC"
+            ) : data ? (
               <>
                 <span className="font-mono">
                   {data.demo_today.date} {clockLabel(data.demo_today.utc_ms)}
@@ -336,24 +367,30 @@ export function HomebaseDashboard({
               "No mission session required"
             )}
           </span>
-          <span className="hb-status-readonly">Read-only · NASA archive</span>
+          <span className="hb-status-readonly">
+            Read-only · {page === "reports" ? "Simulation results" : "NASA archive"}
+          </span>
         </div>
         <div className="hb-status-message">
-          <span role={error ? "alert" : undefined}>
-            {error
-              ? `${error}. ${data ? "Previous archive values are marked stale." : "No measurements have been substituted."} Use Reload to retry.`
-              : "Reference data only. Simulations stay on the map."}
+          <span role={error && page !== "reports" ? "alert" : undefined}>
+            {page === "reports"
+              ? "Reports remain available after a new run. They are not synced across browsers or devices."
+              : error
+                ? `${error}. ${data ? "Previous archive values are marked stale." : "No measurements have been substituted."} Use Reload to retry.`
+                : "Reference data only. Simulations stay on the map."}
           </span>
-          <Button
-            variant="ghost"
-            aria-label="Reload archive data"
-            disabled={loading}
-            onClick={reload}
-          >
-            <RefreshCw size={16} aria-hidden />
-            Reload
-          </Button>
-          <span className="hb-status-hint">[1] Overview · [2] Experiments</span>
+          {page !== "reports" && (
+            <Button
+              variant="ghost"
+              aria-label="Reload archive data"
+              disabled={loading}
+              onClick={reload}
+            >
+              <RefreshCw size={16} aria-hidden />
+              Reload
+            </Button>
+          )}
+          <span className="hb-status-hint">[1] Overview · [2] Experiments · [3] Reports</span>
         </div>
       </footer>
       <ObservationInspector

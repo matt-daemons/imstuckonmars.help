@@ -20,10 +20,14 @@ import {
   type EventRequest,
   type MissionAccess,
   type MissionOutlook,
+  type MissionReport,
   type Snapshot,
 } from "@/lib/mission/client";
 import type { ExpeditionPlan } from "@/lib/mission/expedition";
 import type { ReplanOption } from "@/lib/mission/types";
+import { usePathname } from "next/navigation";
+import { reportKey, simulationFinished } from "@/lib/mission/completion";
+import { saveReport } from "@/lib/mission/report-history";
 
 const STORAGE_KEY = "imstuckonmars.expedition";
 const PLAYING_POLL_MS = 1000;
@@ -54,6 +58,7 @@ function readStored(): MissionAccess | null {
 }
 
 function useExpeditionState() {
+  const pathname = usePathname();
   const [access, setAccess] = useState<MissionAccess | null>(null);
   const [snapshot, setSnapshot] = useState<Snapshot | null>(null);
   const [receivedAt, setReceivedAt] = useState(0);
@@ -66,6 +71,12 @@ function useExpeditionState() {
   const [now, setNow] = useState(() => Date.now());
   const [follow, setFollow] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
+  const [completedReport, setCompletedReport] = useState<MissionReport | null>(null);
+  const [reportSave, setReportSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [reportSaveError, setReportSaveError] = useState<string | null>(null);
+  const reportJob = useRef<{ key: string; promise: Promise<void> } | null>(null);
+  const savedKey = useRef<string | null>(null);
+  const finished = simulationFinished(snapshot);
   const snapshotRef = useRef<Snapshot | null>(null);
   const accessRef = useRef<MissionAccess | null>(null);
   const busy = useRef(false);
@@ -88,6 +99,47 @@ function useExpeditionState() {
     setLinkError(null);
   }, []);
 
+  const archiveReport = useCallback(async () => {
+    const current = snapshotRef.current;
+    const mission = accessRef.current;
+    if (!current || !mission || !simulationFinished(current)) return;
+    const key = reportKey(current);
+    if (savedKey.current === key) return;
+    if (reportJob.current?.key === key) return reportJob.current.promise;
+    setReportSave("saving");
+    setReportSaveError(null);
+    const promise = (async () => {
+      try {
+        const report = await missionApi.report(mission);
+        if (reportKey(report) !== key)
+          throw new Error("The run changed before its report could be saved");
+        setCompletedReport(report);
+        await saveReport(report);
+        savedKey.current = key;
+        setReportSave("saved");
+      } catch (error) {
+        setReportSave("error");
+        const message = error instanceof Error ? error.message : "Report storage unavailable";
+        setReportSaveError(message);
+        throw new Error(
+          `Report not saved: ${message}. Open Mission dashboard → Simulation reports and retry saving before replacing this run.`,
+        );
+      } finally {
+        reportJob.current = null;
+      }
+    })();
+    reportJob.current = { key, promise };
+    return promise;
+  }, []);
+
+  const completionKey = finished && snapshot ? reportKey(snapshot) : null;
+  useEffect(() => {
+    if (!completionKey) return;
+    // Also runs after reload: the completed controls never reappear while report saving retries.
+    setReportOpen(true);
+    void archiveReport().catch(() => {});
+  }, [completionKey, archiveReport]);
+
   // Open the page's one session: resume this tab's, or open a new one at the habitat.
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
@@ -95,6 +147,7 @@ function useExpeditionState() {
     (async () => {
       setOpenError(null);
       const stored = readStored();
+      if (!stored && pathname !== "/") return;
       if (stored) {
         try {
           const first = await missionApi.snapshot(stored);
@@ -106,6 +159,7 @@ function useExpeditionState() {
         } catch (error) {
           if (!(error instanceof ApiError && error.status === 404)) throw error;
           sessionStorage.removeItem(STORAGE_KEY);
+          if (pathname !== "/") return;
         }
       }
       const session = await missionApi.open();
@@ -126,7 +180,7 @@ function useExpeditionState() {
     return () => {
       cancelled = true;
     };
-  }, [accept, attempt]);
+  }, [accept, attempt, pathname]);
 
   const refresh = useCallback(async () => {
     const mission = accessRef.current;
@@ -230,6 +284,8 @@ function useExpeditionState() {
         }
       };
       try {
+        // Never overwrite a completed run until its immutable report is saved.
+        if (value.type === "plan" || value.type === "reset") await archiveReport();
         let result;
         try {
           result = await attemptOnce(current.revision);
@@ -244,6 +300,7 @@ function useExpeditionState() {
           );
         }
         accept(result);
+        if (value.type === "plan" || value.type === "reset") setReportOpen(false);
         setLastCommand({ label, state: "accepted", at: Date.now() });
         return result;
       } catch (error) {
@@ -258,7 +315,7 @@ function useExpeditionState() {
         busy.current = false;
       }
     },
-    [accept],
+    [accept, archiveReport],
   );
 
   const launch = useCallback(
@@ -331,6 +388,11 @@ function useExpeditionState() {
     setFollow,
     reportOpen,
     setReportOpen,
+    finished,
+    completedReport,
+    reportSave,
+    reportSaveError,
+    retryReportSave: () => void archiveReport().catch(() => {}),
   };
 }
 

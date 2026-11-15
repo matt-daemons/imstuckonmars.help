@@ -25,6 +25,7 @@ Read the detailed evidence and proposed scope before implementation:
 - `docs/TELEMETRY_FEATURES.md`: five bounded features and dashboard metric specifications.
 - `docs/BACKEND.md`: implemented Hono/D1 backend, local verification and frontend/route contracts.
 - `docs/HOMEBASE_DASHBOARD.md`: map-opened read-only reference data, archived demo today, experiment log and animation boundaries.
+- `docs/WEATHER_RISKS.md`: standalone dust/cold drills, resource assumptions and retired weather-prototype boundaries.
 - `docs/TELEMETRY_ARCHITECTURE.md`: superseded Python/FastAPI research, not deployment guidance.
 
 ## Confirmed state and scientific boundaries

@@ -11,6 +11,7 @@ import {
   type ScenarioEvent,
 } from "./types";
 import { crewPositionAt } from "./position";
+import { equipmentPower, extraHeaterPower, weatherExertion, weatherRisksAt } from "./weather-risks";
 
 const EPSILON = 1e-9;
 
@@ -177,6 +178,12 @@ export function evaluateMission(
       400,
     );
   }
+  if (!config.route && events.some((event) => event.type === "weather_risk"))
+    throw new MissionError(
+      "expedition_required",
+      "Launch an expedition before injecting weather risks",
+      422,
+    );
   const state: Evaluation = {
     model_version: MODEL_VERSION,
     provenance: "assumption-driven simulation",
@@ -201,16 +208,32 @@ export function evaluateMission(
     observed_sample: null,
     effective_oxygen_rate_g_h: null,
     effective_generator_power_w: null,
+    ...(config.route
+      ? {
+          weather_risks: { dust: false, cold: false },
+          weather_risk_effects: {
+            extra_heater_wh: 0,
+            extra_exertion_wh: 0,
+            extra_oxygen_demand_g: 0,
+            dust_drill_s: 0,
+            cold_drill_s: 0,
+          },
+        }
+      : {}),
   };
   const orderedEvents = [...events].sort((a, b) => a.at_s - b.at_s);
   const leaks = state.oxygen_leak_g_h;
   let eventIndex = 0;
+  const risks = { dust: false, cold: false };
   const addReason = (reason: string) => {
     if (!state.reasons.includes(reason)) state.reasons.push(reason);
   };
   const applyEvent = (event: ScenarioEvent) => {
     state.applied_event_ids.push(event.id);
     switch (event.type) {
+      case "weather_risk":
+        risks[event.risk] = event.active;
+        break;
       case "generator_failure":
         state.generator_available = false;
         break;
@@ -298,9 +321,13 @@ export function evaluateMission(
     .filter((time) => time <= requestedS + EPSILON)
     .sort((a, b) => a - b);
   let stopIndex = 0;
+  const finish = (value: Evaluation) => {
+    if (config.route) value.weather_risks = weatherRisksAt(events, value.elapsed_s);
+    return finalize(config, value);
+  };
   const recordDue = () => {
     while (stopIndex < stops.length && stops[stopIndex] <= state.elapsed_s + EPSILON) {
-      checkpoints!.record(finalize(config, structuredClone(state)));
+      checkpoints!.record(finish(structuredClone(state)));
       stopIndex++;
     }
   };
@@ -354,14 +381,18 @@ export function evaluateMission(
     );
     const profile = config.profiles[schedule.activity];
     const crewAtBase = schedule.activity === "base";
-    const factor = state.demand_factor[crewAtBase ? "base" : "eva"];
-    const activityPower = profile.power_w * factor;
+    const manualFactor = state.demand_factor[crewAtBase ? "base" : "eva"];
+    const factor = manualFactor * (crewAtBase ? 1 : weatherExertion(risks));
+    const baselineHeat = !crewAtBase ? (30 * config.crew_count) / 2 : 0;
+    const heat = !crewAtBase ? extraHeaterPower(config, risks) : 0;
+    const activityPower = equipmentPower(config, schedule.activity, manualFactor, risks);
+    const generation = state.generation_w;
     const baseLoad = config.base_load_w + (crewAtBase ? activityPower : 0);
     const battery = state.battery.base;
     const batteryConfig = config.battery.base;
     const archivedPower = habitat && source ? (source.total_power_w as number) : 0;
     const availablePower =
-      state.generation_w + (battery.remaining_wh > EPSILON ? batteryConfig.max_discharge_w : 0);
+      generation + (battery.remaining_wh > EPSILON ? batteryConfig.max_discharge_w : 0);
     if (
       habitat &&
       source &&
@@ -376,7 +407,7 @@ export function evaluateMission(
       state.generator_available && habitat && source
         ? (source.oxygen_rate_g_h as number) * config.capture_efficiency
         : 0;
-    const deficit = baseLoad + generatorPower - state.generation_w;
+    const deficit = baseLoad + generatorPower - generation;
     // Resolve depletion before the next source/event boundary, not after an oversized step.
     if (deficit > 0 && battery.remaining_wh > EPSILON) {
       const deliveredPower = Math.min(deficit, batteryConfig.max_discharge_w);
@@ -412,14 +443,7 @@ export function evaluateMission(
       start,
       dt,
     );
-    advanceBattery(
-      battery,
-      batteryConfig,
-      state.generation_w,
-      baseLoad + generatorPower,
-      start,
-      dt,
-    );
+    advanceBattery(battery, batteryConfig, generation, baseLoad + generatorPower, start, dt);
     advanceBattery(
       state.battery.eva,
       config.battery.eva,
@@ -429,12 +453,27 @@ export function evaluateMission(
       dt,
     );
     state.elapsed_s += dt;
+    if (state.weather_risk_effects) {
+      state.weather_risk_effects.extra_heater_wh +=
+        (heat * dt) / 3600 / config.battery.eva.discharge_efficiency;
+      if (!crewAtBase) {
+        const extraFactor = factor - manualFactor;
+        state.weather_risk_effects.extra_exertion_wh +=
+          (Math.max(0, profile.power_w - baselineHeat) * extraFactor * dt) /
+          3600 /
+          config.battery.eva.discharge_efficiency;
+        state.weather_risk_effects.extra_oxygen_demand_g +=
+          (profile.oxygen_g_h_per_person * config.crew_count * extraFactor * dt) / 3600;
+        if (risks.dust) state.weather_risk_effects.dust_drill_s += dt;
+        if (risks.cold) state.weather_risk_effects.cold_drill_s += dt;
+      }
+    }
     if (!crewAtBase) state.eva_elapsed_s += dt;
     state.effective_oxygen_rate_g_h = production;
     state.effective_generator_power_w = generatorPower;
   }
   if (state.status === "ok") recordDue();
-  return finalize(config, state);
+  return finish(state);
 }
 
 export function assessReturn(
@@ -461,11 +500,13 @@ export function assessReturn(
   let energy = 0;
   for (const leg of route.legs) {
     const profile = config.profiles[leg.activity];
+    const risks = snapshot.weather_risks;
+    const factor = snapshot.demand_factor.eva * weatherExertion(risks);
+    const power = equipmentPower(config, leg.activity, snapshot.demand_factor.eva, risks);
+    energy += (power * leg.duration_s) / 3600 / config.battery.eva.discharge_efficiency;
     duration += leg.duration_s;
-    oxygen += (profile.oxygen_g_h_per_person * config.crew_count * leg.duration_s) / 3600;
-    energy += (profile.power_w * leg.duration_s) / 3600 / config.battery.eva.discharge_efficiency;
-    if (profile.power_w > config.battery.eva.max_discharge_w)
-      reasons.push("portable_discharge_power_limit");
+    oxygen += (profile.oxygen_g_h_per_person * config.crew_count * leg.duration_s * factor) / 3600;
+    if (power > config.battery.eva.max_discharge_w) reasons.push("portable_discharge_power_limit");
   }
   oxygen += (snapshot.oxygen_leak_g_h.eva * duration) / 3600;
   if (

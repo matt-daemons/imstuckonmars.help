@@ -95,7 +95,7 @@ export async function homebaseDashboard(
       "This release has no acquired day with temperature, pressure and humidity. Select a published environmental release",
       503,
     );
-  const sol = days[Math.floor(Math.random() * days.length)];
+  const sol = days[0];
   const chosen = HOMEBASE_FIELDS.map((s) =>
     products.find((p) => p.sol === sol && p.sensor === s.sensor && p.processing_level === s.level)!,
   );

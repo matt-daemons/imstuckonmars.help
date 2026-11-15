@@ -1,7 +1,7 @@
 "use client";
 
 import { CircleCheckIcon, CircleXIcon, InfoIcon, PrinterIcon, XIcon } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,8 @@ type Row = MissionReport["series"][number];
 
 export function eventLabel(event: ScenarioEvent): string {
   switch (event.type) {
+    case "weather_risk":
+      return `${event.risk === "dust" ? "Dust-front" : "Cold-snap"} drill ${event.active ? "enabled" : "cleared"}`;
     case "oxygen_leak":
       return event.value > 0
         ? `Suit oxygen leak ${formatNumber(event.value, 0)} g/h`
@@ -169,7 +171,17 @@ export function ReportChart({ report }: { report: MissionReport }) {
 
 /** The end-of-mission report (priority 5): outcome, lowest margins, chart and log. */
 export function ReportDialog() {
-  const { access, snapshot, reportOpen, setReportOpen } = useExpedition();
+  const {
+    access,
+    snapshot,
+    reportOpen,
+    setReportOpen,
+    completedReport,
+    finished,
+    reportSave,
+    reportSaveError,
+    retryReportSave,
+  } = useExpedition();
   const [report, setReport] = useState<MissionReport | null>(null);
   const [error, setError] = useState<string | null>(null);
   const revision = snapshot?.revision;
@@ -177,9 +189,10 @@ export function ReportDialog() {
   const at = Math.floor((snapshot?.state.elapsed_s ?? 0) / 30);
 
   useEffect(() => {
-    if (!reportOpen || !access) return;
+    if (!reportOpen || !access || finished) return;
     let cancelled = false;
     setError(null);
+    setReport(null);
     missionApi
       .report(access)
       .then((value) => !cancelled && setReport(value))
@@ -187,8 +200,54 @@ export function ReportDialog() {
     return () => {
       cancelled = true;
     };
-  }, [reportOpen, access, revision, at]);
+  }, [reportOpen, access, revision, at, finished]);
 
+  const finalReport =
+    completedReport?.mission_id === snapshot?.mission_id && completedReport?.revision === revision
+      ? completedReport
+      : null;
+  return (
+    <ReportViewer
+      open={reportOpen}
+      onOpenChange={setReportOpen}
+      report={finished ? finalReport : report}
+      error={finished ? null : error}
+      notice={
+        finished ? (
+          <div className="report-save-status" role="status">
+            {reportSave === "saved" ? (
+              "Saved in this browser. Reopen from Mission dashboard → Simulation reports."
+            ) : reportSave === "error" ? (
+              <>
+                Report not saved: {reportSaveError}. Keep this run until saving succeeds.{" "}
+                <Button variant="outline" onClick={retryReportSave}>
+                  Retry saving report
+                </Button>
+              </>
+            ) : (
+              "Saving report in this browser…"
+            )}
+          </div>
+        ) : undefined
+      }
+    />
+  );
+}
+
+/** Read-only viewer shared by the current mission and locally archived reports. */
+export function ReportViewer({
+  open,
+  onOpenChange,
+  report,
+  error,
+  notice,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  report: MissionReport | null;
+  error?: string | null;
+  notice?: ReactNode;
+}) {
   const facts = report?.config.route ? summarize(report) : null;
   const shelter = report?.config.route?.shelter === "rover" ? "rover" : "habitat";
   const log = report
@@ -220,7 +279,7 @@ export function ReportDialog() {
     : [];
 
   return (
-    <Dialog open={reportOpen} onOpenChange={setReportOpen}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPopup className="report-dialog" showCloseButton={false} bottomStickOnMobile={false}>
         <header className="report-header">
           <div>
@@ -240,13 +299,14 @@ export function ReportDialog() {
               <PrinterIcon aria-hidden />
               Print
             </Button>
-            <Button variant="outline" onClick={() => setReportOpen(false)}>
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               <XIcon aria-hidden />
               Close
             </Button>
           </div>
         </header>
         <div className="report-body">
+          {notice && <div className="report-notice">{notice}</div>}
           {error ? (
             <p role="alert" className="text-destructive-foreground">
               Report not loaded: {error}. Close and open it again to retry.
@@ -326,6 +386,42 @@ export function ReportDialog() {
                   </dd>
                 </div>
               </dl>
+              {report.events.some((event) => event.type === "weather_risk") &&
+                report.final.weather_risk_effects && (
+                  <section aria-labelledby="report-weather-drills">
+                    <h3 id="report-weather-drills" className="font-heading font-semibold">
+                      Weather risk drills
+                    </h3>
+                    <dl className="report-facts">
+                      <div>
+                        <dt>Dust drill outside</dt>
+                        <dd>{span(report.final.weather_risk_effects.dust_drill_s)}</dd>
+                      </div>
+                      <div>
+                        <dt>Cold drill outside</dt>
+                        <dd>{span(report.final.weather_risk_effects.cold_drill_s)}</dd>
+                      </div>
+                      <div>
+                        <dt>Extra exertion energy demand</dt>
+                        <dd>{wattHours(report.final.weather_risk_effects.extra_exertion_wh)}</dd>
+                      </div>
+                      <div>
+                        <dt>Extra heater energy demand</dt>
+                        <dd>{wattHours(report.final.weather_risk_effects.extra_heater_wh)}</dd>
+                      </div>
+                      <div>
+                        <dt>Extra oxygen demand</dt>
+                        <dd>{grams(report.final.weather_risk_effects.extra_oxygen_demand_g)}</dd>
+                      </div>
+                    </dl>
+                    <p className="text-sm">
+                      Operator-injected assumptions, not NASA measurements. Dust increases outside
+                      exertion by 25%. Cold adds 70 W of heater demand per two crew while outside.
+                      Movement speed is unchanged. No measured weather, temperature replay or visual
+                      effects are used.
+                    </p>
+                  </section>
+                )}
               <ReportChart report={report} />
               <section aria-labelledby="report-log">
                 <h3 id="report-log" className="font-heading font-semibold">

@@ -1,6 +1,7 @@
 // Deterministic expedition alerts: derived from the backend snapshot and outlook, never from AI.
 // Display state (acknowledged, suppressed, inhibited) is local and never changes the model.
 import type { MissionOutlook, Snapshot } from "./client";
+import { equipmentPower, weatherExertion } from "./weather-risks";
 
 type ResourceSnapshot = Pick<Snapshot, "config" | "state">;
 
@@ -48,11 +49,13 @@ export function suitRates(snapshot: ResourceSnapshot) {
   if (state.activity === "base")
     return { oxygen_g_h: config.route ? 0 : state.oxygen_leak_g_h.eva, energy_wh_h: 0 };
   const profile = config.profiles[state.activity];
-  const factor = state.demand_factor.eva;
+  const factor = state.demand_factor.eva * weatherExertion(state.weather_risks);
   return {
     oxygen_g_h:
       profile.oxygen_g_h_per_person * config.crew_count * factor + state.oxygen_leak_g_h.eva,
-    energy_wh_h: (profile.power_w * factor) / config.battery.eva.discharge_efficiency,
+    energy_wh_h:
+      equipmentPower(config, state.activity, state.demand_factor.eva, state.weather_risks) /
+      config.battery.eva.discharge_efficiency,
   };
 }
 
@@ -74,6 +77,26 @@ export function activeAlerts(
   const alerts: AlertInstance[] = [];
   const add = (alert: AlertInstance) => alerts.push(alert);
   const reasons = new Set(state.reasons);
+  if (state.weather_risks?.dust)
+    add({
+      code: "dust_drill",
+      id: "ENV-D",
+      level: "warning",
+      name: "Dust-front drill active",
+      system: "Environment",
+      detail:
+        "Operator-injected scenario: 25% extra outside exertion increases oxygen and equipment demand. Walking speed unchanged; not NASA observations.",
+    });
+  if (state.weather_risks?.cold)
+    add({
+      code: "cold_drill",
+      id: "ENV-C",
+      level: "warning",
+      name: "Cold-snap drill active",
+      system: "Environment",
+      detail:
+        "Operator-injected scenario: extra heater demand of 70 W per two crew while outside. Not measured weather or a physiological prediction.",
+    });
   if (reasons.has("eva_oxygen_demand_unmet"))
     add({
       code: "eva_oxygen_demand_unmet",

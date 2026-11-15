@@ -164,7 +164,7 @@ export function CrewLayer({ map }: { map: MapLibreMap | null }) {
       const position = crewPositionAt(route, t);
       marker.current?.setLngLat(position.lnglat);
       if (label.current) {
-        const text = `Crew ×2 · ${PHASE_LABEL[position.phase]}`;
+        const text = `Crew ×${snapshot?.config.crew_count ?? 2} · ${PHASE_LABEL[position.phase]}`;
         if (label.current.textContent !== text) {
           label.current.textContent = text;
           label.current.parentElement?.setAttribute(

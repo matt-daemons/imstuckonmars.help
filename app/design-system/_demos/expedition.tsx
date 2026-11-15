@@ -4,6 +4,8 @@ import { CircleXIcon, SquareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExpeditionGauge } from "@/components/expedition/expedition-hud";
 import { ReportChart } from "@/components/expedition/report-dialog";
+import { SavedReportCard } from "@/components/homebase/simulation-reports";
+import "@/components/homebase/terminal.css";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { evaluateMission } from "@/lib/mission/engine";
 import { buildExpeditionConfig } from "@/lib/mission/expedition";
@@ -84,6 +86,18 @@ const report: MissionReport = {
 export function ExpeditionComponents() {
   return (
     <>
+      <Section id="saved-simulation-report" title="Saved simulation report" className="flex-col">
+        <p>
+          Read-only browser history, separate from NASA experiments. Synthetic specimen; not saved
+          to the report archive.
+        </p>
+        <div className="homebase-dashboard hb-component-demo w-full">
+          <SavedReportCard
+            saved={{ id: "fixture:0", saved_at_ms: Date.UTC(2026, 10, 15, 12), report }}
+            onOpen={() => {}}
+          />
+        </div>
+      </Section>
       <Section id="expedition-gauges" title="Expedition supplies" className="flex-col">
         <p>
           Synthetic fixtures. The tick marks a reserve, not zero. Labels and icons distinguish

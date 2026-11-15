@@ -258,6 +258,14 @@ export function parseEvent(value: unknown, duration: number): ScenarioEvent {
     return event.target;
   };
   switch (event.type) {
+    case "weather_risk":
+      if ((event.risk !== "dust" && event.risk !== "cold") || typeof event.active !== "boolean")
+        throw new MissionError(
+          "invalid_input",
+          "Weather risk must be dust or cold with an active boolean",
+          400,
+        );
+      return { ...common, type: "weather_risk", risk: event.risk, active: event.active };
     case "generator_failure":
     case "generator_restore":
     case "route_blocked":

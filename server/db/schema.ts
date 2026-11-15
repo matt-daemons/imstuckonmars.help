@@ -57,6 +57,21 @@ export const sourceProducts = sqliteTable(
   ],
 );
 
+export const weatherSamples = sqliteTable(
+  "weather_samples",
+  {
+    release_id: text()
+      .notNull()
+      .references(() => dataReleases.id),
+    utc_ms: integer().notNull(),
+    sol: integer().notNull(),
+    temperature_k: real(),
+    pressure_pa: real(),
+    water_vapor_ppm: real(),
+  },
+  (t) => [primaryKey({ columns: [t.release_id, t.utc_ms] })],
+);
+
 export const fieldDefinitions = sqliteTable(
   "field_definitions",
   {

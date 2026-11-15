@@ -23,7 +23,7 @@ describe("Drizzle mapping of the existing D1 schema", () => {
     expect(tables.map((table) => getTableConfig(table).name).sort()).toEqual(
       actual.map((row) => row.name),
     );
-    expect(tables).toHaveLength(19);
+    expect(tables).toHaveLength(20);
   });
 
   for (const table of tables) {

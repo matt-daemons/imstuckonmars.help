@@ -8,6 +8,8 @@ Map expedition integration (2026-11-15): [`EXPEDITION.md`](EXPEDITION.md) docume
 
 ## Data and storage
 
+Weather risk controls use the existing revisioned event endpoint: `weather_risk` accepts `risk: "dust" | "cold"` and `active: boolean`. They are explicitly operator-injected scenarios, never observation edits, and require no historical-weather companion. Assumptions, recovery and the retired local migration are documented in [WEATHER_RISKS.md](WEATHER_RISKS.md).
+
 `data/telemetry/sources.json` is the generated provenance authority. `scripts/telemetry/acquire.py` verified 132 retained files using official NASA/PDS labels, upstream checksums or byte comparison against the official MOXIE archive. The approved cleanup removed 318 unused files, totaling 404,345,694 bytes. Do not edit source CSV/XML files. Acquisition is not part of serving or building the Worker.
 
 The full **offline** normalized release contains:
