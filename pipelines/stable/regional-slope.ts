@@ -71,8 +71,18 @@ if (!existsSync(band)) {
   await execa(
     "gdal_translate",
     [
-      ...["-q", "-projwin", "-180", String(north), "180", String(south)],
-      ...["-co", "COMPRESS=DEFLATE", "-co", "TILED=YES", SRC, band],
+      "-q",
+      "-projwin",
+      "-180",
+      String(north),
+      "180",
+      String(south),
+      "-co",
+      "COMPRESS=DEFLATE",
+      "-co",
+      "TILED=YES",
+      SRC,
+      band,
     ],
     { env },
   );
@@ -80,17 +90,39 @@ if (!existsSync(band)) {
 const east = join(work, "dem-east.tif"); // W..180 °E
 const west = join(work, "dem-west.tif"); // 180..E °E, i.e. −180..E−360
 await execa("gdal_translate", [
-  ...["-q", "-projwin", String(W), String(north), "180", String(south), band, east],
+  "-q",
+  "-projwin",
+  String(W),
+  String(north),
+  "180",
+  String(south),
+  band,
+  east,
 ]);
 await execa("gdal_translate", [
-  ...["-q", "-projwin", "-180", String(north), String(E - 360), String(south), band, west],
+  "-q",
+  "-projwin",
+  "-180",
+  String(north),
+  String(E - 360),
+  String(south),
+  band,
+  west,
 ]);
 const westShifted = join(work, "dem-west-0360.vrt");
 const westInfo = JSON.parse((await execa("gdalinfo", ["-json", west])).stdout);
 const [wx, wy] = westInfo.size;
 await execa("gdal_translate", [
-  ...["-q", "-of", "VRT", "-a_ullr", "180", String(north)],
-  ...[String(180 + wx * RES_DEG), String(north - wy * RES_DEG), west, westShifted],
+  "-q",
+  "-of",
+  "VRT",
+  "-a_ullr",
+  "180",
+  String(north),
+  String(180 + wx * RES_DEG),
+  String(north - wy * RES_DEG),
+  west,
+  westShifted,
 ]);
 const mars0360 = "+proj=longlat +R=3396190 +lon_wrap=180 +no_defs";
 const dem0360 = join(work, "dem-0360.vrt");
@@ -103,20 +135,74 @@ const slopeLocal = join(work, "slope-local.tif");
 const slope = join(work, "slope-deg.tif"); // Float32 degrees, for the overlay and stats
 const published = join(out, "regional-slope.tif");
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-s_srs", mars0360, "-t_srs", local, "-tr", String(RES_M), String(RES_M)],
-  ...["-r", "bilinear", "-srcnodata", "-32768", "-dstnodata", "-32768", "-multi"],
-  ...["-co", "COMPRESS=DEFLATE", "-co", "TILED=YES", dem0360, demLocal],
+  "-q",
+  "-overwrite",
+  "-s_srs",
+  mars0360,
+  "-t_srs",
+  local,
+  "-tr",
+  String(RES_M),
+  String(RES_M),
+  "-r",
+  "bilinear",
+  "-srcnodata",
+  "-32768",
+  "-dstnodata",
+  "-32768",
+  "-multi",
+  "-co",
+  "COMPRESS=DEFLATE",
+  "-co",
+  "TILED=YES",
+  dem0360,
+  demLocal,
 ]);
 await execa("gdaldem", ["slope", "-q", "-co", "COMPRESS=DEFLATE", demLocal, slopeLocal]);
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-t_srs", mars0360, "-te", ...[W, south, E, north].map(String)],
-  ...["-tr", String(RES_DEG), String(RES_DEG), "-r", "bilinear"],
-  ...["-srcnodata", "-9999", "-dstnodata", "-9999", "-of", "COG", "-co", "COMPRESS=DEFLATE"],
-  ...[slopeLocal, slope],
+  "-q",
+  "-overwrite",
+  "-t_srs",
+  mars0360,
+  "-te",
+  ...[W, south, E, north].map(String),
+  "-tr",
+  String(RES_DEG),
+  String(RES_DEG),
+  "-r",
+  "bilinear",
+  "-srcnodata",
+  "-9999",
+  "-dstnodata",
+  "-9999",
+  "-of",
+  "COG",
+  "-co",
+  "COMPRESS=DEFLATE",
+  slopeLocal,
+  slope,
 ]);
 await execa("gdal_translate", [
-  ...["-q", "-of", "COG", "-ot", "Int16", "-scale", "0", "90", "0", "900", "-a_scale", "0.1"],
-  ...["-a_nodata", "-9999", "-co", "COMPRESS=DEFLATE", "-co", "PREDICTOR=2", slope, published],
+  "-q",
+  "-of",
+  "COG",
+  "-ot",
+  "Int16",
+  "-scale",
+  "0",
+  "90",
+  "0",
+  "900",
+  "-a_scale",
+  "0.1",
+  "-a_nodata",
+  "-9999",
+  "-co",
+  "COMPRESS=DEFLATE",
+  "-co",
+  "PREDICTOR=2",
+  slope,
+  published,
 ]);
 
 // 3. Overlay tiles: < 10° clear, 10–15° yellow, 15°–threshold orange, ≥ threshold red (same as slope.ts).
@@ -138,7 +224,13 @@ writeFileSync(
 );
 const coloured = join(work, "slope-rgba.tif");
 await execa("gdaldem", [
-  ...["color-relief", "-q", "-alpha", "-nearest_color_entry", slope, ramp, coloured],
+  "color-relief",
+  "-q",
+  "-alpha",
+  "-nearest_color_entry",
+  slope,
+  ramp,
+  coloured,
 ]);
 // Tiles are cut in −180..180 (MapLibre treats Mars degrees as Earth degrees), one side of ±180 at a time.
 rmSync(tilesOut, { recursive: true, force: true });
@@ -149,18 +241,49 @@ for (const [name, w, e, shift] of [
 ] as const) {
   const part = join(work, `slope-${name}.vrt`);
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-projwin", String(w), String(north), String(e), String(south)],
-    ...[coloured, part],
+    "-q",
+    "-of",
+    "VRT",
+    "-projwin",
+    String(w),
+    String(north),
+    String(e),
+    String(south),
+    coloured,
+    part,
   ]);
   const asEarth = join(work, `slope-${name}-as-4326.vrt`);
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-a_srs", "EPSG:4326", "-a_ullr"],
-    ...[String(w + shift), String(north), String(e + shift), String(south), part, asEarth],
+    "-q",
+    "-of",
+    "VRT",
+    "-a_srs",
+    "EPSG:4326",
+    "-a_ullr",
+    String(w + shift),
+    String(north),
+    String(e + shift),
+    String(south),
+    part,
+    asEarth,
   ]);
   await execa("gdal2tiles", [
-    ...["--xyz", "-z", "5-10", "-w", "none", "-r", "near", "--resume"],
-    ...["--tiledriver", "WEBP", "--webp-quality", "85", "--processes", "8"],
-    ...[asEarth, tilesOut],
+    "--xyz",
+    "-z",
+    "5-10",
+    "-w",
+    "none",
+    "-r",
+    "near",
+    "--resume",
+    "--tiledriver",
+    "WEBP",
+    "--webp-quality",
+    "85",
+    "--processes",
+    "8",
+    asEarth,
+    tilesOut,
   ]);
 }
 
@@ -168,7 +291,13 @@ for (const [name, w, e, shift] of [
 const hist = JSON.parse(
   (
     await execa("gdalinfo", [
-      ...["-json", "-stats", "-hist", "--config", "GDAL_PAM_ENABLED", "NO", slope],
+      "-json",
+      "-stats",
+      "-hist",
+      "--config",
+      "GDAL_PAM_ENABLED",
+      "NO",
+      slope,
     ])
   ).stdout,
 );

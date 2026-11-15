@@ -75,15 +75,41 @@ for (const site of sites) {
   const te = ["-te", ...[-half, -half, half, half].map(String)];
   const warp = async (src: string, dst: string, res: number, r: string, extra: string[] = []) => {
     await execa("gdalwarp", [
-      ...["-q", "-overwrite", "-t_srs", local, ...te, "-tr", String(res), String(res), "-r", r],
-      ...["-srcnodata", "-9999", "-dstnodata", "-9999", ...extra, src, dst],
+      "-q",
+      "-overwrite",
+      "-t_srs",
+      local,
+      ...te,
+      "-tr",
+      String(res),
+      String(res),
+      "-r",
+      r,
+      "-srcnodata",
+      "-9999",
+      "-dstnodata",
+      "-9999",
+      ...extra,
+      src,
+      dst,
     ]);
   };
   // Coverage: share of 1 m source pixels with data, per 10 m cell (must be 1 = fully inside the DTM).
   const validSrc = join(work, "valid.tif");
   await execa("gdal_calc", [
-    ...["--quiet", "--overwrite", "-A", slopeCog, "--calc", "A != -9999", "--type", "Byte"],
-    ...["--NoDataValue", "255", "--hideNoData", "--outfile", validSrc],
+    "--quiet",
+    "--overwrite",
+    "-A",
+    slopeCog,
+    "--calc",
+    "A != -9999",
+    "--type",
+    "Byte",
+    "--NoDataValue",
+    "255",
+    "--hideNoData",
+    "--outfile",
+    validSrc,
   ]);
   const slopeMax = join(work, "slope-max-10m.tif");
   const roughMax = join(work, "rough-max-10m.tif");
@@ -92,8 +118,20 @@ for (const site of sites) {
   await warp(slopeCog, slopeMax, CELL_M, "max");
   await warp(roughCog, roughMax, CELL_M, "max");
   await execa("gdalwarp", [
-    ...["-q", "-overwrite", "-t_srs", local, ...te, "-tr", String(CELL_M), String(CELL_M)],
-    ...["-r", "min", "-dstnodata", "0", validSrc, valid10],
+    "-q",
+    "-overwrite",
+    "-t_srs",
+    local,
+    ...te,
+    "-tr",
+    String(CELL_M),
+    String(CELL_M),
+    "-r",
+    "min",
+    "-dstnodata",
+    "0",
+    validSrc,
+    valid10,
   ]);
   await warp(slopeCog, slope1, 1, "near");
 
