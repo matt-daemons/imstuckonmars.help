@@ -29,6 +29,12 @@ export function LayerPanel({ manifest, visible, onToggle }: LayerPanelProps) {
           </li>
         ))}
       </ul>
+      <a
+        href="/sources"
+        className="mt-3 block font-mono text-xs text-primary underline underline-offset-2"
+      >
+        Sources and caveats →
+      </a>
     </aside>
   );
 }
