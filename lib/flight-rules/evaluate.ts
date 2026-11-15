@@ -3,7 +3,7 @@ import * as zod from "zod";
 import type { Verdict } from "@/lib/mars/types";
 
 import { FLIGHT_RULES, type Factor } from "./rules";
-import { SOLAR_ALERT_LEVELS } from "./solar-alert";
+import { SOLAR_ALERT_LEVELS, type SolarAlertLevel } from "./solar-alert";
 
 /**
  * What a walk is checked on. Extra fields are ignored, so a whole route result
@@ -119,7 +119,9 @@ function checkSuitSupply(plan: Pick<EvaPlan, "route">): Finding | null {
   return null;
 }
 
-function checkRadiation(plan: EvaPlan): Finding | null {
+function checkRadiation(plan: {
+  live: Pick<EvaPlan["live"], "solar_alert_level">;
+}): Finding | null {
   const alertLevel = plan.live.solar_alert_level;
   if (alertLevel === "warning") {
     return makeFinding("radiation", "NO_GO", "Solar alert is at warning: stay in shelter");
@@ -134,7 +136,9 @@ function checkRadiation(plan: EvaPlan): Finding | null {
   return null;
 }
 
-function checkDoseRate(plan: EvaPlan): Finding | null {
+function checkDoseRate(plan: {
+  live: Pick<EvaPlan["live"], "radiation_dose_rate">;
+}): Finding | null {
   const rule = FLIGHT_RULES.dose_rate;
   const doseRate = plan.live.radiation_dose_rate;
   if (doseRate >= rule.no_go_at_micrograys_per_hour) {
@@ -154,7 +158,7 @@ function checkDoseRate(plan: EvaPlan): Finding | null {
   return null;
 }
 
-function checkDust(plan: EvaPlan): Finding | null {
+function checkDust(plan: { live: Pick<EvaPlan["live"], "dust_opacity"> }): Finding | null {
   const rule = FLIGHT_RULES.dust;
   const dustOpacity = plan.live.dust_opacity;
   if (dustOpacity >= rule.no_go_at_opacity) {
@@ -174,7 +178,7 @@ function checkDust(plan: EvaPlan): Finding | null {
   return null;
 }
 
-function checkDaylight(plan: EvaPlan): Finding | null {
+function checkDaylight(plan: Pick<EvaPlan, "route" | "minutes_until_sunset">): Finding | null {
   const rule = FLIGHT_RULES.daylight;
   const minutesToSpare = plan.minutes_until_sunset - minutesWithMargin(plan);
   if (minutesToSpare < 0) {
@@ -206,6 +210,59 @@ export function evaluateEva(plan: EvaPlan): EvaVerdict {
 /** Checks only the rules that depend on the route itself: slope, walk-back distance and suit time. */
 export function evaluateRoute(route: EvaPlan["route"]): EvaVerdict {
   return toVerdict(ROUTE_CHECKS.map((check) => check({ route })));
+}
+
+/** The rules that depend on the weather and the time of day rather than on the route. */
+export type StormFactor = "radiation" | "dose_rate" | "dust" | "daylight";
+
+/** The storm inputs of an EvaPlan, each null while it is unknown. */
+export interface KnownConditions {
+  solar_alert_level: SolarAlertLevel | null;
+  /** Micrograys per hour. */
+  radiation_dose_rate: number | null;
+  dust_opacity: number | null;
+  minutes_until_sunset: number | null;
+}
+
+/**
+ * Checks the route rules, plus each storm rule whose input is known. An unknown input is never
+ * taken as fine: its rule is listed in not_checked instead. A label, when given, is appended to
+ * that storm rule's reason, so the reason says where its value came from.
+ */
+export function evaluateWithConditions(
+  route: EvaPlan["route"],
+  known: KnownConditions,
+  labels: Partial<Record<StormFactor, string>> = {},
+): EvaVerdict & { not_checked: StormFactor[] } {
+  const results = ROUTE_CHECKS.map((check) => check({ route }));
+  const notChecked: StormFactor[] = [];
+  function checkIfKnown<T>(
+    factor: StormFactor,
+    value: T | null,
+    check: (value: T) => Finding | null,
+  ) {
+    if (value === null) {
+      notChecked.push(factor);
+      return;
+    }
+    const finding = check(value);
+    const label = labels[factor];
+    results.push(finding && label ? { ...finding, reason: `${finding.reason} ${label}` } : finding);
+  }
+  // In the same order as CHECKS, so a fully known plan gets evaluateEva's verdict.
+  checkIfKnown("radiation", known.solar_alert_level, (level) =>
+    checkRadiation({ live: { solar_alert_level: level } }),
+  );
+  checkIfKnown("dose_rate", known.radiation_dose_rate, (rate) =>
+    checkDoseRate({ live: { radiation_dose_rate: rate } }),
+  );
+  checkIfKnown("dust", known.dust_opacity, (opacity) =>
+    checkDust({ live: { dust_opacity: opacity } }),
+  );
+  checkIfKnown("daylight", known.minutes_until_sunset, (minutes) =>
+    checkDaylight({ route, minutes_until_sunset: minutes }),
+  );
+  return { ...toVerdict(results), not_checked: notChecked };
 }
 
 /** Turns check results into a verdict, worst finding first. */

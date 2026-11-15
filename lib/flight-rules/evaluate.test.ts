@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateEva, evaluateRoute, type EvaPlan } from "./evaluate";
+import {
+  evaluateEva,
+  evaluateRoute,
+  evaluateWithConditions,
+  type EvaPlan,
+  type KnownConditions,
+} from "./evaluate";
 
 // A short, flat walk in clear weather with plenty of daylight.
 const safePlan: EvaPlan = {
@@ -174,5 +180,79 @@ describe("evaluateRoute", () => {
   it("agrees with evaluateEva when the live readings are safe", () => {
     const route = { ...safePlan.route, farthest_from_base_km: 5.440856262495297 };
     expect(evaluateRoute(route)).toEqual(evaluateEva(planWith({ route })));
+  });
+});
+
+describe("evaluateWithConditions", () => {
+  const nothingKnown: KnownConditions = {
+    solar_alert_level: null,
+    radiation_dose_rate: null,
+    dust_opacity: null,
+    minutes_until_sunset: null,
+  };
+  const benign: KnownConditions = {
+    ...safePlan.live,
+    minutes_until_sunset: safePlan.minutes_until_sunset,
+  };
+
+  it("checks only the route and lists every storm rule as not checked when nothing is known", () => {
+    const route = { ...safePlan.route, max_slope: 17 };
+    expect(evaluateWithConditions(route, nothingKnown)).toEqual({
+      ...evaluateRoute(route),
+      not_checked: ["radiation", "dose_rate", "dust", "daylight"],
+    });
+  });
+
+  it("gives NO_GO on radiation for a solar warning", () => {
+    const result = evaluateWithConditions(safePlan.route, {
+      ...nothingKnown,
+      solar_alert_level: "warning",
+    });
+    expect(result.verdict).toBe("NO_GO");
+    expect(result.limiting_factor).toBe("radiation");
+    expect(result.not_checked).toEqual(["dose_rate", "dust", "daylight"]);
+  });
+
+  it.each([
+    { dust_opacity: 2.5, verdict: "NO_GO" },
+    { dust_opacity: 1.5, verdict: "CAUTION" },
+  ])("gives $verdict on dust at an opacity of $dust_opacity", ({ dust_opacity, verdict }) => {
+    const result = evaluateWithConditions(safePlan.route, { ...nothingKnown, dust_opacity });
+    expect(result.verdict).toBe(verdict);
+    expect(result.limiting_factor).toBe("dust");
+  });
+
+  it("gives NO_GO on daylight once the sun has set", () => {
+    const result = evaluateWithConditions(safePlan.route, {
+      ...nothingKnown,
+      minutes_until_sunset: -30,
+    });
+    expect(result.verdict).toBe("NO_GO");
+    expect(result.limiting_factor).toBe("daylight");
+  });
+
+  it("agrees with evaluateEva when everything is known", () => {
+    for (const plan of [
+      safePlan,
+      planWith({ route: { max_slope: 17 }, live: { dust_opacity: 3 } }),
+    ]) {
+      const known = { ...plan.live, minutes_until_sunset: plan.minutes_until_sunset };
+      expect(evaluateWithConditions(plan.route, known)).toEqual({
+        ...evaluateEva(plan),
+        not_checked: [],
+      });
+    }
+    expect(evaluateWithConditions(safePlan.route, benign).verdict).toBe("GO");
+  });
+
+  it("appends a storm rule's label to its reason, so the reader knows where the value came from", () => {
+    const result = evaluateWithConditions(
+      safePlan.route,
+      { ...nothingKnown, dust_opacity: 2.5 },
+      { dust: "Drill, not real data." },
+    );
+    expect(result.reasons[0]).toMatch(
+      /\(our assumption, no NASA limit exists\)\. Drill, not real data\.$/,
+    );
   });
 });
