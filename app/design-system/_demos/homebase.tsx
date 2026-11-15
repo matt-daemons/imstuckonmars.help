@@ -59,9 +59,20 @@ export function HomebaseComponents() {
       </Section>
       <Section id="map-layers-panel" title="Map layers panel">
         <div className="mars-map-shell relative h-72 w-full border">
-          <LayersPanel>
-            <p>Layer controls remain mounted while this panel is closed.</p>
-          </LayersPanel>
+          <div className="map-camera-stack">
+            <div className="map-control-row">
+              <CameraViewMenu
+                following={false}
+                canFollow={false}
+                canViewRoute={false}
+                canViewTarget={false}
+                onSelect={() => {}}
+              />
+              <LayersPanel>
+                <p>Layer controls remain mounted while this panel is closed.</p>
+              </LayersPanel>
+            </div>
+          </div>
         </div>
       </Section>
       <Section id="fake-sensor-mode" title="Fake sensor mode">
@@ -72,13 +83,18 @@ export function HomebaseComponents() {
         {fakeSensors.state.enabled && (
           <div className="relative min-h-160 w-full">
             <div className="map-camera-stack">
-              <CameraViewMenu
-                following={false}
-                canFollow={false}
-                canViewRoute={false}
-                canViewTarget={false}
-                onSelect={() => {}}
-              />
+              <div className="map-control-row">
+                <CameraViewMenu
+                  following={false}
+                  canFollow={false}
+                  canViewRoute={false}
+                  canViewTarget={false}
+                  onSelect={() => {}}
+                />
+                <LayersPanel>
+                  <p>Layer controls</p>
+                </LayersPanel>
+              </div>
               <FakeSensorLegend mode={fakeSensors} />
             </div>
           </div>

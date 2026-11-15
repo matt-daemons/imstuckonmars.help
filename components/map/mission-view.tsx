@@ -32,6 +32,7 @@ import type { Activity } from "@/lib/mission/types";
 import "./mission-view.css";
 import { selectedRoute } from "@/components/route/selected-route";
 import { watchImageryLoading } from "./imagery-loading";
+import { MapDisclosure } from "./map-disclosure";
 
 type CameraView = "overview" | "homebase" | "route" | "crew" | "target";
 export type InspectedLeg = Extract<Activity, "travel" | "science" | "return">;
@@ -193,12 +194,8 @@ export function CameraViewMenu({
   };
   return (
     <nav className="map-view-controls" aria-label="Camera views">
-      <details ref={menu}>
-        <summary>
-          <CompassIcon aria-hidden />
-          Camera views
-        </summary>
-        <div>
+      <MapDisclosure title="Camera views" icon={CompassIcon} detailsRef={menu}>
+        <div className="flex flex-col gap-1">
           <Button variant="outline" onClick={() => choose("overview")}>
             <MapIcon aria-hidden />
             Overview
@@ -225,7 +222,7 @@ export function CameraViewMenu({
             Follow crew
           </Button>
         </div>
-      </details>
+      </MapDisclosure>
       {loading && (
         <p className="map-loading-status" role="status">
           Loading map imagery…

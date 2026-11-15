@@ -32,8 +32,7 @@
 
 .mars-map-shell [data-slot="sidebar-inner"],
 .mars-map-shell .map-panel,
-.mars-map-shell .map-layers-panel,
-.mars-map-shell .map-layers-trigger,
+.mars-map-shell .map-disclosure,
 .mars-map-shell .fake-sensor-legend,
 .mars-map-shell .map-verdict-strip,
 .mars-map-shell .expedition-hud,
@@ -61,21 +60,26 @@
 }
 
 .map-layers-control {
-  position: absolute;
-  inset-block-start: 1rem;
-  inset-inline-end: 5.5rem;
-  z-index: 20;
+  min-width: 0;
+  width: 8.5rem;
 }
-.map-layers-panel {
-  position: absolute;
-  inset-block-start: 4rem;
-  inset-inline-end: -4.5rem;
-  width: min(23rem, calc(100vw - 2rem));
-  max-height: calc(100svh - 13rem);
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  border: 1px solid var(--border);
-  color: var(--foreground);
+.map-layers-control:has(> details[open]) {
+  width: min(23rem, calc(100vw - 14rem));
+}
+.map-control-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  width: 100%;
+  min-height: 0;
+  flex: none;
+  pointer-events: auto;
+}
+.map-control-row > .map-view-controls {
+  position: static;
+  flex: 0 0 12rem;
+  max-width: 12rem;
 }
 .map-camera-stack {
   position: absolute;
@@ -86,68 +90,62 @@
   flex-direction: column;
   align-items: flex-end;
   gap: 0.75rem;
-  width: min(16rem, calc(100% - 2rem));
+  width: min(100% - 2rem, 24rem);
   max-height: calc(100% - 12rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
   pointer-events: none;
 }
-.map-camera-stack > .map-view-controls {
-  position: static;
-  flex: none;
-  max-width: 100%;
-  pointer-events: auto;
+.map-camera-stack:has(.map-layers-control > details[open]) {
+  width: min(100% - 2rem, 36rem);
 }
 .map-camera-stack > .fake-sensor-legend {
   position: static;
-  flex: 0 1 auto;
+  flex: none;
   min-height: 0;
-  width: 100%;
+  width: min(16rem, 100%);
   max-width: 100%;
   overscroll-behavior: contain;
   pointer-events: auto;
 }
-.map-overlay-viewport:has(.map-layers-control[data-open]) > .map-camera-stack {
-  right: 25rem;
-}
-@media (max-width: 900px) {
-  .map-overlay-viewport:has(.map-layers-control[data-open]) > .map-camera-stack {
-    top: auto;
-    bottom: 6rem;
-    left: 1rem;
-    right: auto;
-    width: 12rem;
-    max-height: calc(100% - 13rem);
-    z-index: 21;
-  }
-}
 @media (max-width: 799px) {
   .map-camera-stack {
-    top: auto;
-    bottom: 150px;
-    flex-direction: column-reverse;
+    top: 5rem;
     max-height: calc(100% - 15rem);
   }
-  .map-camera-stack .map-view-controls details > div {
-    position: static;
+  .map-layers-control:has(> details[open]) {
     width: auto;
-    max-height: 35svh;
+    flex: 1;
+  }
+  .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
+    flex: 0 0 11.25rem;
   }
 }
 @media (max-height: 600px) {
-  .map-camera-stack,
-  .map-overlay-viewport:has(.map-layers-control[data-open]) > .map-camera-stack {
+  .map-camera-stack {
     top: 5rem;
     bottom: 150px;
     max-height: none;
     flex-direction: column;
   }
-  .map-camera-stack > .map-view-controls {
-    flex: 0 1 auto;
-    min-height: 42px;
-    max-height: 50%;
-    overflow-y: auto;
+  .map-control-row .map-disclosure-content {
+    max-height: 20svh;
   }
   .map-camera-stack > .fake-sensor-legend {
-    flex: 1 1 auto;
+    flex: none;
+  }
+}
+@media (max-width: 399px) {
+  .map-control-row > .map-view-controls,
+  .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
+    flex-basis: 10.25rem;
+  }
+  .map-control-row > .map-layers-control {
+    flex: 1;
+  }
+  .map-control-row .map-disclosure > summary {
+    gap: 4px;
+    padding-inline: 4px;
   }
 }
 

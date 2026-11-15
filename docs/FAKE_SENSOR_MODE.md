@@ -1,8 +1,7 @@
 # Fake data mode
 
-The legend shares a vertical stack with Camera views, so opening the camera menu
-pushes the legend instead of covering it. On narrow screens the stack grows
-upward above the bottom controls; the legend scrolls when space is limited.
+The legend sits below the Camera views and Layers row. Opening either disclosure
+pushes the legend instead of covering it. The legend scrolls when space is limited.
 
 Fake data mode is an off-by-default, map-only demonstration. Debug contains the
 toggle. It resets to off on page reload; no preference, observation or mission
