@@ -218,13 +218,52 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
       },
       {
+        id: "route-planner",
+        title: "Route planner · walking and driving",
+        kind: "derived",
+        credit: "LARA routing (A*) on NASA/USGS MOLA terrain",
+        detail:
+          "Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Driving: MOLA 463 m strip, 42.5–48.5°N, 171–196°E",
+        use: "Route panel: walking and driving routes, the route check and the rover trip numbers.",
+        caveats: [
+          "Terrain this coarse cannot see rocks, boulders or small craters. A route is not a hazard clearance.",
+          "Walking time uses Tobler's hiking model, an Earth model, not a suited Mars walk.",
+          "On 463 m terrain slopes read about 6° low, so driving uses lowered slope limits (5° / 10°), our assumption.",
+          "Rover numbers come from NASA design studies; motor efficiency and the rough-ground factor are our assumptions. The rover rules are a proposal, not NASA flight rules.",
+          "The example no-go zone is a placeholder.",
+        ],
+        citations: [
+          "Chappell, Hoffman & Bekdash (2022). Mars Architecture Team paper on surface power and operations, incl. the pressurized rover (IEEE). NASA NTRS 20210022250.",
+          "Drake, B. G. (ed.) (2009). Human Exploration of Mars Design Reference Architecture 5.0, NASA/SP-2009-566, and Addendum.",
+          "Rucker, M. (2015). Integrated Surface Power Strategy for Mars. NASA NTRS 20150006958.",
+        ],
+        links: [
+          {
+            label: "MOLA 463 m mosaic",
+            url: "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+          },
+          {
+            label: "Rover study (NTRS)",
+            url: "https://ntrs.nasa.gov/api/citations/20210022250/downloads/MarsSurfacePowerOps_IEEE_final.pdf",
+          },
+          {
+            label: "DRA 5.0 Addendum",
+            url: "https://www.nasa.gov/wp-content/uploads/2015/09/373667main_nasa-sp-2009-566-add.pdf",
+          },
+          {
+            label: "Power study (NTRS)",
+            url: "https://ntrs.nasa.gov/api/citations/20150006958/downloads/20150006958.pdf",
+          },
+        ],
+      },
+      {
         id: "plan",
-        title: "Science stops and planned route",
+        title: "Science stops and hand-drawn route",
         kind: "placeholder",
         credit: "LARA routing team",
-        use: "Route and stops on the map.",
+        use: "Science stops on the map, and the old hand-drawn route layer (off by default).",
         caveats: [
-          "Placeholder geometry until the routing team's routes land. It is not a planned traverse.",
+          "Placeholder geometry. Real routes come from the route planner above; this layer is not a planned traverse.",
         ],
         layerIds: ["stops", "route"],
       },
