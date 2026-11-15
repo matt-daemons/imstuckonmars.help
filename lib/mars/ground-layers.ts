@@ -8,11 +8,8 @@
  */
 export const THERMAL_INERTIA_DATA_ROOT: string | null = null;
 
-/**
- * Roughness tiles per site. Not on R2 yet: null serves local output of pnpm pipe:roughness.
- * TODO(R2): point at `https://tiles.imstuckonmars.help/sites-v2` when M publishes it.
- */
-export const ROUGHNESS_DATA_ROOT: string | null = null;
+/** Published roughness tiles and aligned routing rasters for the four HiRISE sites. */
+export const ROUGHNESS_DATA_ROOT: string | null = "https://tiles.imstuckonmars.help/sites-v2";
 
 export const THERMAL_INERTIA_ATTRIBUTION = "NASA/JPL-Caltech/Arizona State University/USGS";
 export const ROUGHNESS_ATTRIBUTION = "NASA/JPL/University of Arizona (derived)";

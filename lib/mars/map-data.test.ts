@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
+import { ROUGHNESS_DATA_ROOT, roughnessTiles } from "./ground-layers";
 
 import {
   ARCADIA_IMAGERY_BOUNDS,
@@ -18,7 +19,11 @@ describe("R2 map delivery", () => {
     expect(mapAsset("viking/{z}/{x}/{y}.jpg")).toBe(`${MAP_DATA_ROOT}/viking/{z}/{x}/{y}.jpg`);
     expect(mapAsset("global-dem/0/0/0.png")).toBe(`${MAP_DATA_ROOT}/global-dem/0/0/0.png`);
     expect(GLOBAL_COLOR_ROOT).toBe("https://tiles.imstuckonmars.help/viking-native-v1");
-    expect(SITE_DATA_ROOT).toBe("https://tiles.imstuckonmars.help/sites-v1");
+    expect(SITE_DATA_ROOT).toBe("https://tiles.imstuckonmars.help/sites-v2");
+    expect(ROUGHNESS_DATA_ROOT).toBe(SITE_DATA_ROOT);
+    expect(roughnessTiles("https://imstuckonmars.help", "site")).toEqual([
+      `${SITE_DATA_ROOT}/sites/site/roughness/{z}/{x}/{y}.webp`,
+    ]);
   });
 
   it("uses bounded tiled imagery instead of downloading a whole regional image", async () => {

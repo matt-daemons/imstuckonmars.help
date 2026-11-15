@@ -1,5 +1,44 @@
 # HiRISE site release in R2
 
+## Current release: sites-v2
+
+`https://tiles.imstuckonmars.help/sites-v2` contains 33,801 objects totaling
+739,358,206 bytes, below the approved 850,000,000-byte limit. The supplied
+`sites-v2.zip` has SHA-256
+`83512d2c46a4fdcd577f4c2be2f6d32ae97924f23f941d9d746aa8a8215e7bfc`.
+It was extracted into ignored `data/map-assets/sites-v2/` without changing data.
+
+Both `SITE_DATA_ROOT` and `ROUGHNESS_DATA_ROOT` select this release. Its site
+catalog matches the packaged catalog byte-for-byte. All four slope and roughness
+pairs have identical dimensions, origins, pixel spacing and nodata values.
+Roughness stores centimetres, divided by 100 for metres, and now participates in
+the existing parking-square check. It is a terrain-derived estimate, not a new
+measurement or a validated rover-safety assessment. Switching release roots
+changes the backend planner cache revision.
+
+The archive also includes regional slope and thermal-inertia display tiles.
+This release switch does not change their separate overlay configuration or
+the packaged rover thermal-inertia grid.
+
+Publish and verify with the existing local-only R2 bridge:
+
+```sh
+MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json R2_LOCAL_UPLOADER=http://127.0.0.1:5294 pnpm maps:upload
+MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json MAP_RELEASE_URL=https://tiles.imstuckonmars.help/sites-v2 pnpm maps:verify
+```
+
+The public catalog, all eight routing rasters and representative imagery,
+thermal-inertia and regional-slope tiles passed full SHA-256, byte-length,
+CORS and immutable-header checks. Full release verification is recorded below
+when complete.
+
+The packaged Worker planned all four sites from these public rasters. Three
+returned complete drive/walk plans; the other retained its no-staging result.
+All four results matched the browser algorithm with the same release and inputs.
+The map's Check step rendered the nearest route and both route comparisons.
+
+## Retained release: sites-v1
+
 `sites-v1` contains the four sites supplied in `sites-v1.zip`. It uses the existing
 `ares-mars-data` bucket and public origin `https://tiles.imstuckonmars.help`.
 The archive was extracted into ignored `data/map-assets/sites-v1/`; macOS

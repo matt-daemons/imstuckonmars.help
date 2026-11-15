@@ -13,7 +13,7 @@ export const GLOBAL_COLOR_SOURCE = {
 export const mapAsset = (path: string) => `${MAP_DATA_ROOT}/${path}`;
 
 /** Published HiRISE site tiles; null selects local output from pnpm pipe:sites. */
-export const SITE_DATA_ROOT: string | null = "https://tiles.imstuckonmars.help/sites-v1";
+export const SITE_DATA_ROOT: string | null = "https://tiles.imstuckonmars.help/sites-v2";
 
 export const ARCADIA_IMAGERY_BOUNDS = [
   -176.220703125, 45.791015625, -175.78125, 46.23046875,

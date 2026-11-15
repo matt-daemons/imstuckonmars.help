@@ -71,3 +71,10 @@ Concurrent cold requests can repeat work and share an isolate's memory budget;
 the per-address rate limit does not serialize requests across clients.
 Repeat parity and cache tests when changing the site release, since roughness
 can legitimately change the parking location and routes.
+
+With `sites-v2`, all four drive/walk plans again match the browser algorithm
+byte-for-byte. The packaged Worker returned the nearest route in about 1.7 s
+uncached and 11 ms cached; the other sites took about 1.3–4.0 s uncached.
+The cache revision changed when both site roots moved to `sites-v2`, so old
+results without roughness are not reused. The map's Check step also rendered
+the nearest route, both comparisons and their profiles from the new response.
