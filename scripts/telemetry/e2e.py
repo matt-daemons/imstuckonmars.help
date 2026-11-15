@@ -55,6 +55,20 @@ def main():
     request("/api/telemetry/radiation?from_ms=2&to_ms=1", expected=400)
     rad_quality = request("/api/telemetry/products/" + radiation["products"][0]["id"] + "/quality")
     assert {issue["code"] for issue in rad_quality["issues"]} >= {"flagged_cmds"}
+    dashboard = request("/api/telemetry/homebase")
+    assert dashboard["release_id"] == RELEASE
+    assert dashboard["demo_today"]["sol"] == 816 and dashboard["demo_today"]["date"] == "2023-06-06"
+    assert len(dashboard["experiments"]) == 23
+    metrics = {metric["id"]: metric for metric in dashboard["metrics"]}
+    assert set(metrics) == {"temperature", "pressure", "water_vapor", "radiation"}
+    assert [metrics[name]["unit"] for name in ["temperature", "pressure", "water_vapor", "radiation"]] == ["K", "Pa", "ppm", "µGy/h"]
+    assert all(metrics[name]["source"]["site"] == "Jezero crater" for name in ["temperature", "pressure", "water_vapor"])
+    assert metrics["radiation"]["source"]["site"] == "Gale crater"
+    for metric in metrics.values():
+        assert metric["points"] and metric["value"] is not None
+        assert metric["minimum"] <= metric["value"] <= metric["maximum"]
+    latest_rad = max((row for row in radiation["observations"] if row["utc_ms"] <= dashboard["demo_today"]["utc_ms"]), key=lambda row: row["utc_ms"])
+    assert abs(metrics["radiation"]["value"] - latest_rad["dose_rate_e_ugy_day"] / 24) < 1e-10
     page = request(f"/api/telemetry/moxie/runs/{RELEASE}-moxie-00901/samples?after_row=7517&limit=3")
     if BOUNDED:
         assert page["samples"] == [] and page["run"]["sample_count"] == 0

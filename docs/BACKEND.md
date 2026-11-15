@@ -2,6 +2,8 @@
 
 Implementation snapshot: 2026-11-14. This supersedes the earlier Python/FastAPI proposal in [TELEMETRY_ARCHITECTURE.md](TELEMETRY_ARCHITECTURE.md). The application remains TypeScript/Hono on Cloudflare Workers, using Drizzle ORM's native D1 driver. Python is offline acquisition and ingestion only. D1 is the only persistent backend store; no R2, WebSockets, permanent timer or Python server is required. Existing map and dashboard components are untouched.
 
+Homebase integration: [`HOMEBASE_DASHBOARD.md`](HOMEBASE_DASHBOARD.md) documents the map-opened read-only dashboard and `GET /api/telemetry/homebase`. `/mission` opens that view directly; simulations remain on the map, not behind a dashboard entry screen. The earlier implementation snapshot above describes the backend's original landing state. R2 is now separately approved for map assets, not telemetry state. The existing mission APIs remain available for map integration.
+
 ## Data and storage
 
 `data/telemetry/sources.json` is the generated provenance authority. `scripts/telemetry/acquire.py` verified 132 retained files using official NASA/PDS labels, upstream checksums or byte comparison against the official MOXIE archive. The approved cleanup removed 318 unused files, totaling 404,345,694 bytes. Do not edit source CSV/XML files. Acquisition is not part of serving or building the Worker.

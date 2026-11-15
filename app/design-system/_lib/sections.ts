@@ -5,6 +5,14 @@ export type SectionGroup = {
 
 export const sectionGroups: SectionGroup[] = [
   {
+    title: "Homebase dashboard",
+    sections: [
+      { id: "homebase-readout", title: "Archive readout" },
+      { id: "homebase-history", title: "Observation history" },
+      { id: "homebase-log", title: "Experiment log" },
+    ],
+  },
+  {
     title: "Foundations",
     sections: [
       { id: "colors", title: "Colors" },
