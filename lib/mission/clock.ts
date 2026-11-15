@@ -1,5 +1,5 @@
 export interface MissionClock {
-  mode: "paused" | "playing";
+  mode: "paused" | "playing" | "ended";
   position_s: number;
   speed: number;
   anchor_ms: number;

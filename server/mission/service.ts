@@ -1,12 +1,16 @@
-import { and, count, eq, gt, lt, sql } from "drizzle-orm";
+import { and, count, eq, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import type { Database } from "../db";
 import { dataReleases, missionCommands, missionSessions } from "../db/schema";
 import { timingSafeEqual } from "node:crypto";
 import { anchorClock, clockPosition, type MissionClock } from "../../lib/mission/clock";
 import { evaluateMission, assessReturn } from "../../lib/mission/engine";
+import { buildExpeditionConfig, parsePlan } from "../../lib/mission/expedition";
+import { missionOutlook, replanConfig } from "../../lib/mission/outlook";
 import {
   MissionError,
+  type Evaluation,
   type MissionConfig,
+  type MoxieSample,
   type ScenarioEvent,
   type ReturnRoute,
 } from "../../lib/mission/types";
@@ -18,8 +22,14 @@ import {
   parseEvent,
   text,
 } from "../../lib/mission/validation";
-import { environmentAt, getRun, loadTrace } from "../telemetry/repository";
-import { radiationContext } from "../telemetry/radiation";
+import { environmentAt, environmentRollups, getRun, loadTrace } from "../telemetry/repository";
+import {
+  loadRadiation,
+  MAX_OBSERVATION_AGE_MS,
+  RADIATION_PROXY,
+  radiationContext,
+  type RadiationObservation,
+} from "../telemetry/radiation";
 
 /** Read-only observational companions configured per deployment. Not mission state. */
 export interface Companions {
@@ -94,7 +104,7 @@ export async function sessionFor(
 
 function readClock(value: string): MissionClock {
   const clock = object(JSON.parse(value), "clock");
-  if (clock.mode !== "paused" && clock.mode !== "playing")
+  if (clock.mode !== "paused" && clock.mode !== "playing" && clock.mode !== "ended")
     throw new MissionError("invalid_clock", "Invalid persisted clock");
   return {
     mode: clock.mode,
@@ -111,14 +121,36 @@ function readEvents(session: Session, config: MissionConfig): ScenarioEvent[] {
   return values.map((value) => parseEvent(value, config.duration_s));
 }
 
+/** The archived rows a configuration replays, one per mission second. */
+export function samplesFor(trace: MoxieSample[], config: MissionConfig) {
+  return trace.slice(
+    config.source_start_row - 1,
+    config.source_start_row - 1 + Math.ceil(config.duration_s),
+  );
+}
+
+/** A configuration must start inside an acquired, complete derived trace. */
+function requireTrace(
+  config: MissionConfig,
+  run: { derived_product_id: string | null; sample_count: number },
+) {
+  const lastRow = config.source_start_row + Math.ceil(config.duration_s) - 1;
+  const fits =
+    config.after_archive === "no_production"
+      ? config.source_start_row <= run.sample_count
+      : lastRow <= run.sample_count;
+  if (!run.derived_product_id || !fits)
+    throw new MissionError(
+      "source_unavailable",
+      "The configured interval requires an acquired, complete derived MOXIE trace",
+    );
+}
+
 async function inputs(db: Database, session: Session) {
   const config = parseConfig(JSON.parse(session.config_json));
   const run = await getRun(db, session.release_id, config.run_id);
   const trace = await loadTrace(db, session.release_id, config.run_id);
-  const samples = trace.slice(
-    config.source_start_row - 1,
-    config.source_start_row - 1 + Math.ceil(config.duration_s),
-  );
+  const samples = samplesFor(trace, config);
   return {
     config,
     run,
@@ -128,23 +160,37 @@ async function inputs(db: Database, session: Session) {
   };
 }
 
+export const SESSION_TTL_MS = 86_400_000;
+
+/**
+ * Remove a bounded batch of expired sessions; their command receipts cascade. Expired sessions
+ * are already unreachable, so this only frees storage and keeps the table small.
+ */
+export async function purgeExpiredSessions(db: Database, now = Date.now(), batch = 20) {
+  await db
+    .delete(missionSessions)
+    .where(
+      inArray(
+        missionSessions.id,
+        db
+          .select({ id: missionSessions.id })
+          .from(missionSessions)
+          .where(lte(missionSessions.expires_ms, now))
+          .limit(batch),
+      ),
+    )
+    .run();
+}
+
 export async function createSession(
   db: Database,
   release: string,
   value: unknown,
   now = Date.now(),
+  ttlMs = SESSION_TTL_MS,
 ) {
   const config = parseConfig(value);
-  const run = await getRun(db, release, config.run_id);
-  if (
-    !run.derived_product_id ||
-    config.source_start_row + Math.ceil(config.duration_s) - 1 > run.sample_count
-  ) {
-    throw new MissionError(
-      "source_unavailable",
-      "The configured interval requires an acquired, complete derived MOXIE trace",
-    );
-  }
+  requireTrace(config, await getRun(db, release, config.run_id));
   const id = crypto.randomUUID();
   const token = Array.from(crypto.getRandomValues(new Uint8Array(32)), (byte) =>
     byte.toString(16).padStart(2, "0"),
@@ -168,7 +214,7 @@ export async function createSession(
           events_json: sql<string>`'[]'`.as("events_json"),
           clock_json: sql<string>`${JSON.stringify(clock)}`.as("clock_json"),
           created_ms: sql<number>`${now}`.as("created_ms"),
-          expires_ms: sql<number>`${now + 86400000}`.as("expires_ms"),
+          expires_ms: sql<number>`${now + ttlMs}`.as("expires_ms"),
           last_command_id: sql<string | null>`null`.as("last_command_id"),
           last_command_hash: sql<string | null>`null`.as("last_command_hash"),
         })
@@ -189,7 +235,7 @@ export async function createSession(
     id,
     token,
     revision: 0,
-    expires_ms: now + 86400000,
+    expires_ms: now + ttlMs,
     config,
     clock,
     provenance: "All equipment, crew and reserve parameters are explicit assumptions",
@@ -223,9 +269,11 @@ export async function snapshot(
       anchor_ms: now,
       position_s: state.elapsed_s,
       mode:
-        atS !== undefined || state.status !== "ok" || state.elapsed_s >= input.config.duration_s
-          ? "paused"
-          : input.clock.mode,
+        input.clock.mode === "ended" && atS === undefined
+          ? "ended"
+          : atS !== undefined || state.status !== "ok" || state.elapsed_s >= input.config.duration_s
+            ? "paused"
+            : input.clock.mode,
       basis: "request-driven server wall-clock anchor; no persistent timer",
     },
     config: input.config,
@@ -310,6 +358,12 @@ export async function command(
   if ((receiptCount?.n ?? 0) >= 500)
     throw new MissionError("command_limit", "Create a new mission after 500 commands", 429);
   const input = await inputs(db, session);
+  if (input.clock.mode === "ended" && body.type !== "reset" && body.type !== "plan")
+    throw new MissionError(
+      "simulation_ended",
+      "This simulation has ended. Restart it or launch a new expedition to make changes",
+      409,
+    );
   let config = input.config;
   let events = input.events;
   const evaluated = evaluateMission(
@@ -331,6 +385,9 @@ export async function command(
       break;
     case "pause":
       clock.mode = "paused";
+      break;
+    case "end":
+      clock.mode = "ended";
       break;
     case "speed":
       clock.speed = number(body.speed, "speed", 0.1, 100);
@@ -354,16 +411,26 @@ export async function command(
           409,
         );
       config = parseConfig(body.config);
+      requireTrace(config, await getRun(db, session.release_id, config.run_id));
+      break;
+    }
+    case "plan": {
+      // A new expedition replaces the scenario: events clear and the clock rewinds, paused.
       const run = await getRun(db, session.release_id, config.run_id);
-      if (
-        !run.derived_product_id ||
-        config.source_start_row + Math.ceil(config.duration_s) - 1 > run.sample_count
-      ) {
-        throw new MissionError(
-          "source_unavailable",
-          "Configuration exceeds available derived samples",
-        );
-      }
+      config = buildExpeditionConfig(parsePlan(body.plan), run.id, run.sample_count);
+      requireTrace(config, run);
+      events = [];
+      clock = { ...clock, mode: "paused", position_s: 0 };
+      break;
+    }
+    case "replan": {
+      if (body.option !== "turn_back" && body.option !== "cut_sampling")
+        throw new MissionError("invalid_input", "option must be turn_back or cut_sampling", 400);
+      if (evaluated.status !== "ok")
+        throw new MissionError("source_unavailable", "Seek before replanning past a data gap", 409);
+      const next = replanConfig(config, input.samples, events, evaluated.elapsed_s, body.option);
+      if (typeof next === "string") throw new MissionError("replan_unavailable", next, 409);
+      config = next;
       break;
     }
     case "event": {
@@ -373,7 +440,13 @@ export async function command(
           "A mission supports at most 100 scenario events",
           429,
         );
-      const event = parseEvent(body.event, config.duration_s);
+      // "now" is resolved against the server clock, so a playing replay never races the client
+      // into rejecting the event as past. Retries replay the receipt, not a new "now".
+      const requested = object(body.event, "event");
+      const event = parseEvent(
+        requested.at_s === "now" ? { ...requested, at_s: evaluated.elapsed_s } : requested,
+        config.duration_s,
+      );
       if (events.some((existing) => existing.id === event.id))
         throw new MissionError("event_id_reused", "Event IDs must be unique", 409);
       if (event.at_s < evaluated.elapsed_s)
@@ -447,6 +520,159 @@ export async function command(
     ...(await snapshot(db, updated, now, undefined, companions)),
     idempotent_replay: false,
     applied_revision: updated.revision,
+  };
+}
+
+/**
+ * Every archived series a replay charts, aligned to mission seconds, in one request. The trace
+ * and radiation come from the Workers cache; only three small rollup queries reach D1.
+ */
+export async function replaySeries(db: Database, session: Session, companions: Companions = {}) {
+  const input = await inputs(db, session);
+  const first = input.samples[0];
+  const last = input.samples[input.samples.length - 1];
+  const startSclk = first?.sclk_ms ?? null;
+  const startUtc = first?.utc_ms ?? null;
+  const environment =
+    startSclk !== null && last?.sclk_ms != null && input.run.directory_sol === 816
+      ? await environmentRollups(db, session.release_id, startSclk, last.sclk_ms + 1000)
+      : [];
+  let radiation: {
+    status: string;
+    release_id?: string;
+    observations: RadiationObservation[];
+  } = {
+    status: companions.radiationRelease ? "time_unresolved" : "not_configured",
+    observations: [],
+  };
+  if (companions.radiationRelease && startUtc !== null && last?.utc_ms != null) {
+    const series = await loadRadiation(db, companions.radiationRelease).catch(() => null);
+    radiation = series
+      ? {
+          status: "available",
+          release_id: companions.radiationRelease,
+          observations: series.observations.filter(
+            (row) =>
+              row.utc_ms >= startUtc - MAX_OBSERVATION_AGE_MS && row.utc_ms <= (last.utc_ms ?? 0),
+          ),
+        }
+      : { status: "release_unavailable", observations: [] };
+  }
+  return {
+    mission_id: session.id,
+    revision: session.revision,
+    run_id: input.run.id,
+    duration_s: input.config.duration_s,
+    start: { source_row: input.config.source_start_row, sclk_ms: startSclk, utc_ms: startUtc },
+    moxie: {
+      provenance: "NASA MOXIE derived telemetry, one sample per mission second",
+      oxygen_rate_g_h: input.samples.map((sample) => sample.oxygen_rate_g_h),
+      total_power_w: input.samples.map((sample) => sample.total_power_w),
+    },
+    environment: environment.map((item) => ({
+      ...item,
+      buckets: item.buckets.map((bucket) => ({
+        ...bucket,
+        at_s: startSclk === null ? null : (bucket.bucket_sclk_ms - startSclk) / 1000,
+      })),
+    })),
+    radiation: {
+      ...radiation,
+      proxy: RADIATION_PROXY,
+      units: "uGy/day",
+      observations: radiation.observations.map((row) => ({
+        ...row,
+        at_s: startUtc === null ? null : (row.utc_ms - startUtc) / 1000,
+      })),
+    },
+    alignment:
+      "MEDA by SCLK in 60 s rollups; RAD by approximate UTC of observation start. Gaps are gaps, never zero",
+  };
+}
+
+/** Predicted outcomes of the current plan and its alternatives, at the mission clock. */
+export async function outlook(db: Database, session: Session, now = Date.now()) {
+  const input = await inputs(db, session);
+  if (!input.config.route)
+    throw new MissionError("no_route", "Launch an expedition before requesting its outlook", 409);
+  const at = clockPosition(input.clock, now, input.config.duration_s);
+  return {
+    mission_id: session.id,
+    revision: session.revision,
+    ...missionOutlook(input.config, input.samples, input.events, at),
+  };
+}
+
+/** The outlook of a plan that has not been launched; nothing is written. */
+export async function preview(db: Database, session: Session, plan: unknown) {
+  const current = parseConfig(JSON.parse(session.config_json));
+  const run = await getRun(db, session.release_id, current.run_id);
+  const config = buildExpeditionConfig(parsePlan(plan), run.id, run.sample_count);
+  requireTrace(config, run);
+  const samples = samplesFor(await loadTrace(db, session.release_id, run.id), config);
+  return {
+    duration_s: config.duration_s,
+    trace_rows: run.sample_count,
+    suits: {
+      oxygen_g: config.oxygen.eva.capacity_g,
+      oxygen_reserve_g: config.oxygen.eva.reserve_g,
+      energy_wh: config.battery.eva.capacity_wh,
+      energy_reserve_wh: config.battery.eva.reserve_wh,
+      eva_limit_s: config.eva_limit_s,
+    },
+    ...missionOutlook(config, samples, [], 0),
+  };
+}
+
+export const REPORT_POINTS = 480;
+
+/** The mission so far, sampled for the report: one deterministic pass over the clock. */
+export async function report(db: Database, session: Session, now = Date.now()) {
+  const input = await inputs(db, session);
+  const end = clockPosition(input.clock, now, input.config.duration_s);
+  const step = Math.max(15, Math.ceil(end / REPORT_POINTS));
+  const times = [
+    ...new Set([
+      ...Array.from({ length: Math.floor(end / step) + 1 }, (_, i) => i * step),
+      ...input.config.schedule.flatMap((entry) => [entry.start_s, entry.end_s]),
+      ...input.events.map((event) => event.at_s),
+      end,
+    ]),
+  ]
+    .filter((t) => t <= end)
+    .sort((a, b) => a - b);
+  const rows: Array<ReturnType<typeof reportRow>> = [];
+  const state = evaluateMission(input.config, input.samples, input.events, end, {
+    times,
+    record: (s) => rows.push(reportRow(s)),
+  });
+  return {
+    mission_id: session.id,
+    revision: session.revision,
+    at_s: state.elapsed_s,
+    status: state.status,
+    ended_by_operator: input.clock.mode === "ended",
+    config: input.config,
+    events: input.events,
+    final: state,
+    series: rows,
+    provenance:
+      "Assumption-driven simulation. Archived NASA MOXIE rows drive habitat production only; suits, crew and route timing are modeled.",
+  };
+}
+
+function reportRow(s: Evaluation) {
+  return {
+    t: s.elapsed_s,
+    activity: s.activity,
+    phase: s.position?.phase ?? null,
+    distance_m: s.position?.distance_from_shelter_m ?? null,
+    travelled_m: s.position?.travelled_m ?? null,
+    suit_oxygen_g: s.oxygen.eva.remaining_g,
+    suit_energy_wh: s.battery.eva.remaining_wh,
+    shelter_oxygen_g: s.oxygen.base.remaining_g,
+    shelter_energy_wh: s.battery.base.remaining_wh,
+    reasons: s.reasons,
   };
 }
 

@@ -5,6 +5,7 @@ import { MissionError } from "../../lib/mission/types";
 import type { ApiBindings } from "./bindings";
 import { telemetry } from "./telemetry";
 import { missions } from "./missions";
+import { expeditions } from "./expeditions";
 import { verdict } from "./verdict";
 import { copilot } from "./copilot";
 import { spaceWeather } from "./space-weather";
@@ -46,6 +47,7 @@ api.onError((error, c) => {
 api.get("/health", (c) => c.json({ status: "ok" }));
 api.route("/telemetry", telemetry);
 api.route("/missions", missions);
+api.route("/expeditions", expeditions);
 api.route("/verdict", verdict);
 api.route("/copilot", copilot);
 api.route("/space-weather", spaceWeather);

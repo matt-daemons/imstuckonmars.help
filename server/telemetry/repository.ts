@@ -6,6 +6,7 @@ import {
   experimentSummaries,
   fieldDefinitions,
   MEDA_TABLES,
+  metricRollups,
   moxieRuns,
   moxieSamples,
   qualityIssues,
@@ -128,6 +129,78 @@ export async function loadTrace(
       Response.json(samples, { headers: { "Cache-Control": "public,max-age=31536000,immutable" } }),
     );
   return samples;
+}
+
+/** One explicitly supported field per sol-816 MEDA sensor, charted as 60 s rollups. */
+export const REPLAY_ENVIRONMENT = [
+  { sensor: "ats", level: "calibrated", field: "ats_local_temp1", unit: "K" },
+  { sensor: "ps", level: "derived", field: "pressure", unit: "Pa" },
+  { sensor: "rhs", level: "derived", field: "volume_mixing_ratio", unit: "ppm" },
+] as const;
+
+/** 60 s rollups of the replay environment fields between two SCLK instants (ms). */
+export async function environmentRollups(
+  db: Database,
+  release: string,
+  fromSclkMs: number,
+  toSclkMs: number,
+) {
+  const products = await db
+    .select({
+      id: sourceProducts.id,
+      sensor: sourceProducts.sensor,
+      processing_level: sourceProducts.processing_level,
+      source_url: sourceProducts.source_url,
+    })
+    .from(sourceProducts)
+    .where(
+      and(
+        eq(sourceProducts.release_id, release),
+        eq(sourceProducts.instrument, "meda"),
+        eq(sourceProducts.sol, 816),
+        inArray(
+          sourceProducts.sensor,
+          REPLAY_ENVIRONMENT.map((item) => item.sensor),
+        ),
+      ),
+    )
+    .all();
+  return Promise.all(
+    REPLAY_ENVIRONMENT.map(async (spec) => {
+      const product = products.find(
+        (item) => item.sensor === spec.sensor && item.processing_level === spec.level,
+      );
+      if (!product)
+        return { ...spec, product_id: null, source_url: null, status: "unavailable", buckets: [] };
+      const buckets = await db
+        .select({
+          bucket_sclk_ms: metricRollups.bucket_sclk_ms,
+          count: metricRollups.count,
+          minimum: metricRollups.minimum,
+          maximum: metricRollups.maximum,
+          mean: metricRollups.mean,
+        })
+        .from(metricRollups)
+        .where(
+          and(
+            eq(metricRollups.product_id, product.id),
+            eq(metricRollups.field, spec.field),
+            gte(metricRollups.bucket_sclk_ms, fromSclkMs - 60_000),
+            lt(metricRollups.bucket_sclk_ms, toSclkMs),
+          ),
+        )
+        .orderBy(asc(metricRollups.bucket_sclk_ms))
+        .limit(1000)
+        .all();
+      return {
+        ...spec,
+        product_id: product.id,
+        source_url: product.source_url,
+        status: buckets.length ? "available" : "sampling_gap",
+        buckets,
+      };
+    }),
+  );
 }
 
 export async function environmentAt(

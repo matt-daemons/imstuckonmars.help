@@ -10,6 +10,7 @@ import {
   type ReturnRoute,
   type ScenarioEvent,
 } from "./types";
+import { crewPositionAt } from "./position";
 
 const EPSILON = 1e-9;
 
@@ -21,6 +22,7 @@ function oxygenState(initial: number, reserve: number): OxygenState {
     leaked_g: 0,
     vented_g: 0,
     unmet_g: 0,
+    shortfall_g: 0,
     transferred_in_g: 0,
     transferred_out_g: 0,
     first_reserve_crossing_s: initial <= reserve ? 0 : null,
@@ -88,6 +90,7 @@ function advanceOxygen(
   state.leaked_g += leaked;
   state.vented_g += vented;
   state.unmet_g += consumption * hours - consumed;
+  state.shortfall_g += requested - consumed - leaked;
 }
 
 function advanceBattery(
@@ -138,12 +141,34 @@ function activityAt(config: MissionConfig, time: number) {
   );
 }
 
-/** Pure replay: source row 1 supplies [0, 1), matching the inclusive archive sum. */
+/** Adds the end-of-interval findings (reserves, unmet demand) and the crew position. */
+function finalize(config: MissionConfig, state: Evaluation) {
+  state.activity = activityAt(config, state.elapsed_s).activity;
+  const addReason = (reason: string) => {
+    if (!state.reasons.includes(reason)) state.reasons.push(reason);
+  };
+  for (const location of ["base", "eva"] as const) {
+    if (state.oxygen[location].remaining_g < config.oxygen[location].reserve_g)
+      addReason(`${location}_oxygen_below_reserve`);
+    if (state.battery[location].remaining_wh < config.battery[location].reserve_wh)
+      addReason(`${location}_battery_below_reserve`);
+    if (state.oxygen[location].unmet_g > EPSILON) addReason(`${location}_oxygen_demand_unmet`);
+    if (state.battery[location].unmet_wh > EPSILON) addReason(`${location}_power_demand_unmet`);
+  }
+  state.position = config.route ? crewPositionAt(config.route, state.elapsed_s) : null;
+  return state;
+}
+
+/**
+ * Pure replay: source row 1 supplies [0, 1), matching the inclusive archive sum. `checkpoints`
+ * records the state at each listed time in the same single pass, for budgets and reports.
+ */
 export function evaluateMission(
   config: MissionConfig,
   samples: MoxieSample[],
   events: ScenarioEvent[],
   requestedS: number,
+  checkpoints?: { times: number[]; record: (state: Evaluation) => void },
 ): Evaluation {
   if (!Number.isFinite(requestedS) || requestedS < 0 || requestedS > config.duration_s) {
     throw new MissionError(
@@ -168,7 +193,9 @@ export function evaluateMission(
     generator_available: true,
     generation_w: config.generation_w,
     oxygen_leak_g_h: { base: config.oxygen.base.leak_g_h, eva: config.oxygen.eva.leak_g_h },
+    demand_factor: { base: 1, eva: 1 },
     route_blocked: false,
+    position: null,
     applied_event_ids: [],
     reasons: [],
     observed_sample: null,
@@ -195,6 +222,9 @@ export function evaluateMission(
         break;
       case "oxygen_leak":
         leaks[event.target] = event.value;
+        break;
+      case "consumption_change":
+        state.demand_factor[event.target] = event.value;
         break;
       case "route_blocked":
         state.route_blocked = true;
@@ -264,6 +294,18 @@ export function evaluateMission(
       }
     }
   };
+  const stops = (checkpoints?.times ?? [])
+    .filter((time) => time <= requestedS + EPSILON)
+    .sort((a, b) => a - b);
+  let stopIndex = 0;
+  const recordDue = () => {
+    while (stopIndex < stops.length && stops[stopIndex] <= state.elapsed_s + EPSILON) {
+      checkpoints!.record(finalize(config, structuredClone(state)));
+      stopIndex++;
+    }
+  };
+  // The habitat replays archived MOXIE production; a parked rover has no oxygen generator.
+  const habitat = (config.route?.shelter ?? "habitat") === "habitat";
   while (
     state.elapsed_s < requestedS - EPSILON ||
     (eventIndex < orderedEvents.length && orderedEvents[eventIndex].at_s <= requestedS)
@@ -274,23 +316,33 @@ export function evaluateMission(
     ) {
       applyEvent(orderedEvents[eventIndex++]);
     }
+    recordDue();
     if (state.elapsed_s >= requestedS - EPSILON) break;
     const second = Math.floor(state.elapsed_s + EPSILON);
     const sample = samples[second];
     const first = samples[0];
+    // Past the end of the archived run, an explicit policy may continue with no production.
+    const archiveEnded =
+      config.after_archive === "no_production" &&
+      !sample &&
+      samples.length > 0 &&
+      second >= samples.length;
     if (
-      !sample ||
-      sample.source_row !== config.source_start_row + second ||
-      sample.segment_id !== first.segment_id ||
-      sample.elapsed_ms !== first.elapsed_ms + second * 1000 ||
-      sample.oxygen_rate_g_h === null ||
-      sample.total_power_w === null
+      !archiveEnded &&
+      (!sample ||
+        sample.source_row !== config.source_start_row + second ||
+        sample.segment_id !== first.segment_id ||
+        sample.elapsed_ms !== first.elapsed_ms + second * 1000 ||
+        sample.oxygen_rate_g_h === null ||
+        sample.total_power_w === null)
     ) {
       state.status = "source_unavailable";
       addReason("source_gap_or_unavailable_derived_output");
       break;
     }
-    state.observed_sample = sample;
+    const source = archiveEnded ? null : sample;
+    if (source) state.observed_sample = source;
+    if (archiveEnded && habitat) addReason("archive_ended_no_production_credited");
     const schedule = activityAt(config, state.elapsed_s);
     state.activity = schedule.activity;
     let dt = Math.min(
@@ -298,22 +350,32 @@ export function evaluateMission(
       second + 1 - state.elapsed_s,
       schedule.end_s - state.elapsed_s,
       (orderedEvents[eventIndex]?.at_s ?? Infinity) - state.elapsed_s,
+      (stops[stopIndex] ?? Infinity) - state.elapsed_s,
     );
     const profile = config.profiles[schedule.activity];
     const crewAtBase = schedule.activity === "base";
-    const baseLoad = config.base_load_w + (crewAtBase ? profile.power_w : 0);
+    const factor = state.demand_factor[crewAtBase ? "base" : "eva"];
+    const activityPower = profile.power_w * factor;
+    const baseLoad = config.base_load_w + (crewAtBase ? activityPower : 0);
     const battery = state.battery.base;
     const batteryConfig = config.battery.base;
+    const archivedPower = habitat && source ? (source.total_power_w as number) : 0;
     const availablePower =
       state.generation_w + (battery.remaining_wh > EPSILON ? batteryConfig.max_discharge_w : 0);
-    if (state.generator_available && availablePower + EPSILON < baseLoad + sample.total_power_w) {
+    if (
+      habitat &&
+      source &&
+      state.generator_available &&
+      availablePower + EPSILON < baseLoad + archivedPower
+    ) {
       state.generator_available = false;
       addReason("generator_power_shutdown_latched_until_restore");
     }
-    const generatorPower = state.generator_available ? sample.total_power_w : 0;
-    const production = state.generator_available
-      ? sample.oxygen_rate_g_h * config.capture_efficiency
-      : 0;
+    const generatorPower = state.generator_available ? archivedPower : 0;
+    const production =
+      state.generator_available && habitat && source
+        ? (source.oxygen_rate_g_h as number) * config.capture_efficiency
+        : 0;
     const deficit = baseLoad + generatorPower - state.generation_w;
     // Resolve depletion before the next source/event boundary, not after an oversized step.
     if (deficit > 0 && battery.remaining_wh > EPSILON) {
@@ -328,7 +390,7 @@ export function evaluateMission(
       throw new MissionError("integration_error", "No progress at a model boundary");
     }
     const start = state.elapsed_s;
-    const demand = profile.oxygen_g_h_per_person * config.crew_count;
+    const demand = profile.oxygen_g_h_per_person * config.crew_count * factor;
     advanceOxygen(
       state.oxygen.base,
       config.oxygen.base.capacity_g,
@@ -345,7 +407,8 @@ export function evaluateMission(
       config.oxygen.eva.reserve_g,
       0,
       crewAtBase ? 0 : demand,
-      leaks.eva,
+      // On an expedition the suits are off in the shelter, so a suit leak only drains them outside.
+      config.route && crewAtBase ? 0 : leaks.eva,
       start,
       dt,
     );
@@ -361,7 +424,7 @@ export function evaluateMission(
       state.battery.eva,
       config.battery.eva,
       0,
-      crewAtBase ? 0 : profile.power_w,
+      crewAtBase ? 0 : activityPower,
       start,
       dt,
     );
@@ -370,16 +433,8 @@ export function evaluateMission(
     state.effective_oxygen_rate_g_h = production;
     state.effective_generator_power_w = generatorPower;
   }
-  state.activity = activityAt(config, state.elapsed_s).activity;
-  for (const location of ["base", "eva"] as const) {
-    if (state.oxygen[location].remaining_g < config.oxygen[location].reserve_g)
-      addReason(`${location}_oxygen_below_reserve`);
-    if (state.battery[location].remaining_wh < config.battery[location].reserve_wh)
-      addReason(`${location}_battery_below_reserve`);
-    if (state.oxygen[location].unmet_g > EPSILON) addReason(`${location}_oxygen_demand_unmet`);
-    if (state.battery[location].unmet_wh > EPSILON) addReason(`${location}_power_demand_unmet`);
-  }
-  return state;
+  if (state.status === "ok") recordDue();
+  return finalize(config, state);
 }
 
 export function assessReturn(

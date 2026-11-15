@@ -19,6 +19,14 @@
     "DIAGNOSTICS_PROVIDER": "openrouter",
     "DIAGNOSTICS_MODEL": "openai/gpt-4.1-mini",
   },
+  // Public expedition sessions: 20 per minute per client address.
+  "ratelimits": [
+    {
+      "name": "EXPEDITION_LIMITER",
+      "namespace_id": "1001",
+      "simple": { "limit": 20, "period": 60 },
+    },
+  ],
   "observability": { "enabled": true },
   "assets": {
     "directory": "dist/client",

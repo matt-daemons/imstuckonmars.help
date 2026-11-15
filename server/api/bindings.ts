@@ -1,10 +1,17 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import type { D1Database, RateLimit } from "@cloudflare/workers-types";
 import { createDatabase } from "../db";
 
 export type ApiBindings = Omit<
   Partial<Cloudflare.Env>,
-  "DB" | "TELEMETRY_RELEASE" | "RADIATION_RELEASE" | "DIAGNOSTICS_MODEL" | "DIAGNOSTICS_PROVIDER"
+  | "DB"
+  | "TELEMETRY_RELEASE"
+  | "RADIATION_RELEASE"
+  | "DIAGNOSTICS_MODEL"
+  | "DIAGNOSTICS_PROVIDER"
+  | "EXPEDITION_LIMITER"
 > & {
+  /** Per-address limit on public expedition sessions. */
+  EXPEDITION_LIMITER?: RateLimit;
   DB?: D1Database;
   TELEMETRY_RELEASE?: string;
   /** Separate immutable companion release with Curiosity RAD observations. */

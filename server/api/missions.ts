@@ -4,6 +4,10 @@ import { missionSessions, scenarioPresets } from "../db/schema";
 import {
   command,
   createSession,
+  outlook,
+  preview,
+  replaySeries,
+  report,
   returnAssessment,
   sessionFor,
   snapshot,
@@ -67,6 +71,31 @@ missions.post("/:id/commands", async (c) => {
   return c.json(
     await command(db, session, await c.req.json<unknown>(), Date.now(), companions(c.env)),
   );
+});
+
+missions.get("/:id/outlook", async (c) => {
+  const db = database(c.env);
+  const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
+  return c.json(await outlook(db, session));
+});
+
+missions.post("/:id/preview", async (c) => {
+  const db = database(c.env);
+  const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
+  const body = object(await c.req.json<unknown>());
+  return c.json(await preview(db, session, body.plan));
+});
+
+missions.get("/:id/report", async (c) => {
+  const db = database(c.env);
+  const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
+  return c.json(await report(db, session));
+});
+
+missions.get("/:id/series", async (c) => {
+  const db = database(c.env);
+  const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
+  return c.json(await replaySeries(db, session, companions(c.env)));
 });
 
 missions.get("/:id/events", async (c) => {

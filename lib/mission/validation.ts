@@ -3,6 +3,8 @@ import {
   MODEL_VERSION,
   MissionError,
   type Activity,
+  type ExpeditionRoute,
+  type MarsLngLat,
   type MissionConfig,
   type ReturnRoute,
   type ScenarioEvent,
@@ -97,9 +99,7 @@ export function parseConfig(value: unknown): MissionConfig {
     base_load_w: number(input.base_load_w, "base_load_w"),
     transfer_efficiency: number(input.transfer_efficiency, "transfer_efficiency", 0.001, 1),
     eva_limit_s:
-      input.eva_limit_s === null
-        ? null
-        : number(input.eva_limit_s, "eva_limit_s", 0, MAX_DURATION_S),
+      input.eva_limit_s === null ? null : number(input.eva_limit_s, "eva_limit_s", 0, 86_400),
     oxygen: {} as MissionConfig["oxygen"],
     battery: {} as MissionConfig["battery"],
     profiles: {} as MissionConfig["profiles"],
@@ -151,7 +151,101 @@ export function parseConfig(value: unknown): MissionConfig {
   if (cursor !== config.duration_s) {
     throw new MissionError("invalid_schedule", "Schedule must end at duration_s", 400);
   }
+  if (input.after_archive !== undefined) {
+    if (input.after_archive !== "stop" && input.after_archive !== "no_production")
+      throw new MissionError("invalid_input", "after_archive must be stop or no_production", 400);
+    config.after_archive = input.after_archive;
+  }
+  if (input.route !== undefined) config.route = parseExpeditionRoute(input.route, config.schedule);
   return config;
+}
+
+export const MAX_ROUTE_POINTS = 2000;
+
+export function point(value: unknown, name: string): MarsLngLat {
+  if (!Array.isArray(value) || value.length !== 2)
+    throw new MissionError("invalid_input", `${name} must be [longitude, latitude]`, 400);
+  return [
+    number(value[0], `${name} longitude`, -180, 180),
+    number(value[1], `${name} latitude`, -90, 90),
+  ];
+}
+
+/** A planned route whose legs cover exactly the schedule's away-from-shelter entries. */
+export function parseExpeditionRoute(
+  value: unknown,
+  schedule: MissionConfig["schedule"],
+): ExpeditionRoute {
+  const input = object(value, "route");
+  if (input.mode !== "walking" && input.mode !== "drive_walk")
+    throw new MissionError("invalid_input", "route.mode must be walking or drive_walk", 400);
+  if (input.shelter !== "habitat" && input.shelter !== "rover")
+    throw new MissionError("invalid_input", "route.shelter must be habitat or rover", 400);
+  let points = 0;
+  const legs = list(input.legs, "route.legs", 20).map((entry, index) => {
+    const leg = object(entry, `route.legs[${index}]`);
+    const kind = activity(leg.activity, false);
+    if (kind === "rest") throw new MissionError("invalid_input", "Route legs cannot rest", 400);
+    const path = list(leg.path, `route.legs[${index}].path`, 600).map((p, i) =>
+      point(p, `route.legs[${index}].path[${i}]`),
+    );
+    points += path.length;
+    if (kind === "science" ? path.length !== 1 : path.length < 2)
+      throw new MissionError(
+        "invalid_route",
+        "Science legs need one point; walking legs need at least two",
+        400,
+      );
+    return {
+      activity: kind as ExpeditionRoute["legs"][number]["activity"],
+      start_s: number(leg.start_s, "leg.start_s", 0, MAX_DURATION_S),
+      end_s: number(leg.end_s, "leg.end_s", 0, MAX_DURATION_S),
+      path,
+    };
+  });
+  if (points > MAX_ROUTE_POINTS)
+    throw new MissionError("invalid_route", `A route has at most ${MAX_ROUTE_POINTS} points`, 400);
+  const away = schedule.filter((entry) => entry.activity !== "base");
+  const matches =
+    away.length === legs.length &&
+    away.every(
+      (entry, i) =>
+        entry.activity === legs[i].activity &&
+        entry.start_s === legs[i].start_s &&
+        entry.end_s === legs[i].end_s,
+    );
+  if (!matches)
+    throw new MissionError(
+      "invalid_route",
+      "Route legs must match the schedule's travel, science and return entries in order",
+      400,
+    );
+  const route: ExpeditionRoute = {
+    id: text(input.id, "route.id"),
+    mode: input.mode,
+    shelter: input.shelter,
+    shelter_lnglat: point(input.shelter_lnglat, "route.shelter_lnglat"),
+    legs,
+  };
+  if (input.planned_sampling_s !== undefined)
+    route.planned_sampling_s = number(
+      input.planned_sampling_s,
+      "route.planned_sampling_s",
+      0,
+      MAX_DURATION_S,
+    );
+  if (input.decisions !== undefined)
+    route.decisions = list(input.decisions, "route.decisions", 20).map((entry) => {
+      const decision = object(entry, "decision");
+      if (decision.option !== "turn_back" && decision.option !== "cut_sampling")
+        throw new MissionError("invalid_input", "Unknown replan option", 400);
+      return {
+        at_s: number(decision.at_s, "decision.at_s", 0, MAX_DURATION_S),
+        option: decision.option,
+        title: text(decision.title, "decision.title", 200),
+      };
+    });
+  return route;
 }
 
 export function parseEvent(value: unknown, duration: number): ScenarioEvent {
@@ -172,6 +266,13 @@ export function parseEvent(value: unknown, duration: number): ScenarioEvent {
     case "transfer_oxygen":
     case "transfer_energy":
       return { ...common, type: event.type, value: number(event.value, "event.value") };
+    case "consumption_change":
+      return {
+        ...common,
+        type: event.type,
+        target: target(),
+        value: number(event.value, "event.value", 0.1, 5),
+      };
     case "oxygen_leak":
     case "battery_failure":
       return {
