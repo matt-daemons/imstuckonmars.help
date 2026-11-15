@@ -41,6 +41,8 @@ describe("fictional future sensor network", () => {
     expect(fakeElapsedSeconds(FAKE_LAST_FRAME)).toBe(FAKE_DURATION_SECONDS);
   });
 
+  // Sweeps every sensor across seven sols (~1.6M assertions): ~3 s locally, which overruns
+  // vitest's 5 s default on slower CI runners, so this test alone gets a longer timeout.
   it("produces repeatable bounded values at every sensor throughout seven SOLs", () => {
     expect(fakeFrame(20)).toEqual(fakeFrame(20));
     for (let frame = 0; frame <= FAKE_LAST_FRAME; frame += 367) {
@@ -58,7 +60,7 @@ describe("fictional future sensor network", () => {
         expect(reading.storm).toBeLessThanOrEqual(1);
       }
     }
-  });
+  }, 30_000);
 
   it("changes with time and location without any observation input", () => {
     expect(fakeReading(FAKE_SENSORS[0], 0)).not.toEqual(fakeReading(FAKE_SENSORS[0], 12));
