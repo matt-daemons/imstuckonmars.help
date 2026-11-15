@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { HABITAT_LNGLAT, idleConfig } from "../../lib/mission/expedition";
 import { MissionError } from "../../lib/mission/types";
 import { createSession, purgeExpiredSessions } from "../mission/service";
-import { getRun } from "../telemetry/repository";
+import { getRun, requireRelease } from "../telemetry/repository";
 import { database, type ApiBindings } from "./bindings";
 
 export const expeditions = new Hono<{ Bindings: ApiBindings }>();
@@ -35,6 +35,7 @@ expeditions.post("/", async (c) => {
   }
   const db = database(c.env);
   const release = c.env.TELEMETRY_RELEASE ?? "nasa-v1";
+  await requireRelease(db, release);
   await purgeExpiredSessions(db);
   const run = await getRun(db, release, `${release}-moxie-00816`);
   const session = await createSession(

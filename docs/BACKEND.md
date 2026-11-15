@@ -87,6 +87,14 @@ Import into an empty migrated database once. These inserts intentionally fail on
 
 Copy `.dev.vars.example` to `.dev.vars`, then set a randomly generated `MISSION_WRITE_KEY`. Leave AI credentials absent for deterministic-only mode. Build and serve the actual Worker:
 
+After a fresh checkout, `pnpm dev` creates an empty local D1 database; it does
+not apply migrations or import telemetry. If expedition admission returns
+`database_not_initialized`, run the local setup above against `.wrangler/state`
+before retrying. The `.dev.vars` value of `TELEMETRY_RELEASE` must match the
+published release, normally `nasa-demo-50k-v1`, not the offline `nasa-v1` release.
+Use the same `--persist-to` directory for setup and preview if overriding the
+default. Do not reimport an already populated release or reset its database.
+
 ```sh
 nix run .#build
 nix develop --command pnpm exec wrangler dev --config dist/server/wrangler.json --persist-to .wrangler/state --port 8787

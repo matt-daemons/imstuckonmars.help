@@ -10,6 +10,7 @@ import { verdict } from "./verdict";
 import { copilot } from "./copilot";
 import { spaceWeather } from "./space-weather";
 import type { LiveSnapshot } from "@/lib/mars/types";
+import { missingDatabaseSchema } from "../db/errors";
 
 export const api = new Hono<{ Bindings: ApiBindings }>().basePath("/api");
 
@@ -34,6 +35,17 @@ api.onError((error, c) => {
   if (error.message === "D1_BINDING_UNAVAILABLE")
     return c.json(
       { error: { code: "database_unavailable", message: "D1 binding is not configured" } },
+      503,
+    );
+  if (missingDatabaseSchema(error))
+    return c.json(
+      {
+        error: {
+          code: "database_not_initialized",
+          message:
+            "Mission database is not initialized. Apply the database migrations and import a published telemetry release; see docs/BACKEND.md.",
+        },
+      },
       503,
     );
   const requestId = crypto.randomUUID();
