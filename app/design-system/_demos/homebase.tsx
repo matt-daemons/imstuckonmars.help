@@ -20,6 +20,7 @@ import {
 } from "@/components/map/fake-sensor-controls";
 import { useFakeSensorMode } from "@/components/map/use-fake-sensor-mode";
 import { LayersPanel } from "@/components/map/layers-panel";
+import { RouteCalculationProgress } from "@/components/route/route-calculation-progress";
 import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
@@ -50,6 +51,11 @@ export function HomebaseComponents() {
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="route-calculation" title="Route calculation">
+        <div role="status">
+          <RouteCalculationProgress />
+        </div>
+      </Section>
       <Section id="map-layers-panel" title="Map layers panel">
         <div className="mars-map-shell relative h-72 w-full border">
           <LayersPanel>

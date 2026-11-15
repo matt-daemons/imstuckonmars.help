@@ -40,6 +40,7 @@ import { RouteCompare } from "./route-compare";
 import { SpaceWeatherLine } from "./space-weather-line";
 import { StormDrill } from "./storm-drill";
 import { selectedRoute } from "../selected-route";
+import { RouteCalculationProgress } from "../route-calculation-progress";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
 const WALK_HEADLINE = ["slope", "time", "distance"];
@@ -47,6 +48,18 @@ const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 
 /** Step 03: the verdict and its reasons, three headline numbers, then the rest one click down. */
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
+  const { planning } = useRoutePlan();
+  return (
+    <>
+      <div role="status">{planning && <RouteCalculationProgress />}</div>
+      <div role="region" aria-label="Route check" aria-busy={planning}>
+        {!planning && <CheckContent map={map} />}
+      </div>
+    </>
+  );
+}
+
+function CheckContent({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey, destination, planningError, retryPlanning } = useRoutePlan();
   const selected = selectedRoute(inputs, { walk, journey });
   const selectedJourney = { ...journey, plan: selected.trip };

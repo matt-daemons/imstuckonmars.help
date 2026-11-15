@@ -20,6 +20,7 @@ export const sectionGroups: SectionGroup[] = [
       { id: "saved-simulation-report", title: "Saved simulation report" },
       { id: "mission-manifest", title: "Mission manifest" },
       { id: "camera-views", title: "Camera views" },
+      { id: "route-calculation", title: "Route calculation" },
       { id: "completion-transition", title: "Completion transition" },
     ],
   },

@@ -7,12 +7,14 @@ import type { PlannerRequest, PlannerResponse } from "@/lib/mars/planner-contrac
 import type { RouteComparison } from "@/lib/mars/route-comparison";
 import type { LngLat } from "@/lib/mars/types";
 import type { RoutePlanInputs } from "./route-plan";
+import { routeRequestState, type LoadedRouteRequest } from "./route-request-state";
 
 export interface RoutePlanResult {
   walk: { plan: Plan | null; shortest: Plan | null; terrain: null; loadFailed: boolean };
   journey: DriveWalk;
   comparison?: RouteComparison | null;
   planningError?: string;
+  planning: boolean;
   cache?: string;
   retryPlanning?: () => void;
   destinations: SitePoi[];
@@ -53,12 +55,7 @@ export function useRoutePlanResult(
           }
         : null;
   const key = request ? JSON.stringify(request) : null;
-  const [loaded, setLoaded] = useState<{
-    key: string;
-    response: PlannerResponse | null;
-    error: string | null;
-    cache: string;
-  } | null>(null);
+  const [loaded, setLoaded] = useState<LoadedRouteRequest | null>(null);
   const [attempt, setAttempt] = useState(0);
   useEffect(() => {
     if (!key) return;
@@ -80,17 +77,22 @@ export function useRoutePlanResult(
           if (!controller.signal.aborted)
             setLoaded({
               key,
-              response: body,
-              error: null,
-              cache: response.headers.get("X-Route-Cache") ?? "unknown",
+              attempt,
+              state: {
+                kind: "ready",
+                response: body,
+                cache: response.headers.get("X-Route-Cache") ?? "unknown",
+              },
             });
         } catch (error) {
           if (!controller.signal.aborted)
             setLoaded({
               key,
-              response: null,
-              error: error instanceof Error ? error.message : "Route calculation failed.",
-              cache: "unknown",
+              attempt,
+              state: {
+                kind: "failed",
+                message: error instanceof Error ? error.message : "Route calculation failed.",
+              },
             });
         }
       })();
@@ -100,8 +102,9 @@ export function useRoutePlanResult(
       controller.abort();
     };
   }, [key, attempt]);
-  const current = loaded?.key === key ? loaded : null;
-  const result = current?.response?.result;
+  const current = routeRequestState(key, attempt, loaded);
+  const result = current.kind === "ready" ? current.response.result : null;
+  const error = current.kind === "failed" ? current.message : undefined;
   const walk = result?.mission === "walking" ? result : null;
   const trip = result?.mission === "drive-walk" ? result : null;
   return {
@@ -109,7 +112,7 @@ export function useRoutePlanResult(
       plan: walk?.plan ?? null,
       shortest: walk?.shortest ?? null,
       terrain: null,
-      loadFailed: inputs.mission === "walking" && !!current?.error,
+      loadFailed: inputs.mission === "walking" && !!error,
     },
     journey: {
       plan: trip?.plan ?? null,
@@ -120,11 +123,12 @@ export function useRoutePlanResult(
       driveCellM: trip?.driveCellM,
       driveFailed: false,
       siteFailed: false,
-      error: current?.error ?? undefined,
+      error,
     },
     comparison: result?.comparison ?? null,
-    planningError: current?.error ?? undefined,
-    cache: current?.cache,
+    planningError: error,
+    planning: current.kind === "pending",
+    cache: current.kind === "ready" ? current.cache : undefined,
     retryPlanning: () => {
       setLoaded(null);
       setAttempt((value) => value + 1);
