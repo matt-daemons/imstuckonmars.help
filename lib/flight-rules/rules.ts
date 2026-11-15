@@ -48,7 +48,7 @@ export const FLIGHT_RULES = {
     no_go_at_micrograys_per_hour: 90,
     applies_to: "assumption",
     source:
-      "No NASA limit exists. A quiet day at Gale crater is about 9 µGy/h (Curiosity RAD, Guo et al. 2015). The September 2017 solar event reached about 24 µGy/h and the May 2024 event about 309 (Posner et al., NTRS 20250001542).",
+      "No NASA limit exists. A quiet day at Gale crater is about 9 µGy/h (Curiosity RAD, Hassler et al. 2014). The September 2017 solar event reached about 24 µGy/h and the May 2024 event about 309 (Posner et al., NTRS 20250001542).",
   },
   dust: {
     // Dust opacity is how much the dust in the air dims the Sun (optical depth, tau).

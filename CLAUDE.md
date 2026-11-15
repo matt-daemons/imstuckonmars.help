@@ -168,7 +168,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 ## 10. References (cite every external source — required for submission)
 
 > Keep this list in sync whenever a dataset, paper or rule source is added. Each map layer also shows its credit in the UI.
-> ⚠ Citation details marked **(verify)** were written from memory. Check the DOI/pages before they go on slides.
+> ✓ The six former **(verify)** citations were checked against Crossref on Sun Nov 15 (✓ = verified; DOIs added). One open item: the Hassler 2014 dose-rate figure.
 
 ### Datasets (NASA and partners)
 
@@ -183,16 +183,18 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 
 ### Papers
 
-- Allison, M. & McEwen, M. (2000). A post-Pathfinder evaluation of areocentric solar coordinates… _Planetary and Space Science_ 48, 215–235. (Mars24 clock) **(verify)**
-- Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130:22. (Mars 2000 sphere, R = 3,396,190 m) **(verify)**
-- Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115, E00F03. (Spirit embedded at "Troy" — soft-ground pitch line) **(verify)**
+- Allison, M. & McEwen, M. (2000). A post-Pathfinder evaluation of areocentric solar coordinates with improved timing recipes for Mars seasonal/diurnal climate studies. _Planetary and Space Science_ 48(2–3), 215–235. doi:10.1016/S0032-0633(99)00092-6 (Mars24 clock) ✓
+- Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130(3), 22. doi:10.1007/s10569-017-9805-5 (Mars sphere R = 3,396,190 m — this is the IAU **equatorial** radius; the mean radius is 3,389.5 km. Say "equatorial", not "mean", on slides) ✓
+- Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
+- Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115(E7), E00F03. doi:10.1029/2010JE003633 (Spirit embedded at "Troy" — soft-ground pitch line) ✓
 - Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. (terraced craters → buried ice)
 - Christensen, P. R. et al. (2004). The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission. _Space Science Reviews_ 110, 85–130.
 - Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
-- Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. (MCD) **(verify)**
-- Guo, J. et al. (2015). Variations of dose rate observed by MSL/RAD in the first 300 sols on the surface of Mars. _ApJ_ 810, 24. (radiation threshold basis — via role A) **(verify)**
+- Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. doi:10.1029/1999JE001025 (MCD; also cite the MCD version if used) ✓
+- Guo, J. et al. (2015). Modeling the variations of dose rate measured by RAD during the first MSL Martian year: 2012–2014. _ApJ_ 810(1), 24. doi:10.1088/0004-637X/810/1/24 (quiet rate varies with air pressure and solar cycle; it gives **no** average dose rate) ✓ title corrected
+- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; **check the page before quoting the number on a slide**)
 - Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24.
-- Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49. (dust thresholds — via role A) **(verify)**
+- Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
 - Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
