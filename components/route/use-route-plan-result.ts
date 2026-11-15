@@ -32,7 +32,9 @@ export function useRoutePlanResult(
   const destination = end
     ? (destinations.find((site) => samePoint(site.center, end)) ?? null)
     : null;
-  const compare = inputs.step === "check" || inputs.showShortest || inputs.route === "shortest";
+  // Always ask for the shortest-route comparison: it costs the server ~15 % more, while asking only
+  // from step 3 changed the request mid-plan and threw away the step-2 plan (a second 4–7 s wait).
+  const compare = true;
   const request: PlannerRequest | null =
     inputs.mission === "walking" && inputs.end
       ? {
