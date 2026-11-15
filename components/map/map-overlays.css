@@ -48,6 +48,7 @@
 .mars-map-shell .map-compass,
 .mars-map-shell .lara-listening-control > .lara-launcher,
 .mars-map-shell .homebase-map-trigger,
+.mars-map-shell .homebase-map-label,
 .mars-map-shell [data-sidebar="trigger"],
 .mars-map-shell .map-coordinate-readout {
   background: var(--map-panel-surface);

@@ -7,6 +7,7 @@ import { Home } from "lucide-react";
 import { Dialog, DialogPopup, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { HomebaseDashboard } from "./dashboard";
 import type { LngLat } from "@/lib/mars/types";
+import { HomebaseMapLabel } from "./map-label";
 
 /** Keep the map alive underneath a read-only dashboard; closing returns to its exact view. */
 export function HomebaseMapEntry({
@@ -35,37 +36,15 @@ export function HomebaseMapEntry({
         .addTo(map);
       setTarget(element);
     });
-    const click = (e: { point: { x: number; y: number } }) => {
-      if (map.getZoom() < 7 || map.getCanvas().dataset.placing) return;
-      const point = map.project([lng, lat]);
-      if (Math.hypot(e.point.x - point.x, e.point.y - point.y) < 28) setOpen(true);
-    };
-    map.on("click", click);
     return () => {
       cancelled = true;
       marker?.remove();
       setTarget(null);
-      map.off("click", click);
     };
   }, [map, lng, lat, enlarged]);
-  const trigger = (
-    <button
-      type="button"
-      className="homebase-map-trigger"
-      onClick={() => setOpen(true)}
-      aria-label={
-        enlarged
-          ? "Open homebase mission dashboard. Model not to scale."
-          : "Open homebase mission dashboard"
-      }
-    >
-      <Home aria-hidden />
-      Homebase{enlarged && " · Not to scale"}
-    </button>
-  );
   return (
     <>
-      {target && createPortal(trigger, target)}
+      {target && createPortal(<HomebaseMapLabel enlarged={enlarged} />, target)}
       {shortcutTarget &&
         createPortal(
           <button type="button" className="homebase-map-trigger" onClick={() => setOpen(true)}>
