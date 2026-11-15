@@ -6,11 +6,16 @@ import type { ApiBindings } from "./bindings";
 import { telemetry } from "./telemetry";
 import { missions } from "./missions";
 import { verdict } from "./verdict";
+import { copilot } from "./copilot";
 import type { LiveSnapshot } from "@/lib/mars/types";
 
 export const api = new Hono<{ Bindings: ApiBindings }>().basePath("/api");
 
-api.use("*", bodyLimit({ maxSize: 65536 }));
+const jsonLimit = bodyLimit({ maxSize: 65536 });
+// Speech audio uploads carry their own, larger limit on the transcribe route.
+api.use("*", (c, next) =>
+  /^\/api\/copilot\/[^/]+\/transcribe$/.test(c.req.path) ? next() : jsonLimit(c, next),
+);
 api.use("*", async (c, next) => {
   c.header("Cache-Control", "no-store");
   c.header("X-Content-Type-Options", "nosniff");
@@ -41,6 +46,7 @@ api.get("/health", (c) => c.json({ status: "ok" }));
 api.route("/telemetry", telemetry);
 api.route("/missions", missions);
 api.route("/verdict", verdict);
+api.route("/copilot", copilot);
 
 // Stub until team role D's replay.ts output lands in data/processed/live/.
 api.get("/live", (c) => {

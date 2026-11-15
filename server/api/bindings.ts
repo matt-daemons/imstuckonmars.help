@@ -13,6 +13,8 @@ export type ApiBindings = Omit<
   DIAGNOSTICS_PROVIDER?: string;
   MISSION_WRITE_KEY?: string;
   DIAGNOSTICS_API_KEY?: string;
+  ELEVENLABS_API_KEY?: string;
+  ELEVENLABS_VOICE_ID?: string;
 };
 
 export function database(bindings: ApiBindings) {
