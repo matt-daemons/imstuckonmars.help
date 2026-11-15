@@ -5,6 +5,7 @@ import { MissionError } from "../../lib/mission/types";
 import type { ApiBindings } from "./bindings";
 import { telemetry } from "./telemetry";
 import { missions } from "./missions";
+import { verdict } from "./verdict";
 import type { LiveSnapshot } from "@/lib/mars/types";
 
 export const api = new Hono<{ Bindings: ApiBindings }>().basePath("/api");
@@ -39,6 +40,7 @@ api.onError((error, c) => {
 api.get("/health", (c) => c.json({ status: "ok" }));
 api.route("/telemetry", telemetry);
 api.route("/missions", missions);
+api.route("/verdict", verdict);
 
 // Stub until team role D's replay.ts output lands in data/processed/live/.
 api.get("/live", (c) => {
