@@ -135,7 +135,7 @@ export function LayoutData() {
           </AccordionItem>
           <AccordionItem value="food">
             <AccordionTrigger>How do you grow food?</AccordionTrigger>
-            <AccordionPanel>Potatoes in Martian soil, fertilized with crew waste.</AccordionPanel>
+            <AccordionPanel>Lettuce grown hydroponically in the habitat.</AccordionPanel>
           </AccordionItem>
         </Accordion>
       </Section>

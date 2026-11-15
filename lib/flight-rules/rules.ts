@@ -15,6 +15,8 @@ export const FLIGHT_RULES = {
   },
   walk_back: {
     max_distance_km: 2,
+    // Walking pace used to turn a distance into suit time (EVA-EXP-0042 uses 2 km/h for the walk back).
+    walking_km_per_hour: 2,
     applies_to: "Moon",
     source:
       "NASA EVA-EXP-0042 Rev B, p.40: 2 km on foot at 2 km/h, which is 1 hour of backup oxygen.",
@@ -48,7 +50,7 @@ export const FLIGHT_RULES = {
     no_go_at_micrograys_per_hour: 90,
     applies_to: "assumption",
     source:
-      "No NASA limit exists. A quiet day at Gale crater is about 9 µGy/h (Curiosity RAD, Guo et al. 2015). The September 2017 solar event reached about 24 µGy/h and the May 2024 event about 309 (Posner et al., NTRS 20250001542).",
+      "No NASA limit exists. A quiet day at Gale crater is about 9 µGy/h (Curiosity RAD, Hassler et al. 2014). The September 2017 solar event reached about 24 µGy/h and the May 2024 event about 309 (Posner et al., NTRS 20250001542).",
   },
   dust: {
     // Dust opacity is how much the dust in the air dims the Sun (optical depth, tau).

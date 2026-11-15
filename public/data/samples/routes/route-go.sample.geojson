@@ -1,0 +1,93 @@
+{
+  "type": "FeatureCollection",
+  "route": {
+    "route_id": "sample-go",
+    "title": "SAMPLE · Base → ESP_033225 terraced crater (drive + walk)",
+    "destination_id": "DTEEC_033225_2250_033146_2250_A01",
+    "distance_km": 93.33,
+    "est_time_min": 651,
+    "max_slope": 8.4,
+    "verdict": "GO",
+    "limiting_factor": null,
+    "reasons": ["SAMPLE: all legs within flight rules."],
+    "margin": { "resource": "rover_battery", "value": 41, "limit": 20, "unit": "% at return" },
+    "time_to_shelter_min": 39,
+    "simulated": true,
+    "source": "SAMPLE — hand-made for UI work, not a computed route"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-go",
+        "leg": 1,
+        "mode": "drive",
+        "from": "base",
+        "to": "staging",
+        "start_offset_min": 0,
+        "distance_km": 92.03,
+        "est_time_min": 552,
+        "stop_min": 0,
+        "max_slope": 8.4,
+        "verdict": "GO",
+        "limiting_factor": null,
+        "reasons": ["SAMPLE: rover drive at an assumed 10 km/h average."],
+        "time_to_shelter_min": 0,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.05, 45.97],
+          [-176.08741, 45.58266],
+          [-176.22617, 45.18373],
+          [-176.2376, 44.82892],
+          [-176.32413, 44.43491]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-go",
+        "leg": 2,
+        "mode": "walk",
+        "from": "staging",
+        "to": "DTEEC_033225_2250_033146_2250_A01",
+        "start_offset_min": 552,
+        "distance_km": 1.3,
+        "est_time_min": 39,
+        "stop_min": 60,
+        "max_slope": 6.1,
+        "verdict": "GO",
+        "limiting_factor": null,
+        "reasons": [
+          "SAMPLE: 1.2 km from the rover, inside the 2 km walk-back rule; walk at 2 km/h."
+        ],
+        "time_to_shelter_min": 39,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.32413, 44.43491],
+          [-176.32381, 44.42305],
+          [-176.33383, 44.41589]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "staging",
+        "id": "staging",
+        "name": "Rover staging point (sample)",
+        "route_id": "sample-go",
+        "simulated": true
+      },
+      "geometry": { "type": "Point", "coordinates": [-176.32413, 44.43491] }
+    }
+  ]
+}
