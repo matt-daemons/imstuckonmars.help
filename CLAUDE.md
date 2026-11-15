@@ -63,7 +63,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Product name             | **LARA** (only name; the assessment engine is part of LARA, not a separate "ARES").                                                                                                                                                                                                                                                                                                                                           |
 | Landing & base           | **Arcadia Planitia** (plains) — final. Smooth terrain, subsurface water ice, sunlight for power, despite sparse surface data. Habitat at −176.05°E, 45.97°N.                                                                                                                                                                                                                                                                  |
-| Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: 3 terraced craters (buried-ice evidence, Bramson et al. 2015) + 1 ridge site (regional evidence only, Morgan et al. 2021; outside Bramson's 180–225°E study area — `lib/mars/ice-evidence.ts`).                                                                                                                                                   |
+| Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: 3 terraced craters (buried-ice evidence, Bramson et al. 2015) + 1 ridge site (regional evidence only, Morgan et al. 2021; outside Bramson's verified 180–225°E study area — `lib/mars/ice-evidence.ts`).                                                                                                                                          |
 | Mobility                 | **2-leg journeys** (Jess + Role C, Sun Nov 15): drive (rover) base → staging point, then walk (EVA) staging point → POI and back. Drive leg: rover rules + slope + thermal inertia. Walk leg: suit rules + slope + roughness. _Superseded: "rover drives only" (same morning)._                                                                                                                                               |
 | Staging point            | **Jess, Sun Nov 15:** nearest **40 × 40 m** square **≥ 25 m** from the POI, within 2 km, **no 1 m slope > 5°** (10° fallback → CAUTION reason), **roughness < 0.25 m**, no boulders. In code: `findStagingPoint` (`lib/mars/site-grid.ts`) and `pnpm pipe:staging`. Rationale + sources: §9 "Staging point".                                                                                                                  |
 | Far sites (> 200 km)     | **Team, Sun Nov 15:** ESP_037352 (424 km) and ESP_054060 (468 km) are shown as **NO-GO** under the 200 km rover range rule — for now.                                                                                                                                                                                                                                                                                         |
@@ -162,43 +162,17 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 
 ## 7. Open items — the one to-do list
 
-Grouped by who acts. Strike through and move to §11 when done.
+Grouped by who acts. Delete items when done and log them in §11.
 
-### Team decisions (shared role A)
+### M (UI)
 
-1. ~~Regional slope 200 m~~ — display only (live on the map).
-2. ~~Manifest format change~~ — M OK'd (§4); `sceneControl` + `caveats` are on `StableLayer` (`lib/mars/types.ts`).
-3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Wording added Sun Nov 15 (Sources screen MEDA/RAD caveats + LARA vitals footnote).
-4. ~~Owner names for C/D~~ — dropped (not needed).
-
-### M (hosting + UI)
-
-1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
-2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
-3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
-4. Before freeze: make sure no placeholder route ships. `stops.geojson` now holds only the real habitat point; no `route.geojson` remains (routes come from the router).
-5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+1. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
+2. Polish (incl. tinted HiRISE RED, imagery to z18): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+3. AI-voice statement in the demo video and on the project page.
 
 ### Jess (role B)
 
-1. ~~Thermal-inertia R2 prefix~~ — `sites-v2/thermal-inertia`; wired (`THERMAL_INERTIA_DATA_ROOT`).
-2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
-3. Slides: pin the page of the Hassler 2014 average dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are
-   2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
-4. ~~Ice evidence~~ — dropped Sun Nov 15. (Old notes:) swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
-5. **Regional slope tiles** regenerated with 1° / 2° / 5° / 10° / 20° classes (the corridor is flat: ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %). **M: re-upload `sites-v2/regional-slope`** (local tiles are new; R2 still has the old 10°+ classes, so the overlay looks blank until then).
-
-### Roles C / D
-
-- C: route GeoJSON fixtures for both legs (demo dry run) so M can build UI; `POST /api/routes/plan` returning `RouteResult`; distances on the Mars radius.
-- D: replace `/api/live` stub with replayed snapshots, show `proxy_source`; never display stub zeros as real data.
-  _Code check (Sun Nov 15):_ the `/api/live` stub (`server/api/app.ts`) is unused by the app — live data reaches the UI via `/api/telemetry` (D1)
-  and `/api/space-weather` (DONKI). Team to decide: delete the stub or wire it.
-
-### Before feature freeze (~6 h before deadline)
-
-- Every layer shows its NASA source; references (§12) in sync; AI voice disclosure in place.
-- Check: Workers static-asset per-file limit (believed 25 MiB) — move larger COGs to R2.
+1. Slides: pin the page of the Hassler 2014 **average** dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are 2× / 10× it (`config.yaml`).
 
 ### Future data layers (horizon)
 
@@ -286,7 +260,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 
 - **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
   0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
-  Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
+  Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Display only; the router uses 463 m MOLA.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
   on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. On the map:
   Scene panel switch "Geology" (`addGeology`, `components/map/ground-overlays.tsx`).
@@ -304,7 +278,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 - Code: `findStagingPoint` returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`; constants `STAGING_MIN_M`, `PARKING_*`, `STAGING_RULE`.
   Roughness is checked once `ROUGHNESS_DATA_ROOT` is set (now → sites-v2).
 
-### Rover range (context for §7 team item 1)
+### Rover range
 
 Two pressurized rovers give a "mobile safe haven" that could extend range to **100 km or more**; the rescue rover stays within an **8-hour drive**;
 rovers "notionally never travel farther than 100 km" from the ascent vehicle (EVA-EXP-0042 Rev B §4.2.1.3.1, §7.3.2). That is Artemis-era **Moon**
@@ -384,6 +358,10 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - ✅ Rover rules agreed (5° lower slope limit; EVA-EXP-0042 range source added).
 - ✅ By teammates: rover energy-cost A* (`5d9c6e84`), soft ground from TI (`fa2b8526`), walk-leg time/consumables (`245aee73`), sources screen
   (`eb50f3fc`), mission summary (`fc249a77`), `/api/verdict`, RAD telemetry, Mars clock.
+
+- ✅ Sun Nov 15 afternoon: proxy-data wording (Sources + LARA vitals), Grok + regional-slope source entries, ridges site = regional ice
+  evidence only, Bramson/Morgan DOIs, Bramson study area (180–225°E, 38–50°N) verified, `/api/routes/plan` live, `/api/live` stub removed
+  (Nova), AI/NASA source disclosures checked, Workers/R2 limits checked. Dropped: ice-map layer, owner names, regional-slope router input.
 
 ## 12. References (cite every external source — required for submission)
 
