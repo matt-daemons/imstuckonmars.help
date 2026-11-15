@@ -66,6 +66,8 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: terraced craters (buried-ice evidence, Bramson et al. 2015) + one ridge site.                                                                                                                                                                                                                                                                     |
 | Mobility                 | **2-leg journeys** (Jess + Role C, Sun Nov 15): drive (rover) base → staging point, then walk (EVA) staging point → POI and back. Drive leg: rover rules + slope + thermal inertia. Walk leg: suit rules + slope + roughness. _Superseded: "rover drives only" (same morning)._                                                                                                                                               |
 | Staging point            | **Jess, Sun Nov 15:** nearest **40 × 40 m** square **≥ 25 m** from the POI, within 2 km, **no 1 m slope > 5°** (10° fallback → CAUTION reason), **roughness < 0.25 m**, no boulders. In code: `findStagingPoint` (`lib/mars/site-grid.ts`) and `pnpm pipe:staging`. Rationale + sources: §9 "Staging point".                                                                                                                  |
+| Far sites (> 200 km)     | **Team, Sun Nov 15:** ESP_037352 (424 km) and ESP_054060 (468 km) are shown as **NO-GO** under the 200 km rover range rule — for now.                                                                                                                                                                                                                                                                                         |
+| Roughness + rock sizes   | **Team, Sun Nov 15:** roughness classes 0.25 / 0.5 / 1 m and walker rock sizes 0.3 / 0.5 / 1 m agreed. Team assumptions — NASA has no suited-walking limit. Rationale: `docs/PITCH_NOTES.md`.                                                                                                                                                                                                                                 |
 | Rovers per mission       | **2 rovers go out together** (mutual rescue).                                                                                                                                                                                                                                                                                                                                                                                 |
 | Suit / walk flight rules | Sourced values (`config.yaml` ↔ `lib/flight-rules/rules.ts`, synced by `config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), suit walk-back ≤ 2 km. NASA has no Mars limits — Moon/ISS values are labelled assumptions.                                                                                                        |
 | Rover flight rules       | **AGREED by the team, Sun Nov 15** (`lib/flight-rules/rover-rules.ts`): slope 5° caution / 10° no-go on the 463 m MOLA grid (halved because MOLA reads slopes low; 5° is the lower limit), battery 30 / 20 %, reserve 20 / 10 km, range 100 / 200 km (EVA-EXP-0042 two-rover source added), trip 7 / 14 sols, rover breakdown walk-back 15 km. ⚠ On slides, name the suit walk-back (2 km) and rover walk-back (15 km) apart. |
@@ -158,14 +160,10 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Team decisions (shared role A)
 
-1. **Driving-range limit for the farthest sites** — ESP_037352 (424 km) and ESP_054060 (468 km) exceed the agreed 200 km no-go. Decide: drop
-   them, show them as NO-GO, or treat them as a separate expedition. Context: §9 "Rover range".
-2. **Roughness classes (0.25 / 0.5 / 1 m) + walker rock sizes (0.3 / 0.5 / 1 m)** — Role B assumptions; legend says "not team-agreed". No NASA
-   limit exists (nearest: Apollo LRV clearance ~36 cm; MER < 1 % area with rocks > 0.5 m; InSight rock abundance < 10 %). Slide notes: `docs/PITCH_NOTES.md`.
-3. **Regional slope 200 m** — router input (would mean re-setting the halved MOLA slope limits) or display-only?
-4. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
-5. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
-6. Confirm owner names for roles C and D. Tell the team the staging-point rule and that rover rules are agreed.
+1. **Regional slope 200 m** — router input (would mean re-setting the halved MOLA slope limits) or display-only?
+2. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
+3. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
+4. Confirm owner names for roles C and D.
 
 ### M (hosting + UI)
 
@@ -175,16 +173,16 @@ Grouped by who acts. Strike through and move to §11 when done.
 2. Host regional-slope tiles (needs a release config).
 3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
 4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` / AOI name with real routes so nothing fake ships.
-5. Polish: map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
 
 ### Jess (role B)
 
-1. **Give the thermal-inertia R2 prefix** → set `THERMAL_INERTIA_DATA_ROOT` (`lib/mars/ground-layers.ts`, currently `null` → TI layer empty on
-   the deployed site).
-2. Geology + regional slope onto the map, with coverage + caveats.
-3. Slides: pin the page of the Hassler 2014 dose-rate figure; use the Golombek 2012 journal URL (DOI doesn't resolve).
+1. ~~Thermal-inertia R2 prefix~~ — it ships inside sites-v2 (`sites-v2/thermal-inertia`); sent to M, who is uploading. Local, uncommitted
+   wiring sets `THERMAL_INERTIA_DATA_ROOT`, `ROUGHNESS_DATA_ROOT` and `SITE_DATA_ROOT` to sites-v2 → commit once the upload is live.
+2. Regional slope onto the map (tiles are in sites-v2; wire once uploaded). ~~Geology~~ done (`8704a69e`).
+3. Slides: pin the page of the Hassler 2014 quiet-time dose rate (~9 µGy/h) — the radiation flight rule's 18 / 90 µGy/h thresholds are
+   2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
 4. **SWIM** ice layer — swim.psi.edu down (HTTP 523); retry. PIA26045 is a PNG illustration → slides only.
-5. Optional polish: tinted HiRISE RED; imagery to z18 (~4× tiles).
 
 ### Roles C / D
 

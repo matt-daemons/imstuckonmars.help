@@ -412,7 +412,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "RMS height deviation from the local 5 m trend, 5 m cells, from the 1 m HiRISE DTMs. Median 0.08–0.15 m",
         use: "Roughness switch in the Scene panel, for walking legs.",
         caveats: [
-          "Class breaks (0.25 / 0.5 / 1 m) are a Role B assumption, not team-agreed. NASA has no suited-walking roughness limit.",
+          "Class breaks (0.25 / 0.5 / 1 m) are a team assumption (agreed Sun Nov 15). NASA has no suited-walking roughness limit.",
           "Mostly DTM noise: only crater rims and ridge flanks stand out.",
           "The DTM can't see boulders or bumps narrower than ~2 m.",
         ],

@@ -168,7 +168,7 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
         </label>
         {roughOn && (
           <>
-            <Legend classes={ROUGHNESS_LEGEND} note="Role B assumption — not team-agreed" />
+            <Legend classes={ROUGHNESS_LEGEND} note="Team assumption — NASA has no limit" />
             <p className="text-xs">
               Mostly DTM noise: only crater rims and ridge flanks stand out. Boulders are too small
               for the DTM.
