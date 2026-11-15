@@ -3,8 +3,8 @@ import { evaluateRoute, type EvaPlan, type EvaVerdict } from "../flight-rules/ev
 import { ROVER, ROVER_RULES, type RoverFactor } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES, type Factor } from "../flight-rules/rules";
 import { walkLegTiming, type WalkLegTiming } from "../flight-rules/walk-leg";
-import { planDrive, type DriveSummary, type PowerSource } from "./driving";
-import { toGridLng, type RouteGrid } from "./route-grid";
+import { planDrive, type DriveGrid, type DriveSummary, type PowerSource } from "./driving";
+import { toGridLng } from "./route-grid";
 import { findPath, marsDistanceM, type PlannedPath, type StepCostModel } from "./routing";
 import { findStagingPoint, type SiteGrid, type SiteInfo } from "./site-grid";
 import type {
@@ -48,7 +48,7 @@ export interface DriveWalkPlan {
 
 /** Drive base → staging point and back on the MOLA strip; walk staging point → POI and back on the site grid. */
 export function planDriveWalk(
-  driveGrid: RouteGrid,
+  driveGrid: DriveGrid,
   driveSlope: Float32Array,
   driveWalls: Uint8Array,
   site: SiteGrid,

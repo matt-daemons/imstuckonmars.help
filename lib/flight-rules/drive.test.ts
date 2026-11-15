@@ -15,6 +15,7 @@ const safeTrip: DriveSummary = {
   max_slope: 3,
   straight_km: 55,
   power: "fission",
+  ground_km: { loose_dust: 0, sand_crust: 0, firm: 0, no_data: 120 },
 };
 
 function tripWith(changes: Partial<DriveSummary>): DriveSummary {

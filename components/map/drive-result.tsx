@@ -1,4 +1,4 @@
-import { ROVER, ROVER_RULES } from "@/lib/flight-rules/rover-rules";
+import { GROUND, ROVER, ROVER_RULES } from "@/lib/flight-rules/rover-rules";
 import type { planDrive } from "@/lib/mars/driving";
 import { cellSize, type RouteGrid } from "@/lib/mars/route-grid";
 
@@ -38,6 +38,15 @@ export function DriveAssumptions({
         Rolling resistance {ROVER.rolling_resistance} is a Moon-soil value; motor efficiency{" "}
         {ROVER.drivetrain_efficiency} and rough ground ×{ROVER.bad_terrain_factor} are our
         assumptions.
+      </p>
+      <p>
+        Soft ground (THEMIS thermal inertia):{" "}
+        {plan?.summary &&
+          `${formatNumber(plan.summary.ground_km.loose_dust, 1)} km of loose dust and ${formatNumber(plan.summary.ground_km.no_data, 1)} km with no data on the drive out and back. `}
+        Loose dust doubles rolling resistance to{" "}
+        {formatNumber(GROUND.loose_dust.rolling_resistance, 2)}, our assumption; gaps keep{" "}
+        {GROUND.no_data.rolling_resistance}. Thermal inertia is ±20 %, sees only the top few cm in
+        100 m pixels and covers about 57 % of the area.
       </p>
       {cellM !== null && (
         <p>
