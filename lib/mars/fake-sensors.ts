@@ -1,6 +1,7 @@
 import type { LngLat } from "./types";
+import { fakeFieldVariation } from "./fake-field-variation";
 
-export const FAKE_SENSOR_VERSION = "future-sensors-v1";
+export const FAKE_SENSOR_VERSION = "future-sensors-v2";
 export const FAKE_SOL_SECONDS = 88775.244;
 export const FAKE_SOL_COUNT = 7;
 export const FAKE_SENSOR_COUNT = 580;
@@ -79,27 +80,56 @@ export function fakeReading(sensor: FakeSensor, frame: number): FakeReading {
   const [longitude, latitude] = sensor.position;
   const lat = latitude * radians;
   const lon = longitude * radians;
+  const variation = fakeFieldVariation(longitude, latitude, elapsedSols);
   const daily = Math.cos(2 * Math.PI * (elapsedSols + longitude / 360 - 0.58));
   const daylight = Math.max(0, daily);
   const front = Math.cos(lon - elapsedSols * 0.85) * Math.cos(lat * 2 + elapsedSols * 0.4);
-  const storm = clamp((front - 0.15) / 0.85, 0, 1);
+  const storm = clamp((front + variation.weather * 0.65 - 0.15) / 0.85, 0, 1);
   const ground = clamp(
-    -58 - 35 * Math.abs(Math.sin(lat)) + 43 * daily + 4 * Math.sin(lon * 3),
+    -58 -
+      35 * Math.abs(Math.sin(lat)) +
+      43 * daily +
+      4 * Math.sin(lon * 3) +
+      variation.weather * 23 +
+      variation.terrain * 7,
     -110,
     5,
   );
-  const air = clamp(-62 - 24 * Math.abs(Math.sin(lat)) + 23 * daily + 6 * storm, -100, 0);
+  const air = clamp(
+    -62 -
+      24 * Math.abs(Math.sin(lat)) +
+      23 * daily +
+      6 * storm +
+      variation.regional * 15 +
+      variation.local * 4,
+    -100,
+    0,
+  );
   return {
     sensor,
     elapsedSols,
-    windSpeed: clamp(4 + 7 * Math.abs(Math.sin(lat * 3 + lon)) + 20 * storm + 2 * daylight, 0, 35),
+    windSpeed: clamp(
+      4 + 7 * Math.abs(Math.sin(lat * 3 + lon)) + 20 * storm + 2 * daylight + variation.local * 4,
+      0,
+      35,
+    ),
     windBearing:
-      (((90 + 70 * Math.sin(lat * 2) + 40 * Math.sin(lon + elapsedSols * 0.8)) % 360) + 360) % 360,
+      (((90 +
+        70 * Math.sin(lat * 2) +
+        40 * Math.sin(lon + elapsedSols * 0.8) +
+        variation.weather * 32) %
+        360) +
+        360) %
+      360,
     storm,
     ground,
     air,
     hardness: clamp(
-      5 + 3 * Math.sin(lon * 2) * Math.cos(lat * 3) + 1.5 * Math.cos(lat * 7) - storm * 0.3,
+      5 +
+        3 * Math.sin(lon * 2) * Math.cos(lat * 3) +
+        1.5 * Math.cos(lat * 7) -
+        storm * 0.3 +
+        variation.terrain * 3,
       0,
       12,
     ),
@@ -108,7 +138,9 @@ export function fakeReading(sensor: FakeSensor, frame: number): FakeReading {
         170 * Math.cos(lat) * Math.sin(lon + 0.7) +
         65 * Math.cos(lat * 3) +
         25 * daily -
-        30 * storm,
+        30 * storm +
+        variation.regional * 65 +
+        variation.local * 16,
       400,
       1100,
     ),
@@ -116,12 +148,19 @@ export function fakeReading(sensor: FakeSensor, frame: number): FakeReading {
       230 +
         110 * Math.abs(Math.sin(lat)) +
         120 * Math.max(0, Math.sin(elapsedSols * 1.15 + lon)) -
-        storm * 35,
+        storm * 35 +
+        variation.regional * 35 +
+        variation.terrain * 20,
       100,
       600,
     ),
     humidity: clamp(
-      22 + 38 * Math.max(0, -daily) + 15 * Math.abs(Math.sin(lat)) + 12 * storm,
+      22 +
+        38 * Math.max(0, -daily) +
+        15 * Math.abs(Math.sin(lat)) +
+        12 * storm +
+        variation.weather * 24 -
+        variation.terrain * 5,
       0,
       100,
     ),
