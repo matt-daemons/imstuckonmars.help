@@ -244,10 +244,20 @@ function finished(
   cost: number,
   expanded: number,
 ): PlannedPath {
-  const legSteps = pathSteps(grid, cells);
+  const path = [start, ...cells.slice(1, -1).map((cell) => cellCenter(grid, cell)), goal];
+  // Measure along the drawn path: its ends are the exact start and goal, not their cell centres,
+  // so cell-to-cell steps alone would drop up to a cell's length at each end of the walk.
+  const pointCells = cells.length === 1 ? [cells[0], cells[0]] : cells;
+  const legSteps: PathStep[] = path
+    .slice(1)
+    .map((point, i) => ({
+      horizontalM: marsDistanceM(path[i], point),
+      riseM: grid.heights[pointCells[i + 1]] - grid.heights[pointCells[i]],
+    }))
+    .filter((step) => step.horizontalM > 0);
   return {
     status: "ok",
-    path: [start, ...cells.slice(1, -1).map((cell) => cellCenter(grid, cell)), goal],
+    path,
     distance_m: legSteps.reduce((sum, step) => sum + Math.hypot(step.horizontalM, step.riseM), 0),
     cost,
     max_slope_deg: Math.max(...cells.map((cell) => slope[cell])),
