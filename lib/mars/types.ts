@@ -37,17 +37,30 @@ export interface LayerManifest {
   layers: StableLayer[];
 }
 
+/**
+ * One live-feed update. Units follow the team's telemetry table (MEDA, MOXIE, RAD);
+ * fields marked PLACEHOLDER have no agreed format yet.
+ */
 export interface LiveSnapshot {
+  /** ISO 8601 UTC. */
   timestamp: string;
+  /** PLACEHOLDER — sol numbering/epoch not agreed. */
   sol: number;
+  /** PLACEHOLDER — Local Mean Solar Time, "HH:MM:SS"; site not agreed. */
   lmst: string;
+  /** RAD absorbed-dose rate, µGy/h. */
   radiation_dose_rate: number;
+  /** PLACEHOLDER — levels to be defined from DONKI + flight rules. */
   solar_alert_level: "none" | "watch" | "warning";
+  /** MEDA dust optical depth, dimensionless (τ). */
   dust_opacity: number;
+  /** MEDA air temperature, K. */
   temp: number;
+  /** MEDA wind speed, m/s. */
   wind: number;
+  /** PLACEHOLDER — sun elevation, degrees above horizon (unit not in the telemetry table). */
   sun_elevation: number;
-  /** Proxy site the values came from, e.g. "Gale (Curiosity REMS/RAD)". */
+  /** Proxy site the values came from, e.g. "Jezero (Perseverance MEDA)". */
   proxy_source: string;
 }
 

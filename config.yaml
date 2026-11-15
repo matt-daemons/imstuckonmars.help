@@ -14,7 +14,10 @@ crs:
   resolution_m: TBD # set from the chosen DTM
 
 thresholds:
-  slope_max_deg: 20 # ASSUMPTION — Artemis lunar planning value, unverified for Mars
-  suit_budget: TBD
-  radiation: TBD
-  walk_back: TBD
+  # Every value below is a PLACEHOLDER default so the code can run — none is an agreed flight rule.
+  # Find them all with: grep -rn PLACEHOLDER. Team role A replaces them before the demo.
+  slope_max_deg: 20 # PLACEHOLDER — Artemis lunar planning value, unverified for Mars
+  suit_budget_h: 8 # PLACEHOLDER — nominal EVA suit consumables budget (hours)
+  radiation_caution_ugy_per_h: 50 # PLACEHOLDER — RAD absorbed-dose rate that flips GO → CAUTION
+  radiation_no_go_ugy_per_h: 500 # PLACEHOLDER — RAD absorbed-dose rate that flips → NO_GO
+  walk_back_reserve_pct: 30 # PLACEHOLDER — consumables kept in reserve for the return at degraded pace
