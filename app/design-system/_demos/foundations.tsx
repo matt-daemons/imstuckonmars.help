@@ -107,6 +107,13 @@ const shadows = [
 export function Foundations() {
   return (
     <>
+      <Section id="borderless" title="Borderless treatment" className="flex-col">
+        <p>
+          Panel and control borders are hidden without changing layout. Keyboard focus, control
+          indicators and destructive confirmation tape remain visible.
+        </p>
+        <div className="border bg-secondary p-4">Panel surface without its outline</div>
+      </Section>
       <Section id="colors" title="Colors" className="flex-col gap-8">
         {colorGroups.map((group) => (
           <div key={group.title} className="flex flex-col gap-3">

@@ -27,6 +27,7 @@ export const sectionGroups: SectionGroup[] = [
   {
     title: "Foundations",
     sections: [
+      { id: "borderless", title: "Borderless treatment" },
       { id: "colors", title: "Colors" },
       { id: "typography", title: "Typography" },
       { id: "radius", title: "Radius" },
