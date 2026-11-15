@@ -28,9 +28,12 @@
           ./server
           ./migrations
           ./scripts/models
+          ./pipelines/lib/native-imagery.test.ts
+          ./pipelines/viking-native-release.json
           ./.oxfmtrc.json
           ./.oxlintrc.json
           ./components.json
+          ./config.yaml
           ./next.config.ts
           ./package.json
           ./pnpm-lock.yaml
