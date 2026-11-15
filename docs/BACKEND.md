@@ -174,7 +174,7 @@ Only four read tools exist: the pinned mission snapshot, up to 120 recent MOXIE 
 
 `wrangler.jsonc` binds the existing project database `imstuckonmars` in the account serving `hackrlabs.workers.dev`; it is not a temporary account or a new database for another domain. The primary custom domain remains `https://imstuckonmars.help`, attached in Cloudflare rather than replaced by a Wrangler route. The bounded release was imported and count-guarded publication passed. No billing-plan upgrade was made.
 
-The production creation key is a server-side Worker secret. Its owner-only local copy is in the ignored `generated/deployment/mission-write-key` file; never commit it, log it, embed it in a browser or use the local E2E example key in production. AI remains disabled until explicitly configured.
+The production creation key is a server-side Worker secret. Its owner-only local copy is in the ignored `generated/deployment/mission-write-key` file; never commit it, log it, embed it in a browser or use the local E2E example key in production. AI uses the OpenRouter provider and model in `wrangler.jsonc` with the `DIAGNOSTICS_API_KEY` Worker secret; deterministic diagnostics work without it.
 
 For future operations:
 
