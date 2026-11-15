@@ -20,7 +20,12 @@ import {
   type ReadoutItem,
 } from "@/components/map/route-result";
 import { fitPoints } from "@/components/route/camera";
-import { notCheckedText, tripWithStorms, walkWithStorms } from "@/components/route/conditions";
+import {
+  isDrillSet,
+  notCheckedText,
+  tripWithStorms,
+  walkWithStorms,
+} from "@/components/route/conditions";
 import { useConditions } from "@/components/route/conditions-provider";
 import { missingChoice } from "@/components/route/route-plan";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
@@ -33,6 +38,8 @@ import {
   AccordionPanel,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 import { splitHeadline } from "./headline";
 import { MissionSummary } from "./mission-summary-dialog";
@@ -142,13 +149,25 @@ function CheckLayout({
   assumptions: ReactNode;
 }) {
   const { mission, zones, showShortest } = useRoutePlan().inputs;
+  const drilling = isDrillSet(useConditions().drill);
   const split = splitHeadline(readouts, headline);
   return (
     <div className="flex flex-col gap-3">
-      {/* One live region that stays mounted, so screen readers announce every change in it. */}
-      <div role="status">{status}</div>
+      {/* While a drill runs, the strip's dashed frame and DRILL tag keep the verdict from passing for real data. */}
+      <div
+        className={cn("flex flex-col gap-2", drilling && "border-2 border-dashed border-info p-2")}
+      >
+        {drilling && (
+          <Badge variant="info" className="self-start font-mono">
+            DRILL
+          </Badge>
+        )}
+        {/* One live region that stays mounted, so screen readers announce every change in it. */}
+        <div role="status">{status}</div>
+      </div>
+      {split.headline.length > 0 && <Readouts items={split.headline} lead />}
+      {/* The feed behind the verdict comes after its numbers, so the verdict leads straight into them. */}
       <SpaceWeatherLine />
-      {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
       <div className="flex flex-wrap gap-2">
         {fit}
         <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />

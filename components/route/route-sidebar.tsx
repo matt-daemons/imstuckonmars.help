@@ -5,7 +5,13 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
-import { Sidebar, SidebarContent, SidebarHeader, useSidebar } from "@/components/ui/sidebar";
+import {
+  Sidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  useSidebar,
+} from "@/components/ui/sidebar";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { LngLat } from "@/lib/mars/types";
 
@@ -26,6 +32,12 @@ const STEPS: { step: Step; number: string; label: string }[] = [
   { step: "run", number: "04", label: "Run" },
 ];
 
+// Back at the first step and Next at the last stay focusable (aria-disabled, not disabled): a
+// disabled button under focus drops focus to <body>. Muted text with no fill reads as unavailable
+// and still measures 6.9:1 (on outline's cyan tint it would be 4.8:1).
+const UNAVAILABLE =
+  "aria-disabled:pointer-events-none aria-disabled:text-muted-foreground dark:aria-disabled:bg-transparent";
+
 const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
 const isTyping = (target: EventTarget | null) =>
   target instanceof HTMLElement &&
@@ -45,9 +57,11 @@ export function RouteSidebar({
   children?: ReactNode;
 }) {
   const { inputs, dispatch } = useRoutePlan();
-  const { isMobile, openMobile, toggleSidebar } = useSidebar();
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
   const placement = usePlacement(map);
   const index = STEPS.findIndex(({ step }) => step === inputs.step);
+  const atFirst = index === 0;
+  const atLast = index === STEPS.length - 1;
 
   // H shows or hides the sidebar, unless the operator is typing or using another shortcut.
   useEffect(() => {
@@ -55,11 +69,15 @@ export function RouteSidebar({
       if ((e.key !== "h" && e.key !== "H") || e.repeat || hasModifier(e) || isTyping(e.target)) {
         return;
       }
+      // Hiding the sidebar would strand focus on a control that is no longer visible, and the
+      // browser drops it to <body>; the map is next on screen. Below md the sheet returns focus itself.
+      const focusInSidebar = document.activeElement?.closest('[data-sidebar="sidebar"]');
+      if (!isMobile && open && focusInSidebar) map?.getCanvas().focus();
       toggleSidebar();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
-  }, [toggleSidebar]);
+  }, [toggleSidebar, isMobile, open, map]);
 
   const goTo = (step: Step) => dispatch({ type: "goTo", step });
 
@@ -75,7 +93,8 @@ export function RouteSidebar({
         >
           <SidebarHeader className="gap-3 border-b bg-secondary p-4">
             <h2 className="font-heading text-sm font-semibold">LARA · Arcadia base</h2>
-            <TabsList aria-label="Mission steps" className="w-full">
+            {/* Full muted foreground: coss's 72 % muted tabs measure 3.8:1 on the tab bar. */}
+            <TabsList aria-label="Mission steps" className="w-full text-muted-foreground">
               {STEPS.map(({ step, number, label }) => (
                 <TabsTab key={step} value={step}>
                   <span aria-hidden className="font-mono tabular-nums opacity-70">
@@ -86,38 +105,51 @@ export function RouteSidebar({
               ))}
             </TabsList>
           </SidebarHeader>
+          {/* tabIndex -1: each step has its own controls, so a panel is no Tab stop of its own. Only
+              step 03 is focused by code (the verdict strip finds it by data-step), so it alone draws
+              a focus ring. */}
           <SidebarContent className="gap-4 p-4 text-sm">
-            <TabsPanel value="mission">
+            <TabsPanel value="mission" tabIndex={-1}>
               <MissionStep map={map} base={base} />
             </TabsPanel>
-            <TabsPanel value="where">
+            <TabsPanel value="where" tabIndex={-1}>
               <WhereStep map={map} base={base} placement={placement} />
             </TabsPanel>
-            <TabsPanel value="check">
+            <TabsPanel
+              value="check"
+              tabIndex={-1}
+              data-step="check"
+              // scroll-mt-4 keeps the ring, drawn 6 px outside the panel, clear of the scroller's top.
+              className="scroll-mt-4 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-4 focus-visible:ring-offset-sidebar"
+            >
               <CheckStep map={map} />
             </TabsPanel>
-            <TabsPanel value="run">
+            <TabsPanel value="run" tabIndex={-1}>
               <RunStep />
             </TabsPanel>
-            <div className="flex justify-between gap-2">
-              <Button
-                variant="outline"
-                disabled={index === 0}
-                onClick={() => goTo(STEPS[index - 1].step)}
-              >
-                <ArrowLeftIcon aria-hidden />
-                Back
-              </Button>
-              <Button
-                disabled={index === STEPS.length - 1}
-                onClick={() => goTo(STEPS[index + 1].step)}
-              >
-                Next
-                <ArrowRightIcon aria-hidden />
-              </Button>
-            </div>
             {children}
           </SidebarContent>
+          {/* Pinned under the scrolling step, so Back and Next sit in the same place on every step. */}
+          <SidebarFooter className="flex-row justify-between gap-2 border-t p-4">
+            <Button
+              variant="outline"
+              aria-disabled={atFirst || undefined}
+              className={UNAVAILABLE}
+              onClick={() => !atFirst && goTo(STEPS[index - 1].step)}
+            >
+              <ArrowLeftIcon aria-hidden />
+              Back
+            </Button>
+            <Button
+              variant={atLast ? "outline" : "default"}
+              aria-disabled={atLast || undefined}
+              className={UNAVAILABLE}
+              onClick={() => !atLast && goTo(STEPS[index + 1].step)}
+            >
+              Next
+              <ArrowRightIcon aria-hidden />
+            </Button>
+          </SidebarFooter>
         </Tabs>
       </Sidebar>
       {isMobile && <MapPlacementHint placement={placement} shown={!openMobile} />}

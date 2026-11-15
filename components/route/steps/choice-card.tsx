@@ -14,7 +14,8 @@ export function ChoiceCard({
   children: ReactNode;
 }) {
   return (
-    <Label className="items-start gap-3 border p-3 has-data-checked:border-primary">
+    // Hover is a one-step surface change: --muted keeps the muted line at 6.2:1 (--accent: 4.9:1).
+    <Label className="cursor-pointer items-start gap-3 border p-3 transition-colors duration-150 ease-out hover:bg-muted has-data-checked:border-primary motion-reduce:transition-none">
       <Radio value={value} className="mt-0.5" />
       <span className="flex flex-col gap-1">
         {title}

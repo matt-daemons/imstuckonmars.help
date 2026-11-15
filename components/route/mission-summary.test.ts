@@ -6,6 +6,7 @@ import type { LngLat, RouteCollection, RouteLegProperties } from "@/lib/mars/typ
 
 import {
   afterDeparture,
+  formatKm,
   hoursMinutes,
   objectiveText,
   routeFileName,
@@ -79,6 +80,14 @@ describe("hoursMinutes", () => {
   });
 });
 
+describe("formatKm", () => {
+  it("gives 1 decimal from 10 km up and 2 below", () => {
+    expect(formatKm(104.37)).toBe("104.4 km");
+    expect(formatKm(10)).toBe("10.0 km");
+    expect(formatKm(0.958)).toBe("0.96 km");
+  });
+});
+
 describe("timelineRows", () => {
   const trip = collection([
     leg({ leg: 1, est_time_min: 600, distance_km: 93.4, max_slope: 4.12 }),
@@ -120,7 +129,7 @@ describe("timelineRows", () => {
     expect(rows[0]).toMatchObject({
       start: "0/00:00",
       duration: "10:00",
-      distance: "93.40 km",
+      distance: "93.4 km",
       slope: "4.1°",
       shelter: "0 min",
     });

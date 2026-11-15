@@ -40,6 +40,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import type { RouteCollection } from "@/lib/mars/types";
+import { cn } from "@/lib/utils";
+
+const NUMBER = "text-right font-mono tabular-nums";
+const PHONE_HIDDEN = "hidden sm:table-cell";
 
 /**
  * The mission on one page, to read, print or save: the verdict first, then the objective,
@@ -146,15 +150,8 @@ function SummaryBody({
               A storm drill is set. Values marked &quot;Drill, not real data&quot; were set by hand.
             </p>
           )}
-          {verdict && (
-            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <Badge variant={verdict.status.variant}>
-                <verdict.status.Icon aria-hidden />
-                {verdict.status.label}
-              </Badge>
-              <FieldList fields={verdict.fields} />
-            </div>
-          )}
+          {/* The alert below carries the status, so only the strip's other fields come first. */}
+          {verdict && <FieldList fields={verdict.fields} />}
           {status}
         </Section>
         <Section title="Objective">
@@ -164,39 +161,52 @@ function SummaryBody({
           <p className="text-xs text-muted-foreground">
             Start times are sols/hh:mm after departure; times are in Earth hours and minutes.
           </p>
-          <Table className="text-xs">
+          {/* On phones the table never scrolls sideways: tighter cells, the places under the
+              mode, and no leg number, steepest slope or shelter time (the rows keep travel order
+              and the verdict gives the shelter time). Wider screens and print show every column. */}
+          <Table className="text-xs max-sm:[&_td]:px-1 max-sm:[&_th]:px-1">
             <TableHeader>
               <TableRow>
-                <TableHead>Leg</TableHead>
+                <TableHead className={PHONE_HIDDEN}>Leg</TableHead>
                 <TableHead>Mode</TableHead>
-                <TableHead>From → to</TableHead>
+                <TableHead className={PHONE_HIDDEN}>From → to</TableHead>
                 <TableHead className="text-right">Start</TableHead>
-                <TableHead className="text-right">Duration</TableHead>
+                <TableHead className="text-right whitespace-normal">Duration (hh:mm)</TableHead>
                 <TableHead className="text-right">Distance</TableHead>
-                <TableHead className="text-right">Steepest slope</TableHead>
-                <TableHead className="text-right">To shelter</TableHead>
+                <TableHead className={cn("text-right", PHONE_HIDDEN)}>Steepest slope</TableHead>
+                <TableHead className={cn("text-right", PHONE_HIDDEN)}>To shelter</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {timeline.map((row) => (
                 <TableRow key={row.id}>
-                  <TableCell className="font-mono">{row.leg}</TableCell>
-                  <TableCell>{row.mode}</TableCell>
-                  <TableCell className="whitespace-normal">{row.places}</TableCell>
-                  {[row.start, row.duration, row.distance, row.slope, row.shelter].map(
-                    (value, index) => (
-                      <TableCell key={index} className="text-right font-mono tabular-nums">
-                        {value}
-                      </TableCell>
-                    ),
-                  )}
+                  <TableCell className={cn("font-mono", PHONE_HIDDEN)}>{row.leg}</TableCell>
+                  <TableCell>
+                    {row.mode}
+                    <span className="block whitespace-normal text-muted-foreground sm:hidden">
+                      {row.places}
+                    </span>
+                  </TableCell>
+                  <TableCell className={cn("whitespace-normal", PHONE_HIDDEN)}>
+                    {row.places}
+                  </TableCell>
+                  {[row.start, row.duration, row.distance].map((value, index) => (
+                    <TableCell key={index} className={NUMBER}>
+                      {value}
+                    </TableCell>
+                  ))}
+                  {[row.slope, row.shelter].map((value, index) => (
+                    <TableCell key={index} className={cn(NUMBER, PHONE_HIDDEN)}>
+                      {value}
+                    </TableCell>
+                  ))}
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </Section>
         <Section title="Key numbers">
-          <Readouts items={keyNumbers} className="grid-cols-3" />
+          <Readouts items={keyNumbers} lead />
         </Section>
         <Section title="Assumptions">
           <div className="flex flex-col gap-1 text-xs">{assumptions}</div>

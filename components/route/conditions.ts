@@ -222,10 +222,10 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
   return `Not checked: ${items.join(", ")}.`;
 }
 
-/** Step 03's line on the space-weather feed, such as "Space weather: none · NASA DONKI, updated 10:42 UTC". */
+/** Step 03's line on the solar alert's feed, such as "Solar alert: none · NASA DONKI, read 10:42 UTC". */
 export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
-  if (feed === "loading") return "Space weather: loading NASA DONKI…";
-  if (feed === "failed") return "Space weather: NASA DONKI unavailable";
+  if (feed === "loading") return "Solar alert: loading NASA DONKI…";
+  if (feed === "failed") return "Solar alert: NASA DONKI unavailable";
   // fetched_at is ISO 8601 UTC, so characters 11 to 16 are the hours and minutes.
-  return `Space weather: ${feed.level} · NASA DONKI, updated ${feed.fetched_at.slice(11, 16)} UTC`;
+  return `Solar alert: ${feed.level} · NASA DONKI, read ${feed.fetched_at.slice(11, 16)} UTC`;
 }
