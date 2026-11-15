@@ -450,7 +450,7 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
 
 - **OpenRouter** — language model **openai/gpt-4.1-mini** behind the LARA copilot (set by `DIAGNOSTICS_MODEL` on the server). Explains results; verdicts come from `lib/flight-rules`, never from the model.
 - **ElevenLabs** — LARA's voice. **The voice is AI-generated speech**: acknowledge it wherever it is heard (demo video, project page).
-- **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs; commits carry a `Co-Authored-By` trailer where recorded.
+- **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs.
 
 ### Fonts
 

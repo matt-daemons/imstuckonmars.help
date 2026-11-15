@@ -452,7 +452,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         use: "Helped write and review code, data pipelines and documentation.",
         caveats: [
           "The team chose the concept, location, science objective and flight-rule values.",
-          "Commits made with AI assistance carry a Co-Authored-By trailer where recorded.",
         ],
       },
     ],
