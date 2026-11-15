@@ -13,6 +13,12 @@ import { ListeningEffect } from "@/components/copilot/listening-effect";
 import { MapCompass } from "@/components/map/map-compass";
 import { MapPanel } from "@/components/map/map-panel";
 import { SpaceBackdrop } from "@/components/map/space-backdrop";
+import {
+  FakeDataToggle,
+  FakeSensorControls,
+  FakeSensorLegend,
+} from "@/components/map/fake-sensor-controls";
+import { useFakeSensorMode } from "@/components/map/use-fake-sensor-mode";
 import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
@@ -38,10 +44,22 @@ const fixture: HomebaseMetric = {
 };
 
 export function HomebaseComponents() {
+  const fakeSensors = useFakeSensorMode();
   const [generation, setGeneration] = useState(1);
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="fake-sensor-mode" title="Fake sensor mode">
+        <div className="w-full max-w-md">
+          <FakeDataToggle mode={fakeSensors} />
+          <FakeSensorControls mode={fakeSensors} map={null} />
+        </div>
+        {fakeSensors.state.enabled && (
+          <div className="relative min-h-160 w-72">
+            <FakeSensorLegend mode={fakeSensors} />
+          </div>
+        )}
+      </Section>
       <Section id="space-backdrop" title="Illustrative space backdrop">
         <div className="relative h-60 w-full overflow-hidden bg-background">
           <SpaceBackdrop map={null} />

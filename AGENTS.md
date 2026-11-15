@@ -208,6 +208,7 @@ NASA (National Aeronautics and Space Administration), RAD (Radiation Assessment 
 MAV (Mars Ascent Vehicle),
 MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP, UTC (Coordinated Universal Time),
 and UI. Add an acronym here before using it in the UI.
+Fake-data views also use SOL (one Martian solar day) and FS (fictional sensor).
 
 ## Formatting and checks
 

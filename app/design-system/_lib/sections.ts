@@ -11,6 +11,7 @@ export const sectionGroups: SectionGroup[] = [
       { id: "listening-effect", title: "LARA listening indicator" },
       { id: "map-overlay-surfaces", title: "Map overlay surfaces" },
       { id: "space-backdrop", title: "Illustrative space backdrop" },
+      { id: "fake-sensor-mode", title: "Fake sensor mode" },
       { id: "map-compass", title: "Map compass" },
       { id: "homebase-readout", title: "Archive readout" },
       { id: "homebase-history", title: "Observation history" },

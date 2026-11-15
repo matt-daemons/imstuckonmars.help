@@ -16,6 +16,15 @@
 .map-overlay-column {
   pointer-events: none;
 }
+
+.mars-map-shell[data-fake-data]::after {
+  content: "";
+  position: absolute;
+  inset: 2px;
+  z-index: 30;
+  border: 2px dashed var(--info);
+  pointer-events: none;
+}
 .map-overlay-viewport > *,
 .map-overlay-column > .expedition-hud {
   pointer-events: auto;
@@ -23,6 +32,7 @@
 
 .mars-map-shell [data-slot="sidebar-inner"],
 .mars-map-shell .map-panel,
+.mars-map-shell .fake-sensor-legend,
 .mars-map-shell .map-verdict-strip,
 .mars-map-shell .expedition-hud,
 .mars-map-shell .map-compass,

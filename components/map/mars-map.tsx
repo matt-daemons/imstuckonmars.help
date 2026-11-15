@@ -16,6 +16,9 @@ import { MapCompass } from "@/components/map/map-compass";
 import { MapOverlayViewport } from "./map-overlay-viewport";
 import { useMapCursor } from "./use-map-cursor";
 import { SpaceBackdrop } from "./space-backdrop";
+import { useFakeSensorMode } from "./use-fake-sensor-mode";
+import { FakeDataToggle, FakeSensorControls, FakeSensorLegend } from "./fake-sensor-controls";
+import { FakeSensorLayers } from "./fake-sensor-layers";
 import "./map-overlays.css";
 import { MapViewControls, MissionViewProvider } from "./mission-view";
 import { focusTarget } from "@/components/route/camera";
@@ -73,6 +76,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [sites, setSites] = useState<SitePoi[]>([]);
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
   const [spaceEnabled, setSpaceEnabled] = useState(true);
+  const fakeSensors = useFakeSensorMode();
 
   useEffect(() => {
     let cancelled = false;
@@ -257,6 +261,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     <SidebarProvider
       style={SIDEBAR_STYLE}
       className="mars-map-shell relative isolate h-svh overflow-hidden"
+      data-fake-data={fakeSensors.state.enabled || undefined}
     >
       <SpaceBackdrop map={loaded} enabled={spaceEnabled} />
       <div ref={container} className="mars-map-canvas absolute inset-0" />
@@ -268,9 +273,12 @@ export function MarsMap({ children }: { children?: ReactNode }) {
             <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
               <SidebarSections
                 layers={
-                  manifest && (
-                    <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
-                  )
+                  <>
+                    {manifest && (
+                      <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
+                    )}
+                    <FakeSensorControls mode={fakeSensors} map={loaded} />
+                  </>
                 }
                 scene={
                   <ScenePanelBody
@@ -288,6 +296,8 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               <MapOverlayViewport map={loaded}>
                 <div className="mission-map-chrome contents">
                   <RouteMapLayers map={loaded} />
+                  <FakeSensorLayers map={loaded} mode={fakeSensors} />
+                  <FakeSensorLegend mode={fakeSensors} />
                   <RouteFocus map={loaded} />
                   <LaraRouteBridge map={loaded} />
                   <LaraExpeditionBridge />
@@ -298,6 +308,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                   <CompletionNotice />
                   <DebugMenu
                     page="Map"
+                    controls={<FakeDataToggle mode={fakeSensors} />}
                     readSections={() => {
                       const m = map.current;
                       const center = m?.getCenter();
