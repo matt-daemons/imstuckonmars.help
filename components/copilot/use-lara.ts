@@ -190,6 +190,8 @@ export function useLara(shared?: { id: string; token: string } | null) {
     const url = URL.createObjectURL(clip);
     audio.current?.pause();
     const player = new Audio(url);
+    player.playbackRate = 1.75;
+    player.preservesPitch = true;
     audio.current = player;
     await new Promise<void>((resolve) => {
       // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
