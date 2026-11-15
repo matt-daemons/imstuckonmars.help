@@ -22,6 +22,12 @@ Overlay controls keep their existing positions in the unobstructed area.
 padding plus the built-in map-control offsets. Collapsing the sidebar returns its
 padding without resizing the canvas; route fitting retains these insets.
 
+Camera pitch is level through zoom 3, then smoothly permits tilt through zoom 5,
+where terrain begins. The camera constraint applies to gestures and camera-view
+transitions without starting another animation. Close-up views retain their tilt.
+The imagery-loading message appears only after tiles remain pending for 750 ms
+while the camera is stationary. Movement and completed loading clear it immediately.
+
 `components/map/map-overlays.css` scopes translucent surfaces and 12 px backdrop
 blur to the map, including the portaled mobile sidebar. Panels use an 82% dark
 surface and brighter secondary text. Reduced-transparency and forced-color

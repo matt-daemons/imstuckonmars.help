@@ -20,6 +20,7 @@ import { useFakeSensorMode } from "./use-fake-sensor-mode";
 import { FakeDataToggle, FakeSensorControls, FakeSensorLegend } from "./fake-sensor-controls";
 import { FakeSensorLayers } from "./fake-sensor-layers";
 import { LayersPanel } from "./layers-panel";
+import { constrainGlobeCamera } from "./globe-camera";
 import "./map-overlays.css";
 import { MapViewControls, MissionViewProvider } from "./mission-view";
 import { focusTarget } from "@/components/route/camera";
@@ -120,6 +121,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         pitch: 0,
         bearing: 0,
         maxPitch: 85,
+        transformCameraUpdate: constrainGlobeCamera,
         attributionControl: false,
       });
       map.current = m;
