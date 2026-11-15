@@ -15,6 +15,7 @@ The habitat is the only placeholder in `stops.geojson`. The retired ice-exposing
 crater and its hand-drawn route are not published. Walking destinations are
 selected on the map; drive-and-walk destinations remain the HiRISE sites.
 
+Camera views and Layers sit beside the compass, falling below it on narrow screens.
 The Layers disclosure to the right of Camera views opens map layers, synthetic-data
 controls and Scene and dust. Both use a chevron and expand beneath their labels.
 Closing the panel preserves their mounted state,

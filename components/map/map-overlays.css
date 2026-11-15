@@ -83,21 +83,21 @@
 }
 .map-camera-stack {
   position: absolute;
-  top: 5rem;
-  right: 1rem;
+  top: 1.4375rem;
+  right: 5.5rem;
   z-index: 12;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
   gap: 0.75rem;
-  width: min(100% - 2rem, 24rem);
+  width: min(100% - 6.5rem, 24rem);
   max-height: calc(100% - 12rem);
   overflow-y: auto;
   overscroll-behavior: contain;
   pointer-events: none;
 }
 .map-camera-stack:has(.map-layers-control > details[open]) {
-  width: min(100% - 2rem, 36rem);
+  width: min(100% - 6.5rem, 36rem);
 }
 .map-camera-stack > .fake-sensor-legend {
   position: static;
@@ -111,7 +111,12 @@
 @media (max-width: 799px) {
   .map-camera-stack {
     top: 5rem;
+    right: 1rem;
+    width: min(100% - 2rem, 24rem);
     max-height: calc(100% - 15rem);
+  }
+  .map-camera-stack:has(.map-layers-control > details[open]) {
+    width: min(100% - 2rem, 36rem);
   }
   .map-layers-control:has(> details[open]) {
     width: auto;
@@ -123,7 +128,6 @@
 }
 @media (max-height: 600px) {
   .map-camera-stack {
-    top: 5rem;
     bottom: 150px;
     max-height: none;
     flex-direction: column;
