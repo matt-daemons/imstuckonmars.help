@@ -8,6 +8,13 @@ import { PARTICLE_EVENT_HOURS } from "../flight-rules/donki";
 import { GROUND } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
 import { BOULDER_CLEARANCE_M, SITE_CELL_M, STAGING_RULE } from "./site-grid";
+import {
+  FAKE_LAYERS,
+  FAKE_SAMPLE_SECONDS,
+  FAKE_SENSOR_COUNT,
+  FAKE_SENSOR_VERSION,
+  FAKE_SOL_COUNT,
+} from "./fake-sensors";
 
 /** What kind of evidence an entry is. Drives the badge on the sources screen. */
 export type EvidenceKind =
@@ -247,13 +254,29 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         id: "fake-sensors",
         title: "Fake data mode (future sensors)",
         kind: "simulated",
-        credit: "Invented by the LARA team",
-        detail: "580 fictional stations over 7 sols. Off by default, under Debug",
-        use: "Shows what a future surface sensor network could add to the map.",
+        credit: "ARES / LARA team · deterministic synthetic generator",
+        detail: `${FAKE_SENSOR_VERSION} · ${FAKE_SENSOR_COUNT} fictional stations · ${FAKE_SOL_COUNT} Martian solar days · readings every ${FAKE_SAMPLE_SECONDS} seconds`,
+        use: `Map-only demonstration, off by default under Debug. Layers: ${FAKE_LAYERS.map((layer) => layer.label).join(", ")}.`,
         caveats: [
           "Invented, bounded equations. Not calibrated Mars models and not NASA observations.",
           "Never enters NASA datasets, the mission database, route masks or route planning.",
           "Storm intensity is an illustrative index, not dust opacity. Radiation is not crew dose.",
+          "Stations use an equal-area Fibonacci distribution. Repeatable spherical noise adds regional variation; shaded fields evaluate the invented equations between stations, not measured coverage.",
+          "Ground depth and air-sensor height are unspecified. Radiation uses µGy per Earth day; humidity is fictional percent. Shaded fields stop at 85° latitude.",
+        ],
+        links: [
+          {
+            label: "Fake data method and limitations",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/docs/FAKE_SENSOR_MODE.md",
+          },
+          {
+            label: "Sensor generator and units",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/lib/mars/fake-sensors.ts",
+          },
+          {
+            label: "Spatial and temporal variation",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/lib/mars/fake-field-variation.ts",
+          },
         ],
       },
       {
