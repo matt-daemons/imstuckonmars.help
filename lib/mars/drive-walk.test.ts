@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { walkLegTiming } from "../flight-rules/walk-leg";
 import { gentleWalkCost, planDriveWalk, SOL_MINUTES } from "./drive-walk";
-import type { PowerSource } from "./driving";
+import { NO_THERMAL_INERTIA, type PowerSource } from "./driving";
 import { cellAt, cellCenter, type RouteGrid } from "./route-grid";
 import { findPath, slopeDegrees } from "./routing";
 import type { SiteGrid, SiteInfo } from "./site-grid";
@@ -37,7 +37,10 @@ function setup() {
   const poi = cellCenter(siteGrid, 130 * 261 + 130);
   const siteInfo: SiteInfo = { id: "DTEEC_TEST", hiriseId: "ESP_TEST", poi };
   const base: LngLat = [poi[0] + 20000 * DEG_PER_M, poi[1]];
-  const driveGrid = equatorGrid(46, 9, 500);
+  const driveGrid = {
+    ...equatorGrid(46, 9, 500),
+    thermalInertia: new Int16Array(46 * 9).fill(NO_THERMAL_INERTIA),
+  };
   const driveWalls = new Uint8Array(46 * 9);
   const plan = ({ power = "fission" as PowerSource, samplingMin = 60 } = {}) =>
     planDriveWalk(

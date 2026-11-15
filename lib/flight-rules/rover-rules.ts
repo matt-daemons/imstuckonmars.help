@@ -75,3 +75,43 @@ export const ROVER = {
   // Night-time life support drawn from the battery: half a sol with solar; deployed fission power covers it (builder's call).
   overnight_hours: { solar: 12.3, fission: 0 },
 } as const;
+
+/**
+ * Rolling resistance by ground class, from THEMIS thermal inertia (J m⁻² K⁻¹ s⁻½) on each drive cell.
+ * Class breaks are those of pipelines/stable/thermal-inertia.ts (Putzig & Mellon 2007; Fergason et al. 2006).
+ * No rolling resistance has ever been measured on Mars (C4), so only loose dust departs from the study's value.
+ * Thermal inertia is ±20 %, describes the top few cm, comes in 100 m pixels and covers ~57 % of the area.
+ */
+export const GROUND = {
+  loose_dust: {
+    label: "fine dust / loose fines",
+    below_thermal_inertia: 150,
+    rolling_resistance: ROVER.rolling_resistance * ROVER.bad_terrain_factor, // 0.30
+    applies_to: "assumption",
+    source:
+      "Our assumption: loose dust is priced as the bad terrain the reserve already assumes, 2× the study's 0.15. Apollo 15's preflight worst case for soft soil and roughness was 3.67 Ah/km against 1.87 measured (Apollo 15 Mission Report §8.2.3, L23). On Mars, loose material is what stops rovers: Spirit embedded in soft soil at Troy (Arvidson et al. 2010, JGR 115, E00F03, doi:10.1029/2010JE003633); Curiosity's wheels sank up to ~30% of their diameter in megaripple sand, with high compaction resistance and slip up to 77% (Arvidson et al. 2017, J. Field Robotics 34(3), 495–518, abstract, doi:10.1002/rob.21647).",
+  },
+  sand_crust: {
+    label: "sand / crusted soil",
+    below_thermal_inertia: 400,
+    rolling_resistance: ROVER.rolling_resistance,
+    applies_to: "Mars crewed study",
+    source:
+      "The Mars Architecture Team rover's 0.15, a lunar-soil value (Chappell, Hoffman & Bekdash 2022, NTRS 20210022250, Table 1 p.6, C4).",
+  },
+  firm: {
+    label: "firm ground / rock",
+    below_thermal_inertia: Infinity,
+    rolling_resistance: ROVER.rolling_resistance,
+    applies_to: "assumption",
+    source:
+      "Kept at the study's 0.15 rather than lowered: no Mars value exists, and on the Moon soft-to-firm soil differences 'did not appear to have materially influenced' the rover's performance (Costes, Farmer & George 1972, NASA TR R-401, p.64 and Conclusions 3 p.68, https://ntrs.nasa.gov/citations/19730008090).",
+  },
+  no_data: {
+    label: "no thermal-inertia data",
+    rolling_resistance: ROVER.rolling_resistance,
+    applies_to: "Mars crewed study",
+    source:
+      "THEMIS has a gap here, so the cell keeps the study's 0.15 (C4). Unknown ground, not known-firm ground.",
+  },
+} as const;

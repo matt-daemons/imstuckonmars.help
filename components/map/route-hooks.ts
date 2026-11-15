@@ -12,8 +12,11 @@ import type { LngLat } from "@/lib/mars/types";
 import type { SitePoi } from "./scene-panel";
 
 /** Loads a terrain grid the first time it is wanted and keeps it. A failed load is not retried. */
-export function useLoadedGrid(load: (signal: AbortSignal) => Promise<RouteGrid>, wanted: boolean) {
-  const [grid, setGrid] = useState<RouteGrid | null>(null);
+export function useLoadedGrid<Grid extends RouteGrid>(
+  load: (signal: AbortSignal) => Promise<Grid>,
+  wanted: boolean,
+) {
+  const [grid, setGrid] = useState<Grid | null>(null);
   const [failed, setFailed] = useState(false);
   useEffect(() => {
     if (!wanted || grid || failed) return;
