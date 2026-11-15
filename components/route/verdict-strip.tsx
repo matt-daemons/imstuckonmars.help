@@ -8,10 +8,12 @@ import {
   TriangleAlertIcon,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import { useExpedition } from "@/components/expedition/expedition-provider";
 import { PHASE_LABEL, missionTime } from "@/components/expedition/present";
 import type { DriveWalk } from "@/components/map/route-hooks";
+import { useMapTopRowSlot } from "@/components/map/map-top-row";
 import { VERDICT_STYLES } from "@/components/map/route-result";
 import { Badge } from "@/components/ui/badge";
 import { useSidebar } from "@/components/ui/sidebar";
@@ -66,6 +68,7 @@ export function VerdictStrip() {
   const { conditions, drill } = useConditions();
   const now = useNow(500);
   const { isMobile, open, openMobile, setOpen, setOpenMobile } = useSidebar();
+  const slot = useMapTopRowSlot();
 
   const verdict =
     inputs.mission === "walking"
@@ -88,7 +91,12 @@ export function VerdictStrip() {
   const at = expedition.clockAt(now);
   const clock = route && !linkDown ? missionTime(at) : null;
   const phase = expedition.snapshot?.state.position?.phase;
-  const alert = expedition.alerts.find((a) => a.active && !a.inhibited);
+  // A finished run (also one restored after a reload) is history, not a live status.
+  const past = expedition.finished;
+  const pastLabel =
+    expedition.snapshot?.clock.mode === "ended" ? "Last run ended" : "Last run complete";
+  const showPlanning = !past || Boolean(inputs.mission);
+  const alert = past ? undefined : expedition.alerts.find((a) => a.active && !a.inhibited);
   const missionState = linkDown
     ? `Mission link ${expedition.link}`
     : expedition.snapshot
@@ -97,7 +105,11 @@ export function VerdictStrip() {
 
   const fieldsText = verdict?.fields.map(({ label, value }) => `${label} ${value}`).join(" · ");
   const verdictText = `${drilling ? "DRILL · " : ""}${verdict ? `${verdict.status.label} · ${fieldsText}` : noRoute}`;
-  const laraText = clock ? `Mission ${clock} · ${alert?.name ?? "No alerts"}` : missionState;
+  const laraText = !clock
+    ? missionState
+    : past
+      ? `${pastLabel} · ${clock}`
+      : `Mission ${clock} · ${alert?.name ?? "No alerts"}`;
 
   // Step 03 announces the verdict with its reasons, so this region stays quiet while step 03 shows.
   const checkShown = inputs.step === "check" && (isMobile ? openMobile : open);
@@ -110,11 +122,11 @@ export function VerdictStrip() {
     if (!route) requestAnimationFrame(focusCheckStep);
   }
 
-  return (
+  const strip = (
     // While a drill runs, a dashed frame and the DRILL tag keep it from passing for real data.
     <div
       className={cn(
-        "map-verdict-strip group absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md transition-colors duration-150 ease-out hover:border-primary motion-reduce:transition-none",
+        "map-verdict-strip group relative flex items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md transition-colors duration-150 ease-out hover:border-primary motion-reduce:transition-none",
         drilling && "border-2 border-dashed border-info",
       )}
     >
@@ -127,7 +139,11 @@ export function VerdictStrip() {
         role="status"
         aria-live={checkShown ? "off" : "polite"}
         // A narrow screen fits one half: while an expedition runs, the mission wins.
-        className={cn("flex min-w-0 items-center gap-2", clock && "max-sm:hidden")}
+        className={cn(
+          "flex min-w-0 items-center gap-2",
+          clock && !past && "max-sm:hidden",
+          !showPlanning && "hidden",
+        )}
       >
         {planning ? (
           <RouteCalculationProgress />
@@ -159,9 +175,15 @@ export function VerdictStrip() {
         className={cn(
           "flex min-w-0 items-center gap-1.5 border-l pl-3",
           clock && "max-sm:border-l-0 max-sm:pl-0",
+          clock && past && showPlanning && "max-sm:hidden",
+          !showPlanning && "border-l-0 pl-0",
         )}
       >
-        {clock ? (
+        {clock && past ? (
+          <span className="truncate text-muted-foreground">
+            {pastLabel} · <span className="font-mono">{clock}</span>
+          </span>
+        ) : clock ? (
           <>
             <span className="shrink-0">
               Mission <span className="font-mono">{clock}</span>
@@ -191,13 +213,16 @@ export function VerdictStrip() {
           The name starts with the visible verdict, so "click CAUTION" works by voice. */}
       <button
         type="button"
-        title={`${verdictText} · ${laraText}`}
-        aria-label={`${verdictText}. ${route ? "Open the running expedition" : "Open the route check"}`}
+        title={`${showPlanning ? `${verdictText} · ` : ""}${laraText}`}
+        aria-label={`${showPlanning ? verdictText : laraText}. ${route ? "Open the expedition" : "Open the route check"}`}
         onClick={openCheck}
         className="absolute inset-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring"
       />
     </div>
   );
+  // In the map, the strip is a flex item of the top row (see MapTopRowSlot); null until it mounts.
+  if (slot === undefined) return strip;
+  return slot ? createPortal(strip, slot) : null;
 }
 
 function AlertSummary({ level, name }: { level: keyof typeof ALERT_ICON; name: string }) {
@@ -245,12 +270,15 @@ export function tripVerdict({ plan }: DriveWalk, conditions: Conditions): StripV
   const route = plan?.collection?.route;
   const walkRoute = plan?.walk?.route;
   const check = plan && tripWithStorms(plan, conditions);
-  if (!route || !walkRoute || !check) return null;
+  if (!route || !check) return null;
   // A drive or walk-route limit keeps the planner's margin. Time to shelter is the walk back to the
   // rover either way, since storms count for the walk only.
-  const margin = stormLimit(check.limiting_factor, conditions, walkRoute) ?? route.margin;
+  const margin =
+    (walkRoute && stormLimit(check.limiting_factor, conditions, walkRoute)) ?? route.margin;
   return {
     status: VERDICT_STYLES[check.verdict],
-    fields: stripFields(margin, route.time_to_shelter_min),
+    fields: stripFields(margin, route.time_to_shelter_min).filter(
+      (field) => walkRoute || field.label !== "Shelter",
+    ),
   };
 }

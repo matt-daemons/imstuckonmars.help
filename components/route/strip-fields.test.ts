@@ -43,6 +43,21 @@ describe("stripFields", () => {
     expect(stripFields(margin, 117)[1]).toEqual({ label: "Margin", value: "−3.44 km" });
   });
 
+  it("never shows a negative zero", () => {
+    const margin = { resource: "daylight", value: -0.4, limit: 30, unit: "min" };
+    expect(stripFields(margin, 5).slice(0, 2)).toEqual([
+      { label: "Until sunset", value: "0 min" },
+      { label: "Margin", value: "−30 min" },
+    ]);
+    const spare = { resource: "walk_slope", value: 20.04, limit: 20, unit: "°" };
+    expect(stripFields(spare, 5)[1]).toEqual({ label: "Margin", value: "0.0°" });
+  });
+
+  it("counts the minutes since sunset once the sun has set", () => {
+    const margin = { resource: "daylight", value: -12.3, limit: 30, unit: "min" };
+    expect(stripFields(margin, 5)[0]).toEqual({ label: "After sunset", value: "12 min" });
+  });
+
   it("counts the margin above a limit the value must stay over, such as battery", () => {
     const margin = {
       resource: "rover_battery",

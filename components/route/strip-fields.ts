@@ -36,7 +36,11 @@ interface Resource {
 const RESOURCES: Partial<Record<string, Resource>> = {
   walk_slope: { label: "Walk slope", unit: "°", digits: 1 },
   walk_back: { label: "Walk-back distance", unit: " km", digits: 2 },
-  suit_supply: { label: "Suit time with margin", unit: " min", digits: 0 },
+  suit_supply: {
+    label: `Walk + sampling ×${FLIGHT_RULES.suit_supply.time_margin}`,
+    unit: " min",
+    digits: 0,
+  },
   rover_slope: { label: "Rover slope", unit: "°", digits: 1 },
   rover_battery: { label: "Rover battery", unit: "%", digits: 0, floor: true },
   rover_reserve: { label: "Drive-back reserve", unit: " km", digits: 0, floor: true },
@@ -99,8 +103,17 @@ export function stripFields(
     digits: 1,
   };
   const spare = floor ? margin.value - margin.limit : margin.limit - margin.value;
-  const show = (value: number) => `${value.toFixed(digits).replace("-", "−")}${unit}`;
-  return [{ label, value: show(margin.value) }, { label: "Margin", value: show(spare) }, shelter];
+  // Rounded first, so a value that rounds to zero never shows as "−0".
+  const show = (value: number) => {
+    const text = value.toFixed(digits);
+    return `${Number(text) === 0 ? text.replace("-", "") : text.replace("-", "−")}${unit}`;
+  };
+  // Past sunset, "Until sunset −12 min" reads better as the time since it.
+  const afterSunset = margin.resource === "daylight" && Number(margin.value.toFixed(digits)) < 0;
+  const value = afterSunset
+    ? { label: "After sunset", value: show(-margin.value) }
+    : { label, value: show(margin.value) };
+  return [value, { label: "Margin", value: show(spare) }, shelter];
 }
 
 /** What the strip says without a verdict: the terrain failed, a plan is on its way, or no route. */

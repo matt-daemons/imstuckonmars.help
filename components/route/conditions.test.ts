@@ -211,8 +211,15 @@ describe("walkWithStorms", () => {
 describe("spaceWeatherLine", () => {
   it.each([
     { feed: quietSun, line: "Solar alert: none · NASA DONKI, read 10:42 UTC" },
+    {
+      feed: { ...quietSun, stale: true as const },
+      line: "Solar alert: none · NASA DONKI · stale, read 10:42 UTC",
+    },
     { feed: "loading" as const, line: "Solar alert: loading NASA DONKI…" },
-    { feed: "failed" as const, line: "Solar alert: NASA DONKI unavailable" },
+    {
+      feed: "failed" as const,
+      line: "Solar alert: NASA DONKI unavailable, so the solar alert rule is not checked. Retried every 15 min.",
+    },
   ])("reads $line", ({ feed, line }) => {
     expect(spaceWeatherLine(feed)).toBe(line);
   });
@@ -254,5 +261,17 @@ describe("tripWithStorms", () => {
   it("is null until the trip has a drive and a walk", () => {
     const unplanned = { drive: null, walk: null } as unknown as DriveWalkPlan;
     expect(tripWithStorms(unplanned, real)).toBeNull();
+  });
+
+  it("keeps an early range rejection without applying uncalculated walk conditions", () => {
+    const rejected = {
+      drive: null,
+      walk: null,
+      verdict: { verdict: "NO_GO", limiting_factor: "range", reasons: ["Beyond rover range"] },
+    } as DriveWalkPlan;
+    expect(tripWithStorms(rejected, real)).toEqual({
+      ...rejected.verdict,
+      not_checked: ["radiation", "dose_rate", "dust", "daylight"],
+    });
   });
 });

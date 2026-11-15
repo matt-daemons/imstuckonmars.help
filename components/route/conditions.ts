@@ -43,7 +43,7 @@ export function isDrillSet(drill: Drill): boolean {
 }
 
 /** NASA DONKI's last space-weather report, or where fetching it stands. */
-export type SpaceWeatherFeed = SpaceWeatherReport | "loading" | "failed";
+export type SpaceWeatherFeed = (SpaceWeatherReport & { stale?: true }) | "loading" | "failed";
 
 /** What the app reads for real, before any drill. */
 export interface RealReadings {
@@ -191,12 +191,15 @@ const SEVERITY: Record<Verdict, number> = { GO: 0, CAUTION: 1, NO_GO: 2 };
 /**
  * The trip's verdict with storms: the worse of the drive's and the walk's, the drive on a tie, as
  * planDriveWalk picks. Storms count for the walk only, since the pressurized rover is shelter.
- * Null until the trip has a drive and a walk.
+ * Retains an early planner rejection even when no drive or walk was calculated.
  */
 export function tripWithStorms(plan: DriveWalkPlan, conditions: Conditions): TripVerdict | null {
   const driveSummary = plan.drive?.summary;
   const walkRoute = plan.walk?.route;
-  if (!driveSummary || !walkRoute) return null;
+  if (!driveSummary || !walkRoute)
+    return plan.verdict
+      ? { ...plan.verdict, not_checked: ["radiation", "dose_rate", "dust", "daylight"] }
+      : null;
   const walk = walkWithStorms(walkRoute, conditions);
   const drive = evaluateDrive(driveSummary);
   return SEVERITY[walk.verdict] > SEVERITY[drive.verdict]
@@ -225,7 +228,8 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
 /** Step 03's line on the solar alert's feed, such as "Solar alert: none · NASA DONKI, read 10:42 UTC". */
 export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
   if (feed === "loading") return "Solar alert: loading NASA DONKI…";
-  if (feed === "failed") return "Solar alert: NASA DONKI unavailable";
+  if (feed === "failed")
+    return "Solar alert: NASA DONKI unavailable, so the solar alert rule is not checked. Retried every 15 min.";
   // fetched_at is ISO 8601 UTC, so characters 11 to 16 are the hours and minutes.
-  return `Solar alert: ${feed.level} · NASA DONKI, read ${feed.fetched_at.slice(11, 16)} UTC`;
+  return `Solar alert: ${feed.level} · NASA DONKI${feed.stale ? " · stale" : ""}, read ${feed.fetched_at.slice(11, 16)} UTC`;
 }
