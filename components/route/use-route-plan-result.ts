@@ -39,12 +39,12 @@ export function useRoutePlanResult(
   base: LngLat,
   sites: SitePoi[],
 ): RoutePlanResult {
-  const { mission, start, end, power, samplingMin, zones, step, showShortest } = inputs;
+  const { mission, start, end, power, samplingMin, zones, step, showShortest, route } = inputs;
   const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
   const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
   const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
-  // The shortest route is only for comparing, so it is planned only while step ③ or the map shows it.
-  const compare = step === "check" || showShortest;
+  // The shortest route is planned only while step ③ or the map shows it, or step ④ plays it.
+  const compare = step === "check" || showShortest || (step === "go" && route === "shortest");
 
   const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
   const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);

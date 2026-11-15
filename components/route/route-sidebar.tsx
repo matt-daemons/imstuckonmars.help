@@ -13,6 +13,7 @@ import { MapPlacementHint } from "./placement-hint";
 import type { Step } from "./route-plan";
 import { useRoutePlan } from "./route-plan-provider";
 import { CheckStep } from "./steps/check-step";
+import { GoStep } from "./steps/go-step";
 import { MissionStep } from "./steps/mission-step";
 import { WhereStep } from "./steps/where-step";
 import { usePlacement } from "./use-placement";
@@ -21,6 +22,7 @@ const STEPS: { step: Step; number: string; label: string }[] = [
   { step: "mission", number: "①", label: "Mission" },
   { step: "where", number: "②", label: "Where" },
   { step: "check", number: "③", label: "Check" },
+  { step: "go", number: "④", label: "Go" },
 ];
 
 const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
@@ -92,6 +94,9 @@ export function RouteSidebar({
             </TabsPanel>
             <TabsPanel value="check">
               <CheckStep map={map} />
+            </TabsPanel>
+            <TabsPanel value="go">
+              <GoStep />
             </TabsPanel>
             <div className="flex justify-between gap-2">
               <Button
