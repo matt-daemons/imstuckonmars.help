@@ -1,8 +1,9 @@
 "use client";
 
-import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 
-import type { Map as MapboxMap } from "mapbox-gl";
+import type { Map as MapLibreMap } from "maplibre-gl";
+import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef, useState } from "react";
 
 import { LayerPanel } from "@/components/map/layer-panel";
@@ -17,8 +18,6 @@ import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
 
 const DATA_ROOT = "/data/processed";
-// Public pk.* token, inlined at build time. Set in .env.local (local) and the deploy build env.
-const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 // Placeholder habitat site; matches the "base" stop in stops.geojson.
 const HABITAT: LngLat = [-176.05, 45.97];
 
@@ -27,12 +26,12 @@ interface SitesGeoJSON {
   features: { properties: SiteProps; geometry: { type: string; coordinates: unknown } }[];
 }
 
-// Mapbox assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
+// MapLibre assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
 export function MarsMap() {
   const container = useRef<HTMLDivElement>(null);
-  const map = useRef<MapboxMap | null>(null);
-  const [loaded, setLoaded] = useState<MapboxMap | null>(null);
+  const map = useRef<MapLibreMap | null>(null);
+  const [loaded, setLoaded] = useState<MapLibreMap | null>(null);
   const [manifest, setManifest] = useState<LayerManifest | null>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>({});
   const [cursor, setCursor] = useState<LngLat | null>(null);
@@ -40,12 +39,11 @@ export function MarsMap() {
   const [sites, setSites] = useState<SitePoi[]>([]);
 
   useEffect(() => {
-    if (!MAPBOX_TOKEN) return;
     let cancelled = false;
 
     (async () => {
-      const [{ default: mapboxgl }, data, siteData] = await Promise.all([
-        import("mapbox-gl"),
+      const [maplibregl, data, siteData] = await Promise.all([
+        import("maplibre-gl"),
         fetch(`${DATA_ROOT}/manifest.json`).then((r) => r.json() as Promise<LayerManifest>),
         fetch(`${DATA_ROOT}/sites.geojson`)
           .then((r) => r.json() as Promise<SitesGeoJSON>)
@@ -53,6 +51,7 @@ export function MarsMap() {
       ]);
       const pois = siteData.features.filter((f) => f.properties.kind === "poi");
       if (cancelled || !container.current) return;
+      maplibregl.setWorkerUrl(mapWorkerUrl);
 
       setManifest(data);
       setSites(
@@ -65,15 +64,13 @@ export function MarsMap() {
       );
       setVisible(Object.fromEntries(data.layers.map((l) => [l.id, l.visible ?? true])));
 
-      mapboxgl.accessToken = MAPBOX_TOKEN;
-      const m = new mapboxgl.Map({
+      const m = new maplibregl.Map({
         container: container.current,
         // Globe is display geometry; coordinates and metric calculations remain Mars-specific.
-        projection: "globe",
         style: {
           version: 8,
+          projection: { type: "globe" },
           sources: {},
-          glyphs: "mapbox://fonts/mapbox/{fontstack}/{range}.pbf",
           layers: [{ id: "bg", type: "background", paint: { "background-color": "#3a1f14" } }],
         },
         center: data.aoi.center,
@@ -85,7 +82,7 @@ export function MarsMap() {
       });
       map.current = m;
       // Credits every source's attribution (HiRISE: NASA/JPL/University of Arizona).
-      m.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-left");
+      m.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
 
       m.on("error", (e) => setError(e.error?.message ?? "Map error"));
       m.on("mousemove", (e) => setCursor([e.lngLat.lng, e.lngLat.lat]));
@@ -163,6 +160,9 @@ export function MarsMap() {
                 visibility,
                 "text-field": ["coalesce", ["get", "title"], ["get", "name"], ""],
                 "text-size": 12,
+                "text-font": getComputedStyle(document.body)
+                  .fontFamily.split(",")
+                  .map((family) => family.trim().replaceAll('"', "")),
                 "text-offset": [0, 1.2],
                 "text-anchor": "top",
                 "text-max-width": 14,
@@ -179,10 +179,12 @@ export function MarsMap() {
             );
           }
         }
-        m.addLayer(habitatLayer(mapboxgl, HABITAT));
+        m.addLayer(habitatLayer(maplibregl, HABITAT));
         setLoaded(m);
       });
-    })();
+    })().catch((error: unknown) => {
+      if (!cancelled) setError(error instanceof Error ? error.message : "Map failed to load");
+    });
 
     return () => {
       cancelled = true;
@@ -201,18 +203,9 @@ export function MarsMap() {
     }
   }
 
-  if (!MAPBOX_TOKEN) {
-    return (
-      <div className="flex h-svh items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        The map is not available. Set NEXT_PUBLIC_MAPBOX_TOKEN in .env.local. Then restart the dev
-        server.
-      </div>
-    );
-  }
-
   return (
     <div className="relative h-svh w-full">
-      {/* mapbox-gl.css forces position: relative on the container, so size it with h-full, not inset-0. */}
+      {/* The renderer positions the container relatively, so size it with h-full. */}
       <div ref={container} className="h-full w-full" />
       {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
       <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />

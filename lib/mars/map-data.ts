@@ -8,7 +8,7 @@ export const GLOBAL_COLOR_SOURCE = {
   minzoom: 0,
   maxzoom: 7,
   attribution: "NASA/Viking; USGS; NASA Ames",
-} satisfies import("mapbox-gl").RasterSourceSpecification;
+} satisfies import("maplibre-gl").RasterSourceSpecification;
 
 export const mapAsset = (path: string) => `${MAP_DATA_ROOT}/${path}`;
 

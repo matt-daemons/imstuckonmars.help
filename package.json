@@ -39,7 +39,7 @@
     "drizzle-orm": "^0.45.4",
     "hono": "^4.13.18",
     "lucide-react": "^1.72.0",
-    "mapbox-gl": "^3.35.0",
+    "maplibre-gl": "6.18.0",
     "react": "latest",
     "react-dom": "latest",
     "react-server-dom-webpack": "^19.3.1",

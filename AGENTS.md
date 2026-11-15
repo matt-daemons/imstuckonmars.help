@@ -163,6 +163,9 @@ above, it wins, with these accepted deviations:
 - K-2: red also marks destructive actions (`destructive` button variants), and yellow also forms
   the hazard tape below.
 - K-3: green means success only.
+- The labeled dust-intensity raster uses blue through cyan, yellow, orange, red and plum as
+  a continuous low-to-high data scale, not alert levels. It never uses green, and its legend
+  and simulation label must stay visible when enabled.
 
 Alert levels use coss variant names. In the skill's terms, from highest priority:
 

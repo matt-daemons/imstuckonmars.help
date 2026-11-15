@@ -1,6 +1,6 @@
 "use client";
 
-import type { Map as MapboxMap } from "mapbox-gl";
+import type { Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, useRef, useState } from "react";
 
 import {
@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { LngLat } from "@/lib/mars/types";
+import { DustLegend } from "./dust-legend";
 
 // coss Slider reports number | number[]; these sliders are single-thumb.
 const single = (set: (v: number) => void) => (v: number | readonly number[]) =>
@@ -29,7 +30,7 @@ export interface SitePoi {
 }
 
 interface ScenePanelProps {
-  map: MapboxMap | null;
+  map: MapLibreMap | null;
   habitat: LngLat;
   sites: SitePoi[];
 }
@@ -59,19 +60,33 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
   }, [map, sites, slopeOn]);
 
   useEffect(() => {
-    if (map) setDustStorm(map, intensity, windFromDeg);
+    if (!map) return;
+    const update = () => setDustStorm(map, intensity, windFromDeg);
+    update();
+    map.on("zoomend", update);
+    return () => {
+      map.off("zoomend", update);
+    };
   }, [map, intensity, windFromDeg]);
 
-  // Ramp the storm in or out over ~4 s, like a replayed feed event arriving.
+  const stormFrame = useRef(0);
+  useEffect(() => () => cancelAnimationFrame(stormFrame.current), []);
+
+  // A new command replaces the previous ramp; reduced motion changes state immediately.
   function rampStorm(to: number) {
+    cancelAnimationFrame(stormFrame.current);
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setIntensity(to);
+      return;
+    }
     const from = current.current;
     const start = performance.now();
     const step = (now: number) => {
       const t = Math.min(1, (now - start) / 4000);
       setIntensity(from + (to - from) * t);
-      if (t < 1) requestAnimationFrame(step);
+      if (t < 1) stormFrame.current = requestAnimationFrame(step);
     };
-    requestAnimationFrame(step);
+    stormFrame.current = requestAnimationFrame(step);
   }
 
   const fly = (zoom: number, pitch: number, bearing: number) =>
@@ -171,6 +186,10 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
 
       <div className="space-y-2">
         <p>Storm intensity: {intensity.toFixed(2)}</p>
+        <p className="text-xs text-muted-foreground">
+          Simulated dust footprint · not observed weather
+        </p>
+        {intensity > 0 && <DustLegend />}
         <Slider
           min={0}
           max={1}

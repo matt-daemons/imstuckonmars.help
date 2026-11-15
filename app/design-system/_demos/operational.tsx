@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { DustLegend } from "@/components/map/dust-legend";
 import {
   Table,
   TableBody,
@@ -389,6 +390,14 @@ export function Operational() {
             ))}
           </TableBody>
         </Table>
+        <div className="w-72 space-y-2">
+          <p>Simulated dust intensity</p>
+          <DustLegend />
+          <p className="text-sm text-muted-foreground">
+            Blue to yellow to red represents increasing relative intensity, not alert levels. This
+            illustrative field is not observed weather or a forecast.
+          </p>
+        </div>
       </Section>
     </>
   );
