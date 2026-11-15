@@ -21,8 +21,19 @@ import {
   sourceProducts,
 } from "../db/schema";
 import { database, type ApiBindings } from "./bindings";
+import { homebaseDashboard } from "../telemetry/homebase";
 
 export const telemetry = new Hono<{ Bindings: ApiBindings }>();
+
+telemetry.get("/homebase", async (c) =>
+  c.json(
+    await homebaseDashboard(
+      database(c.env),
+      c.env.TELEMETRY_RELEASE ?? "nasa-v1",
+      c.env.RADIATION_RELEASE,
+    ),
+  ),
+);
 
 function queryInteger(
   value: string | undefined,

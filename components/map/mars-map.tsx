@@ -7,6 +7,7 @@ import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
 import { LayerPanelBody } from "@/components/map/layer-panel";
+import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import {
   type SiteProps,
   addSites,
@@ -242,6 +243,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
             {/* The renderer positions the container relatively, so size it with h-full. */}
             <div ref={container} className="h-full w-full" />
             <RouteMapLayers map={loaded} />
+            <HomebaseMapEntry map={loaded} habitat={HABITAT} />
             <Tooltip>
               <TooltipTrigger
                 render={

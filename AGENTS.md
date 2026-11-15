@@ -24,13 +24,16 @@ Read the detailed evidence and proposed scope before implementation:
 - `docs/SIMULATION_RESEARCH.md`: proposed equations, units, assumptions and unsupported claims.
 - `docs/TELEMETRY_FEATURES.md`: five bounded features and dashboard metric specifications.
 - `docs/BACKEND.md`: implemented Hono/D1 backend, local verification and frontend/route contracts.
+- `docs/HOMEBASE_DASHBOARD.md`: map-opened read-only reference data, archived demo today, experiment log and animation boundaries.
 - `docs/TELEMETRY_ARCHITECTURE.md`: superseded Python/FastAPI research, not deployment guidance.
 
 ## Confirmed state and scientific boundaries
 
-- The checkout includes the landing-page scaffold and a backend-first Hono/D1 telemetry and
-  mission service. Parallel map/dashboard work remains outside this checkout; preserve its
-  owners' work. `docs/BACKEND.md` is the current backend handoff and deployment authority.
+- The checkout includes the map at `/`, its homebase dashboard (also directly at `/mission`),
+  and the Hono/D1 telemetry and mission service. The dashboard is read-only environmental
+  reference data and the experiment log; simulations belong on the map. Preserve map owners'
+  work and do not relocate Jezero/Gale measurements to Arcadia. `docs/BACKEND.md` is the backend
+  and deployment authority; `docs/HOMEBASE_DASHBOARD.md` covers the dashboard.
 - The earlier geospatial research inspected CTX DEM/image labels and SIM 3464 metadata, not
   raster samples or geologic geometries. Do not invent elevation/slope statistics. Telemetry
   sources are immutable in `data/telemetry/`; Python acquisition/ingestion is offline-only.
@@ -198,8 +201,11 @@ Every other skill rule applies as written, including T-4 (mixed case) and K-5 (6
 contrast).
 
 Acronym glossary (T-4): AI (artificial intelligence), API, CTX (Context Camera), EVA,
-HRSC (High Resolution Stereo Camera), MAV (Mars Ascent Vehicle),
-MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP,
+HRSC (High Resolution Stereo Camera), LARA (the read-only evidence assistant),
+MEDA (Mars Environmental Dynamics Analyzer), MOXIE (Mars Oxygen In-Situ Resource Utilization Experiment),
+NASA (National Aeronautics and Space Administration), RAD (Radiation Assessment Detector),
+MAV (Mars Ascent Vehicle),
+MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP, UTC (Coordinated Universal Time),
 and UI. Add an acronym here before using it in the UI.
 
 ## Formatting and checks

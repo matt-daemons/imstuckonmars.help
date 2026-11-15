@@ -23,6 +23,7 @@ import { Foundations } from "./_demos/foundations";
 import { LayoutData } from "./_demos/layout-data";
 import { Operational } from "./_demos/operational";
 import { Overlays } from "./_demos/overlays";
+import { HomebaseComponents } from "./_demos/homebase";
 import { sectionGroups } from "./_lib/sections";
 
 const groupContent: Record<string, ComponentType> = {
@@ -33,6 +34,7 @@ const groupContent: Record<string, ComponentType> = {
   "Operational standards": Operational,
   Overlays,
   "Layout & data": LayoutData,
+  "Homebase dashboard": HomebaseComponents,
 };
 
 function groupId(title: string) {
