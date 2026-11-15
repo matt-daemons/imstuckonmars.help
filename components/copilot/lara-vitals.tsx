@@ -152,7 +152,8 @@ export function LaraVitalsView({
       )}
       <p className="text-muted-foreground">
         Resources are simulated. MOXIE, MEDA and RAD are archived NASA data, not live measurements.
-        Dose rate is a distant Gale proxy, not crew exposure.
+        Dose rate is a proxy from Curiosity at Gale crater, about 3,900 km away, not crew exposure.
+        No rover has operated in Arcadia, so it is not ground-truthed for the base.
       </p>
     </MapPanel>
   );
