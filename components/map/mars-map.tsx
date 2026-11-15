@@ -6,6 +6,7 @@ import type { Map as MapboxMap } from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 
 import { LayerPanel } from "@/components/map/layer-panel";
+import { RoutePlanner } from "@/components/map/route-planner";
 import { addTerrain, habitatLayer, setDustStorm } from "@/components/map/scene";
 import { ScenePanel } from "@/components/map/scene-panel";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
@@ -15,6 +16,8 @@ const DATA_ROOT = "/data/processed";
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 // Placeholder habitat site; matches the "base" stop in stops.geojson.
 const HABITAT: LngLat = [-176.05, 45.97];
+// Placeholder science stop; matches the "s1" stop in stops.geojson.
+const SCIENCE_STOP: LngLat = [-175.95, 46.03];
 
 // Mapbox assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
@@ -157,8 +160,9 @@ export function MarsMap() {
       <div ref={container} className="h-full w-full" />
       {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
       <ScenePanel map={loaded} habitat={HABITAT} />
+      <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} />
       {error && (
-        <div className="absolute bottom-4 left-4 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
           {error}
         </div>
       )}

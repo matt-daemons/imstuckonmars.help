@@ -76,7 +76,7 @@
       "title": "Planned route",
       "kind": "vector",
       "path": "route.geojson",
-      "visible": true,
+      "visible": false,
       "source": { "name": "Placeholder — Role C" }
     }
   ]
