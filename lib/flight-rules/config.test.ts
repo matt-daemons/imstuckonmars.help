@@ -18,6 +18,7 @@ describe("config.yaml thresholds", () => {
       radiation_caution_ugy_per_h: FLIGHT_RULES.dose_rate.caution_at_micrograys_per_hour,
       radiation_no_go_ugy_per_h: FLIGHT_RULES.dose_rate.no_go_at_micrograys_per_hour,
       walk_back_max_km: FLIGHT_RULES.walk_back.max_distance_km,
+      walk_pace_km_h: FLIGHT_RULES.walk_back.walking_km_per_hour,
     });
   });
 });

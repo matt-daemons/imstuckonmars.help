@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "route": {
+    "route_id": "sample-caution",
+    "title": "SAMPLE · Base → ESP_033225 via a far, steep walk (drive + walk)",
+    "destination_id": "DTEEC_033225_2250_033146_2250_A01",
+    "distance_km": 93.41,
+    "est_time_min": 670,
+    "max_slope": 17.5,
+    "verdict": "CAUTION",
+    "limiting_factor": "slope",
+    "reasons": [
+      "SAMPLE: steepest walk slope 17.5°, above the 15° caution level (limit 20°).",
+      "Note (not a rule level): walk ends 1.9 km from the rover; the 2 km walk-back limit has no caution band."
+    ],
+    "margin": { "resource": "slope", "value": 17.5, "limit": 20, "unit": "°" },
+    "time_to_shelter_min": 62,
+    "simulated": true,
+    "source": "SAMPLE — hand-made for UI work, not a computed route"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-caution",
+        "leg": 1,
+        "mode": "drive",
+        "from": "base",
+        "to": "staging",
+        "start_offset_min": 0,
+        "distance_km": 91.35,
+        "est_time_min": 548,
+        "stop_min": 0,
+        "max_slope": 8.4,
+        "verdict": "GO",
+        "limiting_factor": null,
+        "reasons": ["SAMPLE: rover drive at an assumed 10 km/h average."],
+        "time_to_shelter_min": 0,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.05, 45.97],
+          [-176.08599, 45.58544],
+          [-176.22334, 45.18928],
+          [-176.23335, 44.83725],
+          [-176.31847, 44.44601]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-caution",
+        "leg": 2,
+        "mode": "walk",
+        "from": "staging",
+        "to": "DTEEC_033225_2250_033146_2250_A01",
+        "start_offset_min": 548,
+        "distance_km": 2.06,
+        "est_time_min": 62,
+        "stop_min": 60,
+        "max_slope": 17.5,
+        "verdict": "CAUTION",
+        "limiting_factor": "slope",
+        "reasons": [
+          "SAMPLE: steepest walk slope 17.5°, above the 15° caution level (limit 20°).",
+          "Note (not a rule level): walk ends 1.9 km from the rover; the 2 km walk-back limit has no caution band."
+        ],
+        "time_to_shelter_min": 62,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.31847, 44.44601],
+          [-176.31796, 44.42722],
+          [-176.33383, 44.41589]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "staging",
+        "id": "staging",
+        "name": "Rover staging point (sample)",
+        "route_id": "sample-caution",
+        "simulated": true
+      },
+      "geometry": { "type": "Point", "coordinates": [-176.31847, 44.44601] }
+    }
+  ]
+}

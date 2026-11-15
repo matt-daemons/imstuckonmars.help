@@ -15,6 +15,8 @@ export const FLIGHT_RULES = {
   },
   walk_back: {
     max_distance_km: 2,
+    // Walking pace used to turn a distance into suit time (EVA-EXP-0042 uses 2 km/h for the walk back).
+    walking_km_per_hour: 2,
     applies_to: "Moon",
     source:
       "NASA EVA-EXP-0042 Rev B, p.40: 2 km on foot at 2 km/h, which is 1 hour of backup oxygen.",
