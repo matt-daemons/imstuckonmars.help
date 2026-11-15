@@ -23,6 +23,23 @@ const destinations: DestinationFacts[] = [
 ];
 
 describe("explicit destination requests", () => {
+  it("selects only the crater in the south compass sector", () => {
+    const sites = destinations.map((site, index) => ({
+      ...site,
+      bearing_from_base_deg: [187, 110, 275][index],
+    }));
+    expect(requestedDestination("Hey Lara, take me to the crater south of us", sites)?.number).toBe(
+      1,
+    );
+    expect(requestedDestination("Take me to the crater south of us", destinations)).toBeNull();
+    expect(
+      requestedDestination("Take me to the crater south of us", [
+        ...sites,
+        { ...sites[0], number: 3 },
+      ]),
+    ).toBeNull();
+    expect(requestedDestination("Take me to the crater west of us", sites)).toBeNull();
+  });
   it.each([
     "Um, can we go to Ridges, uh, in Arcadia Planitia?",
     "Can you route me to ridges?",

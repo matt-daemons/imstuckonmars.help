@@ -16,6 +16,10 @@ The following map features retain their existing data and controls:
 - Optional AI comparison imagery, separate from terrain and measurements.
 - Source attribution and cursor coordinates.
 
+The top-right compass points to geographic north and rotates against the map's
+bearing. Select it to return to north-up without changing pitch or location.
+Reduced motion resets the bearing without animation.
+
 The habitat loads the existing `/models/mars/hab.glb` asset instead of the old
 primitive dome. Its 9,904 triangles include a ribbed shell, windows, airlock,
 stairs, solar-cell grids, supports and a ground-mounted communications dish.
@@ -50,6 +54,12 @@ selection action, open Check and start route calculation. They never launch
 the expedition, choose a route or change resource settings. Ambiguous names,
 negated requests, comparisons and informational questions remain with the
 normal tool-assisted conversation.
+
+Destination context includes the initial great-circle bearing from the base.
+Directional travel requests use eight 45° compass sectors and the requested
+feature type, so “the crater south of us” matches a southern crater rather than
+every listed site. Missing bearings or multiple matches do not auto-select.
+During the Run step, “us” is not assumed to mean the base.
 
 With wake listening enabled, final on-device recognition of “Hey LARA” or
 “LARA” starts the existing voice flow. During question capture, the chat opens,

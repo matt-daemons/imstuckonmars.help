@@ -137,8 +137,20 @@ describe("routePlanContext", () => {
   it("numbers the destinations nearest first, with their distance from the base", () => {
     const context = routePlanContext(view(), conditions);
     expect(context.destinations).toEqual([
-      { number: 1, title: near.title, confirmed: false, straight_line_km: expect.any(Number) },
-      { number: 2, title: far.title, confirmed: false, straight_line_km: expect.any(Number) },
+      {
+        number: 1,
+        title: near.title,
+        confirmed: false,
+        straight_line_km: expect.any(Number),
+        bearing_from_base_deg: expect.any(Number),
+      },
+      {
+        number: 2,
+        title: far.title,
+        confirmed: false,
+        straight_line_km: expect.any(Number),
+        bearing_from_base_deg: expect.any(Number),
+      },
     ]);
     expect(context.destinations[0].straight_line_km).toBeCloseTo(92.5, 0);
     expect(context.destination_number).toBe(1);

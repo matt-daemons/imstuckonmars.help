@@ -1,0 +1,23 @@
+.map-compass {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0.25rem;
+  background: var(--background);
+}
+.map-compass-needle {
+  display: grid;
+  justify-items: center;
+  gap: 0.125rem;
+}
+.map-compass-needle > span {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  line-height: 1;
+}
+.map-compass-needle > svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}

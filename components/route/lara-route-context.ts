@@ -12,6 +12,7 @@ import { ROVER, ROVER_RULES } from "@/lib/flight-rules/rover-rules";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import { marsDistanceM } from "@/lib/mars/routing";
+import { initialBearing } from "@/lib/mars/direction";
 import type { LngLat, RouteCollection } from "@/lib/mars/types";
 
 import { notCheckedText, tripWithStorms, walkWithStorms, type Conditions } from "./conditions";
@@ -40,6 +41,7 @@ export function numberedDestinations(plan: RoutePlanView): DestinationFacts[] {
     title: clip(site.title),
     confirmed: site.confirmed,
     straight_line_km: round(marsDistanceM(plan.base, site.center) / 1000, 1),
+    bearing_from_base_deg: initialBearing(plan.base, site.center),
   }));
 }
 

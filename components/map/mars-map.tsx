@@ -12,6 +12,7 @@ import { ExpeditionHud } from "@/components/expedition/expedition-hud";
 import { LaraExpeditionBridge } from "@/components/expedition/lara-expedition-bridge";
 import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import { DebugMenu } from "@/components/debug/debug-menu";
+import { MapCompass } from "@/components/map/map-compass";
 import {
   type SiteProps,
   addSites,
@@ -266,6 +267,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               <LaraExpeditionBridge />
               <CrewLayer map={loaded} />
               <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
+              <MapCompass map={loaded} />
               <DebugMenu
                 page="Map"
                 readSections={() => {

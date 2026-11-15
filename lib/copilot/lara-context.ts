@@ -33,6 +33,8 @@ const destinationSchema = zod
     /** False when the HiRISE team calls the feature "possible". */
     confirmed: zod.boolean(),
     straight_line_km: amount,
+    /** Initial bearing from the base, clockwise from geographic north. Absent in older clients. */
+    bearing_from_base_deg: zod.number().min(0).lt(360).optional(),
   })
   .strict();
 

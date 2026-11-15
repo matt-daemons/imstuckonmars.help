@@ -10,6 +10,7 @@ import type { HomebaseMetric } from "@/lib/homebase/types";
 import { Section } from "../_components/section";
 import { DebugMenu } from "@/components/debug/debug-menu";
 import { ListeningEffect } from "@/components/copilot/listening-effect";
+import { MapCompass } from "@/components/map/map-compass";
 
 const fixture: HomebaseMetric = {
   id: "temperature",
@@ -38,6 +39,12 @@ export function HomebaseComponents() {
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="map-compass" title="Map compass">
+        <div className="relative h-24 w-40">
+          <MapCompass map={null} />
+        </div>
+        <p>Geographic north. Select the compass on the map to reset its bearing.</p>
+      </Section>
       <Section id="listening-effect" title="LARA listening indicator">
         <Button
           variant="outline"
