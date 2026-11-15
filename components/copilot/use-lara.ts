@@ -4,6 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ReturnRoute } from "@/lib/mission/types";
 
+import {
+  answerWakeQuestion,
+  FOLLOW_UP_PROMPTS,
+  pickPhrase,
+  SIGN_OFFS,
+  stripWakePhrase,
+  type WakeTurnSteps,
+} from "./follow-up";
+import type { AfterUtterance } from "./wake-session";
+
 export interface Turn {
   role: "user" | "assistant";
   content: string;
@@ -40,7 +50,8 @@ export interface ReturnAssessment {
 type Status = "starting" | "idle" | "listening" | "transcribing" | "thinking" | "speaking";
 
 const WAKE_REPLY = "Yes?";
-const LEADING_WAKE_PHRASE = /^\s*(hey|okay|ok)[\s,]+(lara|laura|lora)\b[\s,.!?]*/i;
+/** How often a follow-up waits for an alert LARA is still answering. */
+const ASK_DONE_CHECK_MS = 100;
 export const POLL_MS = 2000;
 const HISTORY_TURNS = 8;
 
@@ -130,7 +141,8 @@ export function useLara() {
     const player = new Audio(url);
     audio.current = player;
     await new Promise<void>((resolve) => {
-      player.onended = player.onerror = () => resolve();
+      // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
+      player.onended = player.onerror = player.onpause = () => resolve();
       player.play().catch(() => resolve());
     });
     URL.revokeObjectURL(url);
@@ -242,20 +254,28 @@ export function useLara() {
     [authed, mission],
   );
 
+  const transcribe = useCallback(
+    async (clip: Blob) => {
+      if (!mission) throw new Error("The mission is not ready yet");
+      setStatus("transcribing");
+      const { text } = await json<{ text: string }>(
+        await authed(`copilot/${mission.id}/transcribe`, {
+          method: "POST",
+          headers: { "Content-Type": clip.type.split(";")[0] },
+          body: clip,
+        }),
+      );
+      return text;
+    },
+    [authed, mission],
+  );
+
   /** Transcribes a recorded question and asks LARA, dropping a leading wake phrase. */
   const askFromAudio = useCallback(
     async (clip: Blob) => {
       if (!mission) return;
-      setStatus("transcribing");
       try {
-        const { text } = await json<{ text: string }>(
-          await authed(`copilot/${mission.id}/transcribe`, {
-            method: "POST",
-            headers: { "Content-Type": clip.type.split(";")[0] },
-            body: clip,
-          }),
-        );
-        const question = text.replace(LEADING_WAKE_PHRASE, "").trim();
+        const question = stripWakePhrase(await transcribe(clip));
         if (question) await ask({ question });
         else setStatus("idle");
       } catch (e) {
@@ -263,7 +283,7 @@ export function useLara() {
         setStatus("idle");
       }
     },
-    [ask, authed, mission],
+    [ask, mission, transcribe],
   );
 
   const startListening = useCallback(async () => {
@@ -293,25 +313,64 @@ export function useLara() {
 
   const stopListening = useCallback(() => recorder.current?.stop(), []);
 
+  /** Short phrases LARA repeats (the wake reply, follow-up prompts, sign-offs), synthesized once. */
+  const phraseClips = useRef(new Map<string, Promise<Blob>>());
+  const phraseClip = (text: string) => {
+    const cached = phraseClips.current.get(text);
+    if (cached) return cached;
+    const clip = synthesize(text);
+    phraseClips.current.set(text, clip);
+    clip.catch(() => phraseClips.current.delete(text));
+    return clip;
+  };
+  const prefetchFollowUpPhrases = () => {
+    if (voice) [...FOLLOW_UP_PROMPTS, ...SIGN_OFFS].forEach(phraseClip);
+  };
+  /** Plays a short phrase. Resolves once it has finished, or at once with the voice off. */
+  const sayPhrase = async (text: string) => {
+    if (!voice) return;
+    setStatus("speaking");
+    try {
+      await play(await phraseClip(text));
+    } catch {
+      // Without the clip, LARA skips the phrase and keeps going.
+    }
+  };
+
+  const lastPhrase = useRef<string | null>(null);
+  const wakeTurnSteps: WakeTurnSteps = {
+    waitForAskDone: async () => {
+      while (busy.current) await new Promise((r) => setTimeout(r, ASK_DONE_CHECK_MS));
+    },
+    transcribe,
+    ask: (question) => ask({ question }),
+    say: sayPhrase,
+    choose: (phrases) => (lastPhrase.current = pickPhrase(phrases, lastPhrase.current)),
+  };
+
   /** Handlers for the on-device wake word, which captures the question itself. */
-  const ackClip = useRef<Promise<Blob> | null>(null);
   const wakeHandlers = {
     onAcknowledge: async () => {
       setError(null);
       setStatus("speaking");
-      if (!voice) return;
-      try {
-        ackClip.current ??= synthesize(WAKE_REPLY);
-        await play(await ackClip.current);
-      } catch {
-        ackClip.current = null;
-      }
+      await sayPhrase(WAKE_REPLY);
     },
     onCapturing: () => {
       audio.current?.pause();
       setStatus("listening");
+      prefetchFollowUpPhrases();
     },
-    onUtterance: (clip: Blob) => void askFromAudio(clip),
+    onUtterance: async (clip: Blob): Promise<AfterUtterance> => {
+      try {
+        const next = await answerWakeQuestion(clip, wakeTurnSteps);
+        if (next === "end") setStatus("idle");
+        return next;
+      } catch (e) {
+        setError((e as Error).message);
+        setStatus("idle");
+        return "end";
+      }
+    },
     onNoSpeech: () => setStatus("idle"),
   };
 
