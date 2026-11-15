@@ -1,0 +1,17 @@
+{
+  "width": 3200,
+  "height": 768,
+  "west": 171,
+  "north": 48.5,
+  "degreesPerPixel": 0.0078125,
+  "nodata": -32768,
+  "source": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif",
+  "sha256": "fc9c586fe00625aff4b3beb1fd8a22702f3ead9ec6ce555e4a43f748bf6932a4",
+  "extent": {
+    "west": 171,
+    "east": 196,
+    "south": 42.5,
+    "north": 48.5
+  },
+  "note": "Int16 metres above the MOLA areoid, rows north to south, longitudes 171–196° E continuous. A display and route-planning input, not a hazard certification."
+}

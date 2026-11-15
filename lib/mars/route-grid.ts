@@ -61,6 +61,37 @@ export function gridFromTiles(
   };
 }
 
+export interface EquirectMeta {
+  width: number;
+  height: number;
+  /** Longitude and latitude of the outer north-west corner, degrees. */
+  west: number;
+  north: number;
+  degreesPerPixel: number;
+  nodata: number | null;
+}
+
+/** Grid on a plain lon/lat raster (rows evenly spaced in latitude). West may be above 180 for a strip across the antimeridian. */
+export function gridFromEquirect(meta: EquirectMeta, heights: ArrayLike<number>): RouteGrid {
+  const { width, height, west, north, degreesPerPixel, nodata } = meta;
+  return {
+    width,
+    height,
+    west,
+    east: west + width * degreesPerPixel,
+    rowEdges: Float64Array.from(
+      { length: height + 1 },
+      (_, edge) => north - edge * degreesPerPixel,
+    ),
+    heights: Float32Array.from(heights, (value) => (value === nodata ? NaN : value)),
+  };
+}
+
+/** Longitude in the grid's own domain: adds 360 to points west of 0 when the grid lies east of 180. */
+export function toGridLng(grid: RouteGrid, lng: number): number {
+  return grid.east > 180 && lng < 0 ? lng + 360 : lng;
+}
+
 /** Index (row * width + col) of the cell containing the point, or null outside the grid. */
 export function cellAt(grid: RouteGrid, [lng, lat]: LngLat): number | null {
   const north = grid.rowEdges[0];
