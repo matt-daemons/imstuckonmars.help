@@ -49,19 +49,26 @@ const ti = join(work, "thermal-inertia-f32.tif");
 await execa(
   "gdalwarp",
   [
-    ...["-q", "-overwrite", "-t_srs", mars0360, "-te", ...[W, S, E, N].map(String)],
-    ...["-tr", String(DEG_PER_100M), String(DEG_PER_100M), "-r", "near"],
-    ...[
-      "-dstnodata",
-      "-9999",
-      "-wo",
-      "SOURCE_EXTRA=4",
-      "-multi",
-      "-co",
-      "COMPRESS=DEFLATE",
-      "-co",
-      "TILED=YES",
-    ],
+    "-q",
+    "-overwrite",
+    "-t_srs",
+    mars0360,
+    "-te",
+    ...[W, S, E, N].map(String),
+    "-tr",
+    String(DEG_PER_100M),
+    String(DEG_PER_100M),
+    "-r",
+    "near",
+    "-dstnodata",
+    "-9999",
+    "-wo",
+    "SOURCE_EXTRA=4",
+    "-multi",
+    "-co",
+    "COMPRESS=DEFLATE",
+    "-co",
+    "TILED=YES",
     ...["120E", "180E"].map((t) => SRC.replace("{tile}", t)),
     ti,
   ],
@@ -69,8 +76,19 @@ await execa(
 );
 const published = join(out, "thermal-inertia.tif");
 await execa("gdal_translate", [
-  ...["-q", "-of", "COG", "-ot", "Int16", "-a_nodata", "-9999"],
-  ...["-co", "COMPRESS=DEFLATE", "-co", "PREDICTOR=2", ti, published],
+  "-q",
+  "-of",
+  "COG",
+  "-ot",
+  "Int16",
+  "-a_nodata",
+  "-9999",
+  "-co",
+  "COMPRESS=DEFLATE",
+  "-co",
+  "PREDICTOR=2",
+  ti,
+  published,
 ]);
 
 // Thermal inertia on the rover's drive grid, cell for cell, so the drive planner can price soft ground.
@@ -146,17 +164,49 @@ for (const [name, w, e, shift] of [
 ] as const) {
   const part = join(work, `ti-${name}.vrt`);
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-projwin", String(w), String(N), String(e), String(S), coloured, part],
+    "-q",
+    "-of",
+    "VRT",
+    "-projwin",
+    String(w),
+    String(N),
+    String(e),
+    String(S),
+    coloured,
+    part,
   ]);
   const asEarth = join(work, `ti-${name}-as-4326.vrt`);
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-a_srs", "EPSG:4326", "-a_ullr"],
-    ...[String(w + shift), String(N), String(e + shift), String(S), part, asEarth],
+    "-q",
+    "-of",
+    "VRT",
+    "-a_srs",
+    "EPSG:4326",
+    "-a_ullr",
+    String(w + shift),
+    String(N),
+    String(e + shift),
+    String(S),
+    part,
+    asEarth,
   ]);
   await execa("gdal2tiles", [
-    ...["--xyz", "-z", "5-11", "-w", "none", "-r", "near", "--resume"],
-    ...["--tiledriver", "WEBP", "--webp-quality", "85", "--processes", "8"],
-    ...[asEarth, tilesOut],
+    "--xyz",
+    "-z",
+    "5-11",
+    "-w",
+    "none",
+    "-r",
+    "near",
+    "--resume",
+    "--tiledriver",
+    "WEBP",
+    "--webp-quality",
+    "85",
+    "--processes",
+    "8",
+    asEarth,
+    tilesOut,
   ]);
 }
 
@@ -185,15 +235,23 @@ for (const { id, lonlat } of places) {
   const local = `+proj=aeqd +lat_0=${lat} +lon_0=${lon} +R=${R} +units=m +no_defs`;
   const clip = join(work, `ti-${id}.tif`);
   await execa("gdalwarp", [
-    ...[
-      "-q",
-      "-overwrite",
-      "-t_srs",
-      local,
-      "-te",
-      ...[-RADIUS_M, -RADIUS_M, RADIUS_M, RADIUS_M].map(String),
-    ],
-    ...["-tr", "100", "100", "-r", "near", "-srcnodata", "-9999", "-dstnodata", "-9999", ti, clip],
+    "-q",
+    "-overwrite",
+    "-t_srs",
+    local,
+    "-te",
+    ...[-RADIUS_M, -RADIUS_M, RADIUS_M, RADIUS_M].map(String),
+    "-tr",
+    "100",
+    "100",
+    "-r",
+    "near",
+    "-srcnodata",
+    "-9999",
+    "-dstnodata",
+    "-9999",
+    ti,
+    clip,
   ]);
   const xyz = (await execa("gdal_translate", ["-q", "-of", "XYZ", clip, "/vsistdout/"])).stdout;
   const inCircle = xyz

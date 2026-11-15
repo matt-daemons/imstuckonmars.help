@@ -33,11 +33,19 @@ const shadePath = join(WORK, "hillshade.tif");
 writeFileSync(join(WORK, "ramp.txt"), RAMP);
 
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-r", "bilinear"],
-  ...["-t_srs", "+proj=longlat +R=3396190 +no_defs"],
-  ...["-te", ...[EXTENT.west, EXTENT.south, EXTENT.east, EXTENT.north].map(String)],
-  ...["-tr", "0.0078125", "0.0078125"],
-  ...[MOLA_URL, demPath],
+  "-q",
+  "-overwrite",
+  "-r",
+  "bilinear",
+  "-t_srs",
+  "+proj=longlat +R=3396190 +no_defs",
+  "-te",
+  ...[EXTENT.west, EXTENT.south, EXTENT.east, EXTENT.north].map(String),
+  "-tr",
+  "0.0078125",
+  "0.0078125",
+  MOLA_URL,
+  demPath,
 ]);
 // -s converts degrees to metres on Mars (2πR/360); -z exaggerates relief so the flat plains read.
 await execa("gdaldem", [

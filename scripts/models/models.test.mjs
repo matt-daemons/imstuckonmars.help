@@ -55,6 +55,7 @@ for (const build of [buildHab, buildRover, buildMav]) {
 
   test(`${model.id} GLB is self-contained and geometrically reproducible`, () => {
     const bytes = encodeGlb(model);
+    assert.deepEqual(bytes, encodeGlb(build()), "repeatable on this runtime");
     const committed = readFileSync(new URL(`${model.id}.glb`, output));
     assertEquivalentGlb(bytes, committed);
     const { document } = decodeGlb(bytes);

@@ -36,7 +36,7 @@ export function assertEquivalentGlb(actualBytes, expectedBytes) {
   const expected = decodeGlb(expectedBytes);
   const structure = (document) => ({
     ...document,
-    accessors: document.accessors.map(({ min, max, ...accessor }) => accessor),
+    accessors: document.accessors.map(({ min: _min, max: _max, ...accessor }) => accessor),
     materials: document.materials.map((material) => ({
       ...material,
       pbrMetallicRoughness: { ...material.pbrMetallicRoughness, baseColorFactor: undefined },

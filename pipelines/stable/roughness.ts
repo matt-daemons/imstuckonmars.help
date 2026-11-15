@@ -46,8 +46,19 @@ const mars = "+proj=longlat +R=3396190 +no_defs";
 // 1 m DTM on a local metre grid (same as slope.ts), then the trend surface on exactly that grid.
 const demLocal = join(work, "dem-local.tif");
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-t_srs", local, "-tr", "1", "1", "-r", "bilinear"],
-  ...["-dstnodata", "-32768", dem, demLocal],
+  "-q",
+  "-overwrite",
+  "-t_srs",
+  local,
+  "-tr",
+  "1",
+  "1",
+  "-r",
+  "bilinear",
+  "-dstnodata",
+  "-32768",
+  dem,
+  demLocal,
 ]);
 const localInfo = JSON.parse((await execa("gdalinfo", ["-json", demLocal])).stdout);
 const [lw, ls, le, ln] = bounds(localInfo.cornerCoordinates).map(String);
@@ -55,40 +66,124 @@ const [lx, ly]: number[] = localInfo.size;
 const coarse = join(work, "trend-5m-local.tif");
 const trend = join(work, "trend-local.tif");
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-tr", String(CELL_M), String(CELL_M), "-r", "average"],
-  ...["-srcnodata", "-32768", "-dstnodata", "-32768", demLocal, coarse],
+  "-q",
+  "-overwrite",
+  "-tr",
+  String(CELL_M),
+  String(CELL_M),
+  "-r",
+  "average",
+  "-srcnodata",
+  "-32768",
+  "-dstnodata",
+  "-32768",
+  demLocal,
+  coarse,
 ]);
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-te", lw, ls, le, ln, "-ts", String(lx), String(ly), "-r", "bilinear"],
-  ...["-srcnodata", "-32768", "-dstnodata", "-32768", coarse, trend],
+  "-q",
+  "-overwrite",
+  "-te",
+  lw,
+  ls,
+  le,
+  ln,
+  "-ts",
+  String(lx),
+  String(ly),
+  "-r",
+  "bilinear",
+  "-srcnodata",
+  "-32768",
+  "-dstnodata",
+  "-32768",
+  coarse,
+  trend,
 ]);
 
 // Blank everything within EDGE_TRIM_M of the DTM's no-data area (ragged HiRISE edges, see slope.ts).
 const valid = join(work, "valid-local.tif");
 const proximity = join(work, "edge-distance-roughness-local.tif");
 await execa("gdal_calc", [
-  ...["--quiet", "--overwrite", "-A", demLocal, "--calc", "A>-32000", "--type", "Byte"],
-  ...["--NoDataValue", "255", "--hideNoData", "--outfile", valid],
+  "--quiet",
+  "--overwrite",
+  "-A",
+  demLocal,
+  "--calc",
+  "A>-32000",
+  "--type",
+  "Byte",
+  "--NoDataValue",
+  "255",
+  "--hideNoData",
+  "--outfile",
+  valid,
 ]);
 await execa("gdal_proximity", [
-  ...["-q", valid, proximity, "-values", "0", "-distunits", "PIXEL"],
-  ...["-maxdist", String(EDGE_TRIM_M + 1), "-nodata", String(EDGE_TRIM_M + 1), "-ot", "Float32"],
+  "-q",
+  valid,
+  proximity,
+  "-values",
+  "0",
+  "-distunits",
+  "PIXEL",
+  "-maxdist",
+  String(EDGE_TRIM_M + 1),
+  "-nodata",
+  String(EDGE_TRIM_M + 1),
+  "-ot",
+  "Float32",
 ]);
 const residual2 = join(work, "residual2-local.tif");
 await execa("gdal_calc", [
-  ...["--quiet", "--overwrite", "-A", demLocal, "-B", trend, "-C", proximity],
-  ...["--calc", `where((C > ${EDGE_TRIM_M}) & (A > -32000) & (B > -32000), (A - B) ** 2, -9999)`],
-  ...["--type", "Float32", "--NoDataValue", "-9999", "--hideNoData", "--outfile", residual2],
+  "--quiet",
+  "--overwrite",
+  "-A",
+  demLocal,
+  "-B",
+  trend,
+  "-C",
+  proximity,
+  "--calc",
+  `where((C > ${EDGE_TRIM_M}) & (A > -32000) & (B > -32000), (A - B) ** 2, -9999)`,
+  "--type",
+  "Float32",
+  "--NoDataValue",
+  "-9999",
+  "--hideNoData",
+  "--outfile",
+  residual2,
 ]);
 const meanSq = join(work, "residual2-5m-local.tif");
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-tr", String(CELL_M), String(CELL_M), "-r", "average"],
-  ...["-srcnodata", "-9999", "-dstnodata", "-9999", residual2, meanSq],
+  "-q",
+  "-overwrite",
+  "-tr",
+  String(CELL_M),
+  String(CELL_M),
+  "-r",
+  "average",
+  "-srcnodata",
+  "-9999",
+  "-dstnodata",
+  "-9999",
+  residual2,
+  meanSq,
 ]);
 const rmsLocal = join(work, "roughness-local.tif");
 await execa("gdal_calc", [
-  ...["--quiet", "--overwrite", "-A", meanSq, "--calc", "where(A >= 0, sqrt(A), -9999)"],
-  ...["--type", "Float32", "--NoDataValue", "-9999", "--outfile", rmsLocal],
+  "--quiet",
+  "--overwrite",
+  "-A",
+  meanSq,
+  "--calc",
+  "where(A >= 0, sqrt(A), -9999)",
+  "--type",
+  "Float32",
+  "--NoDataValue",
+  "-9999",
+  "--outfile",
+  rmsLocal,
 ]);
 
 // Back onto the DTM's lon/lat grid (nearest keeps the 5 m cells intact), so it lines up with slope.tif.
@@ -96,20 +191,57 @@ const [w, s, e, n] = bounds(info.cornerCoordinates);
 const roughness = join(work, "roughness-m.tif"); // Float32 metres, used for the overlay and stats
 const published = join(out, "roughness.tif");
 await execa("gdalwarp", [
-  ...["-q", "-overwrite", "-t_srs", mars, "-te", ...[w, s, e, n].map(String)],
-  ...["-ts", String(info.size[0]), String(info.size[1]), "-r", "near"],
-  ...["-srcnodata", "-9999", "-dstnodata", "-9999", "-of", "COG", "-co", "COMPRESS=DEFLATE"],
-  ...[rmsLocal, roughness],
+  "-q",
+  "-overwrite",
+  "-t_srs",
+  mars,
+  "-te",
+  ...[w, s, e, n].map(String),
+  "-ts",
+  String(info.size[0]),
+  String(info.size[1]),
+  "-r",
+  "near",
+  "-srcnodata",
+  "-9999",
+  "-dstnodata",
+  "-9999",
+  "-of",
+  "COG",
+  "-co",
+  "COMPRESS=DEFLATE",
+  rmsLocal,
+  roughness,
 ]);
 const cm = join(work, "roughness-cm.tif");
 await execa("gdal_calc", [
-  ...["--quiet", "--overwrite", "-A", roughness],
-  ...["--calc", "where(A >= 0, minimum(rint(A * 100), 32000), -9999)", "--type", "Int16"],
-  ...["--NoDataValue", "-9999", "--outfile", cm],
+  "--quiet",
+  "--overwrite",
+  "-A",
+  roughness,
+  "--calc",
+  "where(A >= 0, minimum(rint(A * 100), 32000), -9999)",
+  "--type",
+  "Int16",
+  "--NoDataValue",
+  "-9999",
+  "--outfile",
+  cm,
 ]);
 await execa("gdal_translate", [
-  ...["-q", "-of", "COG", "-a_scale", "0.01", "-a_nodata", "-9999"],
-  ...["-co", "COMPRESS=DEFLATE", "-co", "PREDICTOR=2", cm, published],
+  "-q",
+  "-of",
+  "COG",
+  "-a_scale",
+  "0.01",
+  "-a_nodata",
+  "-9999",
+  "-co",
+  "COMPRESS=DEFLATE",
+  "-co",
+  "PREDICTOR=2",
+  cm,
+  published,
 ]);
 
 const ramp = join(work, "roughness-ramp.txt");
@@ -123,24 +255,48 @@ for (const c of CLASSES) {
 writeFileSync(ramp, [...rampLines, "nv 0 0 0 0", ""].join("\n"));
 const coloured = join(work, "roughness-rgba.tif");
 await execa("gdaldem", [
-  ...["color-relief", "-q", "-alpha", "-nearest_color_entry", roughness, ramp, coloured],
+  "color-relief",
+  "-q",
+  "-alpha",
+  "-nearest_color_entry",
+  roughness,
+  ramp,
+  coloured,
 ]);
 const asEarth = join(work, "roughness-as-4326.vrt");
 await execa("gdal_translate", ["-q", "-of", "VRT", "-a_srs", "EPSG:4326", coloured, asEarth]);
 rmSync(tilesOut, { recursive: true, force: true });
 mkdirSync(tilesOut, { recursive: true });
 await execa("gdal2tiles", [
-  ...["--xyz", "-z", "11-16", "-w", "none", "-r", "near"],
-  ...["--tiledriver", "WEBP", "--webp-quality", "85", "--processes", "8"],
-  ...[asEarth, tilesOut],
+  "--xyz",
+  "-z",
+  "11-16",
+  "-w",
+  "none",
+  "-r",
+  "near",
+  "--tiledriver",
+  "WEBP",
+  "--webp-quality",
+  "85",
+  "--processes",
+  "8",
+  asEarth,
+  tilesOut,
 ]);
 
 // Stats on the local 5 m cells (equal-area, unlike the lon/lat copy).
 const hist = JSON.parse(
   (
     await execa("gdalinfo", [
-      ...["-json", "-stats", "-hist", "-nomd"],
-      ...["--config", "GDAL_PAM_ENABLED", "NO", rmsLocal],
+      "-json",
+      "-stats",
+      "-hist",
+      "-nomd",
+      "--config",
+      "GDAL_PAM_ENABLED",
+      "NO",
+      rmsLocal,
     ])
   ).stdout,
 );

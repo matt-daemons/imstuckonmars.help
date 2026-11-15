@@ -109,42 +109,103 @@ for (const site of SITES) {
 
   const dem = join(work, "dem.tif");
   await execa("gdalwarp", [
-    ...["-q", "-overwrite", "-r", "bilinear", "-ot", "Float32"],
-    ...["-srcnodata", "-3.4028227e+38", "-dstnodata", "-32768"],
-    ...["-t_srs", MARS, "-tr", String(DEG_PER_M), String(DEG_PER_M)],
-    ...["-co", "COMPRESS=DEFLATE", "-co", "TILED=YES"],
-    ...[join(raw, `${site.dtm}.IMG`), dem],
+    "-q",
+    "-overwrite",
+    "-r",
+    "bilinear",
+    "-ot",
+    "Float32",
+    "-srcnodata",
+    "-3.4028227e+38",
+    "-dstnodata",
+    "-32768",
+    "-t_srs",
+    MARS,
+    "-tr",
+    String(DEG_PER_M),
+    String(DEG_PER_M),
+    "-co",
+    "COMPRESS=DEFLATE",
+    "-co",
+    "TILED=YES",
+    join(raw, `${site.dtm}.IMG`),
+    dem,
   ]);
 
   const orthoFixed = join(work, "ortho-fixed.vrt");
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-a_srs", srs],
-    ...[join(raw, `${site.obs}_RED_A_01_ORTHO.JP2`), orthoFixed],
+    "-q",
+    "-of",
+    "VRT",
+    "-a_srs",
+    srs,
+    join(raw, `${site.obs}_RED_A_01_ORTHO.JP2`),
+    orthoFixed,
   ]);
   const ortho = join(work, "ortho.tif");
   const orthoRes = String(DEG_PER_M * 0.45); // z17 pixel size; no point keeping 0.25 m past it
   await execa("gdalwarp", [
-    ...["-q", "-overwrite", "-r", "average", "-srcnodata", "0", "-dstalpha"],
-    ...["-t_srs", MARS, "-tr", orthoRes, orthoRes],
-    ...["-co", "COMPRESS=DEFLATE", "-co", "TILED=YES", "-co", "BIGTIFF=IF_SAFER"],
-    ...[orthoFixed, ortho],
+    "-q",
+    "-overwrite",
+    "-r",
+    "average",
+    "-srcnodata",
+    "0",
+    "-dstalpha",
+    "-t_srs",
+    MARS,
+    "-tr",
+    orthoRes,
+    orthoRes,
+    "-co",
+    "COMPRESS=DEFLATE",
+    "-co",
+    "TILED=YES",
+    "-co",
+    "BIGTIFF=IF_SAFER",
+    orthoFixed,
+    ortho,
   ]);
   // gdal2tiles only knows Earth; label the Mars lon/lat as EPSG:4326 so tiles land where Mapbox
   // puts Mars degrees (Mapbox assumes Earth too).
   const orthoAsEarth = join(work, "ortho-as-4326.vrt");
   // Grey + alpha → RGBA: WebP tiles need 3 or 4 bands (HiRISE RED is greyscale).
   await execa("gdal_translate", [
-    ...["-q", "-of", "VRT", "-a_srs", "EPSG:4326"],
-    ...["-b", "1", "-b", "1", "-b", "1", "-b", "2"],
-    ...[ortho, orthoAsEarth],
+    "-q",
+    "-of",
+    "VRT",
+    "-a_srs",
+    "EPSG:4326",
+    "-b",
+    "1",
+    "-b",
+    "1",
+    "-b",
+    "1",
+    "-b",
+    "2",
+    ortho,
+    orthoAsEarth,
   ]);
   if (process.env.REBUILD_IMAGERY || !existsSync(join(imageryOut, "17"))) {
     rmSync(imageryOut, { recursive: true, force: true });
     mkdirSync(imageryOut, { recursive: true });
     await execa("gdal2tiles", [
-      ...["--xyz", "-z", IMAGERY_ZOOMS, "-w", "none", "-r", "average"],
-      ...["--tiledriver", "WEBP", "--webp-quality", "80", "--processes", "8"],
-      ...[orthoAsEarth, imageryOut],
+      "--xyz",
+      "-z",
+      IMAGERY_ZOOMS,
+      "-w",
+      "none",
+      "-r",
+      "average",
+      "--tiledriver",
+      "WEBP",
+      "--webp-quality",
+      "80",
+      "--processes",
+      "8",
+      orthoAsEarth,
+      imageryOut,
     ]);
   }
 
@@ -159,13 +220,16 @@ for (const site of SITES) {
   };
   const molaPath = join(work, "mola-pad.tif");
   await execa("gdalwarp", [
-    ...["-q", "-overwrite", "-r", "bilinear", "-t_srs", MARS],
-    ...[
-      "-te",
-      ...[padded.west - 0.02, padded.south - 0.02, padded.east + 0.02, padded.north + 0.02].map(
-        String,
-      ),
-    ],
+    "-q",
+    "-overwrite",
+    "-r",
+    "bilinear",
+    "-t_srs",
+    MARS,
+    "-te",
+    ...[padded.west - 0.02, padded.south - 0.02, padded.east + 0.02, padded.north + 0.02].map(
+      String,
+    ),
     "-tr",
     "0.0078125",
     "0.0078125",
