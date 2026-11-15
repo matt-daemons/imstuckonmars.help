@@ -33,7 +33,8 @@ const LIMIT_MARKS: Partial<Record<Verdict, LimitMark>> = {
 };
 
 const STATUS_MESSAGES: Record<Exclude<RouteStatus, "ok">, string> = {
-  outside_grid: "Start or end is outside the elevation grid. Pick a point inside it.",
+  outside_grid:
+    "Start or end is outside the elevation grid around the habitat. Pick a point inside it.",
   start_blocked: `Start is on ground steeper than ${MAX_SLOPE_DEG}° or in a no-go zone. Set the start somewhere else.`,
   goal_blocked: `End is on ground steeper than ${MAX_SLOPE_DEG}° or in a no-go zone. Set the end somewhere else.`,
   no_path: `No route avoids ground steeper than ${MAX_SLOPE_DEG}° and the no-go zones. Move the end or clear the zones.`,

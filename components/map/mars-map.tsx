@@ -177,9 +177,11 @@ export function MarsMap() {
               },
             });
             // Click a POI to fly in for the sub-metre HiRISE view.
-            m.on("click", `${layer.id}-point`, (e) =>
-              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 }),
-            );
+            m.on("click", `${layer.id}-point`, (e) => {
+              // The route panel is placing a point with this click, so stay put.
+              if (m.getCanvas().dataset.placing) return;
+              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 });
+            });
           }
         }
         m.addLayer(habitatLayer(mapboxgl, HABITAT));

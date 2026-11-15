@@ -74,7 +74,9 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     const css = getComputedStyle(document.documentElement);
     const layers = routeLayers((name) => css.getPropertyValue(name).trim());
     for (const id of SOURCES) map.addSource(id, { type: "geojson", data: collection([]) });
-    for (const layer of layers) map.addLayer(layer);
+    // Under the stop labels, so text, the route ends and the habitat model stay on top.
+    const beforeId = map.getLayer("stops-label") ? "stops-label" : undefined;
+    for (const layer of layers) map.addLayer(layer, beforeId);
     return () => {
       if (!map.getStyle()) return; // the parent already called map.remove()
       for (const layer of layers) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
@@ -123,11 +125,13 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     };
     const cursor = canvas.style.cursor;
     canvas.style.cursor = "crosshair";
+    canvas.dataset.placing = "true"; // tells the map's click-to-fly to stand down
     map.on("click", onClick);
     canvas.addEventListener("keydown", onCanvasKeyDown);
     window.addEventListener("keydown", onWindowKeyDown);
     return () => {
       canvas.style.cursor = cursor;
+      delete canvas.dataset.placing;
       map.off("click", onClick);
       canvas.removeEventListener("keydown", onCanvasKeyDown);
       window.removeEventListener("keydown", onWindowKeyDown);
