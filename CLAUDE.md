@@ -178,24 +178,26 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Map: Mapbox GL JS v3** (+ `three` for 3D models). Token: `NEXT_PUBLIC_MAPBOX_TOKEN` (public `pk.` token, **owned by M**), inlined at build time.
   Local: put it in `.env.local` (gitignored) and restart `pnpm dev`. Deploy: the CI build step needs the same variable (M to add as a GitHub secret/var).
 
-## Current state (as of Sat Nov 14, 2026, ~19:30)
+## Current state (as of Sun Nov 15, 2026)
 
-- `main` on GitHub includes: toolchain docs, map skeleton, pipeline skeleton, Step 0 list (pushed ~18:50, rebased onto the telemetry backend).
-- **Step 1h done (local, see below):** the map runs on **Mapbox v3**; MapLibre and all spike files are removed.
-  - `components/map/mars-map.tsx` — Mapbox map, flat Mercator projection, manifest-driven layers, layer toggles, °N/°E readout, token check.
-  - `components/map/scene.ts` — MOLA 3D terrain (`exaggeration` 1.878 = true Mars scale), three.js placeholder habitat, dust storm
-    (Mapbox `setFog` + `setSnow` tinted as dust — **illustrative, not data**).
-  - `components/map/scene-panel.tsx` — fly-to habitat / overview, terrain exaggeration, storm trigger/intensity, wind direction.
-  - `pipelines/stable/mola-terrain.ts` (`pnpm pipe:mola`) — cuts MOLA 463 m (USGS, via `/vsicurl/`, no full download) for 180–192°E, 40–52°N →
-    Terrarium + shaded-colour tiles z5–8 in `public/data/terrain/mola/` (14 MB, committed so the deployed site has terrain).
-- **Dev-server gotcha:** vinext's dev server crashes ("Maximum call stack size exceeded" in `als-registry.js`) when thousands of files
-  change under `public/` — e.g. while `pnpm pipe:sites` / `pipe:slope` run. Restart `pnpm dev` after pipelines finish (the vite watch-ignore
-  for `public/data/sites` does not prevent it).
-- Gotchas: `mapbox-gl.css` (like MapLibre's) forces `position: relative` on the container → size it with `h-full w-full`, not `absolute inset-0`.
-  vinext dev server can hit "Maximum call stack size exceeded" after many files land in `public/` → restart `pnpm dev` if `/` returns 500.
-  Mapbox needs absolute tile/GeoJSON URLs (we prefix `location.origin`).
-- **CI deploy currently fails for everyone** (not from our changes): `wrangler.jsonc` D1 binding `DB` has a placeholder database ID
-  (`00000000-…`). Owner of the telemetry backend to create the D1 database and set the real ID.
+- **Map (team):** Mapbox v3 **globe** view, Viking global colour, MOLA global/regional + MOLA/HRSC 200 m terrain near the habitat, served from
+  **R2** (`tiles.imstuckonmars.help`, `lib/mars/map-data.ts`); terrain is display-shifted +10 km (`DISPLAY_ELEVATION_OFFSET_M`). Sourced flight
+  rules, `/api/verdict`, RAD telemetry, Mars clock are in (teammates).
+- **Water-ice sites (Jess, Step 2–3):** 4 HiRISE POIs + footprints (`public/data/processed/sites.geojson`), 0.45 m imagery, 1 m terrain and slope
+  overlay per site, wired into the teammates' map (`addSites` in `components/map/scene.ts`, Scene panel site list + "Slope hazard" switch,
+  attribution control credits **NASA/JPL/University of Arizona**). Site tiles are **local only** (gitignored) until hosted (2f).
+- Local `main` is ahead of GitHub (sites integration, upload-file naming, Q75 compression) — **not pushed yet**.
+- **CI:** `scripts/models/models.test.mjs` (teammates' 3D model byte-compare) **fails on clean `origin/main` too** — not from the sites work.
+- **Habitat vs sites distance (⚠ open):** habitat (−176.05°E, 45.97°N) → ESP_033225 **93 km**, ESP_034082 **194 km**, ESP_037352 **424 km**,
+  ESP_054060 **468 km** (great-circle, Mars 2000 sphere). Flight rules cap walk-back at **2 km**, so **no site is reachable on foot from the base**.
+  Needs a team decision — see "Next steps".
+- **Gotchas:**
+  - vinext dev server crashes ("Maximum call stack size exceeded", `als-registry.js`) when thousands of files change under `public/` (e.g. while
+    `pnpm pipe:sites` / `pipe:slope` run, or during a broken rebase) → restart `pnpm dev`. The vite watch-ignore for `public/data/sites` doesn't prevent it.
+  - A half-finished rebase leaves conflict markers in `package.json` → the app fails with `JSONError … key must be a string`. Finish/abort the rebase.
+  - `mapbox-gl.css` forces `position: relative` on the container → size it with `h-full w-full`, not `absolute inset-0`.
+  - Mapbox needs absolute tile/GeoJSON URLs (we prefix `location.origin`).
+  - Display terrain tiles are **not** true heights (+10 km offset) — read elevations from the DTM / COGs.
 
 ## Architecture (summary)
 
@@ -226,12 +228,12 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 
 - ~~2a. Pick AOI~~ ✅ **All 4 shortlisted DTMs are POIs** (MVP: craters/ridges we route to for water-ice procurement). Found via ODE REST
   (160–215°E, 30–65°N → 59 HiRISE DTMs). The team **habitat stays at −176.05°E, 45.97°N** (teammates' HAB terrain); sites are POIs.
-  | DTM                                                                                                                                                 | HiRISE obs      | POI (lon −180..180, lat)         | Type                                                                     | POI provenance                                                                               |
-  | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
-  | DTEEC_033225_2250_033146_2250_A01                                                                                                                   | ESP_033225_2250 | −176.33383, 44.41589 (183.666°E) | Possible terraced crater, ~130 m, 12 m deep                              | **Picked by Claude** from the ortho (Jess's circled image didn't come through) — **confirm** |
-  | DTEEC_034082_2260_033014_2260_A01                                                                                                                   | ESP_034082_2260 | −171.38243, 45.64829 (188.618°E) | Possible terraced bullseye crater, bowl ~28 m deep                       | Circled by Jess; DTM-refined (moved 35 m)                                                    |
-  | DTEEC_037352_2245_037418_2245_A01                                                                                                                   | ESP_037352_2245 | −166.14298, 44.39035 (193.857°E) | Terraced bullseye crater (confirmed), bowl ~41 m deep, flat surroundings | Circled by Jess; DTM-refined (moved 85 m)                                                    |
-  | DTEEC_054060_2265_054126_2265_A01                                                                                                                   | ESP_054060_2265 | 172.56388, 46.07022              | **Ridges** (not a crater) — worth exploring for ice                      | DTM centre                                                                                   |
+  | DTM                                                                                                                                                 | HiRISE obs      | POI (lon −180..180, lat)         | Type                                                                     | POI provenance                                         |
+  | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
+  | DTEEC_033225_2250_033146_2250_A01                                                                                                                   | ESP_033225_2250 | −176.33383, 44.41589 (183.666°E) | Possible terraced crater, ~130 m, 12 m deep                              | Picked by Claude from the ortho; **confirmed by Jess** |
+  | DTEEC_034082_2260_033014_2260_A01                                                                                                                   | ESP_034082_2260 | −171.38243, 45.64829 (188.618°E) | Possible terraced bullseye crater, bowl ~28 m deep                       | Circled by Jess; DTM-refined (moved 35 m)              |
+  | DTEEC_037352_2245_037418_2245_A01                                                                                                                   | ESP_037352_2245 | −166.14298, 44.39035 (193.857°E) | Terraced bullseye crater (confirmed), bowl ~41 m deep, flat surroundings | Circled by Jess; DTM-refined (moved 85 m)              |
+  | DTEEC_054060_2265_054126_2265_A01                                                                                                                   | ESP_054060_2265 | 172.56388, 46.07022              | **Ridges** (not a crater) — worth exploring for ice                      | DTM centre                                             |
   | POI refinement: circle position → lon/lat via the ortho footprint extremes (±~50 m), then centroid of the lowest 30 % of relief within 250 m on the |
   | 1 m DTM (the crater bowl). Logged in `pipelines/stable/hirise-sites.ts` (`poi`, `poiNote`) and `sites.geojson` (`position_note`).                   |
 - ~~2b. CRS per file~~ ✅ `data/raw/README.md` (HiRISE section).
@@ -279,6 +281,44 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 - **Resolution choices:** imagery tiled to z17 (~0.45 m/px; source 0.25 m); terrain mesh to z15 (~1.8 m; DTM 1 m); slope tiles to z16.
 - **Terrain switching:** `terrainSourceForView` (teammates' `lib/mars/terrain.ts`) now prefers a site's 1 m terrain when the whole view is inside its
   padded box at zoom ≥ 11 (tested in `lib/mars/terrain.test.ts`).
+
+### Role C (routing) brief — data available now (Sun Nov 15)
+
+- **POIs:** `public/data/processed/sites.geojson` — per site a `poi` point (crater bowl centre, DTM-refined; ridges site = DTM centre) and a
+  `footprint` polygon; props `id` (DTM), `hirise_id`, `title`, `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`.
+- **Slope (degrees, true values):** `data/processed/sites/<dtm>/slope.tif` — COG, lon/lat Mars 2000 sphere, ~1 m grid, nodata −9999
+  (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. **Gitignored** → share via R2 or `pnpm pipe:slope`.
+- **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` — 1 m DTM, lon/lat Mars 2000, nodata −32768. MOLA 463 m around it.
+- **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — slope ≤ 20°, suit 8 h (walks planned 6 h), 30 min reserve,
+  walk-back ≤ 2 km, radiation 18 / 90 µGy/h.
+- **Conventions:** lon −180..180 east-positive in files (ESP_054060 is at +172.56, the rest negative — **AOI crosses ±180**); distances with
+  Mars radius 3,396,190 m, never Mapbox/Turf defaults (Earth); don't read heights from display tiles (+10 km).
+- **Known limits:** DTMs cover ~6 × 6–13 km each; no rock abundance, roughness, soil strength or dust data yet; slope from 1 m DTM misses
+  sub-metre rocks (visible only in the 0.25 m imagery).
+- **Open question for C + A:** sites are 93–468 km from the habitat (above) — rover traverse + local EVA, a forward camp, or EVAs from a landing
+  point inside each DTM?
+
+### Future data layers (horizon, not built yet)
+
+- **SWIM ice consistency** (Step 4a, queued; swim.psi.edu down 523 on Sun Nov 15) — regional ~3 km/px evidence for buried ice.
+- **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost).
+- **Dust-raising potential / dust cover** — e.g. TES dust cover index + thermal inertia + wind; feeds the dust-storm verdicts and suit/visor wear.
+- **Geology** — USGS geologic map units around the sites (Role B scope).
+- **Surface roughness / rock abundance** — from the 1 m DTM (roughness) and HiRISE boulder counts; walkability beyond slope.
+- **Illumination / shadows** — sun position (teammates' Mars clock) + DTM horizon → shadowed terrain and timing of EVAs.
+- **CRISM** where covered (hydrated/ice-related minerals); **line-of-sight to habitat** (one-sentence comms story or simple viewshed).
+- **Upgrades:** imagery to z18 (0.22 m, ~4× tiles); tinted HiRISE RED.
+
+### Next steps (Jess, Sun Nov 15)
+
+1. **Push** local `main` (4 sites commits) — CI will still fail on the teammates' model test until they fix it; tell them.
+2. **Send M the 4 `<HiRISE ID>_mapbox.tif`** (274 MB) → get tileset IDs → paste into `lib/mars/site-tilesets.ts`.
+3. **Ask the R2 owner** to host site terrain + slope tiles (and the slope COGs for C); otherwise the deployed site shows MOLA only at the sites.
+4. **Raise the habitat↔site distance** with A + C (and M for the story): it decides whether routing is base→site or local EVAs within a site.
+5. **Brief C** (above) and agree the cost-surface format (slope only, or slope + hazard mask + future roughness/thermal inertia).
+6. **SWIM** (4a): retry download; then THEMIS thermal inertia.
+7. **3b visual check** in the browser: imagery vs relief vs slope alignment at each crater rim.
+8. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (teammates') with C's real routes; keep every layer's source visible.
 
 ### Step 4 — ≥3 NASA data types
 

@@ -15,7 +15,7 @@
         "terrain_bbox": [
           -176.40806156220302, 44.33764082060427, -176.2331304645478, 44.48077082810194
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
@@ -48,10 +48,10 @@
         "terrain_bbox": [
           -176.40806156220302, 44.33764082060427, -176.2331304645478, 44.48077082810194
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
-        "position_note": "Picked by Claude from the orthoimage (most prominent crater, ~130 m, 12 m deep); refined on DTM. Confirm."
+        "position_note": "Picked from the orthoimage (most prominent crater, ~130 m, 12 m deep), confirmed by Jess; refined on DTM."
       },
       "geometry": {
         "type": "Point",
@@ -72,7 +72,7 @@
         "terrain_bbox": [
           -171.46872904500665, 45.56368667055399, -171.2820053945556, 45.71094997624189
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
@@ -105,7 +105,7 @@
         "terrain_bbox": [
           -171.46872904500665, 45.56368667055399, -171.2820053945556, 45.71094997624189
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
         "position_note": "Circled by Jess on the HiRISE browse image; refined on DTM (bowl ~28 m deep)."
@@ -129,7 +129,7 @@
         "terrain_bbox": [
           -166.21195741457362, 44.29719021258878, -166.06145495275294, 44.47142961544481
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
@@ -162,7 +162,7 @@
         "terrain_bbox": [
           -166.21195741457362, 44.29719021258878, -166.06145495275294, 44.47142961544481
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
         "position_note": "Circled by Jess on the HiRISE browse image; refined on DTM (bowl ~41 m deep)."
@@ -186,7 +186,7 @@
         "terrain_bbox": [
           172.46197438257687, 45.9426954171394, 172.66614223845122, 46.19772814666094
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
@@ -219,7 +219,7 @@
         "terrain_bbox": [
           172.46197438257687, 45.9426954171394, 172.66614223845122, 46.19772814666094
         ],
-        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "source": "MRO HiRISE DTM + RED orthoimage \u2014 NASA/JPL/University of Arizona",
         "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
         "position_note": "Not a crater: ridges worth exploring for ice. POI at the DTM centre."

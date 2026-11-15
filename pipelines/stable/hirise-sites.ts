@@ -47,7 +47,7 @@ const SITES: Site[] = [
     kind: "crater",
     poi: [-176.33383, 44.41589],
     poiNote:
-      "Picked by Claude from the orthoimage (most prominent crater, ~130 m, 12 m deep); refined on DTM. Confirm.",
+      "Picked from the orthoimage (most prominent crater, ~130 m, 12 m deep), confirmed by Jess; refined on DTM.",
   },
   {
     dtm: "DTEEC_034082_2260_033014_2260_A01",
