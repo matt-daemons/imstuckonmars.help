@@ -20,10 +20,10 @@ import { WhereStep } from "./steps/where-step";
 import { usePlacement } from "./use-placement";
 
 const STEPS: { step: Step; number: string; label: string }[] = [
-  { step: "mission", number: "①", label: "Mission" },
-  { step: "where", number: "②", label: "Where" },
-  { step: "check", number: "③", label: "Check" },
-  { step: "run", number: "④", label: "Run" },
+  { step: "mission", number: "01", label: "Mission" },
+  { step: "where", number: "02", label: "Where" },
+  { step: "check", number: "03", label: "Check" },
+  { step: "run", number: "04", label: "Run" },
 ];
 
 const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
@@ -80,7 +80,9 @@ export function RouteSidebar({
             <TabsList aria-label="Mission steps" className="w-full">
               {STEPS.map(({ step, number, label }) => (
                 <TabsTab key={step} value={step}>
-                  <span aria-hidden>{number}</span>
+                  <span aria-hidden className="font-mono tabular-nums opacity-70">
+                    {number}
+                  </span>
                   {label}
                 </TabsTab>
               ))}
