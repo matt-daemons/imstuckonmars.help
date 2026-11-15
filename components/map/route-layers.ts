@@ -13,59 +13,83 @@ export type Feature = { type: "Feature"; properties: Record<string, string>; geo
 
 export const SOURCES = ["planned-route", "no-go-zones", "zone-draft", "route-ends"] as const;
 
-export const LAYERS: LayerSpecification[] = [
-  {
-    id: "no-go-zones",
-    type: "fill",
-    source: "no-go-zones",
-    paint: { "fill-color": "#ef4444", "fill-opacity": 0.35 },
-  },
-  {
-    id: "no-go-zones-outline",
-    type: "line",
-    source: "no-go-zones",
-    paint: { "line-color": "#ef4444", "line-width": 2 },
-  },
-  {
-    id: "zone-draft-line",
-    type: "line",
-    source: "zone-draft",
-    filter: ["==", ["geometry-type"], "LineString"],
-    paint: { "line-color": "#ef4444", "line-width": 2, "line-dasharray": [1, 1] },
-  },
-  {
-    id: "zone-draft",
-    type: "circle",
-    source: "zone-draft",
-    filter: ["==", ["geometry-type"], "Point"],
-    paint: { "circle-radius": 4, "circle-color": "#ef4444" },
-  },
-  {
-    id: "planned-route",
-    type: "line",
-    source: "planned-route",
-    filter: ["==", ["get", "leg"], "outbound"],
-    paint: { "line-color": "#38bdf8", "line-width": 3 },
-  },
-  {
-    id: "planned-route-back",
-    type: "line",
-    source: "planned-route",
-    filter: ["==", ["get", "leg"], "back"],
-    paint: { "line-color": "#f8fafc", "line-width": 2, "line-dasharray": [2, 2] },
-  },
-  {
-    id: "route-ends",
-    type: "circle",
-    source: "route-ends",
-    paint: {
-      "circle-radius": 6,
-      "circle-color": ["match", ["get", "end"], "start", "#7dd3fc", "#fde68a"],
-      "circle-stroke-width": 2,
-      "circle-stroke-color": "#1c0f0a",
+/** Layer specs for the route, zones, draft and end points, coloured from theme tokens. */
+export function routeLayers(token: (name: string) => string): LayerSpecification[] {
+  const danger = token("--destructive");
+  // Line borders in the background colour keep lines readable over bright terrain.
+  const background = token("--background");
+  return [
+    {
+      id: "no-go-zones",
+      type: "fill",
+      source: "no-go-zones",
+      paint: { "fill-color": danger, "fill-opacity": 0.35 },
     },
-  },
-];
+    {
+      id: "no-go-zones-outline",
+      type: "line",
+      source: "no-go-zones",
+      paint: {
+        "line-color": danger,
+        "line-width": 2,
+        "line-border-width": 1,
+        "line-border-color": background,
+      },
+    },
+    {
+      id: "zone-draft-line",
+      type: "line",
+      source: "zone-draft",
+      filter: ["==", ["geometry-type"], "LineString"],
+      paint: {
+        "line-color": danger,
+        "line-width": 2,
+        "line-dasharray": [1, 1],
+        "line-border-width": 1,
+        "line-border-color": background,
+      },
+    },
+    {
+      id: "zone-draft",
+      type: "circle",
+      source: "zone-draft",
+      filter: ["==", ["geometry-type"], "Point"],
+      paint: { "circle-radius": 4, "circle-color": danger },
+    },
+    {
+      id: "planned-route",
+      type: "line",
+      source: "planned-route",
+      filter: ["==", ["get", "leg"], "outbound"],
+      paint: {
+        "line-color": token("--primary"),
+        "line-width": 3,
+        "line-border-width": 1.5,
+        "line-border-color": background,
+      },
+    },
+    {
+      id: "planned-route-back",
+      type: "line",
+      source: "planned-route",
+      filter: ["==", ["get", "leg"], "back"],
+      paint: { "line-color": token("--foreground"), "line-width": 2, "line-dasharray": [2, 2] },
+    },
+    {
+      id: "route-ends",
+      type: "circle",
+      source: "route-ends",
+      // Start is a filled dot and end a ring, so they differ by shape as well as colour.
+      // The two colours match the stops layer in mars-map.tsx.
+      paint: {
+        "circle-radius": 6,
+        "circle-color": ["match", ["get", "end"], "start", "#7dd3fc", background],
+        "circle-stroke-width": ["match", ["get", "end"], "start", 2, 3],
+        "circle-stroke-color": ["match", ["get", "end"], "start", background, "#fde68a"],
+      },
+    },
+  ];
+}
 
 export function setData(map: MapboxMap | null, source: string, features: Feature[]) {
   map?.getSource<GeoJSONSource>(source)?.setData(collection(features));

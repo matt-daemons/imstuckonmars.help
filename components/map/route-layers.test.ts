@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import type { PlannedPath } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
-import { draftFeatures, routeFeatures, zoneFeature } from "./route-layers";
+import { draftFeatures, routeFeatures, routeLayers, zoneFeature } from "./route-layers";
 
 const a: LngLat = [-176, 46];
 const b: LngLat = [-175.99, 46.01];
@@ -48,5 +48,21 @@ describe("draftFeatures", () => {
       "Point",
       "LineString",
     ]);
+  });
+});
+
+describe("routeLayers", () => {
+  const layers = routeLayers((name) => `T(${name})`);
+  const paint = (id: string) => layers.find((layer) => layer.id === id)?.paint;
+
+  it("colours the route and zones from theme tokens", () => {
+    expect(paint("planned-route")).toMatchObject({ "line-color": "T(--primary)" });
+    expect(paint("no-go-zones")).toMatchObject({ "fill-color": "T(--destructive)" });
+    expect(paint("no-go-zones-outline")).toMatchObject({ "line-color": "T(--destructive)" });
+  });
+
+  it("uses no hex colour except the two end-point colours", () => {
+    const hexes = JSON.stringify(layers).match(/#[0-9a-f]{3,8}/gi) ?? [];
+    expect(new Set(hexes)).toEqual(new Set(["#7dd3fc", "#fde68a"]));
   });
 });

@@ -15,17 +15,17 @@ import { appendCorner, EXAMPLE_ZONE } from "@/lib/mars/route-zones";
 import { MAX_SLOPE_DEG, planWalk, slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
+import { ClearZonesButton } from "./clear-zones-button";
 import {
   collection,
   draftFeatures,
   endFeatures,
-  LAYERS,
   routeFeatures,
+  routeLayers,
   setData,
   SOURCES,
   zoneFeature,
 } from "./route-layers";
-import { ClearZonesButton } from "./clear-zones-button";
 import { RouteResult } from "./route-result";
 
 type Mode = "start" | "end" | "zone" | null;
@@ -71,11 +71,13 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
 
   useEffect(() => {
     if (!map) return;
+    const css = getComputedStyle(document.documentElement);
+    const layers = routeLayers((name) => css.getPropertyValue(name).trim());
     for (const id of SOURCES) map.addSource(id, { type: "geojson", data: collection([]) });
-    for (const layer of LAYERS) map.addLayer(layer);
+    for (const layer of layers) map.addLayer(layer);
     return () => {
       if (!map.getStyle()) return; // the parent already called map.remove()
-      for (const layer of LAYERS) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
+      for (const layer of layers) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
       for (const id of SOURCES) if (map.getSource(id)) map.removeSource(id);
     };
   }, [map]);
@@ -135,6 +137,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   const drawing = mode === "zone";
   useEffect(() => {
     if (!map || !drawing) return;
+    const canvas = map.getCanvas();
     // Double-click finishes the zone, so it must not also zoom.
     const onDoubleClick = () => finishDrawing();
     map.doubleClickZoom.disable();
@@ -143,7 +146,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
       map.doubleClickZoom.enable();
       map.off("dblclick", onDoubleClick);
       // Finish zone unmounts with drawing mode; if it had focus, hand focus to the map.
-      if (document.activeElement === document.body) map.getCanvas().focus();
+      if (document.activeElement === document.body) canvas.focus();
     };
   }, [map, drawing]);
 
