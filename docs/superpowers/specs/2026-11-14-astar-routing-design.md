@@ -27,6 +27,8 @@ Algorithm: A* rather than Dijkstra, because one start and one goal is exactly wh
 - **Grid** (`lib/mars/route-grid.ts`): decodes Terrarium RGBA into heights, subtracts the display offset, and gives each Web Mercator row its own latitude. The browser loader fetches the four zoom-10 tiles of the base (about 56 m cells; the source is coarser, so this is not extra detail).
 - **Map** (`components/map/route-planner.tsx`): start defaults to the base, end to the science stop. Buttons set start, set end, draw a no-go zone (click corners, then Finish), and clear zones. Draws the route line and red zones, and shows distance, time, steepest grade and cells searched. The placeholder route layer is hidden by default.
 
+- **Route check** (added 14 November, approved by the user): the panel shows how far the route goes from base and a route-only verdict from `evaluateRoute`, which runs the same slope, walk-back and suit-time rules as `evaluateEva`. It says plainly that radiation, dust and daylight are not checked there. On the default route this reads NO-GO: 5.44 km from base against the 2 km walk-back limit.
+
 ## Calls made by the builder (not decided by the team)
 
 - One example no-go zone between the base and the science stop is preloaded, labelled placeholder, so the first view shows avoidance.
@@ -35,4 +37,4 @@ Algorithm: A* rather than Dijkstra, because one start and one goal is exactly wh
 
 ## Out of scope
 
-Rock detection from imagery, energy and oxygen use, several stops, the GO/NO-GO verdict (that stays with `evaluateEva`).
+Rock detection from imagery, energy and oxygen use, several stops, the full GO/NO-GO verdict with live data (that stays with `evaluateEva`).

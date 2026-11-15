@@ -187,3 +187,45 @@ Panel behaviour:
 - [ ] **Step 1:** Start the dev server, open the map, fly to the base. Confirm the route bends around the red placeholder zone and the numbers show.
 - [ ] **Step 2:** Walk the Review Focus list: set an end outside the grid, draw a zone over the end, wall the end in, finish a 2-corner zone. Each shows its message.
 - [ ] **Step 3:** Run `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build` — expect all PASS.
+
+### Task 5: Route-only flight-rule check in the panel
+
+Added 14 November after the first three tasks: the team's limits (walk-back 2 km, suit time, slope) are real and in `lib/flight-rules/rules.ts`, and the default route already breaks one of them, so the panel should say so.
+
+**Files:**
+
+- Modify: `lib/flight-rules/evaluate.ts`
+- Test: `lib/flight-rules/evaluate.test.ts`
+- Modify: `components/map/route-planner.tsx`
+
+**Interfaces:**
+
+- Consumes: `RouteSummary` from `lib/mars/routing.ts` (`est_time_min`, `max_slope`, `farthest_from_base_km`); the existing private checks `checkSlope`, `checkWalkBack`, `checkSuitSupply` and the `EvaVerdict` type in `evaluate.ts`.
+- Produces:
+  ```ts
+  /** Checks only the rules that depend on the route itself: slope, walk-back distance and suit time. */
+  export function evaluateRoute(route: EvaPlan["route"]): EvaVerdict;
+  ```
+
+Rules for the change to `evaluate.ts`:
+
+- No rule value or comparison is copied or changed. `evaluateRoute` runs the same three check functions `evaluateEva` runs, and both share one helper that turns findings into an `EvaVerdict` (worst first).
+- The three route checks and `minutesWithMargin` take `Pick<EvaPlan, "route">` so they can run without live data. `evaluateEva`'s behaviour and its existing tests do not change, except the two reason strings below.
+- Reason strings round what they print, the way times are already printed in whole minutes: walk-back distance to 2 decimals (`Math.round(x * 100) / 100`, so 2.5 stays "2.5" and 5.440856 prints "5.44"), slope to 1 decimal. Comparisons keep using the unrounded values.
+
+Panel (`RouteResult` in `route-planner.tsx`), shown only when `summary` is not null, below the existing numbers:
+
+- `Farthest from base: {farthest_from_base_km to 2 decimals} km`
+- `Route check: GO` | `Route check: CAUTION` | `Route check: NO-GO`, coloured `text-success` | `text-warning` | `text-destructive`.
+- One line per entry in `reasons`, as returned.
+- Muted note, verbatim: "Route rules only: slope, walk-back and suit time. Radiation, dust and daylight are not checked here."
+
+- [ ] **Step 1: Write the failing tests** in `evaluate.test.ts`, in a new `describe("evaluateRoute")`:
+  - `gives GO when the route meets every route rule`: `{ est_time_min: 180, max_slope: 8, farthest_from_base_km: 1.2 }` → verdict `GO`, `limiting_factor` null, `reasons` empty.
+  - `gives NO_GO beyond the walk-back limit and prints the distance to 2 decimals`: `farthest_from_base_km: 5.440856262495297` → verdict `NO_GO`, `limiting_factor` `"walk_back"`, `reasons[0]` contains `"5.44 km"` and does not contain `"5.4408"`.
+  - `gives CAUTION when the walk with margin is longer than planned`: `est_time_min: 300` (390 with the 1.3 margin, over 360, under 450) → verdict `CAUTION`, `limiting_factor` `"suit_supply"`.
+  - `prints the slope to 1 decimal`: `max_slope: 20.4567` → verdict `NO_GO`, `limiting_factor` `"slope"`, `reasons[0]` contains `"20.5°"`.
+  - `agrees with evaluateEva when the live readings are safe`: for the walk-back case above, `evaluateRoute(route)` deep-equals `evaluateEva(planWith({ route }))`.
+- [ ] **Step 2: Run** `corepack pnpm vitest run lib/flight-rules/evaluate.test.ts` — expect the new tests to FAIL (`evaluateRoute` is not exported).
+- [ ] **Step 3: Implement** `evaluateRoute` and the rounding in `evaluate.ts`, then the panel lines.
+- [ ] **Step 4: Run** the same command — expect PASS, including every existing `evaluateEva` test. Then `corepack pnpm typecheck && corepack pnpm lint && corepack pnpm vitest run && corepack pnpm fmt:check && corepack pnpm build`.
