@@ -65,6 +65,8 @@ const WAKE_REPLY = "Yes?";
 const ASK_DONE_CHECK_MS = 100;
 export const POLL_MS = 2000;
 const HISTORY_TURNS = 8;
+/** A push-to-talk recording ends after this even if the key release is lost. */
+const MAX_PUSH_TO_TALK_MS = 30_000;
 const ACTION_GAP_MS = 50;
 
 async function json<T>(response: Response): Promise<T> {
@@ -88,6 +90,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const [voice, setVoice] = useState(true);
   const seenReasons = useRef<Set<string> | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
+  // Push-to-talk can be released while the microphone is still opening.
+  const micOpening = useRef(false);
+  const wantsMic = useRef(false);
+  const captureLimit = useRef<ReturnType<typeof setTimeout>>(undefined);
   const audio = useRef<HTMLAudioElement | null>(null);
   const busy = useRef(false);
   const bridge = useLaraBridge();
@@ -388,15 +394,25 @@ export function useLara(shared?: { id: string; token: string } | null) {
   );
 
   const startListening = useCallback(async () => {
-    if (!mission || recorder.current) return;
+    if (!mission || recorder.current || micOpening.current) return;
+    wantsMic.current = true;
+    micOpening.current = true;
     setError(null);
     audio.current?.pause();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      micOpening.current = false;
+      // Released while the microphone was opening: nothing to record.
+      if (!wantsMic.current) {
+        stream.getTracks().forEach((track) => track.stop());
+        setStatus("idle");
+        return;
+      }
       const chunks: Blob[] = [];
       const r = new MediaRecorder(stream);
       r.ondataavailable = (e) => e.data.size && chunks.push(e.data);
       r.onstop = () => {
+        clearTimeout(captureLimit.current);
         stream.getTracks().forEach((track) => track.stop());
         recorder.current = null;
         const clip = new Blob(chunks, { type: r.mimeType || "audio/webm" });
@@ -409,13 +425,18 @@ export function useLara(shared?: { id: string; token: string } | null) {
       recorder.current = r;
       r.start();
       setStatus("listening");
+      captureLimit.current = setTimeout(() => recorder.current?.stop(), MAX_PUSH_TO_TALK_MS);
     } catch {
+      micOpening.current = false;
       setError("The microphone is not available, or the browser denied permission to use it");
       setStatus("idle");
     }
   }, [askFromAudio, mission]);
 
-  const stopListening = useCallback(() => recorder.current?.stop(), []);
+  const stopListening = useCallback(() => {
+    wantsMic.current = false;
+    if (recorder.current?.state === "recording") recorder.current.stop();
+  }, []);
 
   const prefetchSignOffs = () => {
     if (voice) SIGN_OFFS.forEach(phraseClip);

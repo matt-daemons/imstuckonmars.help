@@ -8,6 +8,8 @@ import { MapPanel } from "@/components/map/map-panel";
 import { useLaraContext } from "@/components/copilot/lara-context";
 import { useWakeWord, type WakeState } from "@/components/copilot/use-wake-word";
 
+import { PushToTalk, spaceTarget } from "./push-to-talk";
+
 const STATUS_TEXT = {
   starting: "Starting mission…",
   idle: "Ready",
@@ -64,31 +66,43 @@ export function LaraPanel() {
     log.current?.lastElementChild?.scrollIntoView({ block: "end" });
   }, [lara.turns]);
 
-  // Space bar is push-to-talk unless focus is where Space already does something: a text field
-  // types it, and a control (button, tab, radio, checkbox, switch, link, summary, select) is
-  // activated by it, which keyboard users rely on.
+  // Space bar is push-to-talk. Text fields keep Space for typing; on a focused control a tap still
+  // activates it, which keyboard users rely on, and a hold talks. Listeners run in the capture
+  // phase so a focused control never sees a Space that push-to-talk handles.
+  const busyRef = useRef(busy);
+  busyRef.current = busy;
+  const { startListening, stopListening } = lara;
   useEffect(() => {
-    const ownsSpace = (e: KeyboardEvent) =>
-      e.target instanceof HTMLElement &&
-      e.target.closest(
-        "input, textarea, select, [contenteditable], button, a[href], summary, " +
-          "[role=button], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=link]",
-      );
-    const down = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || e.repeat || ownsSpace(e) || busy) return;
+    const ptt = new PushToTalk({
+      start: () => void startListening(),
+      stop: stopListening,
+      activate: (control) => control.click(),
+    });
+    const take = (e: KeyboardEvent) => {
       e.preventDefault();
-      void lara.startListening();
+      e.stopPropagation();
+    };
+    const down = (e: KeyboardEvent) => {
+      if (e.code !== "Space" || e.altKey || e.ctrlKey || e.metaKey) return;
+      if (ptt.down(spaceTarget(e.target), !busyRef.current)) take(e);
     };
     const up = (e: KeyboardEvent) => {
-      if (e.code === "Space" && !ownsSpace(e)) lara.stopListening();
+      if (e.code === "Space" && ptt.up()) take(e);
     };
-    window.addEventListener("keydown", down);
-    window.addEventListener("keyup", up);
+    const abandon = () => ptt.abandon();
+    const hidden = () => document.visibilityState === "hidden" && ptt.abandon();
+    window.addEventListener("keydown", down, true);
+    window.addEventListener("keyup", up, true);
+    window.addEventListener("blur", abandon);
+    document.addEventListener("visibilitychange", hidden);
     return () => {
-      window.removeEventListener("keydown", down);
-      window.removeEventListener("keyup", up);
+      ptt.abandon();
+      window.removeEventListener("keydown", down, true);
+      window.removeEventListener("keyup", up, true);
+      window.removeEventListener("blur", abandon);
+      document.removeEventListener("visibilitychange", hidden);
     };
-  }, [busy, lara]);
+  }, [startListening, stopListening]);
 
   function submit(e: FormEvent) {
     e.preventDefault();
