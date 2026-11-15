@@ -11,7 +11,11 @@ import {
   type ReactNode,
 } from "react";
 
-import { useLaraAction, useLaraContextReader } from "@/components/copilot/lara-bridge";
+import {
+  useLaraAction,
+  useLaraBridge,
+  useLaraContextReader,
+} from "@/components/copilot/lara-bridge";
 import {
   buildTimeline,
   expeditionLegs,
@@ -19,10 +23,16 @@ import {
   stateAt,
   type ExpeditionState,
   type ExpeditionTimeline,
+  type ExpeditionPhase,
 } from "@/lib/mars/expedition";
-import type { LngLat } from "@/lib/mars/types";
 
-import { followedRoute, simulationSummary, type FollowedRoute, type Playback } from "./expedition";
+import {
+  followedRoute,
+  milestoneLine,
+  simulationSummary,
+  type FollowedRoute,
+  type Playback,
+} from "./expedition";
 import { useRoutePlan } from "./route-plan-provider";
 
 /** Playback speeds, as multiples of 1×, which plays the trip in about 75 s. */
@@ -44,8 +54,6 @@ export interface Expedition {
   play: () => void;
   pause: () => void;
   reset: () => void;
-  /** Where the rover, or the crew on foot, is now; null when there is no trip. Reads the latest frame. */
-  roverPosition: () => LngLat | null;
 }
 
 /** The clock of one timeline. A clock kept for another timeline counts as reset. */
@@ -92,10 +100,7 @@ export function ExpeditionProvider({ children }: { children: ReactNode }) {
     () => setClock({ timeline, elapsedMin: 0, playing: false }),
     [timeline],
   );
-  const position = useRef<LngLat | null>(null);
-  position.current = state?.position ?? null;
-  const roverPosition = useCallback(() => position.current, []);
-
+  useSpokenMilestones(state?.phase ?? null, playback);
   useLaraAction("start_simulation", () => {
     dispatch({ type: "goTo", step: "go" });
     play();
@@ -116,7 +121,6 @@ export function ExpeditionProvider({ children }: { children: ReactNode }) {
     play,
     pause,
     reset,
-    roverPosition,
   };
   return <ExpeditionContext value={value}>{children}</ExpeditionContext>;
 }
@@ -178,4 +182,20 @@ function useAnimationClock(
     frame = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(frame);
   }, [timeline, playing, speed, setClock]);
+}
+
+/**
+ * Says a fixed line when a playing trip reaches the walk and when it ends. A reset, or a new plan,
+ * changes the phase without playing through it, so it says nothing.
+ */
+function useSpokenMilestones(phase: ExpeditionPhase | null, playback: Playback) {
+  const bridge = useLaraBridge();
+  const previous = useRef({ phase, playback });
+  useEffect(() => {
+    const before = previous.current;
+    previous.current = { phase, playback };
+    if (before.playback !== "playing" || !before.phase || !phase) return;
+    const line = milestoneLine(before.phase, phase);
+    if (line) bridge.say(line);
+  }, [bridge, phase, playback]);
 }

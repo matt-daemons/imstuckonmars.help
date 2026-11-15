@@ -1,10 +1,20 @@
 import { describe, expect, it } from "vitest";
 
+import { simulationSummarySchema } from "@/lib/copilot/lara-context";
 import { SOL_MINUTES, type DriveWalkPlan } from "@/lib/mars/drive-walk";
 import { buildTimeline, stateAt, type ExpeditionLeg } from "@/lib/mars/expedition";
 import type { LngLat } from "@/lib/mars/types";
 
-import { followedRoute, formatElapsed, simulationSummary } from "./expedition";
+import { followedRoute, formatElapsed, milestoneLine, simulationSummary } from "./expedition";
+
+describe("milestoneLine", () => {
+  it("speaks only when the walk starts and when the trip ends", () => {
+    expect(milestoneLine("drive_out", "walk_out")).toMatch(/staging point/);
+    expect(milestoneLine("drive_back", "done")).toMatch(/back at the base/);
+    expect(milestoneLine("walk_out", "sampling")).toBeNull();
+    expect(milestoneLine("walk_out", "walk_out")).toBeNull();
+  });
+});
 
 const safest = { status: "ok" } as DriveWalkPlan;
 const shortest = { status: "ok" } as DriveWalkPlan;
@@ -125,5 +135,13 @@ describe("simulationSummary", () => {
     });
     expect(summary.phase).toBe("sampling");
     expect(summary.labels[1]).toMatch(/shortest route could not be planned/);
+  });
+
+  it("passes the server's schema for the simulation context, in every phase", () => {
+    const followed = { plan: safest, following: "safest" as const, isFallback: false };
+    for (const minutes of [0, 30, 75, 100, 170, 200, 210]) {
+      const summary = simulationSummary(timeline, stateAt(timeline, minutes), "playing", followed);
+      expect(simulationSummarySchema.safeParse(summary).success).toBe(true);
+    }
   });
 });

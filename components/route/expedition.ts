@@ -2,7 +2,7 @@ import type { DriveWalk } from "@/components/map/route-hooks";
 import type { SimulationSummary } from "@/components/copilot/lara-bridge";
 import type { DriveWalkPlan, RouteChoice } from "@/lib/mars/drive-walk";
 import { SOL_MINUTES } from "@/lib/mars/drive-walk";
-import type { ExpeditionState, ExpeditionTimeline } from "@/lib/mars/expedition";
+import type { ExpeditionPhase, ExpeditionState, ExpeditionTimeline } from "@/lib/mars/expedition";
 
 export type Playback = SimulationSummary["state"];
 
@@ -92,6 +92,16 @@ export function simulationSummary(
       `Limiting resource over the trip: ${timeline.limiting === "rover_battery" ? "rover battery" : "suit oxygen"}.`,
     ],
   };
+}
+
+/** The line LARA says when playback moves from one phase into another, or null to stay quiet. */
+export function milestoneLine(from: ExpeditionPhase, to: ExpeditionPhase): string | null {
+  if (from === to) return null;
+  if (to === "walk_out") {
+    return "Simulation: the rover is parked at the staging point. The crew starts the walk.";
+  }
+  if (to === "done") return "Simulation complete: the rover is back at the base.";
+  return null;
 }
 
 function round(value: number, digits: number): number {

@@ -4,6 +4,7 @@ import type { ExpressionSpecification, LayerSpecification, Map as MapLibreMap } 
 import { useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
+import { useLaraAction } from "@/components/copilot/lara-bridge";
 import { collection, setData, type Feature } from "@/components/map/route-layers";
 import { travelledLines } from "@/lib/mars/expedition";
 import type { LngLat, TravelMode } from "@/lib/mars/types";
@@ -13,6 +14,8 @@ import { useExpedition } from "./expedition-provider";
 import { useRoutePlan } from "./route-plan-provider";
 
 const SOURCE = "expedition";
+// Close enough to follow the rover across the drive strip, or the crew around the site.
+const ROVER_ZOOM: Record<TravelMode, number> = { drive: 11, walk: 15 };
 const MARKER_LABELS: Record<TravelMode, string> = {
   drive: "Rover (simulated)",
   walk: "Crew on foot (simulated)",
@@ -23,11 +26,16 @@ type ExpeditionFeature = Feature<{ kind: "followed" | "travelled" | "marker"; mo
 /**
  * The simulated expedition on the map: the part of the route travelled so far, and a marker for
  * the rover or, on the walk, the crew. A shortest route being played is drawn in full as well,
- * since the map's journey lines show the safest one.
+ * since the map's journey lines show the safest one. Handles LARA's focus_map for the rover.
  */
 export function ExpeditionMapLayer({ map }: { map: MapLibreMap | null }) {
   const { inputs } = useRoutePlan();
   const { followed, timeline, state, playback } = useExpedition();
+
+  useLaraAction("focus_map", ({ target }) => {
+    if (target !== "rover" || !state) return;
+    map?.flyTo({ center: state.position, zoom: ROVER_ZOOM[state.mode] });
+  });
 
   useEffect(() => {
     if (!map) return;
