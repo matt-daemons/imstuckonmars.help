@@ -12,6 +12,7 @@ import { DebugMenu } from "@/components/debug/debug-menu";
 import { ListeningEffect } from "@/components/copilot/listening-effect";
 import { MapCompass } from "@/components/map/map-compass";
 import { MapPanel } from "@/components/map/map-panel";
+import { SpaceBackdrop } from "@/components/map/space-backdrop";
 import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
@@ -41,6 +42,11 @@ export function HomebaseComponents() {
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="space-backdrop" title="Illustrative space backdrop">
+        <div className="relative h-60 w-full overflow-hidden bg-background">
+          <SpaceBackdrop map={null} />
+        </div>
+      </Section>
       <Section id="map-overlay-surfaces" title="Map overlay surfaces">
         <div className="mars-map-shell w-full bg-linear-to-r from-[#4d2d22] to-[#c6a692] p-6">
           <MapPanel title="Translucent map panel" className="max-w-sm">

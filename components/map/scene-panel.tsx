@@ -35,10 +35,18 @@ interface ScenePanelProps {
   map: MapLibreMap | null;
   habitat: LngLat;
   sites: SitePoi[];
+  spaceEnabled: boolean;
+  onSpaceEnabledChange: (enabled: boolean) => void;
 }
 
 /** Camera, terrain-scale, and archived dust simulation controls. */
-export function ScenePanelBody({ map, habitat, sites }: ScenePanelProps) {
+export function ScenePanelBody({
+  map,
+  habitat,
+  sites,
+  spaceEnabled,
+  onSpaceEnabledChange,
+}: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [terrainSource, setTerrainSource] = useState<string | null>(null);
   const [slopeOn, setSlopeOn] = useState(false);
@@ -62,6 +70,19 @@ export function ScenePanelBody({ map, habitat, sites }: ScenePanelProps) {
 
   return (
     <div className="space-y-4">
+      <label className="flex items-center justify-between gap-3">
+        <span>
+          Space backdrop
+          <span className="block text-xs text-muted-foreground">
+            Illustrative stars, galaxies and sun. Not a sky chart.
+          </span>
+        </span>
+        <Switch
+          checked={spaceEnabled}
+          onCheckedChange={onSpaceEnabledChange}
+          aria-label="Show illustrative space backdrop"
+        />
+      </label>
       <div>
         <p className="mt-1 text-xs text-muted-foreground">
           Terrain: {TERRAIN_SOURCE}. The habitat is an illustration. Planet image: NASA/Viking,

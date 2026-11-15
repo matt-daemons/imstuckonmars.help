@@ -2,7 +2,7 @@
 import type { CustomLayerInterface, Map as MapLibreMap } from "maplibre-gl";
 import * as THREE from "three";
 import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { MARS_HORIZON_COLOR, MARS_SKY_COLOR, skyBackground } from "@/lib/mars/sky";
+import { MARS_HORIZON_COLOR, MARS_SKY_COLOR, skyBlend } from "@/lib/mars/sky";
 import {
   habitatDisplayScale,
   habitatGlobeMatrix,
@@ -324,10 +324,10 @@ export function setMarsSky(m: MapLibreMap) {
     "fog-ground-blend": 0.1,
     "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 0],
   });
-  // MapLibre leaves the globe's space transparent; setSky alone cannot fade that backdrop.
+  // Leave orbital space transparent for the illustrative starfield; fade to opaque surface sky.
   const canvas = m.getCanvas();
   const updateBackground = () => {
-    canvas.style.backgroundColor = skyBackground(m.getZoom());
+    canvas.style.backgroundColor = `rgba(176,132,104,${skyBlend(m.getZoom())})`;
   };
   updateBackground();
   m.on("zoom", updateBackground);

@@ -1,5 +1,14 @@
 # Map imagery and terrain in R2
 
+## Illustrative space backdrop
+
+The orbital view includes a deterministic starfield, distant galaxy haze and a
+sun illustration. These follow the map camera but do not animate independently.
+They are not an astronomical catalog, ephemeris, lighting model or mission input.
+They fade out before terrain activates, preserving the existing surface sky.
+The Space backdrop switch under Scene and dust hides this visual layer.
+No additional imagery downloads or external assets are used.
+
 ## Full-screen map and overlays
 
 The map canvas fills the viewport behind the route sidebar and expedition HUD.

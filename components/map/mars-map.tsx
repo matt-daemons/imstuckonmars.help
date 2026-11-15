@@ -15,6 +15,7 @@ import { DebugMenu } from "@/components/debug/debug-menu";
 import { MapCompass } from "@/components/map/map-compass";
 import { MapOverlayViewport } from "./map-overlay-viewport";
 import { useMapCursor } from "./use-map-cursor";
+import { SpaceBackdrop } from "./space-backdrop";
 import "./map-overlays.css";
 import {
   type SiteProps,
@@ -65,6 +66,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [sites, setSites] = useState<SitePoi[]>([]);
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
+  const [spaceEnabled, setSpaceEnabled] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
@@ -250,6 +252,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
       style={SIDEBAR_STYLE}
       className="mars-map-shell relative isolate h-svh overflow-hidden"
     >
+      <SpaceBackdrop map={loaded} enabled={spaceEnabled} />
       <div ref={container} className="mars-map-canvas absolute inset-0" />
       {/* The route plan is shared by the sidebar and the map layers; it renders no DOM of its own. */}
       <RoutePlanProvider base={HABITAT} sites={sites}>
@@ -262,7 +265,15 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                   <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
                 )
               }
-              scene={<ScenePanelBody map={loaded} habitat={HABITAT} sites={sites} />}
+              scene={
+                <ScenePanelBody
+                  map={loaded}
+                  habitat={HABITAT}
+                  sites={sites}
+                  spaceEnabled={spaceEnabled}
+                  onSpaceEnabledChange={setSpaceEnabled}
+                />
+              }
             />
           </RouteSidebar>
           {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
