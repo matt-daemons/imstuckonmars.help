@@ -84,11 +84,15 @@ export async function decodeDustPayload(
   if (!isCompressed && payload.byteLength !== manifest.encoding.decodedBytes) {
     throw new Error("Incomplete dust download. Retry the download.");
   }
-  const hash = Array.from(new Uint8Array(await crypto.subtle.digest("SHA-256", payload)), (value) =>
-    value.toString(16).padStart(2, "0"),
-  ).join("");
-  if (hash !== (isCompressed ? manifest.encoding.sha256 : manifest.encoding.decodedSha256))
-    throw new Error("Dust checksum mismatch. Retry the download.");
+  // crypto.subtle exists only in secure contexts (HTTPS/localhost). Over plain-HTTP LAN dev, rely on the size checks.
+  if (globalThis.crypto?.subtle) {
+    const hash = Array.from(
+      new Uint8Array(await crypto.subtle.digest("SHA-256", payload)),
+      (value) => value.toString(16).padStart(2, "0"),
+    ).join("");
+    if (hash !== (isCompressed ? manifest.encoding.sha256 : manifest.encoding.decodedSha256))
+      throw new Error("Dust checksum mismatch. Retry the download.");
+  }
   const decoded = isCompressed
     ? await new Response(
         new Blob([payload]).stream().pipeThrough(new DecompressionStream("gzip")),

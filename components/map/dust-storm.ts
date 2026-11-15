@@ -57,6 +57,12 @@ export function showDustSimulation(
       .getStyle()
       .layers.find((layer) => layer.type !== "background" && layer.type !== "raster")?.id;
     const sources = DUST_PATCHES.map((patch) => {
+      // The map can outlive this module's state (dev hot reload): reuse sources it already has.
+      const existing = map.getSource<ImageSource>(patch.id);
+      if (existing) {
+        existing.updateImage({ url: image(simulation, frame, field, patch) });
+        return existing;
+      }
       map.addSource(patch.id, {
         type: "image",
         url: image(simulation, frame, field, patch),
