@@ -31,4 +31,35 @@ describe("createLaraBridge", () => {
     remove();
     expect(bridge.context()).toEqual({ simulation: null });
   });
+
+  it("runs every handler of one type, so the route and the rover can share focus_map", () => {
+    const bridge = createLaraBridge();
+    const route = vi.fn();
+    const rover = vi.fn();
+    bridge.handle("focus_map", route);
+    bridge.handle("focus_map", rover);
+    expect(bridge.run({ type: "focus_map", target: "rover" })).toBe(true);
+    expect(route).toHaveBeenCalledOnce();
+    expect(rover).toHaveBeenCalledOnce();
+  });
+
+  it("leaves out a context key whose reader throws", () => {
+    const bridge = createLaraBridge();
+    bridge.provide("route_plan", () => {
+      throw new Error("not ready");
+    });
+    bridge.provide("simulation", () => null);
+    expect(bridge.context()).toEqual({ simulation: null });
+  });
+
+  it("says a line through the registered speaker", () => {
+    const bridge = createLaraBridge();
+    expect(bridge.say("Hello.")).toBe(false);
+    const speak = vi.fn();
+    const remove = bridge.speaker(speak);
+    expect(bridge.say("Hello.")).toBe(true);
+    expect(speak).toHaveBeenCalledWith("Hello.");
+    remove();
+    expect(bridge.say("Hello.")).toBe(false);
+  });
 });
