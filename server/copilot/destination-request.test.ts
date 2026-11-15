@@ -73,7 +73,7 @@ describe("explicit destination requests", () => {
       readLaraContext({ route_plan: plan }),
     );
     expect(answer?.actions).toEqual([{ type: "select_destination", number: 4 }]);
-    expect(answer?.text).toBe("Planning a route to Ridges in Arcadia Planitia.");
+    expect(answer?.text).toBe("I will plan a route to Ridges in Arcadia Planitia.");
     expect(answerDestinationRequest("Go to ridges", readLaraContext(undefined))).toBeNull();
     expect(
       answerDestinationRequest("Go to ridges", readLaraContext({ route_plan: { destinations } })),

@@ -38,6 +38,11 @@ and Mars model scaling are unchanged.
 
 ## LARA listening indicator
 
+LARA speaks directly as the task assistant, using first person for supported
+actions instead of describing a separate application. Queued actions are not
+reported as completed calculations. Spoken replies retain the distinction
+between simulated resources, archived observations and live measurements.
+
 Explicit travel requests to one uniquely named destination, such as “Can we go
 to Ridges in Arcadia Planitia?”, resolve against the current validated
 destination list before model inference. They use the existing destination

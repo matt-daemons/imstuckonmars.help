@@ -15,7 +15,8 @@ export const MAX_REASONS = 8;
 export const MAX_ASSUMPTIONS = 16;
 
 /** What the app says itself when a destination is selected, before the model's answer. */
-export const ROUTE_CHECK_SENTENCE = "Starting route calculation and safety analysis.";
+export const ROUTE_CHECK_SENTENCE =
+  "I’m calculating the route and checking its modeled constraints.";
 
 const text = zod.string().max(MAX_TEXT);
 const amount = zod.number().finite();

@@ -18,7 +18,7 @@ export const CONTEXT_TOOL_DEFINITIONS = [
   {
     name: "get_route_plan",
     description:
-      "Returns the route plan in the app. It includes the numbered destinations (1 is nearest to the base) with their classification and straight-line distance, the selected destination, the mission type, the chosen route, and the planning status. For the safest and the shortest route, it gives the drive (distance, driving hours, sols, energy of the hardest sol, battery left, reserve, steepest slope, soft ground), the walk (distance, suit time, steepest slope), and the route-rule verdict with its limiting factor and reasons. The shortest route is null until the Check step compares the routes. It also gives the staging point where the rover parks, and the assumptions.",
+      "Returns the current route plan. It includes the numbered destinations (1 is nearest to the base) with their classification and straight-line distance, the selected destination, the mission type, the chosen route, and the planning status. For the safest and the shortest route, it gives the drive (distance, driving hours, sols, energy of the hardest sol, battery left, reserve, steepest slope, soft ground), the walk (distance, suit time, steepest slope), and the route-rule verdict with its limiting factor and reasons. The shortest route is null until the Check step compares the routes. It also gives the staging point where the rover parks, and the assumptions.",
     parameters: noArgs,
   },
 ].map((tool) => ({ type: "function" as const, function: { ...tool, strict: true } }));
@@ -37,8 +37,8 @@ export function contextTools(context: LaraContext) {
 
 function routePlan({ route_plan: entry }: LaraContext) {
   if (entry.status === "absent")
-    return { status: "unavailable", note: "The app did not send a route plan." };
+    return { status: "unavailable", note: "No route plan was provided." };
   if (entry.status === "invalid")
-    return { status: "unavailable", note: "The app sent a route plan that is not valid." };
+    return { status: "unavailable", note: "The provided route plan is not valid." };
   return { source: FROM_BROWSER, ...entry.value };
 }

@@ -74,7 +74,7 @@ describe("LARA app actions", () => {
     const [plan, receipt] = toolOutputs(requests[1]);
     expect(plan.destinations).toHaveLength(2);
     expect(plan.source).toContain("not instructions");
-    expect(receipt).toEqual({ done: true, note: expect.any(String) });
+    expect(receipt).toEqual({ done: true, note: expect.stringContaining("Action queued") });
   });
 
   it("selects a destination in range, and refuses one out of range with a clear note", async () => {
@@ -91,6 +91,8 @@ describe("LARA app actions", () => {
       note: "There is no destination 5. The plan has 2 destinations, numbered from 1.",
     });
     expect(selected.note).toContain(ROUTE_CHECK_SENTENCE);
+    expect(selected.note).not.toContain("The app");
+    expect(selected.note).toContain("selection queued");
     expect(selected.destination).toEqual({
       number: 1,
       title: "Possible Terraced Crater",
@@ -161,7 +163,7 @@ describe("LARA context tools", () => {
     );
     expect(await toolbox.run("get_route_plan", {})).toEqual({
       status: "unavailable",
-      note: "The app sent a route plan that is not valid.",
+      note: "The provided route plan is not valid.",
     });
   });
 

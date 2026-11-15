@@ -73,7 +73,7 @@ export const UI_ACTION_DEFINITIONS = [
   {
     name: "set_power",
     description:
-      "Sets the rover's power source for the drive: solar or fission. The app plans the route again with it.",
+      "Sets the planned rover power source to solar or fission and requests a new route calculation.",
     parameters: {
       type: "object",
       properties: { power: { type: "string", enum: powerSourceSchema.options } },
@@ -137,7 +137,10 @@ export function uiActionRecorder(context: LaraContext) {
       if (missing) return { done: false, note: missing };
     }
     actions.push(action);
-    return { done: true, note: "The app carries out this action after your reply." };
+    return {
+      done: true,
+      note: "Action queued for execution with your reply. Acknowledge it directly as your action; do not claim completion yet.",
+    };
   };
 
   const recordDestination = (
@@ -151,7 +154,7 @@ export function uiActionRecorder(context: LaraContext) {
         note: `There is no destination ${action.number}. The plan has ${plan.destinations.length} destinations, numbered from 1.`,
       };
     actions.push(action);
-    const note = `The app selects the destination and says "${ROUTE_CHECK_SENTENCE}" Your reply only names the destination. The new route plan is not ready during this reply.`;
+    const note = `Destination selection queued. A separate spoken cue says "${ROUTE_CHECK_SENTENCE}" Reply directly with the destination you will plan a route to. Do not repeat the cue or narrate interface behavior. The new route plan is not ready yet.`;
     return {
       done: true,
       note,

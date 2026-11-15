@@ -44,7 +44,7 @@ export function answerDestinationRequest(question: string, context: LaraContext)
   const receipt = recorder.record("select_destination", { number: destination.number });
   if (!receipt.done) return null;
   return {
-    text: `Planning a route to ${destination.title}.`,
+    text: `I will plan a route to ${destination.title}.`,
     actions: recorder.actions,
     tools: [{ name: "select_destination", args: { number: destination.number } }],
     model: null,

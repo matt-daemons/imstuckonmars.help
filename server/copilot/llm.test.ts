@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { askCopilot } from "./llm";
+import { askCopilot, SYSTEM_PROMPT } from "./llm";
 
 function provider(replies: unknown[]) {
   const requests: Array<{ messages: Array<{ role: string; content: string | null }> }> = [];
@@ -16,6 +16,12 @@ const call = (name: string, args: unknown, id = "c1") => ({
 });
 
 describe("LARA tool loop", () => {
+  it("speaks as the task assistant without claiming completion or live measurements", () => {
+    expect(SYSTEM_PROMPT).toContain('Use "I" for your actions and "you" for the crew');
+    expect(SYSTEM_PROMPT).toContain("A queued action is not a completed calculation");
+    expect(SYSTEM_PROMPT).toContain("not live measurements or crew oxygen inventory");
+    expect(SYSTEM_PROMPT).not.toContain("say what the app does");
+  });
   it("runs requested tools and returns the spoken answer", async () => {
     const { fetcher, requests } = provider([
       call("project_resources", { minutes_ahead: 30 }),
