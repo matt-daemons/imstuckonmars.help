@@ -13,8 +13,8 @@ import {
   FileTextIcon,
   InfoIcon,
   SirenIcon,
-  SparklesIcon,
   SnowflakeIcon,
+  ThumbsUpIcon,
   TriangleAlertIcon,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -44,7 +44,7 @@ import "./expedition.css";
 import {
   ACTIVITY_LABEL,
   RESOURCE_LABEL,
-  STATUS_STYLE,
+  outcomeStyle,
   grams,
   metres,
   missionTime,
@@ -169,6 +169,12 @@ function OutcomeFacts({ outcome, shelter }: { outcome: Outcome; shelter: string 
           {outcome.margins ? signed(outcome.margins.energy_wh, "Wh") : "Unknown"}
         </dd>
       </div>
+      {outcome.margins?.eva_time_s !== null && outcome.margins?.eva_time_s !== undefined && (
+        <div>
+          <dt className="text-xs text-muted-foreground">EVA time vs limit</dt>
+          <dd className="font-mono">{signed(outcome.margins.eva_time_s / 60, "min")}</dd>
+        </div>
+      )}
     </dl>
   );
 }
@@ -190,7 +196,7 @@ function Replan() {
         in force are included; future faults are not known.
       </p>
       {outlook.options.map((option) => {
-        const style = option.available ? STATUS_STYLE[option.status] : null;
+        const style = option.available ? outcomeStyle(option) : null;
         const recommended = outlook.recommended === option.option;
         return (
           <article
@@ -211,6 +217,11 @@ function Replan() {
             </header>
             <p className="text-xs text-muted-foreground">{option.summary}</p>
             <OutcomeFacts outcome={option} shelter={shelter} />
+            {option.reasons.length > 0 && (
+              <p className="text-xs text-destructive-foreground">
+                {option.reasons.map(reasonText).join(" ")}
+              </p>
+            )}
             {option.available && option.limiting && option.margins && (
               <p className="text-xs text-muted-foreground">
                 Tightest: {RESOURCE_LABEL[option.limiting]}.
@@ -218,7 +229,7 @@ function Replan() {
             )}
             {recommended && (
               <p className="run-rationale">
-                <SparklesIcon aria-hidden className="size-4 shrink-0" />
+                <ThumbsUpIcon aria-hidden className="size-4 shrink-0" />
                 <span>
                   <span className="font-semibold">Recommended.</span> {outlook.rationale}
                 </span>
@@ -551,7 +562,7 @@ function AlertRow({
       variant={ALERT_VARIANT[alert.level]}
       data-level={alert.level === "emergency" && alert.active ? "emergency" : undefined}
       data-acknowledged={!on || undefined}
-      className={alert.active ? undefined : "opacity-80"}
+      className={alert.active ? undefined : "border-dashed"}
     >
       <Icon aria-hidden />
       <AlertTitle>
@@ -636,6 +647,11 @@ export function RunStep() {
   const ended = snapshot.clock.mode === "ended";
   return (
     <div className="flex flex-col gap-4 text-sm">
+      {!ended && (
+        <Section title="Risk simulations" detail="Simulated">
+          <Faults snapshot={snapshot} />
+        </Section>
+      )}
       <Section
         title={route.mode === "walking" ? "Walk from the habitat" : "Walk from the parked rover"}
         detail={position ? `${metres(position.travelled_m)} walked` : undefined}
@@ -668,11 +684,6 @@ export function RunStep() {
           </p>
         )}
       </Section>
-      {!ended && (
-        <Section title="Risk simulations" detail="Simulated">
-          <Faults snapshot={snapshot} />
-        </Section>
-      )}
       <Section title="Alerts">
         <AlertQueue />
       </Section>

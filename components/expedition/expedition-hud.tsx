@@ -37,7 +37,8 @@ import { SPEEDS, useExpedition, type Speed } from "./expedition-provider";
 import {
   PHASE_LABEL,
   RESOURCE_LABEL,
-  STATUS_STYLE,
+  outcomeStyle,
+  returnedOutcomeText,
   metres,
   missionTime,
   signed,
@@ -284,7 +285,7 @@ export function ExpeditionHud() {
   const returned = departed && phase === "shelter";
   const busy = lastCommand?.state === "running";
   const plan = outlook?.options.find((o) => o.option === "continue");
-  const status = plan ? STATUS_STYLE[plan.status] : null;
+  const status = plan ? outcomeStyle(plan) : null;
   const shelterName = route.shelter === "rover" ? "rover" : "habitat";
   const limit = snapshot.config.eva_limit_s;
 
@@ -436,7 +437,11 @@ export function ExpeditionHud() {
             ) : status ? (
               <Badge variant={status.variant}>
                 <status.Icon aria-hidden />
-                {returned ? "Returned" : status.label}
+                {returned
+                  ? plan?.status === "modeled_resource_feasible"
+                    ? "Returned"
+                    : `Returned · ${status.label}`
+                  : status.label}
               </Badge>
             ) : (
               <span className="hud-gauge-detail">
@@ -454,15 +459,25 @@ export function ExpeditionHud() {
                 {" · "}O₂ <span className="font-mono">{signed(plan.margins.oxygen_g, "g")}</span>
                 {" · "}battery{" "}
                 <span className="font-mono">{signed(plan.margins.energy_wh, "Wh")}</span>
+                {plan.margins.eva_time_s !== null && plan.margins.eva_time_s < 0 && (
+                  <>
+                    {" "}
+                    · EVA time{" "}
+                    <span className="font-mono">{signed(plan.margins.eva_time_s / 60, "min")}</span>
+                  </>
+                )}
               </span>
             )}
             <span className="hud-gauge-detail">
+              {plan?.reasons.includes("eva_power_demand_unmet") && !stopped && !returned
+                ? "Suit power demand cannot be met; positive energy margin does not guarantee enough discharge power. "
+                : ""}
               {stopped
                 ? returned
                   ? "Simulation ended at shelter. The report is ready."
                   : "Simulation ended before return. Position and supplies are preserved."
                 : returned
-                  ? "Crew back in the shelter. The report is ready."
+                  ? returnedOutcomeText(plan?.status)
                   : plan?.limiting
                     ? `Margin above reserve at arrival; ${RESOURCE_LABEL[plan.limiting]} is tightest.`
                     : "Modeled resources only; not a safety verdict."}

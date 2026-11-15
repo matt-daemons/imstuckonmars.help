@@ -24,7 +24,7 @@ import type { Verdict } from "@/lib/mars/types";
 import { SPEEDS, useExpedition, type Speed } from "./expedition-provider";
 import {
   ACTIVITY_LABEL,
-  STATUS_STYLE,
+  outcomeStyle,
   grams,
   missionTime,
   signed,
@@ -93,7 +93,7 @@ export function Preflight({
   const current = preview?.key === key ? preview.value : null;
   const failure = error?.key === key ? error.message : null;
   const plan = current?.options[0];
-  const status = plan ? STATUS_STYLE[plan.status] : null;
+  const status = plan ? outcomeStyle(plan) : null;
   const running =
     snapshot?.config.route &&
     snapshot.clock.mode !== "ended" &&
@@ -129,7 +129,7 @@ export function Preflight({
           </Badge>
         )}
       </div>
-      <div role="status" className="flex flex-col gap-2">
+      <div id="preflight-status" role="status" className="flex flex-col gap-2">
         {!result.plan ? (
           <p className="text-sm text-muted-foreground">{result.reason}</p>
         ) : failure ? (
@@ -191,7 +191,7 @@ export function Preflight({
                   <dd className="font-mono">{signed(plan.margins.energy_wh, "Wh")}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-muted-foreground">Back at shelter</dt>
+                  <dt className="text-xs text-muted-foreground">Back at shelter incl. prep</dt>
                   <dd className="font-mono">
                     {plan.arrival_s !== null ? missionTime(plan.arrival_s) : "Unknown"}
                   </dd>
@@ -233,6 +233,8 @@ export function Preflight({
           className="flex-1"
           variant={risky ? "destructive" : "default"}
           disabled={!result.plan || !current || launching}
+          aria-disabled={!result.plan || !current || launching}
+          aria-describedby="preflight-status"
           onClick={() => {
             if (!result.plan || !current || !key) return;
             setReview({

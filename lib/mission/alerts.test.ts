@@ -49,6 +49,32 @@ const leak: ScenarioEvent = {
 };
 
 describe("expedition alerts", () => {
+  it("does not describe a discharge-power failure as an empty battery or reserve breach", () => {
+    const state = evaluateMission(config, trace, [], 1500);
+    state.battery.eva.unmet_wh = 1;
+    state.reasons.push("eva_power_demand_unmet");
+    const projected = missionOutlook(config, trace, [], 1500);
+    const outlook = {
+      mission_id: "fixture",
+      revision: 1,
+      ...projected,
+      recommended: "continue" as const,
+      options: projected.options.map((option) => ({
+        ...option,
+        status: "modeled_constraint_violation" as const,
+        reasons: ["eva_power_demand_unmet"],
+      })),
+    };
+    const alerts = activeAlerts({ config, state }, outlook);
+    expect(alerts.find((alert) => alert.code === "eva_power_demand_unmet")).toMatchObject({
+      name: "Suit power demand unmet",
+      detail: expect.stringContaining("discharge-power limit"),
+    });
+    const returning = alerts.find((alert) => alert.code === "no_option_keeps_reserves");
+    expect(returning?.name).toBe("No feasible return option");
+    expect(returning?.detail).not.toContain("under a suit reserve");
+  });
+
   it("warns before return reserves are lost, with a deterministic response", () => {
     const state = evaluateMission(config, trace, [leak], 1500);
     const outlook = {
