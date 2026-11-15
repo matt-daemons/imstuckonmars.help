@@ -19,7 +19,8 @@
     "pipe:mola": "node pipelines/stable/mola-terrain.ts",
     "pipe:hab-terrain": "node pipelines/stable/hab-terrain.ts",
     "pipe:hab-imagery": "node pipelines/stable/hab-imagery.ts",
-    "pipe:display-terrain": "node pipelines/stable/display-terrain.ts"
+    "pipe:display-terrain": "node pipelines/stable/display-terrain.ts",
+    "pipe:globe-imagery": "node pipelines/stable/globe-imagery.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

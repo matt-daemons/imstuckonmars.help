@@ -23,13 +23,13 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [intensity, setIntensity] = useState(0);
   const [windFromDeg, setWindFromDeg] = useState(270);
-  const [localTerrain, setLocalTerrain] = useState(false);
+  const [terrainSource, setTerrainSource] = useState<string | null>(null);
   const current = useRef(intensity);
   current.current = intensity;
 
   useEffect(() => {
     if (!map) return;
-    const update = () => setLocalTerrain(updateTerrain(map, exaggeration) === LOCAL_TERRAIN_SOURCE);
+    const update = () => setTerrainSource(updateTerrain(map, exaggeration) ?? null);
     update();
     map.on("moveend", update);
     return () => {
@@ -61,11 +61,15 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
       <div>
         <h2 className="font-heading text-sm font-semibold">Scene</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Terrain: {TERRAIN_SOURCE}. Habitat and dust storm are illustrative, not data.
+          Terrain: {TERRAIN_SOURCE}. Habitat and dust storm are illustrative, not data. Planet
+          image: NASA/USGS/Ames via NASA Trek.
         </p>
         <p className="mt-1 font-mono text-sm" role="status">
-          {localTerrain ? "Active elevation grid: 200 m" : "Active elevation grid: 463 m"}. Fine
-          image detail is not terrain accuracy.
+          {terrainSource === LOCAL_TERRAIN_SOURCE
+            ? "Active elevation grid: 200 m. Fine image detail is not terrain accuracy."
+            : terrainSource
+              ? "Active elevation grid: 463 m. Fine image detail is not terrain accuracy."
+              : "Global image overview. Elevation data covers the Arcadia region only."}
         </p>
       </div>
 
@@ -73,8 +77,8 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
         <Button size="xs" variant="outline" onClick={() => fly(18, 70, -30)}>
           Fly to habitat
         </Button>
-        <Button size="xs" variant="outline" onClick={() => fly(8, 60, -20)}>
-          Overview
+        <Button size="xs" variant="outline" onClick={() => fly(1.5, 0, 0)}>
+          View planet
         </Button>
       </div>
 

@@ -6,6 +6,11 @@ The base and route remain simulated, not historical mission positions.
 
 ## What is displayed
 
+- **Planet overview:** Mapbox globe with a NASA/USGS/Ames Viking MDIM 2.1
+  colorized mosaic from NASA Trek. The small z0–3 tile release uses the service's
+  geographic level 2, about 0.176° per source pixel, not the full 232 m product.
+  It is visual context, not a global elevation model. Web Mercator tile limits
+  omit the last 4.95° at each pole; the renderer's pole fill is not measured imagery.
 - **Regional elevation:** existing 463 m MOLA tiles and shaded-color base.
 - **Local elevation:** a bounded native-grid cutout of the USGS MOLA/HRSC
   blended DEM v2. Its nominal grid spacing is 200 m. This is not a claim of
@@ -23,6 +28,12 @@ The Scene panel identifies the active elevation grid. The local elevation
 source activates only when the entire viewport is inside its supported bounds
 and zoom is at least 10. Otherwise the existing MOLA source stays active.
 Image layers never feed elevation, slope, route or resource calculations.
+
+The map starts in the planet view. View planet returns to it, and Fly to habitat
+retains the existing close-up camera. Mapbox transitions from globe geometry to
+its local Mercator rendering at high zoom. The custom habitat mesh renders only
+in the close-up view. Regional elevation is disabled below zoom 5 and outside
+the regional footprint; the globe remains visible without invented elevations.
 
 The original regional pipeline still clamps elevation at its outer boundaries
 and exaggerates its color hillshade by 40. Its regional shading is illustrative.
@@ -70,6 +81,7 @@ pnpm pipe:hab-terrain
 pnpm pipe:hab-imagery
 node pipelines/stable/ai-imagery.ts
 pnpm pipe:display-terrain
+pnpm pipe:globe-imagery
 ```
 
 The last command only projects the saved AI image. It does not call a model.
@@ -83,6 +95,10 @@ control. `public/data/terrain/hab/` holds 21 complete Terrarium tiles at zooms
 9–11 plus metadata and hashes. `public/data/terrain/ctx/` holds imagery,
 the AI input/output and provenance. No R2 bucket or runtime imagery proxy is
 needed for this bounded static release. No large global raster was downloaded.
+
+`public/data/terrain/globe/provenance.json` records the 32 NASA Trek source tile
+URLs and hashes, the 2:1 geographic source matrix, the display reprojection and
+all 85 output tile hashes. The globe is not an Earth basemap recolored as Mars.
 
 The new source uses Mars planetocentric, east-positive angles and a
 3,396,190 m sphere. Mapbox receives the same angles in its display-only

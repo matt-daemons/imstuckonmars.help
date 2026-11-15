@@ -30,6 +30,12 @@ export function updateTerrain(m: MapboxMap, exaggeration: number) {
     m.getZoom(),
   );
   const current = m.getTerrain();
+  if (source === null) {
+    if (current) m.setTerrain(null);
+    return null;
+  }
+  // React refresh or initial source setup can run before all sources exist.
+  if (!m.getSource(source)) return null;
   if (current?.source !== source || current.exaggeration !== exaggeration) {
     m.setTerrain({ source, exaggeration });
   }
@@ -38,6 +44,15 @@ export function updateTerrain(m: MapboxMap, exaggeration: number) {
 
 export function addTerrain(m: MapboxMap, beforeId?: string) {
   const origin = location.origin; // Mapbox needs absolute tile URLs
+  m.addSource("mars-global", {
+    type: "raster",
+    tiles: [`${origin}/data/terrain/globe/{z}/{x}/{y}.jpg`],
+    tileSize: 256,
+    minzoom: 0,
+    maxzoom: 3,
+    attribution: "NASA/USGS/Ames; NASA Trek",
+  });
+  m.addLayer({ id: "mars-global", type: "raster", source: "mars-global" }, beforeId);
   m.addSource(REGIONAL_TERRAIN_SOURCE, {
     type: "raster-dem",
     tiles: [`${origin}/data/terrain/display/mola/{z}/{x}/{y}.png`],
@@ -84,7 +99,15 @@ export function setDustStorm(m: MapboxMap, intensity: number, windFromDeg: numbe
   m.setFog({
     color: mix(CLEAR.horizon, STORM.horizon, t),
     "high-color": mix(CLEAR.sky, STORM.sky, t),
-    "space-color": mix(CLEAR.sky, STORM.sky, t),
+    "space-color": [
+      "interpolate",
+      ["linear"],
+      ["zoom"],
+      4,
+      "#010405",
+      7,
+      mix(CLEAR.sky, STORM.sky, t),
+    ],
     "horizon-blend": 0.1 + 0.3 * t,
     range: [2 - 1.5 * t, 12 - 10 * t],
     "star-intensity": 0,
@@ -160,6 +183,8 @@ export function habitatLayer(mapboxgl: MapboxGL, at: LngLat): CustomLayerInterfa
       renderer.autoClear = false;
     },
     render(_gl, matrix) {
+      // The model uses a local Mercator matrix, after globe's close-up transition.
+      if (map.getZoom() < 7 || !map.getTerrain()) return;
       const elevation = map.queryTerrainElevation(at) ?? 0;
       const origin = mapboxgl.MercatorCoordinate.fromLngLat(at, elevation);
       const scale = origin.meterInMercatorCoordinateUnits() * MARS_TO_MAP;

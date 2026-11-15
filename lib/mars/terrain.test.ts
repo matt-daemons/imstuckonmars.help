@@ -31,7 +31,12 @@ describe("Mars terrain display", () => {
     expect(terrainSourceForView([-176.1, 45.93, -175.9, 46.07], 12)).toBe("hab-dem");
     expect(terrainSourceForView([-176.1, 45.93, -175.9, 46.07], 8)).toBe("mola-dem");
     expect(terrainSourceForView([-177, 45.93, -175.9, 46.07], 12)).toBe("mola-dem");
-    expect(terrainSourceForView([170, 45.93, 184, 46.07], 12)).toBe("mola-dem");
+    expect(terrainSourceForView([170, 45.93, 184, 46.07], 12)).toBeNull();
+  });
+
+  it("does not project bounded elevation data onto the whole globe", () => {
+    expect(terrainSourceForView([-180, -80, 180, 80], 1.5)).toBeNull();
+    expect(terrainSourceForView([120, -30, 130, -20], 8)).toBeNull();
   });
 
   it("masks missing samples and never clamps outside coverage to a fake edge", () => {

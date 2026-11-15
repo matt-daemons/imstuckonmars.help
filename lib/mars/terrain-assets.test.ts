@@ -14,6 +14,28 @@ const terrainManifest = z.object({
 });
 
 describe("packaged terrain release", () => {
+  it("ships the complete small global imagery pyramid with source hashes", async () => {
+    const manifest = z
+      .object({
+        sources: z.array(z.object({ url: z.string(), sha256: z.string() })),
+        assets: z.array(z.object({ path: z.string(), sha256: z.string() })),
+      })
+      .parse(JSON.parse(await readFile("public/data/terrain/globe/provenance.json", "utf8")));
+    expect(manifest.sources).toHaveLength(32);
+    expect(manifest.assets).toHaveLength(85);
+    for (let zoom = 0; zoom <= 3; zoom++) {
+      for (let x = 0; x < 2 ** zoom; x++) {
+        for (let y = 0; y < 2 ** zoom; y++) {
+          const path = `${zoom}/${x}/${y}.jpg`;
+          const asset = manifest.assets.find((entry) => entry.path === path);
+          const bytes = await readFile(`public/data/terrain/globe/${path}`);
+          expect(createHash("sha256").update(bytes).digest("hex")).toBe(asset?.sha256);
+          expect(bytes.subarray(0, 2)).toEqual(Buffer.from([0xff, 0xd8]));
+        }
+      }
+    }
+  });
+
   it("ships every declared elevation tile, with finite negative Mars elevations and no transparent pixels", async () => {
     const manifest = terrainManifest.parse(
       JSON.parse(await readFile("public/data/terrain/hab/provenance.json", "utf8")),

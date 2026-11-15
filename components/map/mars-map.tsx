@@ -44,17 +44,17 @@ export function MarsMap() {
       mapboxgl.accessToken = MAPBOX_TOKEN;
       const m = new mapboxgl.Map({
         container: container.current,
-        // Flat Web Mercator; Mapbox's default globe and Earth atmosphere don't apply to Mars.
-        projection: "mercator",
+        // Globe is display geometry; coordinates and metric calculations remain Mars-specific.
+        projection: "globe",
         style: {
           version: 8,
           sources: {},
           layers: [{ id: "bg", type: "background", paint: { "background-color": "#3a1f14" } }],
         },
         center: data.aoi.center,
-        zoom: 8,
-        pitch: 60,
-        bearing: -20,
+        zoom: 1.5,
+        pitch: 0,
+        bearing: 0,
         maxPitch: 85,
         attributionControl: false,
       });
