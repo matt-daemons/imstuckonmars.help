@@ -7,6 +7,15 @@ html[data-borderless] :is([data-slot="separator"], [data-slot="sidebar-separator
   background-color: transparent;
 }
 
+/* These shared edges expose a hairline of the map when only their color is hidden. */
+html[data-borderless] [data-slot="sidebar-container"] {
+  border-inline-width: 0 !important;
+}
+
+html[data-borderless] :is(.expedition-hud, [data-slot="sidebar-footer"]) {
+  border-top-width: 0 !important;
+}
+
 /* Borders that encode state or shape are not panel chrome. */
 html[data-borderless]
   :is(
