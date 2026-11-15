@@ -49,21 +49,24 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
 
   return (
     <>
-      <ListeningEffect active={listening} />
       {/* Before the chat, so Tab moves from the button into the chat it opens. */}
-      <Button
-        variant={open ? "default" : "outline"}
-        aria-expanded={open}
-        aria-controls={chatId}
-        className={open ? "absolute right-4 bottom-12" : "absolute right-4 bottom-12 bg-background"}
-        onClick={toggle}
-      >
-        {listening ? <Mic aria-hidden /> : <MessageSquareIcon aria-hidden />}
-        {listening ? "LARA is listening" : "Ask LARA"}{" "}
-        {statusBadge && !listening && <Badge variant="info">{statusBadge}</Badge>}{" "}
-        {unseen && <Badge variant="warning">New alert</Badge>}{" "}
-        {hiddenError && <Badge variant="error">Error</Badge>}
-      </Button>
+      <div className="absolute right-4 bottom-12">
+        <ListeningEffect active={listening}>
+          <Button
+            variant={open ? "default" : "outline"}
+            aria-expanded={open}
+            aria-controls={chatId}
+            className="bg-background"
+            aria-label={listening ? "Ask LARA, listening" : undefined}
+            onClick={toggle}
+          >
+            {listening ? <Mic aria-hidden /> : <MessageSquareIcon aria-hidden />}
+            Ask LARA {statusBadge && !listening && <Badge variant="info">{statusBadge}</Badge>}{" "}
+            {unseen && <Badge variant="warning">New alert</Badge>}{" "}
+            {hiddenError && <Badge variant="error">Error</Badge>}
+          </Button>
+        </ListeningEffect>
+      </div>
       <div id={chatId} hidden={!open}>
         {children}
       </div>

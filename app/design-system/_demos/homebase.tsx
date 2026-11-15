@@ -46,14 +46,15 @@ export function HomebaseComponents() {
         <p>Geographic north. Select the compass on the map to reset its bearing.</p>
       </Section>
       <Section id="listening-effect" title="LARA listening indicator">
-        <Button
-          variant="outline"
-          aria-pressed={listeningPreview}
-          onClick={() => setListeningPreview((value) => !value)}
-        >
-          {listeningPreview ? "Stop listening preview" : "Preview listening indicator"}
-        </Button>
-        <ListeningEffect active={listeningPreview} />
+        <ListeningEffect active={listeningPreview}>
+          <Button
+            variant="outline"
+            aria-pressed={listeningPreview}
+            onClick={() => setListeningPreview((value) => !value)}
+          >
+            {listeningPreview ? "Stop listening preview" : "Preview listening indicator"}
+          </Button>
+        </ListeningEffect>
         <p>
           Visual fixture only. Does not activate the microphone. Reduced motion uses a static
           border.
