@@ -51,7 +51,7 @@ export const UI_ACTION_DEFINITIONS = [
   {
     name: "select_destination",
     description:
-      "Selects a destination by its number in get_route_plan (1 is nearest to the base). Opens the Check step, which starts route calculation and safety analysis.",
+      'Selects a destination by its number in get_route_plan (1 is nearest to the base). Opens the Check step, which starts route calculation and safety analysis. Match the crew\'s distinctive words to one title and kind: "ridges" is the site of kind ridges, never a crater. Every title ends in "in Arcadia Planitia", so those words never decide. If the words fit more than one title, ask which one instead of calling this tool.',
     parameters: {
       type: "object",
       properties: { number: { type: "integer", minimum: 1, maximum: MAX_DESTINATIONS } },
