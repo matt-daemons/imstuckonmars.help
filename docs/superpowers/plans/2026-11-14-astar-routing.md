@@ -36,22 +36,32 @@
 ### Task 1: Elevation grid from Terrarium tiles
 
 **Files:**
+
 - Create: `lib/mars/route-grid.ts`
 - Test: `lib/mars/route-grid.test.ts`
 
 **Interfaces:**
+
 - Consumes: `tileLongitude`, `tileLatitude`, `MARS_RADIUS_M`, `DISPLAY_ELEVATION_OFFSET_M` from `lib/mars/terrain.ts`; `LngLat` from `lib/mars/types.ts`.
 - Produces:
+
   ```ts
   export interface RouteGrid {
-    width: number; height: number;
-    west: number; east: number;      // longitude of the outer edges, degrees
-    rowEdges: Float64Array;          // latitude of each row edge, north to south, length height + 1
-    heights: Float32Array;           // metres, row-major; NaN = no data
+    width: number;
+    height: number;
+    west: number;
+    east: number; // longitude of the outer edges, degrees
+    rowEdges: Float64Array; // latitude of each row edge, north to south, length height + 1
+    heights: Float32Array; // metres, row-major; NaN = no data
   }
   export function decodeTerrarium(rgba: ArrayLike<number>, offsetM: number): Float32Array; // NaN where alpha < 255
-  export function gridFromTiles(zoom: number, x0: number, y0: number, tiles: ArrayLike<number>[][]): RouteGrid; // tiles[row][col], 256×256 RGBA each, display offset removed
-  export function cellAt(grid: RouteGrid, point: LngLat): number | null;        // row * width + col
+  export function gridFromTiles(
+    zoom: number,
+    x0: number,
+    y0: number,
+    tiles: ArrayLike<number>[][],
+  ): RouteGrid; // tiles[row][col], 256×256 RGBA each, display offset removed
+  export function cellAt(grid: RouteGrid, point: LngLat): number | null; // row * width + col
   export function cellCenter(grid: RouteGrid, index: number): LngLat;
   export function cellSize(grid: RouteGrid, row: number): { dx: number; dy: number }; // metres
   ```
@@ -72,11 +82,13 @@
 ### Task 2: Walls and A*
 
 **Files:**
+
 - Create: `lib/mars/routing.ts`
 - Create: `lib/mars/route-zones.ts` (the placeholder zone, so tests and UI share it; contents in Task 3's Interfaces)
 - Test: `lib/mars/routing.test.ts`
 
 **Interfaces:**
+
 - Consumes: Task 1's `RouteGrid`, `cellAt`, `cellCenter`, `cellSize`; `FLIGHT_RULES`.
 - Produces:
   ```ts
@@ -99,6 +111,7 @@
   ```
 
 A* rules (the tests cannot pin these all down):
+
 - 8 neighbours. A diagonal step needs both side cells open (no corner cutting).
 - Step cost = √(horizontal² + Δz²). Horizontal uses `cellSize` of the rows involved (average for vertical and diagonal steps).
 - Refuse a step whose own grade atan(|Δz| / horizontal) exceeds `maxSlopeDeg`.
@@ -124,27 +137,40 @@ A* rules (the tests cannot pin these all down):
 ### Task 3: Route panel on the map
 
 **Files:**
+
 - Create: `lib/mars/load-route-grid.ts` (browser loader)
 - Create: `components/map/route-planner.tsx`
 - Modify: `components/map/mars-map.tsx` (render the panel; move the error badge to bottom centre)
 - Modify: `public/data/processed/manifest.json` (`route` layer `visible: false`)
 
 **Interfaces:**
+
 - Consumes: Tasks 1 and 2.
 - Produces:
   ```ts
   // route-zones.ts
   export const EXAMPLE_ZONE: NoGoZone = {
-    id: "example", name: "Example boulder field (placeholder)",
-    ring: [[-176.018, 46.0], [-176.0, 46.012], [-175.982, 46.0], [-176.0, 45.988]],
+    id: "example",
+    name: "Example boulder field (placeholder)",
+    ring: [
+      [-176.018, 46.0],
+      [-176.0, 46.012],
+      [-175.982, 46.0],
+      [-176.0, 45.988],
+    ],
   };
   // load-route-grid.ts
   export function loadBaseGrid(signal?: AbortSignal): Promise<RouteGrid>; // fetch → createImageBitmap → OffscreenCanvas.getImageData for the 4 tiles
   // route-planner.tsx
-  export function RoutePlanner(props: { map: MapboxMap | null; base: LngLat; target: LngLat }): JSX.Element;
+  export function RoutePlanner(props: {
+    map: MapboxMap | null;
+    base: LngLat;
+    target: LngLat;
+  }): JSX.Element;
   ```
 
 Panel behaviour:
+
 - Bottom-left, same card style as `LayerPanel`. Title "Route (A*)".
 - Mode buttons: Set start, Set end, Draw no-go zone, Finish zone, Clear zones. A map click acts on the current mode; with no mode set, clicks do nothing.
 - Starts with start = base, end = `s1` stop, zones = `[EXAMPLE_ZONE]`.

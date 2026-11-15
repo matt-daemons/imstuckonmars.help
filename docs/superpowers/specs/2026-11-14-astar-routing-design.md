@@ -12,11 +12,11 @@ The only elevation data at the base is the bounded MOLA/HRSC grid (nominal 200 m
 
 ## Approaches
 
-| Approach | Trade-off |
-|---|---|
-| Slope walls only | Honest, but the route is nearly a straight line at this base |
+| Approach                                                   | Trade-off                                                                                                                              |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| Slope walls only                                           | Honest, but the route is nearly a straight line at this base                                                                           |
 | **Slope walls plus no-go zones drawn on the map (picked)** | Real slope data still applies; the crew marks boulder fields or crater rims they see in the 5 m CTX imagery, and A* routes around them |
-| Auto-detect obstacles from CTX imagery | Most impressive, slowest to build; imagery registration can be off by up to 200 m |
+| Auto-detect obstacles from CTX imagery                     | Most impressive, slowest to build; imagery registration can be off by up to 200 m                                                      |
 
 Algorithm: A* rather than Dijkstra, because one start and one goal is exactly what A* is for. Dijkstra is the better tool later, for a "how far can I get and still return" field from the base.
 
