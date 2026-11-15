@@ -119,20 +119,10 @@
     },
     {
       "id": "stops",
-      "title": "Science stops",
+      "title": "Habitat location",
       "kind": "vector",
       "path": "stops.geojson",
       "visible": true,
-      "source": {
-        "name": "Placeholder — Role C"
-      }
-    },
-    {
-      "id": "route",
-      "title": "Planned route",
-      "kind": "vector",
-      "path": "route.geojson",
-      "visible": false,
       "source": {
         "name": "Placeholder — Role C"
       }

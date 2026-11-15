@@ -53,8 +53,6 @@ import type { LayerManifest, LngLat } from "@/lib/mars/types";
 const DATA_ROOT = "/data/processed";
 // Placeholder habitat site; matches the "base" stop in stops.geojson.
 const HABITAT: LngLat = [-176.05, 45.97];
-// Placeholder science stop; matches the "s1" stop in stops.geojson.
-const SCIENCE_STOP: LngLat = [-175.95, 46.03];
 
 // sites.geojson from pipelines/stable/hirise-sites.ts: a footprint polygon + a POI point per site.
 interface SitesGeoJSON {
@@ -273,7 +271,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
         <ConditionsProvider habitat={HABITAT}>
           <MissionViewProvider map={loaded} base={HABITAT} error={error}>
-            <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP} />
+            <RouteSidebar map={loaded} base={HABITAT} />
             {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
             <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
               <MapOverlayViewport map={loaded}>

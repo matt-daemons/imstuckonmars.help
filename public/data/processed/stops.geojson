@@ -5,11 +5,6 @@
       "type": "Feature",
       "properties": { "id": "base", "name": "Habitat (placeholder)", "kind": "base" },
       "geometry": { "type": "Point", "coordinates": [-176.05, 45.97] }
-    },
-    {
-      "type": "Feature",
-      "properties": { "id": "s1", "name": "Ice-exposing crater (placeholder)", "kind": "science" },
-      "geometry": { "type": "Point", "coordinates": [-175.95, 46.03] }
     }
   ]
 }
