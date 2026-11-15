@@ -8,12 +8,12 @@ import { ClearZonesButton } from "@/components/map/clear-zones-button";
 import { siteLabel } from "@/components/map/drive-controls";
 import { formatNumber } from "@/components/map/drive-result";
 import { fitPoints } from "@/components/route/camera";
+import { FinishZoneButton, PlacementHint } from "@/components/route/placement-hint";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import type { PlaceMode, Placement } from "@/components/route/use-placement";
 import { samePoint } from "@/components/route/use-route-plan-result";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Kbd } from "@/components/ui/kbd";
 import { RadioGroup } from "@/components/ui/radio-group";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -21,12 +21,6 @@ import { marsDistanceM } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 import { ChoiceCard } from "./choice-card";
-
-const MODE_HINTS: Record<PlaceMode, string> = {
-  start: "Click the map to set the start.",
-  end: "Click the map to set the end.",
-  zone: "Click the map to add corners. Double-click to finish.",
-};
 
 /** Step ②: where the mission goes, picked from a list or set on the map, and its no-go zones. */
 export function WhereStep({
@@ -93,7 +87,7 @@ function EditRoute({ placement }: { placement: Placement }) {
   const { inputs } = useRoutePlan();
   const { setOpenMobile } = useSidebar();
   const drawZoneItem = useRef<HTMLButtonElement>(null);
-  const { mode, draft } = placement;
+  const { mode } = placement;
   // Starts open while placing, as when the sheet comes back in the middle of drawing a zone.
   const [open, setOpen] = useState(mode !== null);
 
@@ -129,11 +123,7 @@ function EditRoute({ placement }: { placement: Placement }) {
               Draw no-go zone
             </ToggleGroupItem>
           </ToggleGroup>
-          {mode === "zone" && (
-            <Button size="sm" disabled={draft.length < 3} onClick={placement.finishZone}>
-              {draft.length < 3 ? `Finish zone (${draft.length}/3)` : "Finish zone"}
-            </Button>
-          )}
+          {mode === "zone" && <FinishZoneButton placement={placement} />}
           <ClearZonesButton
             zones={inputs.zones}
             onClear={placement.clearZones}
@@ -142,11 +132,7 @@ function EditRoute({ placement }: { placement: Placement }) {
         </div>
         {/* Always mounted while open, so screen readers announce the hint when it changes. */}
         <p aria-live="polite" className={mode ? "text-xs text-muted-foreground" : "sr-only"}>
-          {mode && (
-            <>
-              {MODE_HINTS[mode]} <Kbd>Enter</Kbd> map centre <Kbd>Esc</Kbd> cancel
-            </>
-          )}
+          {mode && <PlacementHint mode={mode} />}
         </p>
       </CollapsiblePanel>
     </Collapsible>
