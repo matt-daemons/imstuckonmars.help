@@ -160,26 +160,23 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Team decisions (shared role A)
 
-1. **Regional slope 200 m** — router input (would mean re-setting the halved MOLA slope limits) or display-only?
+1. **Regional slope 200 m** — waiting on the routing teammate; router input (would mean re-setting the halved MOLA slope limits) or display-only?
 2. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
 3. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
 4. Confirm owner names for roles C and D.
 
 ### M (hosting + UI)
 
-1. **Upload sites-v2** (718 MB, 27,856 files; OK the 850 MB limit): `MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload`, then
-   set `SITE_DATA_ROOT` and `ROUGHNESS_DATA_ROOT` (`lib/mars/ground-layers.ts`) to `…/sites-v2`. Until then roughness works locally only and the
-   staging panel says "roughness not checked". (Jess has local, uncommitted sites-v2 wiring waiting for this.)
-2. Host regional-slope tiles (needs a release config).
+1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
+2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
 3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
 4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` / AOI name with real routes so nothing fake ships.
 5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
 
 ### Jess (role B)
 
-1. ~~Thermal-inertia R2 prefix~~ — it ships inside sites-v2 (`sites-v2/thermal-inertia`); sent to M, who is uploading. Local, uncommitted
-   wiring sets `THERMAL_INERTIA_DATA_ROOT`, `ROUGHNESS_DATA_ROOT` and `SITE_DATA_ROOT` to sites-v2 → commit once the upload is live.
-2. Regional slope onto the map (tiles are in sites-v2; wire once uploaded). ~~Geology~~ done (`8704a69e`).
+1. ~~Thermal-inertia R2 prefix~~ — `sites-v2/thermal-inertia`; wired (`THERMAL_INERTIA_DATA_ROOT`).
+2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
 3. Slides: pin the page of the Hassler 2014 quiet-time dose rate (~9 µGy/h) — the radiation flight rule's 18 / 90 µGy/h thresholds are
    2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
 4. **SWIM** ice layer — swim.psi.edu down (HTTP 523); retry. PIA26045 is a PNG illustration → slides only.
@@ -257,7 +254,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 
 - **Roughness** (`pnpm pipe:roughness <dtm>`): RMS height deviation from the local 5 m trend, 5 m cells. COG `data/processed/sites/<dtm>/roughness.tif`
   (Int16 cm), tiles `public/data/sites/<dtm>/roughness/` z11–16, summary `public/data/processed/roughness-sites.json`. p50 0.08–0.15 m, mostly DTM
-  noise (Kirk et al. 2008); only crater rims/ridge flanks stand out. In the `sites-v2` package (not uploaded — §7 M item 1).
+  noise (Kirk et al. 2008); only crater rims/ridge flanks stand out. In the `sites-v2` package (uploaded, live).
 - **Boulders** (`pnpm pipe:boulders [dtm]`): rock-shadow candidates within 500 m of each POI on the 0.25 m ortho (Golombek et al. 2008/2012) →
   36-candidate review (`pipelines/stable/boulders-review.json`) → upper bound on rock abundance (rule of three / Wilson) → Golombek & Rapp (1997).
   Review found **0/36, 0/36, 0/36, 0/1** real rocks (confirmed by Jess). Upper bounds k ≤ 6.7 % · 10.7 % · 9.3 % · 4.0 %; rocks ≥ 0.5 m ≤ 2.5 · 5.5 ·
@@ -267,7 +264,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 ### Thermal inertia (THEMIS, 100 m)
 
 - `pnpm pipe:thermal-inertia` (~4 min), 170–196°E, 43–48°N → `data/processed/thermal-inertia/thermal-inertia.tif` (Int16, nodata −9999, **lon
-  0..360 °E**), tiles `public/data/thermal-inertia/` z5–11 (uploaded to R2 by Jess; prefix not yet recorded — §7 Jess item 1), summary
+  0..360 °E**), tiles `public/data/thermal-inertia/` z5–11 (R2: `sites-v2/thermal-inertia`), summary
   `public/data/processed/thermal-inertia-sites.json`.
 - Classes (±20 %): < 150 fine dust · 150–400 sand/crusted soil · ≥ 400 firm/rock. Mean within 5 km: ESP_033225 94 (85 % fine dust) · habitat 126 ·
   ESP_034082 186 · ESP_037352 190 · ESP_054060 367. Class robust only for ESP_033225 (dust) and ESP_037352 (sand).
@@ -280,7 +277,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 
 - **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
   0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 10° 0.04 %, ≥ 20° 0 %.
-  Not used by the router (which uses 463 m MOLA) — §7 team item 3.
+  Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
   on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. Not on the map yet.
 
@@ -295,7 +292,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 - Results (straight-line walks; the app's pathfinder may detour): ESP_033225 0.17 km · ESP_034082 0.19 km (10° fallback) · ESP_037352 0.37 km ·
   ESP_054060 0.06 km. Crater sites park on the flat outside the bowl. Most straight walks still cross > 20° crater walls (ESP_034082 9–13 %).
 - Code: `findStagingPoint` returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`; constants `STAGING_MIN_M`, `PARKING_*`, `STAGING_RULE`.
-  Roughness is checked only once `ROUGHNESS_DATA_ROOT` is set.
+  Roughness is checked once `ROUGHNESS_DATA_ROOT` is set (now → sites-v2).
 
 ### Rover range (context for §7 team item 1)
 
@@ -364,13 +361,14 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - ✅ Site pipelines (`pipe:sites`, `pipe:slope`) — 0.45 m imagery, 1 m terrain, slope + 20° hazard overlay, attribution; pushed.
 - ✅ Hosting on R2: `sites-v1` uploaded and `SITE_DATA_ROOT` set by M (`f9bbf09`, `docs/SITE_STORAGE.md`); `_mapbox.tif` upload files obsolete.
 - ✅ Visual check on MapLibre 6.18.0 (Sun ~01:30): all 4 sites pass.
-- ✅ Roughness + boulder bounds for all 4 sites; `sites-v2` package built (`34a4626a`, not uploaded).
+- ✅ Roughness + boulder bounds for all 4 sites; `sites-v2` package built (`34a4626a`; uploaded Sun Nov 15).
 - ✅ Thermal inertia pipeline, uploaded to R2; in the route cost (Joseph) and on the map (Scene panel).
 - ✅ Overnight run (pushed): references verified (`a1ae6279`), regional slope (`1e9b17ca`), geology (`88026c48`), staging-point pipeline (`cc8b6fcd`, now on the team rule). Report: `docs/agent-briefs/overnight-data-REPORT.md`.
 - ✅ Role C brief sent; agreed slope-only cost surface first.
 
 **Team (Sun Nov 15)**
 
+- ✅ sites-v2 uploaded by M; data roots wired; thermal-inertia + roughness + regional slope tiles verified live and regional slope added to the map (Jess).
 - ✅ Role A shared by the whole team. MapLibre port (`1bbb6d0`). CI model test fixed (`1e0e423`).
 - ✅ 2-leg journeys (`lib/mars/drive-walk.ts`); staging-point rule decided and in code (`d0e24861`); 2 rovers per mission.
 - ✅ Rover rules agreed (5° lower slope limit; EVA-EXP-0042 range source added).

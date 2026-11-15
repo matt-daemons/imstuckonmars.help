@@ -4,6 +4,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   GEOLOGY_LEGEND,
+  REGIONAL_SLOPE_BOUNDS,
+  REGIONAL_SLOPE_LEGEND,
+  regionalSlopeTiles,
   type GeologySummary,
   ROUGHNESS_LEGEND,
   THERMAL_INERTIA_LEGEND,
@@ -64,5 +67,23 @@ describe("ground overlays", () => {
     const geo = await read<GeologySummary>("geology-sites.json");
     expect(geologyFor(geo, DTM)?.unit).toBe("Av");
     expect(geologyFor(geo, "habitat")?.unit).toBe("Av");
+  });
+
+  it("covers the regional-slope corridor and keeps its legend on the pipeline classes", async () => {
+    const rs = await read<{ class_breaks_deg: number[]; grid: { bbox_0_360: number[] } }>(
+      "regional-slope.json",
+    );
+    expect(REGIONAL_SLOPE_LEGEND).toHaveLength(rs.class_breaks_deg.length + 1);
+    const [w, s, e, n] = rs.grid.bbox_0_360;
+    const [east, west] = REGIONAL_SLOPE_BOUNDS;
+    expect([east[0], east[1], east[3]]).toEqual([
+      Math.floor(w * 100) / 100,
+      Math.floor(s * 100) / 100,
+      Math.ceil(n * 100) / 100,
+    ]);
+    expect(west[2]).toBeCloseTo(e - 360, 1);
+    expect(regionalSlopeTiles("https://x")[0]).toBe(
+      "https://tiles.imstuckonmars.help/sites-v2/regional-slope/{z}/{x}/{y}.webp",
+    );
   });
 });

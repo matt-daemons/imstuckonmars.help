@@ -13,9 +13,12 @@ import type { LngLat } from "@/lib/mars/types";
 import {
   GEOLOGY_ATTRIBUTION,
   GEOLOGY_LEGEND,
+  REGIONAL_SLOPE_ATTRIBUTION,
+  REGIONAL_SLOPE_BOUNDS,
   ROUGHNESS_ATTRIBUTION,
   THERMAL_INERTIA_ATTRIBUTION,
   THERMAL_INERTIA_BOUNDS,
+  regionalSlopeTiles,
   roughnessTiles,
   geologyUrl,
   thermalInertiaTiles,
@@ -231,6 +234,31 @@ export function addThermalInertia(m: MapLibreMap, beforeId?: string) {
 
 export function setThermalInertiaVisible(m: MapLibreMap, on: boolean) {
   for (const id of thermalInertiaLayers) {
+    if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  }
+}
+
+const regionalSlopeLayers = REGIONAL_SLOPE_BOUNDS.map((_, i) => `regional-slope-${i}`);
+
+/** MOLA/HRSC 200 m slope for the drive corridor, z5–10; below 10° is transparent. Two sources split at ±180. */
+export function addRegionalSlope(m: MapLibreMap, beforeId?: string) {
+  REGIONAL_SLOPE_BOUNDS.forEach((bounds, i) => {
+    const id = regionalSlopeLayers[i];
+    m.addSource(id, {
+      type: "raster",
+      tiles: regionalSlopeTiles(location.origin),
+      tileSize: 256,
+      minzoom: 5,
+      maxzoom: 10,
+      bounds,
+      attribution: REGIONAL_SLOPE_ATTRIBUTION,
+    });
+    m.addLayer({ id, type: "raster", source: id, layout: { visibility: "none" } }, beforeId);
+  });
+}
+
+export function setRegionalSlopeVisible(m: MapLibreMap, on: boolean) {
+  for (const id of regionalSlopeLayers) {
     if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 }

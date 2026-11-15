@@ -16,6 +16,7 @@ import { MapCompass } from "@/components/map/map-compass";
 import {
   type SiteProps,
   addGeology,
+  addRegionalSlope,
   addSites,
   addTerrain,
   addThermalInertia,
@@ -217,6 +218,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         // Above the manifest imagery so the overlay isn't hidden under CTX near the habitat.
         addGeology(m);
         addThermalInertia(m);
+        addRegionalSlope(m);
         m.addLayer(habitatLayer(maplibregl, HABITAT, setHabitatEnlarged));
         setLoaded(m);
       });

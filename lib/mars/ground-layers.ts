@@ -2,15 +2,19 @@
 // Legend colours mirror the tile ramps in pipelines/stable/thermal-inertia.ts and roughness.ts; they are
 // data colours baked into the tiles, not theme colours. Keep them in sync with those pipelines.
 
-/**
- * Thermal-inertia overlay tiles. TODO(R2): the tiles are uploaded (CLAUDE.md, Sun Nov 15) but no public
- * prefix is recorded in the repo yet; every guess 404s. Set this to the R2 root once M confirms it.
- */
-export const THERMAL_INERTIA_DATA_ROOT: string | null = null;
+/** Thermal-inertia overlay tiles, shipped inside the sites-v2 release (pnpm sites:package). */
+export const THERMAL_INERTIA_DATA_ROOT: string | null =
+  "https://tiles.imstuckonmars.help/sites-v2/thermal-inertia";
 
 /** Published roughness tiles and aligned routing rasters for the four HiRISE sites. */
 export const ROUGHNESS_DATA_ROOT: string | null = "https://tiles.imstuckonmars.help/sites-v2";
 
+/** Regional-slope overlay tiles (MOLA/HRSC 200 m), shipped inside the sites-v2 release. null serves local pnpm pipe:regional-slope output. */
+export const REGIONAL_SLOPE_DATA_ROOT: string | null =
+  "https://tiles.imstuckonmars.help/sites-v2/regional-slope";
+
+export const REGIONAL_SLOPE_ATTRIBUTION =
+  "NASA/JPL/GSFC (MOLA); ESA/DLR/FU Berlin (HRSC); USGS Astrogeology";
 export const THERMAL_INERTIA_ATTRIBUTION = "NASA/JPL-Caltech/Arizona State University/USGS";
 export const ROUGHNESS_ATTRIBUTION = "NASA/JPL/University of Arizona (derived)";
 export const GEOLOGY_ATTRIBUTION = "USGS Astrogeology / NASA (Tanaka et al. 2014, SIM 3292)";
@@ -26,6 +30,12 @@ export const GEOLOGY_BOUNDS: [[number, number], [number, number]] = [
   [194.35, 46.41],
 ];
 
+/** Drive corridor of the regional-slope tiles (regional-slope.json bbox_0_360), split at ±180; z5–10. */
+export const REGIONAL_SLOPE_BOUNDS: [number, number, number, number][] = [
+  [172.07, 44.05, 180, 46.41],
+  [-180, 44.05, -165.65, 46.41],
+];
+
 /** AOI of the thermal-inertia tiles, split at ±180 (pipeline box 170–196°E, 43–48°N). */
 export const THERMAL_INERTIA_BOUNDS: [number, number, number, number][] = [
   [170, 43, 180, 48],
@@ -35,6 +45,10 @@ export const THERMAL_INERTIA_BOUNDS: [number, number, number, number][] = [
 /** Absolute tile URL; the map needs absolute URLs, so local roots are prefixed with the origin. */
 export function thermalInertiaTiles(origin: string, root = THERMAL_INERTIA_DATA_ROOT) {
   return [`${root ?? `${origin}/data/thermal-inertia`}/{z}/{x}/{y}.webp`];
+}
+
+export function regionalSlopeTiles(origin: string, root = REGIONAL_SLOPE_DATA_ROOT) {
+  return [`${root ?? `${origin}/data/regional-slope`}/{z}/{x}/{y}.webp`];
 }
 
 export function roughnessTiles(origin: string, siteId: string, root = ROUGHNESS_DATA_ROOT) {
@@ -52,6 +66,14 @@ export const THERMAL_INERTIA_LEGEND: LegendClass[] = [
   { label: "fine dust / loose fines", range: "< 150", color: "rgb(200 140 70)" },
   { label: "sand / crusted soil", range: "150–400", color: "rgb(120 170 200)" },
   { label: "firm ground / rock", range: "≥ 400", color: "rgb(70 90 170)" },
+];
+
+/** Same classes as the HiRISE site slope tiles; below 10° is transparent. */
+export const REGIONAL_SLOPE_LEGEND: LegendClass[] = [
+  { label: "gentle", range: "< 10°", color: null },
+  { label: "moderate", range: "10–15°", color: "rgb(250 220 90)" },
+  { label: "steep", range: "15–20°", color: "rgb(245 150 50)" },
+  { label: "beyond suit limit", range: "≥ 20°", color: "rgb(220 40 30)" },
 ];
 
 export const ROUGHNESS_LEGEND: LegendClass[] = [

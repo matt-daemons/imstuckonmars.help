@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import {
   setGeologyVisible,
+  setRegionalSlopeVisible,
   setRoughnessVisible,
   setThermalInertiaVisible,
 } from "@/components/map/scene";
@@ -16,6 +17,8 @@ import {
   GEOLOGY_LEGEND,
   type GeologySummary,
   type LegendClass,
+  REGIONAL_SLOPE_ATTRIBUTION,
+  REGIONAL_SLOPE_LEGEND,
   ROUGHNESS_ATTRIBUTION,
   ROUGHNESS_LEGEND,
   type RoughnessSummary,
@@ -58,6 +61,7 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
   const [roughOn, setRoughOn] = useState(false);
   const [ti, setTi] = useState<ThermalInertiaSummary | null>(null);
   const [rough, setRough] = useState<RoughnessSummary | null>(null);
+  const [slopeOn, setSlopeOn] = useState(false);
   const [geoOn, setGeoOn] = useState(false);
   const [geo, setGeo] = useState<GeologySummary | null>(null);
 
@@ -75,6 +79,10 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
   useEffect(() => {
     if (map) setThermalInertiaVisible(map, tiOn);
   }, [map, tiOn]);
+
+  useEffect(() => {
+    if (map) setRegionalSlopeVisible(map, slopeOn);
+  }, [map, slopeOn]);
 
   useEffect(() => {
     if (map) setRoughnessVisible(map, sites, roughOn);
@@ -193,6 +201,33 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
                 <p className="pt-1">{rough.note}</p>
               </details>
             )}
+          </>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <label className="flex items-center justify-between gap-3">
+          <span>
+            Regional slope
+            <span className="block text-xs text-muted-foreground">
+              MOLA/HRSC 200 m · {REGIONAL_SLOPE_ATTRIBUTION}
+            </span>
+          </span>
+          <Switch
+            checked={slopeOn}
+            onCheckedChange={setSlopeOn}
+            aria-label="Toggle regional slope"
+          />
+        </label>
+        {slopeOn && (
+          <>
+            <Legend
+              classes={REGIONAL_SLOPE_LEGEND}
+              note="Drive corridor only; 200 m cells smooth out local hazards"
+            />
+            <p className="text-xs">
+              Display only for now: the router still uses the 463 m MOLA grid.
+            </p>
           </>
         )}
       </div>
