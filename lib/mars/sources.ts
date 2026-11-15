@@ -153,6 +153,8 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         caveats: [
           "Each site marker is a crater-bowl centre refined on the 1 m DTM (about ±50 m). One crater was suggested with AI assistance and confirmed by a team member. The ridges site uses the DTM centre.",
           "Terraced craters are indirect evidence of buried ice. No lander has confirmed ice at these sites.",
+          "Evidence differs by site and is stated where you pick a destination: one crater's terraces are confirmed in HiRISE, two are possible, and the ridges site has regional evidence only.",
+          "No ice layer is on the map. The regional case rests on published radar, thermal and neutron mapping (Morgan et al. 2021), not on a LARA layer.",
           "HiRISE RED is greyscale. DTM edges are unreliable, so the outer 10 m are trimmed.",
           "The sites are 93–468 km from the habitat, so the crew drives there by rover.",
         ],
@@ -160,6 +162,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). JGR 112, E05S02.",
           "Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. JGR 113, E00A24.",
           "Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. GRL 42, 6566–6574.",
+          "Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. Nature Astronomy 5, 230–236.",
         ],
         links: [{ label: "HiRISE DTM catalog", url: "https://www.uahirise.org/dtm/" }],
         layerIds: ["sites"],

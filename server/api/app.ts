@@ -9,7 +9,6 @@ import { expeditions } from "./expeditions";
 import { verdict } from "./verdict";
 import { copilot } from "./copilot";
 import { spaceWeather } from "./space-weather";
-import type { LiveSnapshot } from "@/lib/mars/types";
 import { missingDatabaseSchema } from "../db/errors";
 import { routes } from "./routes";
 
@@ -65,23 +64,6 @@ api.route("/verdict", verdict);
 api.route("/copilot", copilot);
 api.route("/space-weather", spaceWeather);
 api.route("/routes", routes);
-
-// Stub until team role D's replay.ts output lands in data/processed/live/.
-api.get("/live", (c) => {
-  const snapshot: LiveSnapshot = {
-    timestamp: new Date().toISOString(),
-    sol: 0,
-    lmst: "12:00:00",
-    radiation_dose_rate: 0,
-    solar_alert_level: "none",
-    dust_opacity: 0,
-    temp: 0,
-    wind: 0,
-    sun_elevation: 0,
-    proxy_source: "Stub — not real data",
-  };
-  return c.json(snapshot);
-});
 
 api.notFound((c) => c.json({ error: "Not found" }, 404));
 

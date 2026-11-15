@@ -17,6 +17,7 @@ import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/
 import { RadioGroup } from "@/components/ui/radio-group";
 import { useSidebar } from "@/components/ui/sidebar";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { ICE_EVIDENCE_CAVEAT, iceEvidenceFor } from "@/lib/mars/ice-evidence";
 import { marsDistanceM } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
@@ -42,6 +43,7 @@ export function WhereStep({
           // The sidebar header already says Arcadia, so the titles fit one line.
           title: siteLabel(site).replace(" in Arcadia Planitia", ""),
           center: site.center,
+          ice: iceEvidenceFor(site.hiriseId),
         }))
       : [];
   const chosen = end ? choices.find((choice) => samePoint(choice.center, end)) : undefined;
@@ -72,9 +74,27 @@ export function WhereStep({
                   {formatNumber(marsDistanceM(base, choice.center) / 1000, 1)} km
                 </span>{" "}
                 from the habitat in a straight line
+                {choice.ice && <span className="block">Ice evidence: {choice.ice.label}</span>}
               </ChoiceCard>
             ))}
           </RadioGroup>
+        )}
+        {chosen?.ice && (
+          <div className="flex flex-col gap-1 border-l-2 border-primary pl-3 text-xs">
+            <p className="font-semibold">Why this site may hold ice</p>
+            <p>{chosen.ice.basis}</p>
+            <p className="text-muted-foreground">
+              {ICE_EVIDENCE_CAVEAT}{" "}
+              <a
+                href="/sources"
+                target="_blank"
+                rel="noopener"
+                className="text-primary underline underline-offset-2"
+              >
+                Sources
+              </a>
+            </p>
+          </div>
         )}
         {!mission && <p className="text-xs">Pick a mission type in step 01 Mission first.</p>}
         {mission === "drive-walk" && !end && (

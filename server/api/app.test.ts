@@ -10,11 +10,10 @@ describe("api", () => {
     expect(await response.json()).toEqual({ status: "ok" });
   });
 
-  it("labels the live stub as not real data", async () => {
+  it("no longer serves the retired live stub", async () => {
     const response = await api.request("/api/live");
 
-    expect(response.status).toBe(200);
-    expect(await response.json()).toMatchObject({ proxy_source: "Stub — not real data" });
+    expect(response.status).toBe(404);
   });
 
   it("returns JSON for unknown routes", async () => {
