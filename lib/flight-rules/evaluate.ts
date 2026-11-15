@@ -1,0 +1,192 @@
+import * as zod from "zod";
+
+import type { Verdict } from "@/lib/mars/types";
+
+import { FLIGHT_RULES, type Factor } from "./rules";
+import { SOLAR_ALERT_LEVELS } from "./solar-alert";
+
+/**
+ * What a walk is checked on. Extra fields are ignored, so a whole route result
+ * or live snapshot can be passed in as they are.
+ */
+export const evaPlanSchema = zod.object({
+  route: zod.object({
+    // Planned time for the whole walk, out and back, before any margin.
+    est_time_min: zod.number().positive(),
+    // Steepest slope on the route, in degrees.
+    max_slope: zod.number().min(0).max(90),
+    // Straight-line distance from base to the farthest point of the route.
+    farthest_from_base_km: zod.number().min(0),
+  }),
+  live: zod.object({
+    solar_alert_level: zod.enum(SOLAR_ALERT_LEVELS),
+    // How much the dust in the air dims the Sun (optical depth, tau).
+    dust_opacity: zod.number().min(0),
+  }),
+  // Minutes from the start of the walk until sunset at base. Negative after sunset.
+  minutes_until_sunset: zod.number(),
+});
+
+export type EvaPlan = zod.infer<typeof evaPlanSchema>;
+
+export type EvaVerdict = {
+  verdict: Verdict;
+  /** The rule behind the verdict, or null when the verdict is GO. */
+  limiting_factor: Factor | null;
+  /** One sentence per broken rule, most severe first. */
+  reasons: string[];
+};
+
+/** One broken rule: which rule, how serious, and a sentence explaining it. */
+type Finding = { factor: Factor; verdict: "CAUTION" | "NO_GO"; reason: string };
+
+/** Says where a rule's limit comes from, so every reason admits what is assumed. */
+function describeBasis(factor: Factor): string {
+  const appliesTo = FLIGHT_RULES[factor].applies_to;
+  if (appliesTo === "assumption") {
+    return "our assumption, no NASA limit exists";
+  }
+  return `${appliesTo} limit, assumed for Mars`;
+}
+
+function makeFinding(factor: Factor, verdict: Finding["verdict"], explanation: string): Finding {
+  return { factor, verdict, reason: `${explanation} (${describeBasis(factor)}).` };
+}
+
+function checkSlope(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.slope;
+  const slopeDegrees = plan.route.max_slope;
+  if (slopeDegrees > rule.no_go_above_degrees) {
+    return makeFinding(
+      "slope",
+      "NO_GO",
+      `Steepest slope is ${slopeDegrees}°, above the ${rule.no_go_above_degrees}° limit`,
+    );
+  }
+  if (slopeDegrees > rule.caution_above_degrees) {
+    return makeFinding(
+      "slope",
+      "CAUTION",
+      `Steepest slope is ${slopeDegrees}°, above ${rule.caution_above_degrees}°`,
+    );
+  }
+  return null;
+}
+
+function checkWalkBack(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.walk_back;
+  const distanceKm = plan.route.farthest_from_base_km;
+  if (distanceKm > rule.max_distance_km) {
+    return makeFinding(
+      "walk_back",
+      "NO_GO",
+      `The route goes ${distanceKm} km from base, beyond the ${rule.max_distance_km} km walk-back limit`,
+    );
+  }
+  return null;
+}
+
+/** Planned walk time in minutes, lengthened by the margin for real terrain. */
+function minutesWithMargin(plan: EvaPlan): number {
+  return plan.route.est_time_min * FLIGHT_RULES.suit_supply.time_margin;
+}
+
+function checkSuitSupply(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.suit_supply;
+  const minutesNeeded = minutesWithMargin(plan);
+  const usableMinutes = rule.primary_minutes - rule.reserve_minutes;
+  if (minutesNeeded > usableMinutes) {
+    return makeFinding(
+      "suit_supply",
+      "NO_GO",
+      `The walk needs ${Math.round(minutesNeeded)} min with margin, more than the ${usableMinutes} min the suit supplies`,
+    );
+  }
+  if (minutesNeeded > rule.planned_minutes) {
+    return makeFinding(
+      "suit_supply",
+      "CAUTION",
+      `The walk needs ${Math.round(minutesNeeded)} min with margin, longer than the planned ${rule.planned_minutes} min`,
+    );
+  }
+  return null;
+}
+
+function checkRadiation(plan: EvaPlan): Finding | null {
+  const alertLevel = plan.live.solar_alert_level;
+  if (alertLevel === "warning") {
+    return makeFinding("radiation", "NO_GO", "Solar alert is at warning: stay in shelter");
+  }
+  if (alertLevel === "watch") {
+    return makeFinding(
+      "radiation",
+      "CAUTION",
+      "Solar alert is at watch: stay within 1 hour of base",
+    );
+  }
+  return null;
+}
+
+function checkDust(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.dust;
+  const dustOpacity = plan.live.dust_opacity;
+  if (dustOpacity >= rule.no_go_at_opacity) {
+    return makeFinding(
+      "dust",
+      "NO_GO",
+      `Dust opacity is ${dustOpacity}, at or above ${rule.no_go_at_opacity}`,
+    );
+  }
+  if (dustOpacity >= rule.caution_at_opacity) {
+    return makeFinding(
+      "dust",
+      "CAUTION",
+      `Dust opacity is ${dustOpacity}, at or above ${rule.caution_at_opacity}`,
+    );
+  }
+  return null;
+}
+
+function checkDaylight(plan: EvaPlan): Finding | null {
+  const rule = FLIGHT_RULES.daylight;
+  const minutesToSpare = plan.minutes_until_sunset - minutesWithMargin(plan);
+  if (minutesToSpare < 0) {
+    return makeFinding(
+      "daylight",
+      "NO_GO",
+      `The walk ends ${Math.round(-minutesToSpare)} min after sunset`,
+    );
+  }
+  if (minutesToSpare < rule.margin_minutes) {
+    return makeFinding(
+      "daylight",
+      "CAUTION",
+      `The walk ends ${Math.round(minutesToSpare)} min before sunset, less than the ${rule.margin_minutes} min margin`,
+    );
+  }
+  return null;
+}
+
+const CHECKS = [
+  checkSlope,
+  checkWalkBack,
+  checkSuitSupply,
+  checkRadiation,
+  checkDust,
+  checkDaylight,
+];
+
+/** Checks a planned walk against every flight rule and returns the worst result. */
+export function evaluateEva(plan: EvaPlan): EvaVerdict {
+  const findings = CHECKS.map((check) => check(plan)).filter((finding) => finding !== null);
+  const noGoFindings = findings.filter((finding) => finding.verdict === "NO_GO");
+  const cautionFindings = findings.filter((finding) => finding.verdict === "CAUTION");
+  const worstFirst = [...noGoFindings, ...cautionFindings];
+  const worstFinding: Finding | undefined = worstFirst[0];
+
+  return {
+    verdict: worstFinding?.verdict ?? "GO",
+    limiting_factor: worstFinding?.factor ?? null,
+    reasons: worstFirst.map((finding) => finding.reason),
+  };
+}
