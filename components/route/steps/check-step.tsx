@@ -1,13 +1,14 @@
 "use client";
 
 import type { Map as MapLibreMap } from "maplibre-gl";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import {
   DriveWalkAssumptions,
   DriveWalkStatus,
   FitButtons,
   driveWalkReadouts,
+  tripPoints,
 } from "@/components/map/drive-walk-result";
 import { RouteLegend } from "@/components/map/route-legend";
 import {
@@ -18,7 +19,12 @@ import {
   type ReadoutItem,
 } from "@/components/map/route-result";
 import { fitPoints } from "@/components/route/camera";
-import { notCheckedText, tripWithStorms, walkWithStorms } from "@/components/route/conditions";
+import {
+  isDrillSet,
+  notCheckedText,
+  tripWithStorms,
+  walkWithStorms,
+} from "@/components/route/conditions";
 import { useConditions } from "@/components/route/conditions-provider";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import {
@@ -27,6 +33,10 @@ import {
   AccordionPanel,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import type { LngLat } from "@/lib/mars/types";
+import { cn } from "@/lib/utils";
 
 import { splitHeadline } from "./headline";
 import { MissionSummary } from "./mission-summary-dialog";
@@ -47,8 +57,11 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
     const summary = walk.plan?.summary ?? null;
     const check = summary && walkWithStorms(summary, conditions);
     const notChecked = check ? notCheckedText(check.not_checked, conditions) : "";
+    const route = walk.plan ? [...walk.plan.outbound.path, ...walk.plan.back.path] : [];
     return (
       <CheckLayout
+        map={map}
+        route={route}
         status={
           <WalkStatus
             plan={walk.plan}
@@ -59,14 +72,27 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
         }
         readouts={summary && check ? walkReadouts(summary, check) : []}
         headline={WALK_HEADLINE}
+        fit={
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={route.length === 0}
+            onClick={() => fitPoints(map, route)}
+          >
+            Fit route
+          </Button>
+        }
         assumptions={<WalkAssumptions plan={walk.plan} />}
       />
     );
   }
   const trip = journey.plan && tripWithStorms(journey.plan, conditions);
   const notChecked = trip ? notCheckedText(trip.not_checked, conditions) : "";
+  const collection = journey.plan?.collection;
   return (
     <CheckLayout
+      map={map}
+      route={collection ? tripPoints(collection) : []}
       status={
         <DriveWalkStatus
           journey={journey}
@@ -85,6 +111,8 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
 }
 
 function CheckLayout({
+  map,
+  route,
   status,
   readouts,
   headline,
@@ -92,22 +120,40 @@ function CheckLayout({
   source,
   assumptions,
 }: {
+  map: MapLibreMap | null;
+  /** Every point of the route being checked; empty until it is planned. */
+  route: LngLat[];
   status: ReactNode;
   readouts: ReadoutItem[];
   headline: string[];
-  fit?: ReactNode;
+  fit: ReactNode;
   source?: string;
   assumptions: ReactNode;
 }) {
   const { mission, zones, showShortest } = useRoutePlan().inputs;
+  const drilling = isDrillSet(useConditions().drill);
   const split = splitHeadline(readouts, headline);
+  useFrameOnEnter(map, route);
   return (
     <div className="flex flex-col gap-3">
-      {/* One live region that stays mounted, so screen readers announce every change in it. */}
-      <div role="status">{status}</div>
-      <SpaceWeatherLine />
-      <ReturnCheck />
-      {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
+      {/* While a drill runs, the strip's dashed frame and DRILL tag keep the verdict from passing for real data. */}
+      <div
+        className={cn("flex flex-col gap-2", drilling && "border-2 border-dashed border-info p-2")}
+      >
+        {drilling && (
+          <Badge variant="info" className="self-start font-mono">
+            DRILL
+          </Badge>
+        )}
+        {/* One live region that stays mounted, so screen readers announce every change in it. */}
+        <div role="status">{status}</div>
+      </div>
+      {split.headline.length > 0 && <Readouts items={split.headline} lead />}
+      {/* The feeds behind the verdict come after its numbers, so the verdict leads straight into them. */}
+      <div className="flex flex-col gap-1">
+        <SpaceWeatherLine />
+        <ReturnCheck />
+      </div>
       <div className="flex flex-wrap gap-2">
         {fit}
         <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />
@@ -133,4 +179,18 @@ function CheckLayout({
       </Accordion>
     </div>
   );
+}
+
+/**
+ * Frames the route once each time step ③ opens (the step mounts on opening). Opening it is the
+ * operator's own choice, so the camera may move then; a later re-plan never moves it again, so it
+ * does not fight their panning.
+ */
+function useFrameOnEnter(map: MapLibreMap | null, route: LngLat[]) {
+  const framed = useRef(false);
+  useEffect(() => {
+    if (framed.current || !map || route.length === 0) return;
+    framed.current = true;
+    fitPoints(map, route);
+  }, [map, route]);
 }

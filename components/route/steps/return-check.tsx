@@ -80,8 +80,8 @@ export function ReturnCheck() {
   }
   // Mounted even while empty, so the first answer is announced.
   return (
-    <p role="status" className="text-xs">
-      {text && `LARA resource check (modeled): ${text}`}
+    <p role="status" className="text-xs text-muted-foreground">
+      {text && `Resource check (LARA, modeled): ${text}`}
     </p>
   );
 }

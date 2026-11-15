@@ -121,7 +121,7 @@ function walkSummary({ walk }: DriveWalkPlan) {
 }
 
 /** Every point of the trip: the four legs and the staging point. */
-function tripPoints(collection: RouteCollection): LngLat[] {
+export function tripPoints(collection: RouteCollection): LngLat[] {
   return collection.features.flatMap(({ geometry }) =>
     geometry.type === "LineString" ? geometry.coordinates : [geometry.coordinates],
   );

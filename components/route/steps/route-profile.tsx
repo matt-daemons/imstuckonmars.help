@@ -3,11 +3,14 @@ import { useId, type ReactNode } from "react";
 import { formatNumber } from "@/components/map/drive-result";
 import type { ProfilePoint } from "@/lib/mars/compare-routes";
 
+import { formatKm } from "../mission-summary";
 import { profileSummary, type ProfileChart } from "../route-comparison";
 
 // The plot's own units: the SVG stretches to the panel width, so lines use non-scaling strokes.
 const WIDTH = 100;
 const HEIGHT = 40;
+// The least height a height plot spans, in metres.
+const MIN_HEIGHT_SPAN_M = 200;
 
 /**
  * Height (or slope) along the way out of the safest route, with the shortest overlaid when shown.
@@ -31,10 +34,15 @@ export function RouteProfile({
   const value = (point: ProfilePoint) =>
     chart.measure === "height" ? point.height_m : point.slope_deg;
   const values = shown.flat().map(value);
-  // A slope plot starts at 0° and always reaches the caution line, so it shows how close the route gets.
-  const low = chart.measure === "slope" ? 0 : Math.min(...values);
+  const dataLow = Math.min(...values);
+  const dataHigh = Math.max(...values);
+  // A slope plot starts at 0° and always reaches the caution line, so it shows how close the route
+  // gets. A height plot spans at least MIN_HEIGHT_SPAN_M around the route, so tens of metres over a
+  // long drive do not fill the box like mountains.
+  const heightSpan = Math.max(dataHigh - dataLow, MIN_HEIGHT_SPAN_M);
+  const low = chart.measure === "slope" ? 0 : (dataLow + dataHigh) / 2 - heightSpan / 2;
   const high =
-    chart.measure === "slope" ? Math.max(...values, chart.cautionDeg * 1.2) : Math.max(...values);
+    chart.measure === "slope" ? Math.max(dataHigh, chart.cautionDeg * 1.2) : low + heightSpan;
   const span = high - low || 1; // a flat route still gets a line, along the bottom
   const lengthM = Math.max(...shown.map((points) => points.at(-1)?.distance_m ?? 0)) || 1;
   const x = (point: ProfilePoint) => (point.distance_m / lengthM) * WIDTH;
@@ -58,6 +66,16 @@ export function RouteProfile({
     <figure className="flex flex-col gap-1">
       <figcaption id={titleId} className="text-xs font-medium">
         {chart.title}
+        {/* The axis may span more than the route does, so the route's own range is written out. */}
+        {chart.measure === "height" && (
+          <span className="font-normal text-muted-foreground">
+            {" "}
+            · route{" "}
+            <span className="font-mono whitespace-nowrap tabular-nums">
+              {tick(dataLow)} to {tick(dataHigh)}
+            </span>
+          </span>
+        )}
       </figcaption>
       <div className="flex gap-1.5">
         <div
@@ -120,7 +138,7 @@ export function RouteProfile({
         className="ml-15.5 flex justify-between font-mono text-xs text-muted-foreground tabular-nums"
       >
         <span>0 km</span>
-        <span>{formatNumber(lengthM / 1000, 2)} km out</span>
+        <span>{formatKm(lengthM / 1000)} out</span>
       </div>
       <div aria-hidden className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
         <LegendSwatch className="border-t-2" color={routeColor}>
