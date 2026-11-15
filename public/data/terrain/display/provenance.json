@@ -1,0 +1,773 @@
+{
+  "purpose": "Mapbox display-only datum shift; not a scientific elevation grid",
+  "offsetMeters": 10000,
+  "inverse": "Mars elevation = decoded display elevation - offsetMeters",
+  "sourceElevationsPreserved": true,
+  "limitations": "Regional copies retain the original MOLA pipeline's outer-edge clamping. Local source tiles fail on missing samples.",
+  "outputs": [
+    {
+      "path": "public/data/terrain/display/mola/8/8/84.png",
+      "sha256": "5489d3412baabaf4ea14e33b3e3025805ff5cd6d989195e2fc09d1bf75abd7b2"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/85.png",
+      "sha256": "cbacfd7df9801b7c2b4c0e84553dae89b2917aadece56cbdf9c9213afa590e08"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/86.png",
+      "sha256": "235741f0b46e63151ad4d28f500a40c57044187612ab5888ae9073f1b4b2299b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/87.png",
+      "sha256": "e038022c94dc4a2dff6473b6e246e0048d291a9e5b1f39b9909a577579199482"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/88.png",
+      "sha256": "c33b12bb8adb90bc0cedfdf1de017945d51477a15ab81e74174b791960cec85b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/89.png",
+      "sha256": "aba650b8bbbc11fc94a3bd0865aff694d7d9f397a953ffed2cec6a671f6a825f"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/90.png",
+      "sha256": "47035d3bb5eb534d6b758cc3ea3855fda4e80d3a6c11875757bbc1e691720a52"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/91.png",
+      "sha256": "a845b1e1ffc8e43013452761b11537b09c7d9dee4045c2bc4efefbc689119663"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/92.png",
+      "sha256": "61893f55f546597f509084f45ff637cd098d9cef72b80d4d9f9534d7f5dc99bd"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/93.png",
+      "sha256": "937fab46e9773360270759b6990836c918bbbb43fa72a87f8e773afdc0693a82"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/94.png",
+      "sha256": "6c880b33aecb65d586a15dc872664a9b7c88382fdc29f90e9e41a7354ec4452b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/95.png",
+      "sha256": "93ea46eccd1b52ded2baf2a7bf54e775028f1e21bf19898a46feb86d2468fea5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/8/96.png",
+      "sha256": "cdc73696204925ba5d7ed467ae5c2c1ff980eee5a362e3a462fabb396f192101"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/84.png",
+      "sha256": "43525179c96db85b0569cab87feb46b1803448198854b9a3f9140f4638040b05"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/85.png",
+      "sha256": "82af384350951c93af98fb078a4d032a35e8c6b900b2fe062df407f911a608ee"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/86.png",
+      "sha256": "0ca8e890b1315e11005b4646f9f99e52668e50ff14bd7d3bfc334ae57bbf7287"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/87.png",
+      "sha256": "58fb271bf5b11ee59f74bb7773b6329008b1f1f0316e0fb0d45a892243fff23e"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/88.png",
+      "sha256": "baf984ad1b37e1ab32079d5cfddd3985ce85a8d3a529333fe92757943206c054"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/89.png",
+      "sha256": "e38a29f98b1ce81374bc5e75f5737985bcada9398c8e2f38c154a8bc41465740"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/90.png",
+      "sha256": "515f445401f845f13e4844a06010d42e127b1f7ce50bc7fe96bf2552e3b08a37"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/91.png",
+      "sha256": "f85f7ba433a207c3a12b115faf8132223ae93c51d5cb378f98f011fafed77aff"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/92.png",
+      "sha256": "0c1be255dcd58fb59ed7c2b2e1a7968a1fee17fbe06a21afd954fac6cb2ea440"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/93.png",
+      "sha256": "1fe72bf429a47f1ca7d89195108c441cd4189d760b698dcbc1cd03f1b77ec849"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/94.png",
+      "sha256": "22620958c86ab0723007333de286c83c6b8650fede2f101866c6f7aebcb8ebd7"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/95.png",
+      "sha256": "f9079966a1d8d6b16255e214671217d808f0a6dce687bd1f29cf2b72ab234500"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/7/96.png",
+      "sha256": "2e5b374b6cd356dded6fd4ef520fb9b3d7ef00c10b78b6998494dcc64d70fa5d"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/84.png",
+      "sha256": "a57e2ab2d70c5759a0fe54fabecc8f6ee039416f3f7267ba773c8befb7fa4b6b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/85.png",
+      "sha256": "d19d36e29a53269cb34008907388d19e2498f18c94262b1d34ff709297a6bf2b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/86.png",
+      "sha256": "c26de81c8d9a15453733efd0c59023e141a64f0150573bfaf5121ad6e2ccf685"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/87.png",
+      "sha256": "8378e165d0ea30f71613f04b1f8bf11fdec8caabf7f5c96c4eea079e35dd2d9d"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/88.png",
+      "sha256": "5f7772797841c9f6d71415e0d70f030035b35b156c31a4758287dca110e838fa"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/89.png",
+      "sha256": "f5923677c58a4a992da1a7e6204a47369ea626f1768e20dbe2df86b84842d32b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/90.png",
+      "sha256": "eb0cdf5ba5d65a85d9bcc06343748f6fe409cfc73b070f0ec781410ccc789bf4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/91.png",
+      "sha256": "8d90e41f871db2428c327222f14ff66bdb33ec379a9078ae173f11f1f38ac02e"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/92.png",
+      "sha256": "76344bcf221d6d679d56130bfec56011ec1bb8ab99ff5e487f6cb7c267b9c0b5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/93.png",
+      "sha256": "f69458354639e837624c0e330807427b71d3b230c5b162149883e8b7202f27c2"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/94.png",
+      "sha256": "c2c06895a7995495db4febe50381ac0c117980eae5fd8befa44e64662caad837"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/95.png",
+      "sha256": "96d089c738cd6ca584bbd455db3aeee5e4fb202cef1b487b302e2c8deef73aa0"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/6/96.png",
+      "sha256": "29eeffb16548aa4415f98036b34de30404989df4c23054009138b08d842d8289"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/84.png",
+      "sha256": "b2d571fc628308320baa3cf4aa1e9cb64a2eae142e529f7cc964b1fcc1667fe0"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/85.png",
+      "sha256": "d53d315aaa1d792505a269b83e21188554cf89074caedd2aac274626ad4f94bc"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/86.png",
+      "sha256": "eb7a4aa927c4c69933375d5c6cd7ed1e2dacf3282761f8c275900bea4066e753"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/87.png",
+      "sha256": "70fb0e27fae926fe3e03c28556507471934d226902fc35e517ba684ad8d6ba96"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/88.png",
+      "sha256": "10f788b410b4e411cca11510ebb6bc10dcf9ab0b83c658ab7ce7a85aebbd1f48"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/89.png",
+      "sha256": "0192df5a6abc22099b317db58f5d49a30bc91e499b6106e73d0546e1dfc87a46"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/90.png",
+      "sha256": "e7fd342d4ca161d301d531fb0abbbd3f6c333fc7adc53358c510411665cea855"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/91.png",
+      "sha256": "84458f56e867ecd3506a284648ea048accc94085acf9316bb544a8d5287c2403"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/92.png",
+      "sha256": "e1a2195c1fd92a84f24fda17db3998eee00d9d8bbf8f19495091bcc898a54c06"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/93.png",
+      "sha256": "12f6797186b892a2865c848d57fd7f4b9df3f77ec3c631e52850a88e7ac20975"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/94.png",
+      "sha256": "73b5b63a332cd67c24d968db8fab52952a664f1cace172c5b711c21be3985d06"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/95.png",
+      "sha256": "85f3e82eaf244fe3d0953613c7a90f3ddae1271027010eccc24e349b98eae511"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/5/96.png",
+      "sha256": "c79205a54eee4d761afd88414bef0542ddff66cb39a29f05adea0a961b9d8a0f"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/84.png",
+      "sha256": "6397e9167be418c98b2d358e7e6d4161a29932dfeacf461d7d5dfff5d59b1389"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/85.png",
+      "sha256": "f1a8f0a9a545f582cddf61bbe28e3b1eee7a84d7fed4db7ab4287bfe308a71a8"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/86.png",
+      "sha256": "5573417de817b818513ef3cb2f768c9e8385fd39f62a7b627eb650d13a2adf92"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/87.png",
+      "sha256": "36dd7c7b901ba606d3e75b80cb830abbf2eb3edd6f33fb3e2bbb0920ae7b0896"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/88.png",
+      "sha256": "8661eec7dec1b764ea8232c7152963526695e20868afb9f65bac8891b4f8cd49"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/89.png",
+      "sha256": "4e808c6d55180b19133df9452e6c37d8bef70db40f4d906a27c1ed287ce9a502"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/90.png",
+      "sha256": "6918cff8dd0a4684c579d818fefa98804b0349787c26cb648042bce4e1be3a36"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/91.png",
+      "sha256": "e62daedee9af3e3bbbf7880bbcc46e5327f7d9f066e5f390e60526c2757503e4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/92.png",
+      "sha256": "e2f89dfd618e80a7740b0a8a0218fb08b832a79b395caabe14df57656d4e0039"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/93.png",
+      "sha256": "a223400157a175ee39e2d50d3522de15f4fb37c67bf41cbfe84c7683233f03e5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/94.png",
+      "sha256": "0e661a3722e40a78a603857b51aa477c5ecbe3d2a6c2800b2bb92580f5452b75"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/95.png",
+      "sha256": "f4b50cf24ef6f8b80b48f63eda2b7fc08eb50afcd4cacebb7e727a02f99f5a31"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/4/96.png",
+      "sha256": "bc5b99cc5e44af8a42c6458319b7dd54c2a10b01d31a7a804789728cac4e2fa9"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/84.png",
+      "sha256": "cb66b0e1a0ebb89d8e0f01bf7a4c879b0ddcc461fcdea7ae754a10c77ffc5926"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/85.png",
+      "sha256": "831cd59cbec942ca886e431470fc1fcd68cd4c632de33e4c5aff606f5efd1f8b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/86.png",
+      "sha256": "f04ef9f16533c904453ca81d30e223f029a8568df453c92a0d3220f6b99bdd03"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/87.png",
+      "sha256": "a15640816aa039576d0529b02eb508fc0c79c79ba02c0f1305774a142a9c987c"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/88.png",
+      "sha256": "b90c582de6f75d7fe99f637a6c85011b82d9ce4143dd9c477c394175af73ac3c"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/89.png",
+      "sha256": "7877f575b8970c7a6c6446e5cfee0b3ecfb23704eb34e46620b8527287447641"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/90.png",
+      "sha256": "5d549dfa15d674dd574018dd1eb6c3c69b3a347ed97c3026aeec7136d4eb8ed5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/91.png",
+      "sha256": "45fd99ac912c5b839766a1f48c8fa1637a221f63d897fe0f8131ebbff981d6ab"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/92.png",
+      "sha256": "cc55a8b4abc82c0fcdfd6f390296073b77d7da7647ddf70811aad0b659f3fa0a"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/93.png",
+      "sha256": "15d0e0218c9250d41dd73dbd420b8b7ec6ea4b6814f55673ebab448f9430b4de"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/94.png",
+      "sha256": "92bc28832a5c0e7ea7079651601cfba3f9f712a75d8465c09743c11619d1ccbb"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/95.png",
+      "sha256": "df376638a3dd485753071738c5c82227b60b336466280e9d5e8ada615f6c5843"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/3/96.png",
+      "sha256": "67247172682d461639e7146c39696f48cf960c41668f26138cac49284023a9ce"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/84.png",
+      "sha256": "009ad15b8704d11e276a32e8d7897b5ae844eaecdeb6866d3946b8017c6a87cf"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/85.png",
+      "sha256": "aaf57ce479223e78a3fdc8bbb38dc594561652d7a43d789430ef6be5352d1b73"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/86.png",
+      "sha256": "b5cc4bda7517836f79ff210637180ca0ebf3551df5748eb8a929a96ea99e116e"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/87.png",
+      "sha256": "ef765585cdfb3e570d83d0c2eb66ae84dde7555ee14e4210729d12ac8d97adad"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/88.png",
+      "sha256": "a26d150936c8080b725a15a4bd6a138f9139b0ea86e6d43da5b2507c89e5da45"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/89.png",
+      "sha256": "8fbf7afc01a05a2004ee877ab5fe1c0e453ee9d03a6f213fbc08a58e770d4e9a"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/90.png",
+      "sha256": "a2e399f437e86d4c81754340a08ede28368a5c65c53de4d0155d68dd7835ccdd"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/91.png",
+      "sha256": "1fcc07ffe2ac4dda58c29a825f160cf80b0fd06221249ac880cb5f47786909d0"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/92.png",
+      "sha256": "3695cfb12a8e635d1aeaa85f63831b38913b92b24658d1b2e4169b9dfc092c00"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/93.png",
+      "sha256": "fe32701ae94dbec78691c03473ee6c668d07ad9faa46fbbea3bb9d8a9011f038"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/94.png",
+      "sha256": "9d2e7ca7d87c787009e9ced7a3d6b4a3f346b6b86226fe580941fd529bb5e864"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/95.png",
+      "sha256": "0d8851aa7e9dd806f645b9a915b20fd949267c1e2429209882b0dad99ea82b88"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/2/96.png",
+      "sha256": "a51a8d3d2d6b5c1d2ba1d80c5d3872cee2834c50e7dab90484e20196534fc726"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/84.png",
+      "sha256": "b4e601c9949ef5eac960ba7874fb85dedea8f16e75985ea73b130f714e9e15cd"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/85.png",
+      "sha256": "ef97e484ef02b8ff75c2531be55166de3b2dc131d3e8b4fb86b29498c6c0cd87"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/86.png",
+      "sha256": "145a8c82b321b934d74cfc76c05bb69d0fa7e4d325abecae78ea251ff6c4feb0"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/87.png",
+      "sha256": "8b4a5fade25dce22a17ad2be581c47671b39c3045d4056f25ad8307d800256a6"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/88.png",
+      "sha256": "14603d4b42ac6dadb36fe0c4194c3c78d86ad4cc3515c50f4d0f2e74dbd6ccfd"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/89.png",
+      "sha256": "28e91103e9f7131b90483f98af28870c31b012286074d8ed5997cb7893e437d8"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/90.png",
+      "sha256": "d79c7dc0790c5b00528f3d62413373541e68273f0e30703b4c9ec1df8e2e23cb"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/91.png",
+      "sha256": "3cd1024f879f21d71ad2984f9f9172e89f1999afe0c2b7ce74e2f8d171a399dc"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/92.png",
+      "sha256": "d2e3a833921cfced3564b96f0de5f0b699771e9e6bc673cca2f86f1a1d670ea4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/93.png",
+      "sha256": "76388eca1b54220ae42b51622827c05f96f11b8149c525cc3ef6817324f297ab"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/94.png",
+      "sha256": "3b6855b8132eb3e73620e145eee8a9b792a6a18062f9cd65314523e44e5cc7b1"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/95.png",
+      "sha256": "36c39b92aae5982b161d6a29d63f8ede8c08403ed3b0897205f86778a2cc20f1"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/1/96.png",
+      "sha256": "5b22b5fbd07aa19dfaec71d1483d6ec2d26804170e27c1f5179de2e00e4fdb87"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/84.png",
+      "sha256": "a85f53aa49d3fd6993ccbc629603493bb47535357d5bee36b0bc276f8af14d71"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/85.png",
+      "sha256": "773f3e3743b29d985bd005602411898e832b27e874389a9daeb3207f4bceb846"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/86.png",
+      "sha256": "9c220dff20621ddc6e9e0cc3da3f72533946817a681316b38646b89fb5de018d"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/87.png",
+      "sha256": "0f28b283253f88f0914799f6888dcdc03f75de52fb86b5562afb774e7085b656"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/88.png",
+      "sha256": "a7c511cf892db3d2dbd4993d34b2612ae899e20dd0c9fc78383fd196ce31b563"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/89.png",
+      "sha256": "7c80db474f7ce7f5854d2d346284127432f6e0056de6d6c96f8b5a53f4dcdb13"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/90.png",
+      "sha256": "a4cbf5de87b9a47b5fc93de83b252788b746d45993ba87aee534a96effc2c2f4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/91.png",
+      "sha256": "b93f902f525d937c5e682c064fa167306aba6c9e4bed853fcf2d8f0ca14412bb"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/92.png",
+      "sha256": "ab0cbd336474cc8c2b067dcfe6ab90e5757bcb4c236bf4b8fa022730663c5520"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/93.png",
+      "sha256": "8b26743afe509c2c11e80da96ef0cc6a7415a3142700aa4a8a970216c3170e73"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/94.png",
+      "sha256": "11e0e0105cecc860f990543545d3991901093434966fd66e6de36c0f21263cc4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/95.png",
+      "sha256": "69aaf9c1ae19685b6add1b9c1febb4befecffb25faceeacf0161af28ab2e6a23"
+    },
+    {
+      "path": "public/data/terrain/display/mola/8/0/96.png",
+      "sha256": "757cd6a5f34e6f25bc4618c4aa603aa45223646129d8431b0ffe0a748697ca1d"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/42.png",
+      "sha256": "b1c10b1acc22faf11a6ae377ad09c7f8e2e58185daa480a10f3ec928e1a5ca86"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/43.png",
+      "sha256": "32c397bdb3d7bd7f2a965c5576a2d513405ac275093b43c66ccfadb80224adcd"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/44.png",
+      "sha256": "9c9e6f71890e181511451f5a2d52235237a1817c8de3cb4ca5910a08ef03cbf5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/45.png",
+      "sha256": "3e2fea42e2c6958fda4d2120da37f802044155ecefc2e838a4963d6a640d3126"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/46.png",
+      "sha256": "3134277ed90488a5e7833771570a69f3ecf2257e4a6a806b175fd3f99128b14b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/47.png",
+      "sha256": "ce1218994de728ed8949a66428bd7e4661880db5034f523b27dc2f57531c0654"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/4/48.png",
+      "sha256": "e6b224f79a68723a9a7ec945f4a7a959449f61b8989a697a5d84407936700820"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/42.png",
+      "sha256": "526e940048376262e46e08312e8c07d0f8d9cd760666b7cd07772c3434a483e4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/43.png",
+      "sha256": "dc49f8d9acf4d0af85d01f4c4e944b6f7409d9368ecd9499dce6f1390a49dbea"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/44.png",
+      "sha256": "3826b24ab82b0cd27b7757da60854a50cced5ddebf39270a1d4dd96a652eec74"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/45.png",
+      "sha256": "04f57bf2b43b28f83e165ea512e4c8fb0f14dfba3cb695f6bb580de82050f46e"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/46.png",
+      "sha256": "fa011fc1307a3cf7d95b4161ddee6e2838d53fb9d758263e9a12706f5ea53d53"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/47.png",
+      "sha256": "b90735db0d6e41333faf1e5af6a253d63a47767bd2e07848a89b43bb199b9753"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/3/48.png",
+      "sha256": "f4dad5c8e36a37281dc1ef64bd85515046e597f7da172fd14c322ff9a9d1640a"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/42.png",
+      "sha256": "6bfdae1a1964f42cfcbe6ef27b99b1017b945852374dce6347875d45b934fa81"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/43.png",
+      "sha256": "70fc44296f8307fc754c6e75b91a9a8f88d10e36b4ec4180218ef3447776c5c9"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/44.png",
+      "sha256": "e676986fd68d6ac8401204e37b4488dc1b4b776981dfadd1f9b2d052f3857e67"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/45.png",
+      "sha256": "e637e771f634d8f9c0f53f52d45676369193511ddac8b3404d9f3be3a99e83f4"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/46.png",
+      "sha256": "9ace4e97b0882ac67d9c96ac7240c7a8c1cfc5aadeb28064eca55ef8679b0f4f"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/47.png",
+      "sha256": "bdcee786bd90722f55c8f64aaebb96e06e2641d7cb4830f6b19c36e6e5644dc5"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/2/48.png",
+      "sha256": "5eee7785506a98c95c58f30e6a33950210d19ba868e52efc5a7f6c7cb9747f0d"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/42.png",
+      "sha256": "420b8cd7aedd567d7b6d8004bc26cbe827c11e48ef54b5af0af1ee136a16c859"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/43.png",
+      "sha256": "d6b51e92ae1d677d11377fd618dbc9979d38f24b850ec533a62bce55b622e04e"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/44.png",
+      "sha256": "e6649e74460579700e40c65406fc32fd603c8871ba81506721894ca705da9584"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/45.png",
+      "sha256": "692f929dc33849db4263f5600ca4022f3d82f9ecd294d2ff6681055ded5f29c3"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/46.png",
+      "sha256": "685109932c85d329def5209d63f52a47bdfbc1dd28f8c3d0969d1fe2adb42f58"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/47.png",
+      "sha256": "327767d19d3995aee443dd2a27da98bb6fedddf54ef94f915ca697feed69914b"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/1/48.png",
+      "sha256": "b053a7d36e9807609c74e2fb7086bd51f226fbe770b2060b5f54f9e7f643cb92"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/42.png",
+      "sha256": "bd3ead18b07a3238b72953fdb23246cadcb02ab3d4f4fe9f9c9cac70e6316228"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/43.png",
+      "sha256": "0c60e3d4b4c8ed54f06309836da9f695cae75d33bca7bda91476c55e47be4f81"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/44.png",
+      "sha256": "f1f98ab9c6e6d2686cff24b28b89d3b6f41159613b71f150d0ee92d22f90bcca"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/45.png",
+      "sha256": "7556d3537b5cafca541cc981c510af17ce96caf3a93d80fa5d6a2bef5d643ff9"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/46.png",
+      "sha256": "5d79136bed1a994588282bb19f5cf9e52935b3601404fec091779226329c9294"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/47.png",
+      "sha256": "d17da1d6928ee47154027015a28d3e3d3261fb217cb19bc75d63dbd320a4f3bb"
+    },
+    {
+      "path": "public/data/terrain/display/mola/7/0/48.png",
+      "sha256": "03d226276350d685c5a870db675ebadc788cb397469b3d65430ffe7ed43c7765"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/2/21.png",
+      "sha256": "f2ffdfc576c63471ec31e54dea0ff161e2322bb9d88590e018c9167a50712ab1"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/2/22.png",
+      "sha256": "e2ad0d551c9c52f36019ad0b3dbf3e570c737e537421de0263d562787526ce63"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/2/23.png",
+      "sha256": "cde84c591367e5f48a884986444172a83023785520a3d0e823ce9dfcc323269c"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/2/24.png",
+      "sha256": "3a0acda4a4169e43f512af2be5d400f16cb603e55e4c910ed0b30c59af81c7cf"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/1/21.png",
+      "sha256": "d1381e70402d1b90079848b08b5fcca871185737a15d58d3b0cb768318619166"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/1/22.png",
+      "sha256": "dbb9c643427d5a6dd64cb44f2a67f09a4b0cdef0638ac2e488f6373358cef329"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/1/23.png",
+      "sha256": "60ad1eb3571673f792ccb26ba9a04255c85b1cec895eabe94c460d289c105741"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/1/24.png",
+      "sha256": "bf229676cc4fde4481512ceb24f1d5281330d6fd6f982aa35ebae394a813eb65"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/0/21.png",
+      "sha256": "5aa2728110a7e10257bbe61f30380b9281c230862bee3ed3c9d5729394f60a55"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/0/22.png",
+      "sha256": "ea40d22c9026c7a69e6e4f3012b6f3ed05e42562d33869386d50b726f7f6ddc8"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/0/23.png",
+      "sha256": "1e847ad6c16887e4095ad1b0dd8f3ba04f77c506b8cd2f250751276a360f0c8f"
+    },
+    {
+      "path": "public/data/terrain/display/mola/6/0/24.png",
+      "sha256": "d277670dff730701678135f4260374768d99069c256391f358f4775e05663677"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/1/10.png",
+      "sha256": "c8cf646f6deeb7d721abaedb551a1ec298e1ef77b75b4fd3ffb885d3fa9e73fb"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/1/11.png",
+      "sha256": "c53ceb5a736273ca19c7e4a9bdb5d3622e9c530ac1dc617f9860cdba61697bdc"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/1/12.png",
+      "sha256": "aa05e8ad6b1d2ec46b3feef70a8f1ed3a73fc0ec99108da26b6e0686d0ccfc3a"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/0/10.png",
+      "sha256": "e67f638e3295c3b264f92c45a8e58f3817cdf0e02b15e37ab9881f7738b777f8"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/0/11.png",
+      "sha256": "fa4d05d4eac4a49996e1cae9e7afa635c033963a13795ec8c8b9ef62cba8fad6"
+    },
+    {
+      "path": "public/data/terrain/display/mola/5/0/12.png",
+      "sha256": "f8d3415b2cbce6e6da58d1e4c5730a35d180879ded922ae693ca02a0af8eba71"
+    },
+    {
+      "path": "public/data/terrain/display/hab/9/5/182.png",
+      "sha256": "942af0200c6fe675e59c04a0125a5fd1c0709b153d48f7d0395e3b3cde813f95"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/23/728.png",
+      "sha256": "afec97c478176d05dd94f3c1303e0da1c424cf8331066e4a019eba999eb53bcc"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/23/729.png",
+      "sha256": "e28c9cc98902a48e0c5dbb3bbfd6828125ce380de125ddd3afe3ca92d2979242"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/23/730.png",
+      "sha256": "ab67cc65bb375b57265433208b98c1a0168f7e52bd0ed1fa48bd2a8dfeb5efab"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/23/731.png",
+      "sha256": "be6cec99669fe7defefd6cd9df4ee6ae957517776440a65e9afd90ecf3542f77"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/22/728.png",
+      "sha256": "6f1936bd9b2d60dd8c01afaa5e12ac54af15818d7e7039c2ed281967030199e0"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/22/729.png",
+      "sha256": "ac1a26c3f10214daae8881ce55e728cdbaeb576c5dab2f4f1db5b3deb542525a"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/22/730.png",
+      "sha256": "f580dfc422221bb99fe480bac6612f5cf16175105e33df65be4a489bd1f0cee6"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/22/731.png",
+      "sha256": "e47344c967b27348f982e7abf22383c1d7b34cd79c618a89a717aa12428c6737"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/21/728.png",
+      "sha256": "cbefe61c3664f5130935d9c6d7fca661e333537cb8ccc07c8f0f84ddd27dbc4f"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/21/729.png",
+      "sha256": "b4c21ecabef18298788e5d0b076e7069b02e3654183613c4575c7878fb4954ab"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/21/730.png",
+      "sha256": "8b763b097e6b190ac12c25ee1121886592221b2bddbc46303b92726bfdd7daac"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/21/731.png",
+      "sha256": "117edc2dd76a900d18fa5248b46560f224d934c835cbfe1c6d2738dc56bd6c91"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/20/728.png",
+      "sha256": "146528ef2581500e5bdd82fe7c84232567d94891af5c3beff625dd3e1af1ff44"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/20/729.png",
+      "sha256": "57844715a726964e3a348063b847ff8ecc25c11e6167f5db251bb78fc8443138"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/20/730.png",
+      "sha256": "fb92c8ee47b14932c258a529f842322a276d35a71aafc4340afa9ab5d74ec6b1"
+    },
+    {
+      "path": "public/data/terrain/display/hab/11/20/731.png",
+      "sha256": "5178b210e66f46c91fe87fe8a2f1386139b42720f459e3878467e63c52932463"
+    },
+    {
+      "path": "public/data/terrain/display/hab/10/11/364.png",
+      "sha256": "3101c525b0c76a7cf946671f4493f2b92bf140e5b5705da8aa33ac7818731304"
+    },
+    {
+      "path": "public/data/terrain/display/hab/10/11/365.png",
+      "sha256": "e0ee780ad316de58dcb545ba1e1e001386cf7d5d38529bb2aa518faaeb889257"
+    },
+    {
+      "path": "public/data/terrain/display/hab/10/10/364.png",
+      "sha256": "9f84705de7dde8bc40bb811d2e0b684683549e0129e91308a5daa9c4abe5462a"
+    },
+    {
+      "path": "public/data/terrain/display/hab/10/10/365.png",
+      "sha256": "9f5ad5e39c0b75279d783f55241c0f2cfc82e33c0017dfa5efca83a9dd4f240c"
+    }
+  ]
+}

@@ -16,7 +16,10 @@
     "models:build": "node scripts/models/build.mjs",
     "models:test": "node --test scripts/models/models.test.mjs",
     "pipe:check": "node pipelines/check-env.ts",
-    "pipe:mola": "node pipelines/stable/mola-terrain.ts"
+    "pipe:mola": "node pipelines/stable/mola-terrain.ts",
+    "pipe:hab-terrain": "node pipelines/stable/hab-terrain.ts",
+    "pipe:hab-imagery": "node pipelines/stable/hab-imagery.ts",
+    "pipe:display-terrain": "node pipelines/stable/display-terrain.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

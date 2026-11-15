@@ -1,0 +1,19 @@
+{
+  "id": "ares-ai-imagery-experiment-v1",
+  "kind": "AI-generated visual experiment",
+  "model": "openai/gpt-image-2",
+  "input": "public/data/terrain/ctx/ai-input.jpg",
+  "inputSha256": "06022e5d79eeb9b116f3b9ad21aef7d95e4d2220b20eccc64755b01008f6a4a7",
+  "generated": "public/data/terrain/ctx/ai-visual-experiment.png",
+  "generatedSha256": "b7028a7ff97a318da9fd774c664ca186a39653f108cbdc4842ff2c75fb85720b",
+  "output": "public/data/terrain/ctx/ai-map.png",
+  "outputSha256": "2aa55e3bf22539d7386d4f7f3ec0fd6c28a13f5905b9cdfd7b0d2c3efef10e52",
+  "sourceUrl": "https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer/tile/12/1001/89",
+  "generatedPixelsAreNotMeasurements": true,
+  "allowedUse": "Optional visual comparison only",
+  "defaultVisible": false,
+  "forbiddenUses": ["elevation", "slope", "hazard detection", "routing", "resource calculation"],
+  "prompt": "Use case: scientific-educational visual experiment, NOT scientific data. Edit target: the attached grayscale Mars orbital CTX image. Produce a conservative 2x visual upscale to 1024x1024. Keep exactly the same orthographic overhead footprint, geometry, edge content, dark streak locations, brightness and monochrome appearance. Only reduce JPEG noise and improve local edge clarity. Do not create craters, boulders, ridges, dunes, roads, buildings, shadows, text, labels, borders, or new landforms. Do not rotate, crop, warp, recolor, or change lighting. Fine generated pixels will be labeled unverified in the application and never used for elevation or navigation. No text in the image.",
+  "review": "Broad structures remain recognizable, but fine texture changed. Not a recovery of measured detail; geometric alignment is unvalidated.",
+  "processing": "Generated image assigned the input footprint, then warped for Mapbox display only. Assignment does not certify pixel registration."
+}

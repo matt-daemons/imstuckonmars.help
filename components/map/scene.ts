@@ -3,6 +3,13 @@ import type { CustomLayerInterface, Map as MapboxMap } from "mapbox-gl";
 import * as THREE from "three";
 
 import type { LngLat } from "@/lib/mars/types";
+import {
+  LOCAL_TERRAIN_BOUNDS,
+  LOCAL_TERRAIN_SOURCE,
+  MARS_TO_MAP,
+  REGIONAL_TERRAIN_SOURCE,
+  terrainSourceForView,
+} from "@/lib/mars/terrain";
 
 type MapboxGL = typeof import("mapbox-gl").default;
 
@@ -10,28 +17,56 @@ type MapboxGL = typeof import("mapbox-gl").default;
  * Mapbox sizes the world with Earth's radius, so Mars coordinates render 1.878× too large.
  * Terrain exaggeration of MARS_TO_MAP is true Mars scale; 3D models scale by the same factor.
  */
-export const MARS_TO_MAP = 6378137 / 3396190;
+export { MARS_TO_MAP } from "@/lib/mars/terrain";
 
 const TERRAIN_TILES = "/data/terrain/mola";
-export const TERRAIN_SOURCE = "MGS MOLA 463 m DEM (USGS Astrogeology)";
+export const TERRAIN_SOURCE = "MOLA 463 m regional; MOLA/HRSC 200 m grid near habitat";
+
+export function updateTerrain(m: MapboxMap, exaggeration: number) {
+  const bounds = m.getBounds();
+  if (!bounds) return;
+  const source = terrainSourceForView(
+    [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
+    m.getZoom(),
+  );
+  const current = m.getTerrain();
+  if (current?.source !== source || current.exaggeration !== exaggeration) {
+    m.setTerrain({ source, exaggeration });
+  }
+  return source;
+}
 
 export function addTerrain(m: MapboxMap, beforeId?: string) {
   const origin = location.origin; // Mapbox needs absolute tile URLs
-  m.addSource("mola-dem", {
+  m.addSource(REGIONAL_TERRAIN_SOURCE, {
     type: "raster-dem",
-    tiles: [`${origin}${TERRAIN_TILES}/terrain/{z}/{x}/{y}.png`],
+    tiles: [`${origin}/data/terrain/display/mola/{z}/{x}/{y}.png`],
     encoding: "terrarium",
     tileSize: 256,
+    minzoom: 5,
     maxzoom: 8,
+    bounds: [-180, 40, -168, 52],
   });
   m.addSource("mola-base", {
     type: "raster",
     tiles: [`${origin}${TERRAIN_TILES}/base/{z}/{x}/{y}.png`],
     tileSize: 256,
+    minzoom: 5,
     maxzoom: 8,
+    bounds: [-180, 40, -168, 52],
   });
   m.addLayer({ id: "mola-base", type: "raster", source: "mola-base" }, beforeId);
-  m.setTerrain({ source: "mola-dem", exaggeration: MARS_TO_MAP });
+  m.addSource(LOCAL_TERRAIN_SOURCE, {
+    type: "raster-dem",
+    tiles: [`${origin}/data/terrain/display/hab/{z}/{x}/{y}.png`],
+    encoding: "terrarium",
+    tileSize: 256,
+    minzoom: 9,
+    maxzoom: 11,
+    bounds: [...LOCAL_TERRAIN_BOUNDS],
+    attribution: "NASA/MOLA; ESA/DLR/FU Berlin/HRSC; USGS",
+  });
+  updateTerrain(m, MARS_TO_MAP);
 }
 
 const CLEAR = { sky: [176, 132, 104], horizon: [214, 172, 132] };

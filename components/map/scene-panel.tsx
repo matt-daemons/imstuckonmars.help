@@ -3,7 +3,8 @@
 import type { Map as MapboxMap } from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 
-import { MARS_TO_MAP, TERRAIN_SOURCE, setDustStorm } from "@/components/map/scene";
+import { MARS_TO_MAP, TERRAIN_SOURCE, setDustStorm, updateTerrain } from "@/components/map/scene";
+import { LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { LngLat } from "@/lib/mars/types";
@@ -22,11 +23,18 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [intensity, setIntensity] = useState(0);
   const [windFromDeg, setWindFromDeg] = useState(270);
+  const [localTerrain, setLocalTerrain] = useState(false);
   const current = useRef(intensity);
   current.current = intensity;
 
   useEffect(() => {
-    map?.setTerrain({ source: "mola-dem", exaggeration });
+    if (!map) return;
+    const update = () => setLocalTerrain(updateTerrain(map, exaggeration) === LOCAL_TERRAIN_SOURCE);
+    update();
+    map.on("moveend", update);
+    return () => {
+      map.off("moveend", update);
+    };
   }, [map, exaggeration]);
 
   useEffect(() => {
@@ -54,6 +62,10 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
         <h2 className="font-heading text-sm font-semibold">Scene</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Terrain: {TERRAIN_SOURCE}. Habitat and dust storm are illustrative, not data.
+        </p>
+        <p className="mt-1 font-mono text-sm" role="status">
+          {localTerrain ? "Active elevation grid: 200 m" : "Active elevation grid: 463 m"}. Fine
+          image detail is not terrain accuracy.
         </p>
       </div>
 

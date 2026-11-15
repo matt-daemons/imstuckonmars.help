@@ -103,6 +103,7 @@ GitHub Actions deploys every push to `main` that passes its checks. The workflow
 ## Commits
 
 Keep commits small, with messages formatted as `feature-name(action): Brief description`.
+Work directly in `default@`. Do not create additional jj workspaces.
 
 ## Stack
 
@@ -183,7 +184,9 @@ variant instead. The tape goes on borders only, never behind text (K-5).
 Every other skill rule applies as written, including T-4 (mixed case) and K-5 (6:1 text
 contrast).
 
-Acronym glossary (T-4): API, EVA, MAV (Mars Ascent Vehicle), MTC (Mars Coordinated Time), OTP,
+Acronym glossary (T-4): AI (artificial intelligence), API, CTX (Context Camera), EVA,
+HRSC (High Resolution Stereo Camera), MAV (Mars Ascent Vehicle),
+MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP,
 and UI. Add an acronym here before using it in the UI.
 
 ## Formatting and checks

@@ -1,6 +1,6 @@
 {
   "aoi": {
-    "name": "Arcadia Planitia (placeholder AOI — replace after HiRISE DTM pick)",
+    "name": "Arcadia Planitia · simulated base",
     "center": [-176.0, 46.0],
     "zoom": 12,
     "bounds": [
@@ -10,6 +10,42 @@
   },
   "crs": "Equirectangular on Mars 2000 sphere (R = 3396190 m), centered on AOI",
   "layers": [
+    {
+      "id": "ctx-context",
+      "title": "Orbital imagery · 5 m source",
+      "kind": "raster",
+      "path": "../terrain/ctx/context.png",
+      "corners": [
+        [-176.1328125, 46.0986328125],
+        [-175.869140625, 46.0986328125],
+        [-175.869140625, 45.9228515625],
+        [-176.1328125, 45.9228515625]
+      ],
+      "opacity": 1,
+      "visible": true,
+      "source": {
+        "name": "NASA/JPL/MSSS/Caltech Murray Lab/Esri · image only",
+        "url": "https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer"
+      }
+    },
+    {
+      "id": "ai-visual-preview",
+      "title": "AI texture experiment · unverified",
+      "kind": "raster",
+      "path": "../terrain/ctx/ai-map.png",
+      "corners": [
+        [-176.0888671875, 46.0107421875],
+        [-176.044921875, 46.0107421875],
+        [-176.044921875, 45.966796875],
+        [-176.0888671875, 45.966796875]
+      ],
+      "opacity": 1,
+      "visible": false,
+      "source": {
+        "name": "AI-generated texture from orbital imagery · never elevation",
+        "url": "/data/terrain/ctx/ai-provenance.json"
+      }
+    },
     {
       "id": "stops",
       "title": "Science stops",
