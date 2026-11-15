@@ -46,6 +46,10 @@ Observation charts use unsmoothed line segments and preserve gaps. Repeated
 sample markers are omitted; isolated observations and the inspected sample use
 fixed-size circular markers outside the stretched SVG coordinate system.
 Expanded charts have five aligned value ticks and compact charts have three.
+An inspection tooltip follows the selected point on the line with the nearest
+archived sample's time, value and unit. Vertical pointer movement does not move
+it away from that point. Missing periods say No observation. Arrow keys, Home and
+End inspect samples from the keyboard; Escape clears the inspection.
 
 Loading happens in place with fixed-size pane frames. Every numeric readout is one text node containing the actual fetched value; a short transform-only settle replaces the former clipped glyph reels and their stray top bars. A single SVG mask reveals the entire chart signal smoothly, including all disconnected segments, rather than animating each path or sweeping a bar over the data. Reloads retain the current readings and frames until the next response. Reduced-motion mode renders final text and signals immediately with a static loaded border. There is no flashing, fake boot log, startup gate, substitute digit sequence or continuously changing weather.
 

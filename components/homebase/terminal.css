@@ -543,6 +543,27 @@
   border: 2px solid var(--background);
   outline: 1px solid var(--primary);
 }
+.hb-plot-tooltip {
+  position: absolute;
+  z-index: 2;
+  display: grid;
+  gap: 4px;
+  width: min(220px, calc(100% - 16px));
+  padding: 8px 10px;
+  border: 1px solid var(--primary);
+  background: var(--background);
+  color: var(--foreground);
+  font-size: 14px;
+  line-height: 1.4;
+  pointer-events: none;
+}
+.hb-plot-tooltip strong {
+  font-size: 16px;
+}
+.hb-plot-canvas svg:focus-visible {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
 .hb-inspect-line {
   stroke: var(--primary);
   stroke-width: 1;

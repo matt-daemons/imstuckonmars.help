@@ -47,6 +47,8 @@ export function ObservationPlot({
   const ticks = compact ? [0, 0.5, 1] : [0, 0.25, 0.5, 0.75, 1];
   const selected =
     cursor === null ? null : nearestObservation(points, cursor, (metric.cadence_s * 1000) / 2);
+  const inspectionX = x(selected?.utc_ms ?? cursor ?? start) / 10;
+  const inspectionY = selected?.value == null ? 10 : y(selected.value) / 2;
   return (
     <section
       className="hb-trend"
@@ -96,7 +98,35 @@ export function ObservationPlot({
             viewBox="0 0 1000 200"
             preserveAspectRatio="none"
             role="img"
-            aria-label={`${metric.title} history in ${metric.unit}, ${clockLabel(start)} to ${clockLabel(to)} approximate UTC. ${valid.length} available observations. Gaps are not interpolated.`}
+            tabIndex={0}
+            aria-describedby={cursor === null ? undefined : `${clipId}-tooltip`}
+            aria-label={`${metric.title} history in ${metric.unit}, ${clockLabel(start)} to ${clockLabel(to)} approximate UTC. ${valid.length} available observations. Gaps are not interpolated. Arrow keys inspect samples; Escape clears inspection.`}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") {
+                event.preventDefault();
+                setCursor(null);
+                return;
+              }
+              if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(event.key) || !points.length)
+                return;
+              event.preventDefault();
+              const index = points.findIndex((point) => point.utc_ms >= (cursor ?? start));
+              const next =
+                event.key === "Home"
+                  ? 0
+                  : event.key === "End"
+                    ? points.length - 1
+                    : Math.max(
+                        0,
+                        Math.min(
+                          points.length - 1,
+                          (index < 0 ? points.length - 1 : index) +
+                            (event.key === "ArrowLeft" ? -1 : 1),
+                        ),
+                      );
+              setCursor(points[next].utc_ms);
+            }}
+            onBlur={() => setCursor(null)}
           >
             <defs>
               <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
@@ -142,7 +172,13 @@ export function ObservationPlot({
               ))}
             </g>
             {cursor !== null && (
-              <line className="hb-inspect-line" x1={x(cursor)} x2={x(cursor)} y1="0" y2="200" />
+              <line
+                className="hb-inspect-line"
+                x1={inspectionX * 10}
+                x2={inspectionX * 10}
+                y1="0"
+                y2="200"
+              />
             )}
             <rect
               x="0"
@@ -173,6 +209,30 @@ export function ObservationPlot({
               aria-hidden
               style={{ left: `${x(selected.utc_ms) / 10}%`, top: `${y(selected.value) / 2}%` }}
             />
+          )}
+          {cursor !== null && (
+            <div
+              id={`${clipId}-tooltip`}
+              role="tooltip"
+              className="hb-plot-tooltip"
+              style={{
+                left: `clamp(8px, calc(${inspectionX}% + 12px), calc(100% - 228px))`,
+                top: `clamp(8px, calc(${inspectionY}% + 12px), calc(100% - 100px))`,
+              }}
+            >
+              <time
+                className="font-mono"
+                dateTime={new Date(selected?.utc_ms ?? cursor).toISOString()}
+              >
+                {clockLabel(selected?.utc_ms ?? cursor)} · approximate UTC
+              </time>
+              <strong className="font-mono">
+                {selected?.value == null
+                  ? "No observation"
+                  : `${formatNumber(selected.value, metric.decimals)} ${metric.unit}`}
+              </strong>
+              <span>{metric.title}</span>
+            </div>
           )}
         </div>
         <div className="hb-axis-unit">{metric.unit}</div>

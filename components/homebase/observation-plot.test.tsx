@@ -31,5 +31,7 @@ describe("observation plot presentation", () => {
     expect(html.match(/class="hb-signal"/g)).toHaveLength(2);
     expect(html.match(/class="hb-signal-point"/g)).toHaveLength(1);
     expect(html).toContain("Gaps are not interpolated");
+    expect(html).toContain("Arrow keys inspect samples");
+    expect(html).toContain('tabindex="0"');
   });
 });
