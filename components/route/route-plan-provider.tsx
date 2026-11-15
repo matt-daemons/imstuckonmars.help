@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useReducer, type Dispatch, type ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useReducer,
+  type Dispatch,
+  type ReactNode,
+} from "react";
 
 import type { SitePoi } from "@/components/map/scene-panel";
 import type { LngLat } from "@/lib/mars/types";
@@ -36,6 +43,12 @@ export function RoutePlanProvider({
 }) {
   const [inputs, dispatch] = useReducer(routePlanReducer, initialRoutePlan(base, target));
   const result = useRoutePlanResult(inputs, base, sites);
+  // The map fetches the sites after the plan starts, so the opening drive + walk ends at the
+  // nearest one only once they arrive.
+  const nearest = result.destinations[0]?.center;
+  useEffect(() => {
+    if (nearest) dispatch({ type: "sitesLoaded", nearest });
+  }, [nearest]);
   return (
     <RoutePlanContext value={{ ...result, inputs, dispatch, base }}>{children}</RoutePlanContext>
   );
