@@ -27,6 +27,7 @@
           ./public
           ./server
           ./migrations
+          ./scripts/models
           ./.oxfmtrc.json
           ./.oxlintrc.json
           ./components.json

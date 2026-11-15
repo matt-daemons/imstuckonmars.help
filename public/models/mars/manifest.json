@@ -1,0 +1,130 @@
+{
+  "version": 1,
+  "license": "MIT",
+  "attribution": "Original ARES conceptual assets, 2026 matt-daemons. Not film assets or NASA hardware models.",
+  "units": "meters",
+  "coordinates": {
+    "handedness": "right",
+    "up": "+Y",
+    "forward": "+Z",
+    "origin": "ground-level footprint center"
+  },
+  "limitations": "Illustrative dimensions and equipment only. No engineering, life-support, performance or safety validation.",
+  "models": [
+    {
+      "id": "hab",
+      "title": "HAB — surface habitat",
+      "path": "/models/mars/hab.glb",
+      "preview": "/models/mars/hab.png",
+      "rear_preview": "/models/mars/hab-rear.png",
+      "byte_length": 710912,
+      "sha256": "777c5582386c902af5f5976692e055691ddcf5667577390b7e2627b088413d3c",
+      "triangles": 9812,
+      "bounds_m": {
+        "min": [-8.43, 0, -4.5],
+        "max": [8.43, 6.25, 7.54]
+      },
+      "dimensions_m": [16.86, 6.25, 12.04],
+      "parts": [
+        {
+          "name": "Raised deck and eight leveling feet",
+          "triangles": 1248
+        },
+        {
+          "name": "Ribbed pressure shell and segmented roof",
+          "triangles": 3904
+        },
+        {
+          "name": "Forward airlock, pressure hatch and entry platform",
+          "triangles": 1460
+        },
+        {
+          "name": "Observation ports and service panels",
+          "triangles": 1344
+        },
+        {
+          "name": "Paired solar wings and support trusses",
+          "triangles": 1392
+        },
+        {
+          "name": "Communications mast, dish and roof equipment",
+          "triangles": 464
+        }
+      ]
+    },
+    {
+      "id": "rover",
+      "title": "Rover — pressurized surface transport",
+      "path": "/models/mars/rover.glb",
+      "preview": "/models/mars/rover.png",
+      "rear_preview": "/models/mars/rover-rear.png",
+      "byte_length": 652952,
+      "sha256": "ce6b6817a45088c147a9defcec89a21858dbf6e680adfb609862e5cbf2b7b6be",
+      "triangles": 8988,
+      "bounds_m": {
+        "min": [-2.2800000000000002, 0, -3.3850000000000002],
+        "max": [2.2800000000000002, 4.4889711431703, 3.2800000000000002]
+      },
+      "dimensions_m": [4.56, 4.489, 6.665],
+      "parts": [
+        {
+          "name": "Six wheels, hubs, tread blocks and suspension",
+          "triangles": 6816
+        },
+        {
+          "name": "Chassis, pressure cabin and bumpers",
+          "triangles": 672
+        },
+        {
+          "name": "Segmented forward windshield and cabin glazing",
+          "triangles": 260
+        },
+        {
+          "name": "Roof rack, folded power array and communications",
+          "triangles": 408
+        },
+        {
+          "name": "Rear utility tanks, access steps and cargo",
+          "triangles": 832
+        }
+      ]
+    },
+    {
+      "id": "mav",
+      "title": "MAV — Mars ascent vehicle",
+      "path": "/models/mars/mav.glb",
+      "preview": "/models/mars/mav.png",
+      "rear_preview": "/models/mars/mav-rear.png",
+      "byte_length": 616128,
+      "sha256": "31554584bad430a7340c27a2f265988f8269a68c97591e42a1bfff19093c798a",
+      "triangles": 8492,
+      "bounds_m": {
+        "min": [-3.114873734152917, 0, -3.114873734152917],
+        "max": [3.1148737341529165, 11.8, 3.1148737341529165]
+      },
+      "dimensions_m": [6.23, 11.8, 6.23],
+      "parts": [
+        {
+          "name": "Ascent stage pressure hull, avionics and nose",
+          "triangles": 2856
+        },
+        {
+          "name": "Four external propellant tanks and plumbing",
+          "triangles": 1664
+        },
+        {
+          "name": "Engine deck, four expansion bells and heat shield",
+          "triangles": 1536
+        },
+        {
+          "name": "Four splayed landing legs with shock struts and pads",
+          "triangles": 1280
+        },
+        {
+          "name": "External access ladder, service deck and attitude thrusters",
+          "triangles": 1156
+        }
+      ]
+    }
+  ]
+}
