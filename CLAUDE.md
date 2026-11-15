@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sat Nov 14, 2026 14:32 (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sat Nov 14, 2026 15:30 (hackathon day 1). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -59,6 +59,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Landing & base location    | **Arcadia Planitia** (plains) — **final**. Chosen because it's a much more favorable base location (smooth terrain, good access to subsurface water ice, sunlight for power), **despite sparse surface data** (no rover has operated there). Landing and base in the same general area, with distance between them for landing safety.                                                                                                                         |
 | Live data for Arcadia      | Use Gale (Curiosity: REMS weather, RAD radiation) and/or Jezero (Perseverance: MEDA) data as a **clearly labeled proxy feed**, optionally adjusted with Mars Climate Database values for Arcadia. Orbital imagery (HiRISE/CTX) replaces rover imagery.                                                                                                                                                                                                         |
 | Product name               | **LARA** (only name — the assessment engine is part of LARA, not a separate "ARES")                                                                                                                                                                                                                                                                                                                                                                            |
+| Map library                | **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre.                                                                                                                                   |
 | Science problem            | **OPEN** — do we need one, or is it just routing/forecasting? (Expert view: yes — without science stops, the route only avoids hazards and has no purpose. Plan stops → route → timeline → walk-back check.)                                                                                                                                                                                                                                                   |
 | Flight rules / assumptions | Slope limit: **20°** (from Artemis lunar planning — label as assumption for Mars). Suit supply budget: **TBD**. Radiation thresholds: **TBD**. Walk-back rule: **TBD**.                                                                                                                                                                                                                                                                                        |
 
@@ -144,53 +145,80 @@ untouched "just in case", but **nobody needs them locally**. Where `AGENTS.md` s
 - **Web app scripts:** `pnpm install` · `pnpm dev` · `pnpm fmt` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build`.
   Pre-commit check = `pnpm fmt && pnpm lint && pnpm typecheck && pnpm test`.
 - **Pipelines: TypeScript too** (one language, one lockfile, schemas shared with the app). Run scripts directly with Node 24 (`node pipelines/stable/dem.ts` — native type stripping) or `tsx` if a script needs TS-only syntax like enums. Add `pnpm` scripts per pipeline, e.g. `"pipe:dem": "node pipelines/stable/dem.ts"`. Deps: `zod`, `yaml`, `geotiff`, `@turf/turf`, `@duckdb/node-api`, `execa` (call GDAL). System dep: `brew install gdal` (check `gdalinfo --version`). Pipelines run locally, never in the Workers runtime.
-- **Version control: plain Git + GitHub.** Small commits, keep the existing message style `area(type): Summary`. Work on short-lived branches (`jess/aoi`, `m/banner`) → PR or fast-forward to `main`. `main` must always run.
+- **Version control: plain Git + GitHub.** Small commits, keep the existing message style `area(type): Summary`. Jess works **directly on local `main`** (no feature branches). **Don't push `main` until 0a's CI fix lands** — every push to `main` deploys. `main` must always run.
 - **⚠️ CI caveat:** the GitHub Actions deploy still runs `nix flake check`. After any change to `pnpm-lock.yaml` the Nix `pnpmDeps.hash` goes stale and **deploys will fail**. Options (decide with team role A): (a) switch the workflow to `pnpm install && pnpm build && pnpm deploy` (recommended), or (b) ask whoever owns Nix to bump the hash. Until then, local `pnpm dev` is unaffected.
 
-## Current state (as of Sat Nov 14, 2026)
+## Current state (as of Sat Nov 14, 2026, ~16:45)
 
-- `CLAUDE.md` role clarification: **committed**.
-- Map starter files: **written, NOT committed, NOT yet installed/built/run**:
-  - `lib/mars/types.ts` — TS types: `LayerManifest`, `StableLayer`, `LiveSnapshot`, `RouteResult`, `Verdict`.
-    `LiveSnapshot`/`RouteResult` mirror CLAUDE.md §4; `LayerManifest`/`StableLayer` and `proxy_source` are a proposal pending team role A.
-  - `public/data/processed/manifest.json`, `stops.geojson`, `route.geojson` — **placeholder** AOI at −176°, 46°N (≈184°E) and fake stops/route.
-  - `components/map/mars-map.tsx` — client MapLibre map, no basemap, manifest-driven raster (image source + corners) and GeoJSON layers, cursor °N/°E readout.
-  - `components/map/layer-panel.tsx` — coss `Switch` toggles + per-layer source.
-  - `app/page.tsx` — renders `<MarsMap />` (old "API status" button removed).
-  - `server/api/app.ts` — added `/api/live` stub (zeros, labeled "Stub — not real data").
-  - `flake.nix` — added `./public` to fileset (harmless; only matters if Nix CI is kept).
+- **Step 1 done**, fast-forwarded onto local `main` (3 commits, **not pushed** — see 0a): `docs(docs)` toolchain, `map(feat)` MapLibre map
+  (`lib/mars/types.ts`, `components/map/{mars-map,layer-panel}.tsx`, `/api/live` stub + test, placeholder `public/data/processed/*`),
+  `pipelines(feat)` (`config.yaml`, `data/{raw,interim,processed}/`, `pipelines/`, `pnpm pipe:check`). `jess/map-skeleton` branch is now redundant.
+- **Spike (uncommitted, on `main`)** to choose the map library:
+  - MOLA 463 m DEM cut for 180–192°E, 40–52°N straight from USGS via `/vsicurl/` → `pipelines/spike/terrain-tiles.ts` → Terrarium + shaded-colour
+    XYZ tiles in `public/data/spike/` (58 MB, gitignored, z5–9).
+  - `/` = MapLibre: terrain, butterscotch sky, three.js habitat, canvas dust streaks (`components/map/spike/{terrain-storm.ts,spike-panel.tsx}`).
+  - `/mapbox-spike` = Mapbox v3: same tiles + habitat, native `setFog` + `setSnow` tinted as dust; token pasted in-page (localStorage only).
+  - **Outcome: Mapbox chosen** (§4). The MapLibre spike + `maplibre-gl` get removed when the main map is ported (1h).
+- Gotchas: `maplibre-gl.css` forces `position: relative` on the container → size it with `h-full w-full`, not `absolute inset-0` (check the same for
+  `mapbox-gl.css`). vinext dev server hit "Maximum call stack size exceeded" after ~1,200 files landed in `public/` — restart `pnpm dev` if `/` returns 500.
+- Mars-scale constants: MapLibre/Mapbox size the world with Earth's radius → terrain `exaggeration: 1.878` (= 6378137 / 3396190) is **true Mars scale**;
+  3D models scale by the same factor.
 
 ## Architecture (summary)
 
 TypeScript pipelines (Node + GDAL CLI) → `data/processed/` (COG + GeoJSON + `manifest.json`) → served from `public/` or R2 →
-MapLibre in the existing vinext app reads the manifest; Hono `/api/*` serves `/live`, `/route`, `/verdict`.
-Each raster = COG (true values) + colored PNG/WebP preview with 4 corners. MapLibre measurements use
+Mapbox GL JS (v3) in the existing vinext app reads the manifest; Hono `/api/*` serves `/live`, `/route`, `/verdict`.
+Each raster = COG (true values) + colored PNG/WebP preview with 4 corners. Mapbox measurements use
 Earth's radius (~1.9× Mars) — compute distances in pipeline/routing code, no built-in scale bar.
 
 ## Step-by-step plan (∥ = can run in parallel)
 
-### Step 0 — open items
+### Step 0 — open items → send to team role A for approval
 
-- 0a. **OPEN ∥** Tell the team about the toolchain switch (above) and decide the CI fix with team role A.
-- 0b. **OPEN ∥** Run the `LayerManifest`/`StableLayer` + `proxy_source` design past team role A (at lunch). Not blocking Step 1; **must be settled before Step 2.**
-- 0c. **OPEN ∥** Agree with team role A on single source of truth: Zod schemas in `schemas/` are the single source; `lib/mars/types.ts` becomes `z.infer<>` re-exports, and `validate.ts` checks every file in `data/processed/` (+ `manifest.json`). `z.toJSONSchema()` if anyone needs JSON Schema.
+Everything below is a **proposal** until team role A approves it. Files to show them: `lib/mars/types.ts`, `config.yaml`,
+`public/data/processed/manifest.json`, `server/api/app.ts` (`/api/live` stub). Record each answer in §4 Key decisions log.
 
-### Step 1 — Get the skeleton running (plain Node + pnpm)
+- 0a. **OPEN — Toolchain + CI.** (1) Team agrees: no Nix/jj; Node 24 + pnpm (Corepack), Git (Jess on `main`), TypeScript pipelines + GDAL CLI, **Mapbox GL v3** for the map.
+  (2) **Blocking merge to `main`:** CI deploy runs `nix flake check`, which fails once `pnpm-lock.yaml` changes (it already has on
+  local `main`). Recommend: switch the workflow to `pnpm install && pnpm build && pnpm deploy`. Who edits the workflow?
+- 0b. **OPEN — Data contracts (`lib/mars/types.ts`). Must be settled before Step 2.** Ask A to approve or change:
+  1. `LayerManifest` = `{ aoi: {name, center, zoom, bounds}, crs, layers: StableLayer[] }`.
+  2. `StableLayer` = `{ id, title, kind: raster|vector, path, corners?, cogPath?, units?, opacity?, visible?, source: {name, url?} }`.
+     `source` is **required** (every layer shows its NASA source). Rasters ship as COG (values) + PNG/WebP preview + 4 corners.
+  3. `LiveSnapshot` **adds 3 fields beyond §4**: `sol`, `lmst`, and `proxy_source` (e.g. "Gale (Curiosity REMS/RAD)") so the UI can label proxy data.
+  4. `solar_alert_level` enum `none | watch | warning` — invented placeholder; A to define levels from DONKI + flight rules.
+  5. **Units are not yet specified** for `radiation_dose_rate` (µGy/day? µGy/h?), `temp` (K or °C), `wind` (m/s), `dust_opacity` (τ), `sun_elevation` (°). Pick one each.
+  6. `RouteResult` matches §4 as-is (`distance_km`, `est_time_min`, `max_slope` in degrees, `verdict`, `limiting_factor`, `reasons[]`).
+  7. **Longitude convention conflict:** types + manifest use −180..180 (Mapbox needs this); `config.yaml` and the UI readout use 0–360 °E.
+     Proposal: store −180..180 in data files, display 0–360 °E, convert only in the UI. A to confirm.
+- 0c. **OPEN — Single source of truth for schemas.** Proposal: Zod schemas in `schemas/`; `lib/mars/types.ts` becomes `z.infer<>` re-exports;
+  `schemas/validate.ts` (`pnpm validate`) checks every file in `data/processed/` + `manifest.json`; `z.toJSONSchema()` if anyone needs JSON Schema.
+  Replaces the old Pydantic/`validate.py` plan.
+- 0d. **OPEN — `config.yaml` values A owns.** `thresholds.suit_budget`, `radiation`, `walk_back` are **TBD**; `slope_max_deg: 20` is labeled an
+  Artemis-lunar assumption. Confirm or replace. (`aoi` + `resolution_m` are Jess's, Step 2.)
+- 0e. **OPEN — Data home (was 2c, pulled forward because it affects file paths in the contract).** Pipelines write `data/processed/`;
+  the app currently reads `public/data/processed/`. Options: copy step (`pnpm pipe:publish`) into `public/`, or upload to R2. Recommend copy for the demo, R2 only if files exceed the static-asset limit.
+- 0f. **OPEN — Mapbox account + token** (new, from the library decision). Who owns the Mapbox account; create a **public `pk.` token
+  URL-restricted** to `imstuckonmars.help` + `localhost`; how the app reads it (build-time env var, never committed — `.env*` is gitignored);
+  confirm expected map loads stay inside the free tier. Tell M (owns UI) about the switch.
 
-- 1a. `corepack enable` → `pnpm install` → `pnpm add maplibre-gl@^5` → `pnpm fmt` → `pnpm lint && pnpm typecheck`.
-- 1b. Check: `pnpm build` succeeds.
-- 1c. Check: `pnpm dev` serves `/data/processed/manifest.json` (confirms vinext serves `public/`; if not, serve via a Hono route).
-- 1d. Check: map renders, toggles work (validates coss `Switch` `onCheckedChange` signature).
-- 1e. Check: `pnpm test` resolves `@/` in `server/api/app.ts`; add a `/api/live` test.
-- 1f. Commit with Git on a branch, e.g. `git switch -c jess/map-skeleton` → `git commit -m "map(feat): Add MapLibre Mars map with manifest-driven layers"` → push / PR.
-- 1g. ∥ Set up the pipeline side: `brew install gdal`, `pnpm add -D zod yaml geotiff @turf/turf @duckdb/node-api execa`, create `data/{raw,interim,processed}` + `pipelines/` + `config.yaml` skeleton; gitignore `data/raw` and `data/interim`.
+### Step 1 — Get the skeleton running ✅ DONE (Sat 15:30)
+
+- 1a–1e ✅ install, `maplibre-gl@5.24.1`, fmt/lint/typecheck, build, dev server serves `public/` (no Hono route needed), map + toggles + readout verified, `/api/live` test.
+- 1f ✅ committed; now on local `main` (not pushed).
+- 1g ✅ GDAL 3.13.3, pipeline deps (`@duckdb/node-api` is pre-release `2.0.0-r.1` — pin older if it misbehaves), folders, `config.yaml`, `pnpm pipe:check`.
+- 1h. **OPEN — Port the main map to Mapbox v3.** Move `components/map/mars-map.tsx` + layers + habitat + storm onto `mapbox-gl`, token from env (0f),
+  remove `maplibre-gl` and the MapLibre spike files, keep `/mapbox-spike` only until the port works. Then decide whether to keep the MOLA spike tiles as
+  regional context (`pipelines/spike/terrain-tiles.ts` → a real `pipelines/stable/` script) and commit.
 
 ### Step 2 — AOI (team role B / Jess, with Advisor A)
 
-- 2a. Check: verify −176°, 46°N is inside Arcadia Planitia; pick final AOI from actual HiRISE DTM coverage.
-- 2b. Check: confirm Mars 2000 radius (3396190 m) matches the GDAL/PROJ definition; record CRS, planetocentric lat, east-positive lon per file.
-- 2c. Decide data home: `data/processed/` copied into `public/`, or R2 (resolves duplication with the "app reads only data/processed" rule).
-- 2d. Update `manifest.json` AOI.
+- 2a. ~~Verify −176°, 46°N is inside Arcadia~~ ✅ roughly (Gazetteer map readout 46.4°N 181.4°E is inside the outline; placeholder sits ~107 km east,
+  still inside). Still to do: copy Arcadia's **official center + N/S/E/W bounds** from the Gazetteer entry, then **search HiRISE DTMs** in those bounds
+  (Mars Orbital Data Explorer, ode.rsl.wustl.edu/mars) and pick the AOI near a science target (ice-exposing craters / scalloped terrain).
+- 2b. ~~Confirm Mars 2000 radius matches GDAL/PROJ~~ ✅ (`IAU_2015:49900` = `+R=3396190`). Still to do: record CRS, lat convention, lon direction per file in `data/raw/README.md`.
+- 2c. → moved to 0e. Decide data home: `data/processed/` copied into `public/`, or R2 (resolves duplication with the "app reads only data/processed" rule).
+- 2d. Update `manifest.json` + `config.yaml` AOI (and regenerate terrain tiles for the new AOI).
 
 ### Step 3 — First real layers (team role B)
 
@@ -206,7 +234,7 @@ Earth's radius (~1.9× Mars) — compute distances in pipeline/routing code, no 
 ### Step 5 — Route (team role C)
 
 - 5a. Route GeoJSON + `/api/route` returning `RouteResult`.
-- 5b. Check: distances use Mars radius in pipeline, never MapLibre; no built-in scale bar.
+- 5b. Check: distances use Mars radius in pipeline, never Mapbox; no built-in scale bar.
 
 ### Step 6 — Live feed (team role D)
 
@@ -229,4 +257,5 @@ Earth's radius (~1.9× Mars) — compute distances in pipeline/routing code, no 
 
 ## Unverified claims to treat with caution
 
-25 MiB static-asset limit · NASA Trek tile projections · Mars 2000 radius value · vinext serving `public/` · AOI coordinates.
+25 MiB static-asset limit · NASA Trek tile projections · AOI coordinates.
+Verified 15:30: Mars 2000 radius = 3396190 m in PROJ (`IAU_2015:49900`) · vinext dev serves `public/`.
