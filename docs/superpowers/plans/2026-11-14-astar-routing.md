@@ -455,3 +455,98 @@ Rules: the formulas and values are the spec's "Design" section; `ROVER_RULES` ci
 - [ ] On switching to Driving, fit the map to the start and end; on switching back, fly to the habitat.
 - [ ] Measure planning time on the real strip in the browser console; if a leg takes more than about 2 s, downsample the strip by 2 in `loadDriveGrid` and say so.
 - [ ] Full check line; commit `route-ui(feat): Walking and driving missions in the route panel`.
+
+---
+
+# Part 4: Drive + walk mission (Tasks 12–14)
+
+**Spec:** `docs/superpowers/specs/2026-11-15-drive-walk-design.md`. Tasks 12 and 13 touch different files and run at the same time; Task 14 wires them together. All earlier Global Constraints apply.
+
+### Task 12: Site walk grid, automatic boulder zones, staging point, trip planner (lib only)
+
+**Files:** create `lib/mars/site-grid.ts`, `lib/mars/site-grid.test.ts`, `lib/mars/drive-walk.ts`, `lib/mars/drive-walk.test.ts`. Do not touch `components/`.
+
+```ts
+// lib/mars/site-grid.ts
+export interface SiteInfo {
+  id: string;
+  hiriseId: string;
+  poi: LngLat;
+} // hiriseId e.g. "ESP_033225_2250"
+export interface Boulder {
+  center: LngLat;
+  radius_m: number;
+} // diameter/2 + 1 m clearance
+export interface SiteGrid {
+  grid: RouteGrid;
+  slope: Float32Array;
+  walls: Uint8Array;
+  boulders: Boulder[];
+}
+export function siteGridFromSlope(
+  meta: EquirectMeta,
+  slopeTenths: ArrayLike<number>,
+  boulders: Boulder[],
+  cellM: 2,
+): SiteGrid; // pure: max-pool to 2 m, walls = slope > limit or inside a boulder circle; heights all 0
+export function loadSiteGrid(site: SiteInfo, signal?: AbortSignal): Promise<SiteGrid>; // geotiff.js window read of `${SITE_DATA_ROOT}/slope/<hiriseId>_slope.tif` around the POI (±1.2 km) + boulders.geojson
+export function findStagingPoint(site: SiteGrid, poi: LngLat, base: LngLat): LngLat | null; // rule in the spec
+
+// lib/mars/drive-walk.ts
+export interface DriveWalkPlan {
+  status: "ok" | "no_staging" | "drive_failed" | "walk_failed";
+  collection: RouteCollection | null; // lib/mars/types.ts, null unless ok
+  drive: ReturnType<typeof planDrive>;
+  walk: {
+    outbound: PlannedPath;
+    back: PlannedPath;
+    timing: WalkLegTiming | null;
+    verdict: EvaVerdict | null;
+  };
+  staging: LngLat | null;
+  verdict: EvaVerdict | null; // worse of drive and walk
+}
+export function planDriveWalk(
+  driveGrid: RouteGrid,
+  driveSlope: Float32Array,
+  driveWalls: Uint8Array,
+  site: SiteGrid,
+  siteInfo: SiteInfo,
+  base: LngLat,
+  power: PowerSource,
+  samplingMin: number,
+): DriveWalkPlan;
+```
+
+- [ ] Failing tests first (synthetic grids, no network): max-pooling keeps the steepest 1 m value; a boulder circle walls exactly the cells whose centres are inside it; `findStagingPoint` picks a flat, boulder-free cell in the 0.5–1 km annulus facing the base, falls back within 2 km, returns null when nothing is eligible; `planDriveWalk` on a flat synthetic setup returns legs in order drive-out, walk-out, walk-back, drive-back with `mode`, `from`/`to`, `start_offset_min` non-decreasing, `simulated: false`, a `route` summary whose verdict is the worse leg's, and walk timing equal to `walkLegTiming` for the walked distance.
+- [ ] Implement; `corepack pnpm vitest run lib/mars/site-grid.test.ts lib/mars/drive-walk.test.ts`; full check line; commit `routing(feat): Drive + walk planner with automatic boulder zones and staging points`.
+
+### Task 13: Journey rendering (map layers, legend, readouts) against the sample routes
+
+**Files:** modify `components/map/route-layers.ts`, `components/map/route-layers.test.ts`, `app/globals.css` (add `--route-walk`), `app/design-system/_demos/operational.tsx` (colour table row); create `components/map/route-legend.tsx`, `components/map/journey-result.tsx`. Do not touch `route-planner.tsx`, `route-hooks.ts`, `drive-controls.tsx` or `lib/`.
+
+```ts
+// route-layers.ts
+export function journeyFeatures(collection: RouteCollection): Feature[]; // the legs + staging point for a "journey" source
+export function boulderFeatures(boulders: Boulder[]): Feature[]; // Boulder from lib/mars/site-grid (type only)
+// routeLayers(token) gains: journey drive line (--primary), walk line (--route-walk), return legs dashed, each with a --background casing; staging point; boulders (small --destructive dots, minzoom about 13)
+// route-legend.tsx
+export function RouteLegend(props: { mode: "walking" | "drive-walk" }): JSX.Element;
+// journey-result.tsx
+export function JourneyResult(props: {
+  collection: RouteCollection | null;
+  status: string;
+  drive: DriveSummary | null;
+  walk: { distance_km: number; suit_time_min: number; suit_minutes_left: number } | null;
+}): JSX.Element;
+```
+
+- [ ] Build against `public/data/samples/routes/*.sample.geojson` (they are `RouteCollection`s). Tests: drive legs and walk legs land on different layers by `mode`; return legs (to = "base" or to = "staging") are dashed; every coloured line has a casing directly under it; no new hex values.
+- [ ] Full check line; commit `route-ui(feat): Drive and walk legs in their own colours`.
+
+### Task 14: Wire drive + walk into the panel
+
+**Files:** `components/map/route-planner.tsx`, `components/map/route-hooks.ts`, `components/map/drive-controls.tsx`, `components/map/drive-result.tsx` (or replace with JourneyResult), `lib/mars/sources.ts` (route planner entry: boulder zones and staging rule).
+
+- [ ] The Driving mission is labelled "Drive + walk"; it loads the drive grid and the destination's site grid, runs `planDriveWalk`, draws the collection with Task 13's layers and the site's boulders, shows `JourneyResult` and `RouteLegend`; sampling time input (default 60 min); "Fit whole trip" / "Fit walk" buttons; status messages for `no_staging`, `drive_failed`, `walk_failed`.
+- [ ] Browser check; full check line; commit `route-ui(feat): Drive + walk missions in the route panel`.
