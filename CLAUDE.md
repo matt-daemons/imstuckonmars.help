@@ -175,9 +175,12 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **HiRISE imagery + DTMs** (4 water-ice sites): NASA/JPL/University of Arizona. DTMs DTEEC_033225_2250_033146_2250_A01, DTEEC_034082_2260_033014_2260_A01, DTEEC_037352_2245_037418_2245_A01, DTEEC_054060_2265_054126_2265_A01 + RED orthos. https://www.uahirise.org/dtm/ — found via PDS Geosciences Node ODE REST API (https://oderest.rsl.wustl.edu/). Download URLs: `data/raw/README.md`.
 - **THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px**, tiles 30N120E + 30N180E: USGS Astrogeology / Arizona State University (NASA Mars Odyssey THEMIS). https://astrogeology.usgs.gov/search/map/themis_thermal_inertia_mosaic_quantitative_30n180e_100mpp (and …_30n120e_100mpp). Credit: NASA/JPL-Caltech/Arizona State University/USGS.
 - **MOLA** global elevation (Mars Global Surveyor): NASA/GSFC; and **MOLA/HRSC blended DEM 200 m** (NASA/ESA/DLR/FU Berlin, USGS Astrogeology). Used by teammates' terrain + MOLA pads around sites.
-- **Viking global colour mosaic** (teammates' basemap): NASA/JPL/USGS.
+- **Viking global colour mosaic** (teammates' basemap): USGS/NASA Ames colorized Viking MDIM 2.1. Credit: NASA/Viking; USGS; NASA Ames.
+- **CTX global mosaic** (imagery around the habitat, ~5 m): Caltech Murray Lab, served by Esri (https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer). Credit: NASA/JPL/MSSS/The Murray Lab. Murray Lab "grants free use of the V01 version of the mosaic for all purposes" and asks users to cite Dickson et al. 2024 (https://murray-lab.caltech.edu/CTX/). Note: the Esri service labels itself beta01.
+- **NASA Ames Mars GCM 2018 global dust storm simulation** (dust playback): https://data.nas.nasa.gov/legacygcm/ — Bertrand et al. 2020.
 - **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
-- **Curiosity RAD** (radiation) and **REMS** (weather), Gale crater; **Perseverance MEDA** (weather) and **MOXIE**, Jezero: NASA PDS (teammates' telemetry — owners add exact PDS bundle IDs).
+- **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
+- **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
 - **NASA DONKI** space-weather API: https://kauai.ccmc.gsfc.nasa.gov/DONKI/ (via api.nasa.gov).
 - **Mars Climate Database** (if used): LMD/CNES/ESA — Forget et al. 1999.
 
@@ -187,12 +190,15 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130(3), 22. doi:10.1007/s10569-017-9805-5 (Mars sphere R = 3,396,190 m — this is the IAU **equatorial** radius; the mean radius is 3,389.5 km. Say "equatorial", not "mean", on slides) ✓
 - Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
 - Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115(E7), E00F03. doi:10.1029/2010JE003633 (Spirit embedded at "Troy" — soft-ground pitch line) ✓
+- Bertrand, T., Wilson, R. J., Kahre, M. A. et al. (2020). Simulation of the 2018 Global Dust Storm on Mars Using the NASA Ames Mars GCM: A Multitracer Approach. _JGR: Planets_ 125(7), e2019JE006122. doi:10.1029/2019JE006122 (dust playback) ✓
 - Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. (terraced craters → buried ice)
+- Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. _Earth and Space Science_ 11(7), e2024EA003555. doi:10.1029/2024EA003555 ✓
 - Christensen, P. R. et al. (2004). The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission. _Space Science Reviews_ 110, 85–130.
 - Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
 - Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. doi:10.1029/1999JE001025 (MCD; also cite the MCD version if used) ✓
 - Guo, J. et al. (2015). Modeling the variations of dose rate measured by RAD during the first MSL Martian year: 2012–2014. _ApJ_ 810(1), 24. doi:10.1088/0004-637X/810/1/24 (quiet rate varies with air pressure and solar cycle; it gives **no** average dose rate) ✓ title corrected
 - Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; **check the page before quoting the number on a slide**)
+- Hassler, D. M. et al. (2012). The Radiation Assessment Detector (RAD) Investigation. _Space Science Reviews_ 170(1–4), 503–558. doi:10.1007/s11214-012-9913-1 (RAD instrument) ✓
 - Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24.
 - Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
@@ -206,7 +212,18 @@ NASA xEVA ConOps (NTRS 20200001071) · NASA EVA-EXP-0042 Rev B · ISS suit timel
 
 ### Software
 
-GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Mapbox GL JS v3) · three.js · Turf.js · geotiff.js · DuckDB.
+GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Mapbox GL JS v3) · three.js · Turf.js · geotiff.js · DuckDB · React · vinext · Vite · Hono · Drizzle ORM · Zod · Tailwind CSS · Base UI · lucide-react · vosk-browser + Vosk speech model (wake word) · Cloudflare Workers, D1 and R2. Licences: all npm production dependencies are MIT, ISC, BSD, Apache-2.0, MPL-2.0, BlueOak-1.0.0 or CC-BY-4.0 (`pnpm licenses list --prod`); the project itself is MIT (`LICENSE`).
+
+### Services and AI (disclose in the submission's AI statement)
+
+- **OpenRouter** — language model behind the LARA copilot (model set by `DIAGNOSTICS_MODEL` on the server). Explains results; verdicts come from `lib/flight-rules`, never from the model.
+- **ElevenLabs** — LARA's voice. **The voice is AI-generated speech**: acknowledge it wherever it is heard (demo video, project page).
+- **openai/gpt-image-2** — the optional "AI texture experiment" layer (provenance: `https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json`). AI images need a visible watermark under Space Apps rules.
+- **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs; commits carry a `Co-Authored-By` trailer where recorded.
+
+### Fonts
+
+Atkinson Hyperlegible Next · IBM Plex Sans Condensed · JetBrains Mono (all SIL Open Font License, via Google Fonts).
 
 # Project Handoff/Next Steps as of 14:32 on 14 November 2026
 

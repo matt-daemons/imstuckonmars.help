@@ -149,7 +149,7 @@ export function Forms() {
       <Section id="field" title="Field">
         <Field className="w-72">
           <FieldLabel>Crew name</FieldLabel>
-          <Input placeholder="Mark Watney" />
+          <Input placeholder="Full name" />
           <FieldDescription>Shown on mission logs</FieldDescription>
         </Field>
         <Field className="w-72" invalid>

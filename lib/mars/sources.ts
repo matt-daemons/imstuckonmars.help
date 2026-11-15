@@ -121,13 +121,16 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         id: "ctx-context",
         title: "Orbital imagery around the habitat",
         kind: "observation",
-        credit: "NASA/JPL/MSSS/Caltech Murray Lab/Esri",
+        credit: "NASA/JPL/MSSS/The Murray Lab; served by Esri",
         detail: "MRO Context Camera (CTX) global mosaic, about 5 m/px",
         use: "Surface detail around the habitat.",
         caveats: [
           "Greyscale, JPEG-compressed imagery. It is not elevation.",
           "Registration errors may approach 200 m, so it can't certify hazards.",
           "The service labels itself beta01 while the catalog says V01.",
+        ],
+        citations: [
+          "Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. Earth and Space Science 11(7), e2024EA003555. doi:10.1029/2024EA003555",
         ],
         links: [
           {
@@ -207,7 +210,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "Sampling every two sols can miss shorter events.",
         ],
         citations: [
-          "Bertrand, T. et al. (2020). Simulation of the 2018 global dust storm on Mars using the NASA Ames Mars GCM: a multitracer approach. JGR Planets 125. doi:10.1029/2019JE006122",
+          "Bertrand, T. et al. (2020). Simulation of the 2018 global dust storm on Mars using the NASA Ames Mars GCM: a multitracer approach. JGR Planets 125(7), e2019JE006122. doi:10.1029/2019JE006122",
         ],
         links: [
           { label: "DOI", url: "https://doi.org/10.1029/2019JE006122" },
@@ -358,6 +361,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         credit: "Language model via OpenRouter · voice by ElevenLabs · wake word by Vosk",
         use: "Answers crew questions about the mission state.",
         caveats: [
+          "LARA's voice is AI-generated speech (ElevenLabs).",
           "Explains results from LARA's tools. It does not decide.",
           "GO, CAUTION and NO-GO come from fixed flight-rule thresholds, never from the model.",
         ],

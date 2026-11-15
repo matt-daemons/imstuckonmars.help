@@ -127,7 +127,7 @@ export function Overlays() {
             <AlertDialogHeader>
               <AlertDialogTitle>Abort the mission?</AlertDialogTitle>
               <AlertDialogDescription>
-                The crew returns to Hermes immediately.
+                The crew returns to the habitat immediately.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
@@ -212,7 +212,7 @@ export function Overlays() {
             <MenuGroup>
               <MenuGroupLabel>Comms</MenuGroupLabel>
               <MenuItem>Call Earth</MenuItem>
-              <MenuItem>Call Hermes</MenuItem>
+              <MenuItem>Call habitat</MenuItem>
             </MenuGroup>
             <MenuSeparator />
             <MenuCheckboxItem defaultChecked>Heater</MenuCheckboxItem>
