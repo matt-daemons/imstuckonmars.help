@@ -14,6 +14,7 @@ import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import { DebugMenu } from "@/components/debug/debug-menu";
 import { MapCompass } from "@/components/map/map-compass";
 import { MapOverlayViewport } from "./map-overlay-viewport";
+import { useMapCursor } from "./use-map-cursor";
 import "./map-overlays.css";
 import {
   type SiteProps,
@@ -60,7 +61,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [loaded, setLoaded] = useState<MapLibreMap | null>(null);
   const [manifest, setManifest] = useState<LayerManifest | null>(null);
   const [visible, setVisible] = useState<Record<string, boolean>>({});
-  const [cursor, setCursor] = useState<LngLat | null>(null);
+  const cursor = useMapCursor(loaded);
   const [error, setError] = useState<string | null>(null);
   const [sites, setSites] = useState<SitePoi[]>([]);
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
@@ -113,7 +114,6 @@ export function MarsMap({ children }: { children?: ReactNode }) {
       m.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-left");
 
       m.on("error", (e) => setError(e.error?.message ?? "Map error"));
-      m.on("mousemove", (e) => setCursor([e.lngLat.lng, e.lngLat.lat]));
       m.on("load", () => {
         addTerrain(m);
         addSites(
