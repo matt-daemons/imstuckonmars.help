@@ -37,7 +37,13 @@ const speeds = [
   { value: 500, label: "4 sols/s" },
 ];
 
-export function DustPlayback({ map }: { map: Map }) {
+export function DustPlayback({
+  map,
+  legendTarget,
+}: {
+  map: Map;
+  legendTarget: HTMLDivElement | null;
+}) {
   const [load, setLoad] = useState<LoadState>({ kind: "idle" });
   const [attempt, setAttempt] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -176,7 +182,7 @@ export function DustPlayback({ map }: { map: Map }) {
               Surface lifting
             </Button>
           </div>
-          {visible && <DustLegendOverlay map={map} field={field} />}
+          {visible && <DustLegendOverlay target={legendTarget} field={field} />}
           <p className="font-mono">
             Global mean:{" "}
             {load.simulation.manifest.fields[field === "tau_current" ? 0 : 1].globalMean[

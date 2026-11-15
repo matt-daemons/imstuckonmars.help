@@ -11,6 +11,10 @@ No additional imagery downloads or external assets are used.
 
 ## Full-screen map and overlays
 
+The NASA dust legend shares the stack below Camera views and Layers with the
+fake-sensor legend. Closing Layers leaves the dust label and scale visible;
+opening either dropdown pushes both legends down instead of covering them.
+
 The habitat is the only placeholder in `stops.geojson`. The retired ice-exposing
 crater and its hand-drawn route are not published. Walking destinations are
 selected on the map; drive-and-walk destinations remain the HiRISE sites.

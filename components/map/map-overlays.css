@@ -42,6 +42,7 @@
 .mars-map-shell .map-panel,
 .mars-map-shell .map-disclosure,
 .mars-map-shell .fake-sensor-legend,
+.mars-map-shell .dust-map-legend,
 .mars-map-shell .map-verdict-strip,
 .mars-map-shell .expedition-hud,
 .mars-map-shell .map-compass,
@@ -107,7 +108,11 @@
 .map-camera-stack:has(.map-layers-control > details[open]) {
   width: min(100% - 6.5rem, 36rem);
 }
-.map-camera-stack > .fake-sensor-legend {
+.map-legend-slot {
+  display: contents;
+}
+.map-camera-stack > .fake-sensor-legend,
+.map-camera-stack > .map-legend-slot > .dust-map-legend {
   position: static;
   flex: none;
   min-height: 0;
@@ -143,7 +148,8 @@
   .map-control-row .map-disclosure-content {
     max-height: 20svh;
   }
-  .map-camera-stack > .fake-sensor-legend {
+  .map-camera-stack > .fake-sensor-legend,
+  .map-camera-stack > .map-legend-slot > .dust-map-legend {
     flex: none;
   }
 }

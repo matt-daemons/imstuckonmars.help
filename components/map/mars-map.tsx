@@ -77,6 +77,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
   const [spaceEnabled, setSpaceEnabled] = useState(true);
   const [dashboardShortcut, setDashboardShortcut] = useState<HTMLDivElement | null>(null);
+  const [dustLegendTarget, setDustLegendTarget] = useState<HTMLDivElement | null>(null);
   const fakeSensors = useFakeSensorMode();
 
   useEffect(() => {
@@ -301,12 +302,14 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                             sites={sites}
                             spaceEnabled={spaceEnabled}
                             onSpaceEnabledChange={setSpaceEnabled}
+                            legendTarget={dustLegendTarget}
                           />
                         }
                       />
                     </LayersPanel>
                   </div>
                   <FakeSensorLegend mode={fakeSensors} />
+                  <div ref={setDustLegendTarget} className="map-legend-slot" />
                 </div>
                 <div className="mission-map-chrome contents">
                   <RouteMapLayers map={loaded} />
