@@ -19,6 +19,12 @@ import {
   text,
 } from "../../lib/mission/validation";
 import { environmentAt, getRun, loadTrace } from "../telemetry/repository";
+import { radiationContext } from "../telemetry/radiation";
+
+/** Read-only observational companions configured per deployment. Not mission state. */
+export interface Companions {
+  radiationRelease?: string;
+}
 
 interface Session {
   id: string;
@@ -190,18 +196,22 @@ export async function createSession(
   };
 }
 
-export async function snapshot(db: Database, session: Session, now = Date.now(), atS?: number) {
+export async function snapshot(
+  db: Database,
+  session: Session,
+  now = Date.now(),
+  atS?: number,
+  companions: Companions = {},
+) {
   const input = await inputs(db, session);
   const target = atS ?? clockPosition(input.clock, now, input.config.duration_s);
   const state = evaluateMission(input.config, input.samples, input.events, target);
   const currentSample =
     input.samples[Math.min(Math.floor(state.elapsed_s), input.samples.length - 1)] ?? null;
-  const environment = await environmentAt(
-    db,
-    session.release_id,
-    currentSample?.sclk_ms ?? null,
-    input.run.directory_sol,
-  );
+  const [environment, radiation] = await Promise.all([
+    environmentAt(db, session.release_id, currentSample?.sclk_ms ?? null, input.run.directory_sol),
+    radiationContext(db, companions.radiationRelease, currentSample?.utc_ms ?? null),
+  ]);
   return {
     mission_id: session.id,
     revision: session.revision,
@@ -224,6 +234,7 @@ export async function snapshot(db: Database, session: Session, now = Date.now(),
     observed: {
       moxie: currentSample,
       environment,
+      radiation,
       run_id: input.run.id,
       calibrated_product_id: input.run.calibrated_product_id,
       derived_product_id: input.run.derived_product_id,
@@ -251,7 +262,13 @@ function canonical(value: unknown, depth = 0): unknown {
   return value;
 }
 
-export async function command(db: Database, session: Session, raw: unknown, now = Date.now()) {
+export async function command(
+  db: Database,
+  session: Session,
+  raw: unknown,
+  now = Date.now(),
+  companions: Companions = {},
+) {
   const body = object(raw);
   const commandId = text(body.command_id, "command_id");
   const expectedRevision = integer(body.expected_revision, "expected_revision");
@@ -274,7 +291,7 @@ export async function command(db: Database, session: Session, raw: unknown, now 
         409,
       );
     return {
-      ...(await snapshot(db, session, now)),
+      ...(await snapshot(db, session, now, undefined, companions)),
       idempotent_replay: true,
       applied_revision: receipt.applied_revision,
     };
@@ -427,7 +444,7 @@ export async function command(db: Database, session: Session, raw: unknown, now 
       409,
     );
   return {
-    ...(await snapshot(db, updated, now)),
+    ...(await snapshot(db, updated, now, undefined, companions)),
     idempotent_replay: false,
     applied_revision: updated.revision,
   };

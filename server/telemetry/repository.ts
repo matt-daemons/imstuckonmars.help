@@ -31,7 +31,8 @@ export async function requireRelease(db: Database, release: string) {
   return row;
 }
 
-export async function getProduct(db: Database, release: string, id: string) {
+export async function getProduct(db: Database, release: string | string[], id: string) {
+  const releases = typeof release === "string" ? [release] : release;
   const product = await db
     .select(getTableColumns(sourceProducts))
     .from(sourceProducts)
@@ -39,7 +40,7 @@ export async function getProduct(db: Database, release: string, id: string) {
     .where(
       and(
         eq(sourceProducts.id, id),
-        eq(sourceProducts.release_id, release),
+        inArray(sourceProducts.release_id, releases),
         eq(dataReleases.status, "published"),
       ),
     )

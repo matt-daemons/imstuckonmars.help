@@ -44,6 +44,17 @@ def main():
     assert abs(sum(row["oxygen_g"] or 0 for row in comparison) - 122.27199526472222) < 1e-8
     missing = next(row for row in comparison if row["directory_sol"] == 901)
     assert missing["oxygen_g"] is None
+    radiation = request("/api/telemetry/radiation")
+    assert len(radiation["products"]) == 2 and len(radiation["observations"]) == 169, radiation["release_id"]
+    assert "Gale crater" in radiation["proxy"]
+    flagged = [row for row in radiation["observations"] if row["flag"]]
+    assert len(flagged) == 9 and all(row["dose_rate_e_ugy_day"] is None for row in flagged)
+    assert all(row["dose_rate_e_ugy_day"] is not None for row in radiation["observations"] if not row["flag"])
+    window = request("/api/telemetry/radiation?from_ms=1686064756000&to_ms=1686077188000")["observations"]
+    assert 11 <= len(window) <= 13 and all(1686064756000 <= row["utc_ms"] < 1686077188000 for row in window)
+    request("/api/telemetry/radiation?from_ms=2&to_ms=1", expected=400)
+    rad_quality = request("/api/telemetry/products/" + radiation["products"][0]["id"] + "/quality")
+    assert {issue["code"] for issue in rad_quality["issues"]} >= {"flagged_cmds"}
     page = request(f"/api/telemetry/moxie/runs/{RELEASE}-moxie-00901/samples?after_row=7517&limit=3")
     if BOUNDED:
         assert page["samples"] == [] and page["run"]["sample_count"] == 0
@@ -81,6 +92,12 @@ def main():
         assert initial["observed"]["environment"]["status"] != "unavailable"
         _, state = command("seek", at_s=1800)
         saved = state["state"]
+        # Radiation follows the replay by UTC: the latest RAD observation started at or before it.
+        aligned = state["observed"]["radiation"]
+        assert aligned["status"] in ("observation_available", "observation_flagged"), aligned
+        assert aligned["mission_utc_ms"] == state["observed"]["moxie"]["utc_ms"]
+        assert 0 <= aligned["mission_utc_ms"] - aligned["observation"]["utc_ms"] <= 1800000
+        assert aligned["observation"]["utc_ms"] != initial["observed"]["radiation"]["observation"]["utc_ms"]
         body, _ = command("pause")
         retry = request(path + "/commands", body, token)
         assert retry["idempotent_replay"] and retry["revision"] == revision
@@ -100,6 +117,7 @@ def main():
         assert frozen == request(path, token=token)["state"]
         explanation = request(path + "/diagnostics", {"mode": "deterministic"}, token)
         assert explanation["mode"] == "deterministic" and explanation["revision"] == revision
+        assert explanation["context"]["radiation"]["proxy"] == radiation["proxy"]
         # Locally AI is unconfigured. With ARES_TEST_AI=any (production), accept a grounded answer
         # or a sanitized provider failure; AI must never change mission state.
         any_ai = os.environ.get("ARES_TEST_AI") == "any"
@@ -149,10 +167,11 @@ def main():
                 other_state = request(other_path, token=other["token"])
                 assert other_state["observed"]["environment"]["status"] == "unavailable"
                 assert other_state["observed"]["moxie"]["utc_ms"] is None
+                assert other_state["observed"]["radiation"]["status"] == "time_unresolved"
             finally:
                 request(other_path, token=other["token"], method="DELETE")
         print(json.dumps({"status": "passed", "products": len(products), "experiments": len(comparison),
-                          "checks": "provenance, seven MEDA sensors, quality metadata, rollups, missing output, reset segment, capabilities, replay, seek, clock, scenarios, historical retries, stale revisions, concurrent commands, return uncertainty, deterministic diagnostics, missing AI credentials"}))
+                          "checks": "provenance, seven MEDA sensors, RAD radiation release and UTC alignment, quality metadata, rollups, missing output, reset segment, capabilities, replay, seek, clock, scenarios, historical retries, stale revisions, concurrent commands, return uncertainty, deterministic diagnostics, missing AI credentials"}))
     finally:
         request(path, token=token, method="DELETE")
 

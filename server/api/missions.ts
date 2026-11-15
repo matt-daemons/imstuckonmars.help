@@ -16,6 +16,8 @@ import { aiExplanation, diagnosticTools, explain } from "../mission/diagnostics"
 
 export const missions = new Hono<{ Bindings: ApiBindings }>();
 
+const companions = (env: ApiBindings) => ({ radiationRelease: env.RADIATION_RELEASE });
+
 missions.get("/presets", async (c) => {
   const results = await database(c.env)
     .select()
@@ -54,6 +56,7 @@ missions.get("/:id", async (c) => {
       session,
       Date.now(),
       at === undefined ? undefined : number(Number(at), "at_s", 0, 21600),
+      companions(c.env),
     ),
   );
 });
@@ -61,7 +64,9 @@ missions.get("/:id", async (c) => {
 missions.post("/:id/commands", async (c) => {
   const db = database(c.env);
   const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
-  return c.json(await command(db, session, await c.req.json<unknown>()));
+  return c.json(
+    await command(db, session, await c.req.json<unknown>(), Date.now(), companions(c.env)),
+  );
 });
 
 missions.get("/:id/events", async (c) => {
@@ -105,7 +110,7 @@ missions.post("/:id/diagnostics", async (c) => {
   if (body.mode !== "deterministic" && body.mode !== "ai")
     throw new MissionError("invalid_mode", "Select deterministic or ai diagnostics", 400);
   const atS = body.at_s === undefined ? undefined : number(body.at_s, "at_s", 0, 21600);
-  const result = await snapshot(db, session, Date.now(), atS);
+  const result = await snapshot(db, session, Date.now(), atS, companions(c.env));
   if (body.mode === "deterministic") return c.json(explain(result));
   await requireWriteKey(c.req.header("X-Diagnostics-Authorization"), c.env.MISSION_WRITE_KEY);
   const explanation = await aiExplanation({

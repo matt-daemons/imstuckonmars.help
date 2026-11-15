@@ -10,6 +10,7 @@ import {
   MEDA_TABLES,
   requireRelease,
 } from "../telemetry/repository";
+import { loadRadiation, RADIATION_LIMITATIONS, RADIATION_PROXY } from "../telemetry/radiation";
 import {
   dataReleases,
   fieldDefinitions,
@@ -65,6 +66,10 @@ telemetry.get("/products", async (c) => {
     availability: {
       weather: "historical sol 816 only",
       wind: "not_acquired",
+      dust: "not_acquired",
+      radiation: c.env.RADIATION_RELEASE
+        ? "Curiosity RAD at Gale crater, UTC-aligned historical proxy: /api/telemetry/radiation"
+        : "not_configured",
       radiation_exposure: "unsupported",
       rems: "not_in_release",
     },
@@ -73,7 +78,10 @@ telemetry.get("/products", async (c) => {
 
 telemetry.get("/products/:id/quality", async (c) => {
   const db = database(c.env);
-  const product = await getProduct(db, c.env.TELEMETRY_RELEASE ?? "nasa-v1", c.req.param("id"));
+  const releases = [c.env.TELEMETRY_RELEASE ?? "nasa-v1", c.env.RADIATION_RELEASE].filter(
+    (release): release is string => Boolean(release),
+  );
+  const product = await getProduct(db, releases, c.req.param("id"));
   const afterRow = queryInteger(c.req.query("after_row"), "after_row", 0);
   const [fields, issues] = await db.batch([
     db
@@ -240,6 +248,56 @@ telemetry.get("/environment", async (c) => {
       product.sensor === "ancillary"
         ? "M2020_TOPO meters relative to landing; not latitude/longitude"
         : undefined,
+  });
+});
+
+telemetry.get("/radiation", async (c) => {
+  const release = c.env.RADIATION_RELEASE;
+  if (!release)
+    throw new MissionError(
+      "radiation_not_configured",
+      "No radiation release is configured; set RADIATION_RELEASE",
+      503,
+    );
+  const db = database(c.env);
+  const series = await loadRadiation(db, release);
+  if (!series)
+    throw new MissionError(
+      "release_unavailable",
+      "The configured radiation release is not published",
+      503,
+    );
+  const from = queryInteger(c.req.query("from_ms"), "from_ms", 0);
+  const to = queryInteger(c.req.query("to_ms"), "to_ms", Number.MAX_SAFE_INTEGER);
+  if (to <= from) throw new MissionError("invalid_window", "to_ms must be after from_ms", 400);
+  const limit = queryInteger(c.req.query("limit"), "limit", 1000, 5000);
+  if (limit === 0) throw new MissionError("invalid_limit", "Limit must be positive", 400);
+  const observations = series.observations
+    .filter((observation) => observation.utc_ms >= from && observation.utc_ms < to)
+    .slice(0, limit);
+  const issues = await db
+    .select()
+    .from(qualityIssues)
+    .where(
+      inArray(
+        qualityIssues.product_id,
+        series.products.map((product) => product.id),
+      ),
+    )
+    .orderBy(asc(qualityIssues.product_id), asc(qualityIssues.start_row), asc(qualityIssues.field))
+    .limit(500)
+    .all();
+  return c.json({
+    release_id: release,
+    products: series.products,
+    fields: series.fields,
+    observations,
+    quality_issues: issues,
+    proxy: RADIATION_PROXY,
+    limitations: RADIATION_LIMITATIONS,
+    clock:
+      "utc_ms is the RAD observation start (TT2000 epoch converted to UTC); observations last about 16 minutes",
+    units: "Dose rates in uGy/day as archived; divide by 24 for uGy/h",
   });
 });
 

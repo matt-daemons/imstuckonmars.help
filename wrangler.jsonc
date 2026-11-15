@@ -15,6 +15,7 @@
   ],
   "vars": {
     "TELEMETRY_RELEASE": "nasa-demo-50k-v1",
+    "RADIATION_RELEASE": "nasa-rad-sol816-v1",
     "DIAGNOSTICS_PROVIDER": "openrouter",
     "DIAGNOSTICS_MODEL": "openai/gpt-4.1-mini",
   },
