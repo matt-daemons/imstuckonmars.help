@@ -7,7 +7,7 @@ import { fmtMin } from "@/components/copilot/lara-panel";
 import type { ReturnAssessment } from "@/components/copilot/use-lara";
 import { MAX_DURATION_S } from "@/lib/mission/types";
 
-import { plannedReturn, returnCheckKey, returnRequest } from "../return-route";
+import { plannedReturn, reasonText, returnCheckKey, returnRequest } from "../return-route";
 import { useRoutePlan } from "../route-plan-provider";
 import { samePoint } from "../use-route-plan-result";
 
@@ -56,7 +56,7 @@ export function ReturnCheck() {
     try {
       const { status, reasons } = await lara.assessReturn(body);
       const result = `${STATUS_TEXT[status]} at Mission ${fmtMin(atS)}`;
-      return reasons[0] ? `${result} · ${reasons[0]}` : result;
+      return reasons[0] ? `${result} · ${reasonText(reasons[0])}` : result;
     } catch (error) {
       return `not checked: ${(error as Error).message}`;
     }
