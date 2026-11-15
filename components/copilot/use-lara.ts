@@ -17,6 +17,8 @@ import {
   type WakeTurnSteps,
 } from "./follow-up";
 import type { AfterUtterance } from "./wake-session";
+import { spokenText, timedSpeechSchema, type SpeechClip } from "@/lib/copilot/speech";
+import { startTranscriptPreview } from "./transcript-preview";
 
 export interface Turn {
   role: "user" | "assistant";
@@ -89,6 +91,13 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const [polledAt, setPolledAt] = useState<number | null>(null);
   const [voice, setVoice] = useState(true);
   const [transcript, setTranscript] = useState("");
+  const [reply, setReply] = useState<{
+    id: number;
+    text: string;
+    visibleText: string;
+    speaking: boolean;
+  } | null>(null);
+  const replyId = useRef(0);
   const seenReasons = useRef<Set<string> | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
   // Push-to-talk can be released while the microphone is still opening.
@@ -96,6 +105,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const wantsMic = useRef(false);
   const captureLimit = useRef<ReturnType<typeof setTimeout>>(undefined);
   const audio = useRef<HTMLAudioElement | null>(null);
+  const speechGeneration = useRef(0);
+  const voiceEnabled = useRef(voice);
+  voiceEnabled.current = voice;
+  const mounted = useRef(true);
   const busy = useRef(false);
   const bridge = useLaraBridge();
   const training = useOptionalTraining();
@@ -103,7 +116,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
   // Each line waits for the one before it, so a line never cuts off another.
   const speechQueue = useRef<Promise<void>>(Promise.resolve());
   /** Lines LARA repeats (the wake reply, follow-up prompts, sign-offs, fixed lines), synthesized once. */
-  const phraseClips = useRef(new Map<string, Promise<Blob>>());
+  const phraseClips = useRef(new Map<string, Promise<SpeechClip>>());
 
   const authed = useCallback(
     (path: string, init: RequestInit = {}) => {
@@ -166,10 +179,19 @@ export function useLara(shared?: { id: string; token: string } | null) {
       const response = await authed(`copilot/${mission.id}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, timestamps: true }),
+        signal: AbortSignal.timeout(25_000),
       });
       if (!response.ok) throw new Error("LARA's voice is unavailable");
-      return response.blob();
+      const result = timedSpeechSchema.parse(await response.json());
+      const bytes = Uint8Array.from(atob(result.audio_base64), (character) =>
+        character.charCodeAt(0),
+      );
+      return {
+        audio: new Blob([bytes], { type: "audio/mpeg" }),
+        text,
+        alignment: result.normalized_alignment ?? result.alignment ?? null,
+      };
     },
     [authed, mission],
   );
@@ -186,26 +208,68 @@ export function useLara(shared?: { id: string; token: string } | null) {
     [synthesize],
   );
 
-  const play = useCallback(async (clip: Blob) => {
-    const url = URL.createObjectURL(clip);
+  const play = useCallback(async (clip: SpeechClip) => {
+    const url = URL.createObjectURL(clip.audio);
     audio.current?.pause();
     const player = new Audio(url);
     player.playbackRate = 1.75;
     player.preservesPitch = true;
     audio.current = player;
-    await new Promise<void>((resolve) => {
-      // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
-      player.onended = player.onerror = player.onpause = () => resolve();
-      player.play().catch(() => resolve());
-    });
-    URL.revokeObjectURL(url);
+    const id = ++replyId.current;
+    let frame = 0;
+    let last = "";
+    const update = () => {
+      const visibleText = spokenText(clip.text, clip.alignment, player.currentTime);
+      if (visibleText !== last) {
+        last = visibleText;
+        setReply({ id, text: clip.text, visibleText, speaking: true });
+      }
+      frame = requestAnimationFrame(update);
+    };
+    setReply({ id, text: clip.text, visibleText: clip.alignment ? "" : clip.text, speaking: true });
+    try {
+      await new Promise<void>((resolve, reject) => {
+        // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
+        player.onended = player.onpause = () => resolve();
+        player.onerror = () =>
+          reject(new Error("LARA's audio could not play. Read the reply below."));
+        player.onplaying = () => {
+          cancelAnimationFrame(frame);
+          update();
+        };
+        player
+          .play()
+          .catch(() => reject(new Error("Audio playback was blocked. Read the reply below.")));
+      });
+    } finally {
+      cancelAnimationFrame(frame);
+      player.onplaying = player.onended = player.onpause = player.onerror = null;
+      URL.revokeObjectURL(url);
+      if (audio.current === player) audio.current = null;
+      setReply((current) =>
+        current?.id === id ? { ...current, visibleText: clip.text, speaking: false } : current,
+      );
+    }
   }, []);
 
   const enqueueSpeech = useCallback(
-    (clip: Promise<Blob>) => {
+    (clip: Promise<SpeechClip>) => {
+      const generation = speechGeneration.current;
+      const readyClip = clip.then(
+        (value) => ({ value }),
+        (error: unknown) => ({ error }),
+      );
       const spoken = speechQueue.current.then(async () => {
+        const result = await readyClip;
+        if (!mounted.current || generation !== speechGeneration.current || !voiceEnabled.current)
+          return;
+        if ("error" in result) throw result.error;
         setStatus("speaking");
-        await play(await clip);
+        try {
+          await play(result.value);
+        } finally {
+          if (!busy.current) setStatus("idle");
+        }
       });
       speechQueue.current = spoken.catch(() => {});
       return spoken;
@@ -215,8 +279,18 @@ export function useLara(shared?: { id: string; token: string } | null) {
 
   const speak = useCallback(
     async (text: string) => {
-      if (!mission || !voice) return;
-      await enqueueSpeech(synthesize(text));
+      const id = ++replyId.current;
+      if (!mission || !voice) {
+        setReply({ id, text, visibleText: text, speaking: false });
+        return;
+      }
+      try {
+        await enqueueSpeech(synthesize(text));
+        if (!voiceEnabled.current) setReply({ id, text, visibleText: text, speaking: false });
+      } catch (error) {
+        setReply({ id, text, visibleText: text, speaking: false });
+        throw error;
+      }
     },
     [enqueueSpeech, mission, synthesize, voice],
   );
@@ -225,8 +299,14 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const say = useCallback(
     (text: string) => {
       setTurns((t) => [...t, { role: "assistant", content: text }]);
-      if (!mission || !voice) return;
-      enqueueSpeech(phraseClip(text)).catch(() => setError("LARA's voice is unavailable"));
+      if (!mission || !voice) {
+        setReply({ id: ++replyId.current, text, visibleText: text, speaking: false });
+        return;
+      }
+      enqueueSpeech(phraseClip(text)).catch(() => {
+        setReply({ id: ++replyId.current, text, visibleText: text, speaking: false });
+        setError("LARA's voice is unavailable. Read the reply or try again.");
+      });
     },
     [enqueueSpeech, mission, phraseClip, voice],
   );
@@ -319,15 +399,15 @@ export function useLara(shared?: { id: string; token: string } | null) {
         // A missed poll is retried on the next tick.
       }
     }, POLL_MS);
-    void refresh();
+    void refresh().catch(() => {});
     return () => clearInterval(timer);
   }, [mission, refresh, ask]);
 
   const command = useCallback(
     async (body: Record<string, unknown>) => {
-      if (!mission) return;
+      if (!mission) throw new Error("The mission is not ready yet. Wait and try again.");
       const current = latest.current ?? (await refresh());
-      if (!current) return;
+      if (!current) throw new Error("Mission readings are unavailable");
       try {
         const next = await json<MissionSnapshot>(
           await authed(`missions/${mission.id}/commands`, {
@@ -341,9 +421,11 @@ export function useLara(shared?: { id: string; token: string } | null) {
           }),
         );
         store(next);
+        setPolledAt(Date.now());
       } catch (e) {
         setError((e as Error).message);
-        void refresh();
+        void refresh().catch(() => {});
+        throw e;
       }
     },
     [authed, mission, refresh, store],
@@ -415,11 +497,22 @@ export function useLara(shared?: { id: string; token: string } | null) {
       }
       const chunks: Blob[] = [];
       const r = new MediaRecorder(stream);
+      let stopPreview = () => {};
+      void startTranscriptPreview(stream, setTranscript)
+        .then((stop) => {
+          if (recorder.current !== r) stop();
+          else stopPreview = stop;
+        })
+        .catch(() => {
+          /* Final server transcription still works if the local preview is unavailable. */
+        });
       r.ondataavailable = (e) => e.data.size && chunks.push(e.data);
       r.onstop = () => {
+        stopPreview();
         clearTimeout(captureLimit.current);
         stream.getTracks().forEach((track) => track.stop());
         recorder.current = null;
+        if (!mounted.current) return;
         const clip = new Blob(chunks, { type: r.mimeType || "audio/webm" });
         if (clip.size === 0) setStatus("idle");
         else {
@@ -441,6 +534,25 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const stopListening = useCallback(() => {
     wantsMic.current = false;
     if (recorder.current?.state === "recording") recorder.current.stop();
+  }, []);
+
+  const stopSpeaking = useCallback(() => {
+    speechGeneration.current++;
+    audio.current?.pause();
+  }, []);
+  useEffect(() => {
+    if (!voice) stopSpeaking();
+  }, [voice, stopSpeaking]);
+  useEffect(() => {
+    mounted.current = true;
+    return () => {
+      mounted.current = false;
+      speechGeneration.current++;
+      wantsMic.current = false;
+      clearTimeout(captureLimit.current);
+      audio.current?.pause();
+      if (recorder.current?.state === "recording") recorder.current.stop();
+    };
   }, []);
 
   const prefetchSignOffs = () => {
@@ -504,6 +616,9 @@ export function useLara(shared?: { id: string; token: string } | null) {
     turns,
     status,
     transcript,
+    reply,
+    dismissReply: () => setReply(null),
+    stopSpeaking,
     error,
     voice,
     setVoice,

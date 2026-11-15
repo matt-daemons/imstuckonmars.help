@@ -4,6 +4,7 @@ import { LaraLauncher } from "@/components/copilot/lara-launcher";
 import { LaraPanel } from "@/components/copilot/lara-panel";
 import { TrainingGuide } from "@/components/copilot/training-guide";
 import { TrainingProvider } from "@/components/copilot/training-provider";
+import { LaraVitals } from "@/components/copilot/lara-vitals";
 import { MarsMap } from "@/components/map/mars-map";
 import { VerdictStrip } from "@/components/route/verdict-strip";
 
@@ -17,7 +18,10 @@ export default function Home() {
           <LaraProvider>
             <MarsMap>
               <VerdictStrip />
-              <TrainingGuide />
+              <div className="map-left-panels">
+                <LaraVitals />
+                <TrainingGuide />
+              </div>
               <LaraLauncher>
                 <LaraPanel />
               </LaraLauncher>

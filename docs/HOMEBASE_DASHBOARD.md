@@ -45,8 +45,11 @@ remain linked. Images do not become terrain statistics or base weather. Outside
 the acquired Arcadia bounds, or on image failure, show an unavailable message
 instead of relocating imagery. The main map camera, mission sidebar, verdict
 strip, routing, dust, sites and LARA remain independent. The dashboard shortcut
-sits above the map's lower-left attribution, clear of the top verdict strip and
-lower-right LARA launcher.
+sits beside the top-left sidebar toggle;
+the map's **Vitals and mission details** panel sits below it. That panel owns
+the simulated resource readouts and the explicitly labeled 20× simulation control.
+It retains the archived Gale radiation proxy warning; none of those readings moved
+into the read-only dashboard.
 
 Overview and Experiments are separate pages, with 1/2 shortcuts outside form controls. The experiments page lists all 23 runs through explicit pagination rather than a scrollbar. Available height determines the number of complete rows; resize and 200% zoom recompute the page size. Selecting a run shows derived output, rate, duration, energy and source notes. A short-screen results/notes switch and a handheld list/detail switch avoid clipping. Observation Zoom opens a full-screen inspector with chart zoom and separately paginated values/source views. Escape closes the inspector before closing the map dialog.
 

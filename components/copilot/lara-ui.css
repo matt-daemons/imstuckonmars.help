@@ -1,0 +1,79 @@
+.map-left-panels {
+  position: absolute;
+  top: 4.75rem;
+  left: 1rem;
+  width: min(24rem, calc(100% - 2rem));
+  max-height: calc(100% - 11rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.lara-vitals {
+  font-size: 1rem;
+}
+.lara-vitals h2 {
+  font-size: 1rem;
+}
+.map-left-panels > .map-panel {
+  flex-shrink: 0;
+  position: static;
+  width: 100%;
+  max-width: 100%;
+}
+.lara-launcher {
+  max-width: min(24rem, calc(100vw - 2rem));
+}
+.lara-launcher-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.lara-reply {
+  position: absolute;
+  bottom: 4.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(40rem, calc(100% - 2rem));
+  padding: 1rem;
+  border: 1px solid var(--border);
+  background: var(--map-panel-surface, var(--background));
+  backdrop-filter: blur(16px);
+  color: var(--foreground);
+  z-index: 15;
+}
+.lara-reply-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.lara-reply-text {
+  max-height: 25svh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  font-size: 1.125rem;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+.lara-reply-header > span {
+  min-width: 0;
+  flex-wrap: wrap;
+}
+@media (max-width: 799px) {
+  .map-left-panels {
+    top: 12.5rem;
+    max-height: calc(100% - 18rem);
+  }
+  .lara-reply-header > span {
+    flex-wrap: wrap;
+  }
+}
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .lara-reply {
+    background: var(--background);
+    backdrop-filter: none;
+  }
+}

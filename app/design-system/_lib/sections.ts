@@ -119,6 +119,8 @@ export const sectionGroups: SectionGroup[] = [
       { id: "expedition-alerts", title: "Return alert" },
       { id: "expedition-end", title: "End simulation" },
       { id: "expedition-report", title: "Report chart" },
+      { id: "lara-voice", title: "LARA voice states" },
+      { id: "lara-vitals", title: "Map vitals" },
     ],
   },
   {

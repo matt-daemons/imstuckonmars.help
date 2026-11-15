@@ -1,12 +1,12 @@
 "use client";
 
-import { Ear, EarOff, Mic, Pause, Play, Send, Square, Volume2, VolumeOff } from "lucide-react";
+import { Ear, EarOff, Mic, Send, Square, Volume2, VolumeOff } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { MapPanel } from "@/components/map/map-panel";
 import { useLaraContext } from "@/components/copilot/lara-context";
-import { useWakeWord, type WakeState } from "@/components/copilot/use-wake-word";
+import type { WakeState } from "@/components/copilot/use-wake-word";
 
 import { PushToTalk, spaceTarget } from "./push-to-talk";
 
@@ -22,30 +22,11 @@ const STATUS_TEXT = {
 const WAKE_TEXT: Record<WakeState, string> = {
   off: "Wake word is off",
   loading: "Loading wake word model (about 41 MB)…",
-  listening: "Say “Hey LARA” or “LARA”",
+  listening: 'Say "Hey Lara"',
   paused: "Wake word is paused while LARA is busy",
   "follow-up": "Ask another question, or say “no thanks” to finish",
   error: "Wake word is not available. The microphone or the model did not load.",
 };
-
-/** Playback speed of the demo. At 20×, the scripted battery failure plays out in about 3 minutes. */
-const DEMO_SPEED = 20;
-
-/** Mission time as minutes and seconds, so the readout moves every second during playback. */
-export const fmtMin = (s: number) => {
-  const whole = Math.floor(s);
-  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
-};
-
-function Readout({ label, value, note }: { label: string; value: string; note?: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className="font-mono text-sm tabular-nums">{value}</dd>
-      {note && <dd className="text-[11px] text-muted-foreground">{note}</dd>}
-    </div>
-  );
-}
 
 /** Voice and text copilot over the authoritative mission snapshot. Read-only for now. */
 export function LaraPanel() {
@@ -53,19 +34,9 @@ export function LaraPanel() {
   const [draft, setDraft] = useState("");
   const log = useRef<HTMLOListElement>(null);
   const input = useRef<HTMLInputElement>(null);
-  const s = lara.snapshot;
   const listening = lara.status === "listening";
   const busy = !lara.ready || (lara.status !== "idle" && !listening);
-  const [wakeOn, setWakeOn] = useState(false);
-  const wake = useWakeWord({
-    enabled: wakeOn && lara.ready,
-    paused: lara.status !== "idle",
-    ...lara.wakeHandlers,
-  });
-  const finishListening = () => {
-    if (wakeOn) wake.finish();
-    lara.stopListening();
-  };
+  const { wakeOn, setWakeOn, finishListening } = lara;
   useEffect(() => {
     if (listening && input.current) input.current.scrollLeft = input.current.scrollWidth;
   }, [listening, lara.transcript]);
@@ -121,9 +92,6 @@ export function LaraPanel() {
     void lara.ask({ question });
   }
 
-  const doseH = s?.observed.radiation.observation?.dose_rate_e_ugy_day;
-  const playing = s?.clock.mode === "playing";
-
   return (
     <MapPanel
       title="LARA"
@@ -139,27 +107,11 @@ export function LaraPanel() {
           </p>
           {!listening && (
             <p className="text-[11px] text-muted-foreground" aria-live="polite">
-              {WAKE_TEXT[wake.state]}
+              {WAKE_TEXT[lara.wakeState]}
             </p>
           )}
         </div>
         <div className="flex gap-1">
-          <Button
-            size="xs"
-            variant="outline"
-            disabled={!s}
-            aria-label={playing ? "Pause replay" : "Play replay at 20× speed"}
-            onClick={() =>
-              playing
-                ? lara.command({ type: "pause" })
-                : lara
-                    .command({ type: "speed", speed: DEMO_SPEED })
-                    .then(() => lara.command({ type: "play" }))
-            }
-          >
-            {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-            {playing ? "Pause" : "Play 20×"}
-          </Button>
           <Button
             size="xs"
             variant={wakeOn ? "default" : "ghost"}
@@ -183,33 +135,8 @@ export function LaraPanel() {
         </div>
       </header>
 
-      {s && (
-        <dl className="grid grid-cols-4 gap-2 rounded-md border p-2">
-          <Readout
-            label="Mission"
-            value={fmtMin(s.clock.position_s)}
-            note={`of ${fmtMin(s.config.duration_s)}`}
-          />
-          <Readout
-            label="Suit O₂"
-            value={`${Math.round(s.state.oxygen.eva.remaining_g)} g`}
-            note={`reserve ${s.config.oxygen.eva.reserve_g}`}
-          />
-          <Readout
-            label="Suit battery"
-            value={`${Math.round(s.state.battery.eva.remaining_wh)} Wh`}
-            note={`reserve ${s.config.battery.eva.reserve_wh}`}
-          />
-          <Readout
-            label="Dose rate"
-            value={doseH == null ? "No data" : `${(doseH / 24).toFixed(1)} µGy/h`}
-            note="Gale proxy"
-          />
-        </dl>
-      )}
       <p className="text-[11px] text-muted-foreground">
-        Resources are simulated. MOXIE, MEDA, and RAD are archived NASA data, not live measurements.
-        LARA&apos;s answers are AI-generated. NASA has not reviewed them.
+        LARA&apos;s answers and voice are AI-generated. NASA has not reviewed them.
       </p>
 
       <ol ref={log} className="min-h-0 flex-1 space-y-2 overflow-y-auto" aria-live="polite">

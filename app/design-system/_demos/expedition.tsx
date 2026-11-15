@@ -16,6 +16,7 @@ import { buildExpeditionConfig } from "@/lib/mission/expedition";
 import type { MissionReport } from "@/lib/mission/client";
 import { Section } from "../_components/section";
 import "@/components/expedition/expedition.css";
+import { LaraDemos } from "./lara";
 
 const config = buildExpeditionConfig(
   {
@@ -225,6 +226,7 @@ export function ExpeditionComponents() {
         </p>
         <ReportChart report={report} />
       </Section>
+      <LaraDemos />
     </>
   );
 }
