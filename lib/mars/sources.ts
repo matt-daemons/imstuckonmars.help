@@ -421,6 +421,25 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
         layerIds: ["roughness"],
       },
+      {
+        id: "geology",
+        title: "Geologic units",
+        kind: "derived",
+        credit: "USGS Astrogeology / NASA (Tanaka et al. 2014, SIM 3292)",
+        detail: "Geologic Map of Mars, 1:20,000,000, clipped to the drive corridor",
+        use: "Geology switch in the Scene panel: the mapped unit under the habitat and each site.",
+        caveats: [
+          "Global 1:20M map: contacts are placed to within kilometres to tens of kilometres. Regional context, not what is under the wheels.",
+          "The ice-rich mantle at every site is too thin for this map; the units are what lies beneath it.",
+          "Mapped from orbit; no unit here has been visited. Ages are relative, from crater counts.",
+          "Map colours are LARA's own, not the USGS map's.",
+        ],
+        citations: [
+          "Tanaka, K. L. et al. (2014). Geologic Map of Mars. U.S. Geological Survey Scientific Investigations Map 3292, scale 1:20,000,000. doi:10.3133/sim3292",
+        ],
+        links: [{ label: "USGS SIM 3292", url: "https://pubs.usgs.gov/sim/3292/" }],
+        layerIds: ["geology"],
+      },
     ],
   },
   {

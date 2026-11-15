@@ -3,10 +3,13 @@ import { readFile } from "node:fs/promises";
 import { describe, expect, it } from "vitest";
 
 import {
+  GEOLOGY_LEGEND,
+  type GeologySummary,
   ROUGHNESS_LEGEND,
   THERMAL_INERTIA_LEGEND,
   type RoughnessSummary,
   type ThermalInertiaSummary,
+  geologyFor,
   hiriseIdOfDtm,
   roughnessTiles,
   thermalInertiaFor,
@@ -51,5 +54,15 @@ describe("ground overlays", () => {
     expect(thermalInertiaFor(ti, DTM)?.class_robust).toBe(true);
     expect(thermalInertiaFor(ti, "habitat")?.class_robust).toBe(false);
     for (const id of Object.keys(rough.sites)) expect(thermalInertiaFor(ti, id)).toBeDefined();
+  });
+
+  it("colours every geologic unit in the corridor and finds each site's unit", async () => {
+    const fc = await read<{ features: { properties: { unit: string } }[] }>("geology.geojson");
+    const legend = new Set(GEOLOGY_LEGEND.map((c) => c.unit));
+    for (const f of fc.features)
+      expect(legend.has(f.properties.unit), f.properties.unit).toBe(true);
+    const geo = await read<GeologySummary>("geology-sites.json");
+    expect(geologyFor(geo, DTM)?.unit).toBe("Av");
+    expect(geologyFor(geo, "habitat")?.unit).toBe("Av");
   });
 });

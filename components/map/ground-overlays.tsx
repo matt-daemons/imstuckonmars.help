@@ -3,9 +3,18 @@
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, useState } from "react";
 
-import { setRoughnessVisible, setThermalInertiaVisible } from "@/components/map/scene";
+import {
+  setGeologyVisible,
+  setRoughnessVisible,
+  setThermalInertiaVisible,
+} from "@/components/map/scene";
+import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { Switch } from "@/components/ui/switch";
 import {
+  GEOLOGY_ATTRIBUTION,
+  GEOLOGY_BOUNDS,
+  GEOLOGY_LEGEND,
+  type GeologySummary,
   type LegendClass,
   ROUGHNESS_ATTRIBUTION,
   ROUGHNESS_LEGEND,
@@ -13,6 +22,7 @@ import {
   THERMAL_INERTIA_ATTRIBUTION,
   THERMAL_INERTIA_LEGEND,
   type ThermalInertiaSummary,
+  geologyFor,
   thermalInertiaFor,
 } from "@/lib/mars/ground-layers";
 
@@ -42,12 +52,14 @@ function Legend({ classes, note }: { classes: LegendClass[]; note: string }) {
   );
 }
 
-/** Thermal-inertia and roughness switches, with legends and the uncertainty behind each value. */
+/** Thermal-inertia, roughness and geology switches, with legends and the uncertainty behind each value. */
 export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
   const [tiOn, setTiOn] = useState(false);
   const [roughOn, setRoughOn] = useState(false);
   const [ti, setTi] = useState<ThermalInertiaSummary | null>(null);
   const [rough, setRough] = useState<RoughnessSummary | null>(null);
+  const [geoOn, setGeoOn] = useState(false);
+  const [geo, setGeo] = useState<GeologySummary | null>(null);
 
   useEffect(() => {
     const load = <T,>(name: string, set: (v: T) => void) =>
@@ -57,6 +69,7 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
         .catch(() => undefined);
     load("thermal-inertia-sites.json", setTi);
     load("roughness-sites.json", setRough);
+    load("geology-sites.json", setGeo);
   }, []);
 
   useEffect(() => {
@@ -67,8 +80,25 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
     if (map) setRoughnessVisible(map, sites, roughOn);
   }, [map, sites, roughOn]);
 
+  useEffect(() => {
+    if (map) setGeologyVisible(map, geoOn);
+  }, [map, geoOn]);
+
+  // Show the whole corridor when geology is switched on, unless the operator is planning a mission.
+  const planning = useRoutePlan().inputs.mission !== null;
+  function toggleGeology(on: boolean) {
+    setGeoOn(on);
+    if (on && map && !planning)
+      map.fitBounds(GEOLOGY_BOUNDS, { padding: 60, pitch: 0, duration: 2000 });
+  }
+
   const tiRows = [{ id: "habitat", title: "Habitat" }, ...sites].flatMap((s) => {
     const row = ti && thermalInertiaFor(ti, s.id);
+    return row ? [{ ...row, title: s.title }] : [];
+  });
+
+  const geoRows = [{ id: "habitat", title: "Habitat" }, ...sites].flatMap((s) => {
+    const row = geo && geologyFor(geo, s.id);
     return row ? [{ ...row, title: s.title }] : [];
   });
 
@@ -161,6 +191,49 @@ export function GroundOverlays({ map, sites }: GroundOverlaysProps) {
               <details className="text-xs text-muted-foreground">
                 <summary className="cursor-pointer">Caveats</summary>
                 <p className="pt-1">{rough.note}</p>
+              </details>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="space-y-1">
+        <label className="flex items-center justify-between gap-3">
+          <span>
+            Geology
+            <span className="block text-xs text-muted-foreground">
+              USGS 1:20M · {GEOLOGY_ATTRIBUTION}
+            </span>
+          </span>
+          <Switch checked={geoOn} onCheckedChange={toggleGeology} aria-label="Toggle geology" />
+        </label>
+        {geoOn && (
+          <>
+            <Legend classes={GEOLOGY_LEGEND} note="Regional context: contacts are kilometres off" />
+            <p className="text-xs">
+              Covers the drive corridor only. The ice-rich mantle at the sites is too thin for this
+              map; the units are what lies beneath it.
+            </p>
+            {geoRows.length > 0 && (
+              <ul className="space-y-0.5 text-xs">
+                {geoRows.map((r) => (
+                  <li key={r.id}>
+                    <span className="font-medium">{r.title}</span>:{" "}
+                    <span className="font-mono">{r.unit}</span> {r.unit_name}, nearest contact{" "}
+                    <span className="font-mono">{Math.round(r.nearest_contact_km)} km</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {geo && (
+              <details className="text-xs text-muted-foreground">
+                <summary className="cursor-pointer">Caveats</summary>
+                <ul className="list-disc space-y-0.5 pt-1 pl-4">
+                  {geo.caveats.map((c) => (
+                    <li key={c}>{c}</li>
+                  ))}
+                  <li>Map colours are LARA&apos;s own, not the USGS map&apos;s.</li>
+                </ul>
               </details>
             )}
           </>

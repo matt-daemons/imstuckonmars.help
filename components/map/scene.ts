@@ -11,10 +11,13 @@ import {
 
 import type { LngLat } from "@/lib/mars/types";
 import {
+  GEOLOGY_ATTRIBUTION,
+  GEOLOGY_LEGEND,
   ROUGHNESS_ATTRIBUTION,
   THERMAL_INERTIA_ATTRIBUTION,
   THERMAL_INERTIA_BOUNDS,
   roughnessTiles,
+  geologyUrl,
   thermalInertiaTiles,
 } from "@/lib/mars/ground-layers";
 import { GLOBAL_COLOR_SOURCE, SITE_DATA_ROOT, mapAsset } from "@/lib/mars/map-data";
@@ -228,6 +231,49 @@ export function addThermalInertia(m: MapLibreMap, beforeId?: string) {
 
 export function setThermalInertiaVisible(m: MapLibreMap, on: boolean) {
   for (const id of thermalInertiaLayers) {
+    if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  }
+}
+
+const geologyLayers = ["geology", "geology-line"];
+
+/** USGS SIM 3292 units (1:20M), translucent fill + contacts; regional context only. */
+export function addGeology(m: MapLibreMap, beforeId?: string) {
+  m.addSource("geology", {
+    type: "geojson",
+    data: geologyUrl(location.origin),
+    attribution: GEOLOGY_ATTRIBUTION,
+  });
+  const fill = [
+    "match",
+    ["get", "unit"],
+    ...GEOLOGY_LEGEND.flatMap((c) => [c.unit, c.color ?? "transparent"]),
+    "rgb(128 128 128)",
+  ] as unknown as string;
+  m.addLayer(
+    {
+      id: "geology",
+      type: "fill",
+      source: "geology",
+      layout: { visibility: "none" },
+      paint: { "fill-color": fill, "fill-opacity": 0.35 },
+    },
+    beforeId,
+  );
+  m.addLayer(
+    {
+      id: "geology-line",
+      type: "line",
+      source: "geology",
+      layout: { visibility: "none" },
+      paint: { "line-color": "rgb(40 20 15)", "line-width": 1, "line-opacity": 0.6 },
+    },
+    beforeId,
+  );
+}
+
+export function setGeologyVisible(m: MapLibreMap, on: boolean) {
+  for (const id of geologyLayers) {
     if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 }
