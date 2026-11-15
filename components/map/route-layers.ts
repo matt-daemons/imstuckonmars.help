@@ -168,6 +168,18 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       },
     },
     {
+      id: "selected-destination-ring",
+      type: "circle",
+      source: "route-ends",
+      filter: ["==", ["get", "end"], "end"],
+      paint: {
+        "circle-radius": 12,
+        "circle-color": "transparent",
+        "circle-stroke-width": 2,
+        "circle-stroke-color": token("--foreground"),
+      },
+    },
+    {
       id: "route-ends",
       type: "circle",
       source: "route-ends",

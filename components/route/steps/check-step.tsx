@@ -39,6 +39,7 @@ import { MissionSummary } from "./mission-summary-dialog";
 import { RouteCompare } from "./route-compare";
 import { SpaceWeatherLine } from "./space-weather-line";
 import { StormDrill } from "./storm-drill";
+import { selectedRoute } from "../selected-route";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
 const WALK_HEADLINE = ["slope", "time", "distance"];
@@ -47,6 +48,8 @@ const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 /** Step 03: the verdict and its reasons, three headline numbers, then the rest one click down. */
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey, destination, planningError, retryPlanning } = useRoutePlan();
+  const selected = selectedRoute(inputs, { walk, journey });
+  const selectedJourney = { ...journey, plan: selected.trip };
   const { conditions } = useConditions();
   const missing = missingChoice(inputs);
   if (missing) return <p role="status">{missing}</p>;
@@ -60,14 +63,14 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
       </div>
     );
   if (inputs.mission === "walking") {
-    const summary = walk.plan?.summary ?? null;
+    const summary = selected.walk?.summary ?? null;
     const check = summary && walkWithStorms(summary, conditions);
     const notChecked = check ? notCheckedText(check.not_checked, conditions) : "";
     return (
       <CheckLayout
         status={
           <WalkStatus
-            plan={walk.plan}
+            plan={selected.walk}
             check={check}
             notChecked={notChecked}
             loadFailed={walk.loadFailed}
@@ -76,31 +79,31 @@ export function CheckStep({ map }: { map: MapLibreMap | null }) {
         verdict={check}
         readouts={summary && check ? walkReadouts(summary, check) : []}
         headline={WALK_HEADLINE}
-        assumptions={<WalkAssumptions plan={walk.plan} />}
+        assumptions={<WalkAssumptions plan={selected.walk} />}
       />
     );
   }
-  const trip = journey.plan && tripWithStorms(journey.plan, conditions);
+  const trip = selected.trip && tripWithStorms(selected.trip, conditions);
   const notChecked = trip ? notCheckedText(trip.not_checked, conditions) : "";
   return (
     <CheckLayout
       status={
         <DriveWalkStatus
-          journey={journey}
+          journey={selectedJourney}
           destination={destination}
           check={trip}
           notChecked={notChecked}
         />
       }
       verdict={trip}
-      readouts={driveWalkReadouts(journey.plan)}
+      readouts={driveWalkReadouts(selected.trip)}
       headline={DRIVE_WALK_HEADLINE}
-      fit={<FitButtons journey={journey} onFit={(points) => fitPoints(map, points)} />}
-      source={journey.plan?.collection?.route?.source}
+      fit={<FitButtons journey={selectedJourney} onFit={(points) => fitPoints(map, points)} />}
+      source={selected.trip?.collection?.route?.source}
       assumptions={
         <DriveWalkAssumptions
           grid={journey.driveGrid}
-          plan={journey.plan}
+          plan={selected.trip}
           cellM={journey.driveCellM}
         />
       }

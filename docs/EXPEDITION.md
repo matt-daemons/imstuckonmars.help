@@ -5,11 +5,11 @@ The map's **01 Mission → 02 Where → 03 Check → 04 Run** flow couples a sim
 ## Try the loop
 
 1. Choose a walking mission from the habitat, or a drive + walk mission with a parked rover. Set sampling time in 01 Mission and select the destination in 02 Where.
-2. In 03 Check, inspect both the terrain verdict and the simulated resource budget. They are separate checks: enough oxygen does not validate terrain. Launching a caution/no-go route requires explicit confirmation and remains a simulation.
+2. In 03 Check, inspect both the terrain verdict and the simulated resource budget. They are separate checks: enough oxygen does not validate terrain. Select a budget leg to inspect its map geometry. Launch opens a mission manifest for explicit review of the selected route, supplies, reserves and warnings.
 3. Launch at 1×, 10× or 60×. The crew spends ten simulated minutes preparing before departure. The bottom display holds controls, supplies, alert counts and predicted return margins. Dragging the map disables crew-follow; **Follow** enables it again.
 4. During the outbound walk, open 04 Run and inject **Suit oxygen leak**. The confirmed fault adds 600 g/h to suit demand. On the default drive + walk demonstration, continuing then breaches the modeled oxygen reserve.
 5. Compare **Turn back now** with **Cut sampling**. Each gives arrival time, remaining sampling and suit reserve margins. Opening a replan confirmation pauses the clock so those predictions do not drift during review. Confirm, then resume with **Play**. Only the remaining schedule changes; the traveled path and resource history remain intact.
-6. After return and the configured shelter recovery period, the bottom simulation controls disappear and the report opens automatically. Inspect recorded supplies, scenario events, replans and completed sampling against the originally launched goal. **Print** uses the browser's print dialog.
+6. After return and the configured shelter recovery period, the bottom simulation controls disappear. A brief completion notice leads to the report automatically, or immediately through **Open report**. Inspect recorded supplies, scenario events, replans and completed sampling against the originally launched goal. **Print** uses the browser's print dialog.
 
 To stop before returning, select **End simulation** in the bottom display and confirm. This freezes the server-owned clock, position and inventories, removes the bottom controls and opens the report. It does not move the crew to shelter or count unfinished sampling as completed. The ended state survives reload; launch a new expedition to run again. Pause remains available for a temporary stop.
 

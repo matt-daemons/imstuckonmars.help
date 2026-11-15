@@ -1,7 +1,7 @@
 "use client";
 
-import { RocketIcon } from "lucide-react";
-import { useEffect, useState } from "react";
+import { InfoIcon, RocketIcon, TriangleAlertIcon } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import {
@@ -32,6 +32,22 @@ import {
   wattHours,
 } from "./present";
 import { routeToPlan } from "./route-to-plan";
+import { selectedRoute } from "@/components/route/selected-route";
+import { useMissionView } from "@/components/map/mission-view";
+import { MissionManifest } from "./mission-manifest";
+import type { ExpeditionPlan } from "@/lib/mission/expedition";
+
+type LaunchReview = {
+  key: string;
+  plan: ExpeditionPlan;
+  preview: PlanPreview;
+  destination: string;
+  choice: "safest" | "shortest";
+  speed: Speed;
+  verdict: { verdict: Verdict; reasons: string[] } | null;
+  replacing: boolean;
+  risky: boolean;
+};
 
 /**
  * Step 03's simulated budget for the planned route, computed by the mission engine without
@@ -42,17 +58,19 @@ export function Preflight({
 }: {
   verdict: { verdict: Verdict; reasons: string[] } | null;
 }) {
-  const { inputs, walk, journey, base, dispatch } = useRoutePlan();
+  const { inputs, walk, journey, base, dispatch, destination } = useRoutePlan();
   const expedition = useExpedition();
   const { access, snapshot, launch, lastCommand } = expedition;
   // The expedition follows the route the operator chose; the safest one until the shortest is planned.
-  const trip = inputs.route === "shortest" ? (journey.shortest ?? journey.plan) : journey.plan;
-  const result = routeToPlan(inputs, base, walk.plan, trip);
+  const selected = selectedRoute(inputs, { walk, journey });
+  const result = routeToPlan(inputs, base, selected.walk, selected.trip);
+  const { inspectedLeg, inspectLeg } = useMissionView();
   const key = result.plan ? JSON.stringify(result.plan) : null;
   const [preview, setPreview] = useState<{ key: string; value: PlanPreview } | null>(null);
   const [error, setError] = useState<{ key: string; message: string } | null>(null);
   const [speed, setSpeed] = useState<Speed>(60);
-  const [confirm, setConfirm] = useState(false);
+  const [review, setReview] = useState<LaunchReview | null>(null);
+  const manifestTitle = useRef<HTMLHeadingElement>(null);
   const [launching, setLaunching] = useState(false);
 
   useEffect(() => {
@@ -78,6 +96,7 @@ export function Preflight({
   const status = plan ? STATUS_STYLE[plan.status] : null;
   const running =
     snapshot?.config.route &&
+    snapshot.clock.mode !== "ended" &&
     snapshot.state.elapsed_s > 0 &&
     snapshot.state.elapsed_s < snapshot.config.duration_s;
   const risky =
@@ -87,12 +106,14 @@ export function Preflight({
     running;
 
   async function go() {
-    if (!result.plan) return;
-    setConfirm(false);
+    if (!review || review.key !== key) return;
     setLaunching(true);
-    const ok = await launch(result.plan, speed);
+    const ok = await launch(review.plan, review.speed);
     setLaunching(false);
-    if (ok) dispatch({ type: "goTo", step: "run" });
+    if (ok) {
+      setReview(null);
+      dispatch({ type: "goTo", step: "run" });
+    }
   }
 
   return (
@@ -139,9 +160,18 @@ export function Preflight({
               </thead>
               <tbody className="font-mono">
                 {plan.budget.map((leg) => (
-                  <tr key={leg.start_s}>
+                  <tr key={leg.start_s} data-inspected={inspectedLeg === leg.activity || undefined}>
                     <th scope="row" className="text-left font-sans font-normal">
-                      {ACTIVITY_LABEL[leg.activity]}
+                      <button
+                        type="button"
+                        className="mission-leg-button"
+                        aria-pressed={inspectedLeg === leg.activity}
+                        onClick={() =>
+                          inspectLeg(inspectedLeg === leg.activity ? null : leg.activity)
+                        }
+                      >
+                        {ACTIVITY_LABEL[leg.activity]}
+                      </button>
                     </th>
                     <td className="text-right">{span(leg.end_s - leg.start_s)}</td>
                     <td className="text-right">{grams(leg.oxygen_g)}</td>
@@ -201,8 +231,24 @@ export function Preflight({
         </ToggleGroup>
         <Button
           className="flex-1"
+          variant={risky ? "destructive" : "default"}
           disabled={!result.plan || !current || launching}
-          onClick={() => (risky ? setConfirm(true) : void go())}
+          onClick={() => {
+            if (!result.plan || !current || !key) return;
+            setReview({
+              key,
+              plan: result.plan,
+              preview: current,
+              destination:
+                destination?.title ??
+                (inputs.mission === "walking" ? "Science stop" : "Selected destination"),
+              choice: selected.choice,
+              speed,
+              verdict,
+              replacing: Boolean(running),
+              risky: Boolean(risky),
+            });
+          }}
         >
           <RocketIcon aria-hidden />
           {launching ? "Launching…" : running ? "Launch new expedition" : "Launch expedition"}
@@ -213,34 +259,80 @@ export function Preflight({
           {lastCommand.label} failed: {lastCommand.message}
         </p>
       )}
-      <AlertDialog open={confirm} onOpenChange={setConfirm}>
-        <AlertDialogPopup data-hazard>
+      <AlertDialog
+        open={review !== null}
+        onOpenChange={(open) => {
+          if (!open && !launching) setReview(null);
+        }}
+      >
+        <AlertDialogPopup
+          data-hazard={review?.risky || undefined}
+          className="mission-manifest-dialog"
+          bottomStickOnMobile={false}
+          initialFocus={() => manifestTitle.current}
+        >
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Launch this {inputs.mission === "walking" ? "walk" : "drive + walk"} anyway?
+            <AlertDialogTitle ref={manifestTitle} tabIndex={-1}>
+              Mission manifest
             </AlertDialogTitle>
-            <AlertDialogDescription render={<div className="flex flex-col gap-2" />}>
-              {running && <p>A running expedition will be replaced and its clock rewound.</p>}
-              {verdict && verdict.verdict !== "GO" && (
-                <p>
-                  Route check is {verdict.verdict === "NO_GO" ? "NO-GO" : "CAUTION"}:{" "}
-                  {verdict.reasons[0]}
-                </p>
-              )}
-              {plan && plan.status !== "modeled_resource_feasible" && (
-                <p>
-                  Simulated budget: {STATUS_STYLE[plan.status].label.toLowerCase()} (
-                  {plan.reasons.map(reasonText).join(" ")}).
-                </p>
-              )}
-              <p>This is a simulation for planning practice. Launch at {speed}× speed?</p>
-            </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogClose render={<Button variant="outline" />}>Keep planning</AlertDialogClose>
-            <Button variant="destructive" onClick={() => void go()}>
-              Launch anyway
-            </Button>
+          <AlertDialogDescription
+            render={<div className="mission-manifest-body flex flex-col gap-2" />}
+          >
+            <Badge variant="info">
+              <InfoIcon aria-hidden />
+              Simulated expedition
+            </Badge>
+            {review && (
+              <MissionManifest
+                plan={review.plan}
+                suits={review.preview.suits}
+                outcome={review.preview.options[0]}
+                destination={review.destination}
+                choice={review.choice}
+                speed={review.speed}
+              />
+            )}
+          </AlertDialogDescription>
+          <AlertDialogFooter className="mission-manifest-footer">
+            {review?.replacing && (
+              <p>The existing expedition will be replaced and its clock rewound.</p>
+            )}
+            {review?.verdict && (
+              <p className={review.verdict.verdict === "GO" ? "" : "text-destructive-foreground"}>
+                {review.verdict.verdict !== "GO" && (
+                  <TriangleAlertIcon aria-hidden className="mr-2 inline size-4" />
+                )}
+                Route check: {review.verdict.verdict === "NO_GO" ? "NO-GO" : review.verdict.verdict}
+                . {review.verdict.reasons[0]}
+              </p>
+            )}
+            {review?.preview.options[0]?.status !== "modeled_resource_feasible" && (
+              <p>
+                Resource check:{" "}
+                {review?.preview.options[0]?.reasons.map(reasonText).join(" ") || "Unknown"}
+              </p>
+            )}
+            {review?.key !== key && (
+              <p role="alert" className="text-destructive-foreground">
+                The plan changed during review. Close this manifest and review the updated plan.
+              </p>
+            )}
+            {lastCommand?.state === "failed" && lastCommand.label.includes("expedition") && (
+              <p role="alert">{lastCommand.message}</p>
+            )}
+            <div className="manifest-actions">
+              <AlertDialogClose render={<Button variant="outline" disabled={launching} />}>
+                Keep planning
+              </AlertDialogClose>
+              <Button
+                variant={review?.risky ? "destructive" : "default"}
+                disabled={launching || review?.key !== key}
+                onClick={() => void go()}
+              >
+                {launching ? "Launching…" : review?.risky ? "Launch anyway" : "Begin expedition"}
+              </Button>
+            </div>
           </AlertDialogFooter>
         </AlertDialogPopup>
       </AlertDialog>

@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ExpeditionGauge } from "@/components/expedition/expedition-hud";
 import { ReportChart } from "@/components/expedition/report-dialog";
 import { SavedReportCard } from "@/components/homebase/simulation-reports";
+import { MissionManifest } from "@/components/expedition/mission-manifest";
+import { CameraViewMenu } from "@/components/map/mission-view";
+import { CompletionBanner } from "@/components/expedition/completion-notice";
+import "@/components/map/mission-view.css";
 import "@/components/homebase/terminal.css";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { evaluateMission } from "@/lib/mission/engine";
@@ -86,6 +90,59 @@ const report: MissionReport = {
 export function ExpeditionComponents() {
   return (
     <>
+      <Section id="mission-manifest" title="Mission manifest" className="flex-col">
+        <p>
+          Synthetic layout fixture. Actual launch requires review of the selected route, modeled
+          resource budget and current route-rule warnings.
+        </p>
+        <div className="w-full max-w-2xl border p-4">
+          <MissionManifest
+            plan={{
+              id: "fixture",
+              mode: "walking",
+              shelter_lnglat: config.route!.shelter_lnglat,
+              outbound: { path: config.route!.legs[0].path, duration_s: 1800 },
+              sampling_s: 3600,
+              back: { path: config.route!.legs[2].path, duration_s: 1800 },
+            }}
+            suits={{
+              oxygen_g: 960,
+              oxygen_reserve_g: 60,
+              energy_wh: 1412,
+              energy_reserve_wh: 89,
+              eva_limit_s: 28800,
+            }}
+            destination="Synthetic science target"
+            choice="safest"
+            speed={60}
+          />
+        </div>
+      </Section>
+      <Section id="camera-views" title="Camera views" className="flex-col">
+        <div className="camera-menu-demo relative h-96 w-full border">
+          <CameraViewMenu
+            loading
+            following={false}
+            canFollow={false}
+            canViewRoute
+            canViewTarget
+            onSelect={() => {}}
+          />
+        </div>
+      </Section>
+      <Section
+        id="completion-transition"
+        title="Completion transition"
+        className="completion-demo flex-col"
+      >
+        <CompletionBanner
+          ended={false}
+          elapsed={7200}
+          status="Report saved in this browser"
+          onOpen={() => {}}
+        />
+        <CompletionBanner ended elapsed={1200} status="Preparing report" onOpen={() => {}} />
+      </Section>
       <Section id="saved-simulation-report" title="Saved simulation report" className="flex-col">
         <p>
           Read-only browser history, separate from NASA experiments. Synthetic specimen; not saved

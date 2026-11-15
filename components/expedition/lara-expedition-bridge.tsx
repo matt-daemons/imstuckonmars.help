@@ -5,6 +5,7 @@ import { useRoutePlan } from "@/components/route/route-plan-provider";
 
 import { useExpedition, type Speed } from "./expedition-provider";
 import { routeToPlan } from "./route-to-plan";
+import { selectedRoute } from "@/components/route/selected-route";
 
 /** The speed step 03 offers first, so a voice launch plays like a click on Launch. */
 const LAUNCH_SPEED: Speed = 60;
@@ -18,8 +19,8 @@ export function LaraExpeditionBridge() {
   const { snapshot, launch, command, setFollow } = useExpedition();
 
   useLaraAction("start_simulation", () => {
-    const trip = inputs.route === "shortest" ? (journey.shortest ?? journey.plan) : journey.plan;
-    const { plan } = routeToPlan(inputs, base, walk.plan, trip);
+    const selected = selectedRoute(inputs, { walk, journey });
+    const { plan } = routeToPlan(inputs, base, selected.walk, selected.trip);
     if (!plan) return;
     dispatch({ type: "goTo", step: "run" });
     const loaded = snapshot?.config.route?.id === plan.id;

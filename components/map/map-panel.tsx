@@ -9,13 +9,21 @@ import { cn } from "@/lib/utils";
 
 interface MapPanelProps extends ComponentProps<"aside"> {
   title: string;
+  defaultOpen?: boolean;
   /** Layout of the body, such as the spacing between its sections. */
   bodyClassName?: string;
 }
 
 /** A card over the map whose body collapses to its title row. */
-export function MapPanel({ title, className, bodyClassName, children, ...rest }: MapPanelProps) {
-  const [open, setOpen] = useState(true);
+export function MapPanel({
+  title,
+  className,
+  bodyClassName,
+  children,
+  defaultOpen = true,
+  ...rest
+}: MapPanelProps) {
+  const [open, setOpen] = useState(defaultOpen);
   const titleId = useId();
 
   return (

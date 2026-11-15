@@ -7,6 +7,7 @@ import { crewPositionAt, cutPath, pathLengthM, restPath } from "@/lib/mission/po
 import type { ExpeditionRoute, MarsLngLat } from "@/lib/mission/types";
 
 import { useExpedition } from "./expedition-provider";
+import { fitPoints } from "@/components/route/camera";
 
 const TRAIL = "expedition-trail";
 const AHEAD = "expedition-ahead";
@@ -110,10 +111,19 @@ export function CrewLayer({ map }: { map: MapLibreMap | null }) {
     ];
     for (const layer of layers)
       map.addLayer({ ...layer, layout: { "line-cap": "round", "line-join": "round" } });
-    const stopFollowing = () => setFollow(false);
-    map.on("dragstart", stopFollowing);
+    const stopFollowing = (event: { originalEvent?: unknown }) => {
+      if (event.originalEvent) setFollow(false);
+    };
+    const interactions = [
+      "movestart",
+      "dragstart",
+      "zoomstart",
+      "rotatestart",
+      "pitchstart",
+    ] as const;
+    for (const event of interactions) map.on(event, stopFollowing);
     return () => {
-      map.off("dragstart", stopFollowing);
+      for (const event of interactions) map.off(event, stopFollowing);
       if (!map.getStyle()) return;
       for (const layer of layers) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
       for (const id of [TRAIL, AHEAD]) if (map.getSource(id)) map.removeSource(id);
@@ -145,12 +155,7 @@ export function CrewLayer({ map }: { map: MapLibreMap | null }) {
   const routeId = route?.id;
   useEffect(() => {
     if (!map || !route) return;
-    map.fitBounds(routeBounds(route), {
-      padding: { top: 90, bottom: 60, left: 60, right: 60 },
-      maxZoom: 15.5,
-      pitch: 45,
-      duration: reducedMotion() ? 0 : 2400,
-    });
+    fitPoints(map, [route.shelter_lnglat, ...route.legs.flatMap((leg) => leg.path)]);
   }, [map, routeId]);
 
   // Move the marker every frame; redraw the trail a few times a second.
@@ -164,6 +169,7 @@ export function CrewLayer({ map }: { map: MapLibreMap | null }) {
       const position = crewPositionAt(route, t);
       marker.current?.setLngLat(position.lnglat);
       if (label.current) {
+        label.current.parentElement?.toggleAttribute("data-stopped", !playing);
         const text = `Crew ×${snapshot?.config.crew_count ?? 2} · ${PHASE_LABEL[position.phase]}`;
         if (label.current.textContent !== text) {
           label.current.textContent = text;

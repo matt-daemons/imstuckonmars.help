@@ -34,7 +34,7 @@ const VALUE = cn(COLUMN, "font-mono tabular-nums");
  * operator, or LARA, chooses which one the expedition follows.
  */
 export function RouteCompare() {
-  const { inputs, dispatch, comparison } = useRoutePlan();
+  const { inputs, dispatch, comparison, walk, journey } = useRoutePlan();
   const { mission, showShortest, route } = inputs;
   const titleId = useId();
   const switchLabelId = useId();
@@ -54,7 +54,7 @@ export function RouteCompare() {
             checked={showShortest}
             onCheckedChange={(shown) => dispatch({ type: "showShortest", shown })}
           />
-          <span id={switchLabelId}>Show shortest on map</span>
+          <span id={switchLabelId}>Compare routes on map</span>
         </label>
       </div>
       <div className="flex items-center justify-between gap-3">
@@ -70,7 +70,12 @@ export function RouteCompare() {
           onValueChange={(value) => value[0] && chooseRoute(dispatch, value[0] as RouteChoice)}
         >
           <ToggleGroupItem value="safest">Safest</ToggleGroupItem>
-          <ToggleGroupItem value="shortest">Shortest</ToggleGroupItem>
+          <ToggleGroupItem
+            value="shortest"
+            disabled={mission === "walking" ? !walk.shortest : !journey.shortest}
+          >
+            Shortest
+          </ToggleGroupItem>
         </ToggleGroup>
       </div>
       <Table>

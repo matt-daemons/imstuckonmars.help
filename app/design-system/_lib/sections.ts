@@ -16,6 +16,9 @@ export const sectionGroups: SectionGroup[] = [
       { id: "homebase-history", title: "Observation history" },
       { id: "homebase-log", title: "Experiment log" },
       { id: "saved-simulation-report", title: "Saved simulation report" },
+      { id: "mission-manifest", title: "Mission manifest" },
+      { id: "camera-views", title: "Camera views" },
+      { id: "completion-transition", title: "Completion transition" },
     ],
   },
   {

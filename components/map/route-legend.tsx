@@ -33,7 +33,7 @@ export function RouteLegend({
       )}
       {shortest && (
         <LegendItem swatch="w-4 border-t border-dashed border-muted-foreground">
-          Shortest route (thin, grey)
+          Other route (thin, grey)
         </LegendItem>
       )}
       <LegendItem swatch="size-3 bg-destructive">No-go zone</LegendItem>

@@ -3,7 +3,7 @@
 import type { Map as MapLibreMap } from "maplibre-gl";
 
 import { DriveControls, SamplingField } from "@/components/map/drive-controls";
-import { fitPoints } from "@/components/route/camera";
+import { fitPoints, focusHomebase } from "@/components/route/camera";
 import type { MissionType } from "@/components/route/route-plan";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { RadioGroup } from "@/components/ui/radio-group";
@@ -20,7 +20,7 @@ export function MissionStep({ map, base }: { map: MapLibreMap | null; base: LngL
   function chooseMission(next: MissionType) {
     dispatch({ type: "setMission", mission: next, start: base });
     if (next === "drive-walk") fitPoints(map, [base, ...destinations.map((site) => site.center)]);
-    else map?.flyTo({ center: base, zoom: 12 });
+    else focusHomebase(map, base);
   }
 
   return (

@@ -17,6 +17,10 @@ import { MapOverlayViewport } from "./map-overlay-viewport";
 import { useMapCursor } from "./use-map-cursor";
 import { SpaceBackdrop } from "./space-backdrop";
 import "./map-overlays.css";
+import { MapViewControls, MissionViewProvider } from "./mission-view";
+import { focusTarget } from "@/components/route/camera";
+import { RouteFocus } from "./route-focus";
+import { CompletionNotice } from "@/components/expedition/completion-notice";
 import {
   type SiteProps,
   addGeology,
@@ -37,6 +41,8 @@ import { SidebarSections } from "@/components/route/sidebar-sections";
 import { Kbd } from "@/components/ui/kbd";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { CircleXIcon } from "lucide-react";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
 
 const DATA_ROOT = "/data/processed";
@@ -215,7 +221,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
             m.on("click", `${layer.id}-point`, (e) => {
               // The sidebar is placing a point with this click, so stay put.
               if (m.getCanvas().dataset.placing) return;
-              m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 });
+              focusTarget(m, [e.lngLat.lng, e.lngLat.lat]);
             });
           }
         }
@@ -258,124 +264,138 @@ export function MarsMap({ children }: { children?: ReactNode }) {
       <RoutePlanProvider base={HABITAT} sites={sites}>
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
         <ConditionsProvider habitat={HABITAT}>
-          <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
-            <SidebarSections
-              layers={
-                manifest && (
-                  <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
-                )
-              }
-              scene={
-                <ScenePanelBody
-                  map={loaded}
-                  habitat={HABITAT}
-                  sites={sites}
-                  spaceEnabled={spaceEnabled}
-                  onSpaceEnabledChange={setSpaceEnabled}
-                />
-              }
-            />
-          </RouteSidebar>
-          {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
-          <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
-            <MapOverlayViewport map={loaded}>
-              <RouteMapLayers map={loaded} />
-              <LaraRouteBridge map={loaded} />
-              <LaraExpeditionBridge />
-              <CrewLayer map={loaded} />
-              <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
-              <MapCompass map={loaded} />
-              <DebugMenu
-                page="Map"
-                readSections={() => {
-                  const m = map.current;
-                  const center = m?.getCenter();
-                  const terrain = m?.getTerrain();
-                  return [
-                    {
-                      title: "View",
-                      rows: [
-                        { label: "Renderer", value: m?.loaded() ? "Loaded" : "Loading" },
-                        {
-                          label: "Center latitude",
-                          value: center ? `${center.lat.toFixed(6)}°` : "Unavailable",
-                        },
-                        {
-                          label: "Center longitude",
-                          value: center ? `${center.lng.toFixed(6)}°` : "Unavailable",
-                        },
-                        { label: "Zoom", value: m?.getZoom().toFixed(3) ?? "Unavailable" },
-                        {
-                          label: "Pitch",
-                          value: m ? `${m.getPitch().toFixed(2)}°` : "Unavailable",
-                        },
-                        {
-                          label: "Bearing",
-                          value: m ? `${m.getBearing().toFixed(2)}°` : "Unavailable",
-                        },
-                        {
-                          label: "Projection",
-                          value: m ? JSON.stringify(m.getProjection()?.type) : "Unavailable",
-                        },
-                      ],
-                    },
-                    {
-                      title: "Terrain and habitat",
-                      rows: [
-                        { label: "Terrain source", value: terrain?.source ?? "Disabled" },
-                        { label: "Exaggeration", value: terrain?.exaggeration ?? "Unavailable" },
-                        {
-                          label: "Base elevation",
-                          value:
-                            m?.queryTerrainElevation(HABITAT) == null
-                              ? "Unavailable"
-                              : `${m.queryTerrainElevation(HABITAT)?.toFixed(2)} m · display datum`,
-                        },
-                        {
-                          label: "Habitat display",
-                          value:
-                            !m || m.getZoom() < 7 || !terrain
-                              ? "Hidden at this view"
-                              : habitatEnlarged
-                                ? "Enlarged · not to scale"
-                                : "Authored scale",
-                        },
-                        { label: "Map error", value: error || "None" },
-                      ],
-                    },
-                  ];
-                }}
+          <MissionViewProvider map={loaded} base={HABITAT} error={error}>
+            <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
+              <SidebarSections
+                layers={
+                  manifest && (
+                    <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
+                  )
+                }
+                scene={
+                  <ScenePanelBody
+                    map={loaded}
+                    habitat={HABITAT}
+                    sites={sites}
+                    spaceEnabled={spaceEnabled}
+                    onSpaceEnabledChange={setSpaceEnabled}
+                  />
+                }
               />
-              <Tooltip>
-                <TooltipTrigger
-                  render={
-                    <SidebarTrigger
-                      variant="outline"
-                      aria-keyshortcuts="H"
-                      className="absolute top-4 left-4"
+            </RouteSidebar>
+            {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
+            <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
+              <MapOverlayViewport map={loaded}>
+                <div className="mission-map-chrome contents">
+                  <RouteMapLayers map={loaded} />
+                  <RouteFocus map={loaded} />
+                  <LaraRouteBridge map={loaded} />
+                  <LaraExpeditionBridge />
+                  <CrewLayer map={loaded} />
+                  <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
+                  <MapCompass map={loaded} />
+                  <MapViewControls />
+                  <CompletionNotice />
+                  <DebugMenu
+                    page="Map"
+                    readSections={() => {
+                      const m = map.current;
+                      const center = m?.getCenter();
+                      const terrain = m?.getTerrain();
+                      return [
+                        {
+                          title: "View",
+                          rows: [
+                            { label: "Renderer", value: m?.loaded() ? "Loaded" : "Loading" },
+                            {
+                              label: "Center latitude",
+                              value: center ? `${center.lat.toFixed(6)}°` : "Unavailable",
+                            },
+                            {
+                              label: "Center longitude",
+                              value: center ? `${center.lng.toFixed(6)}°` : "Unavailable",
+                            },
+                            { label: "Zoom", value: m?.getZoom().toFixed(3) ?? "Unavailable" },
+                            {
+                              label: "Pitch",
+                              value: m ? `${m.getPitch().toFixed(2)}°` : "Unavailable",
+                            },
+                            {
+                              label: "Bearing",
+                              value: m ? `${m.getBearing().toFixed(2)}°` : "Unavailable",
+                            },
+                            {
+                              label: "Projection",
+                              value: m ? JSON.stringify(m.getProjection()?.type) : "Unavailable",
+                            },
+                          ],
+                        },
+                        {
+                          title: "Terrain and habitat",
+                          rows: [
+                            { label: "Terrain source", value: terrain?.source ?? "Disabled" },
+                            {
+                              label: "Exaggeration",
+                              value: terrain?.exaggeration ?? "Unavailable",
+                            },
+                            {
+                              label: "Base elevation",
+                              value:
+                                m?.queryTerrainElevation(HABITAT) == null
+                                  ? "Unavailable"
+                                  : `${m.queryTerrainElevation(HABITAT)?.toFixed(2)} m · display datum`,
+                            },
+                            {
+                              label: "Habitat display",
+                              value:
+                                !m || m.getZoom() < 7 || !terrain
+                                  ? "Hidden at this view"
+                                  : habitatEnlarged
+                                    ? "Enlarged · not to scale"
+                                    : "Authored scale",
+                            },
+                            { label: "Map error", value: error || "None" },
+                          ],
+                        },
+                      ];
+                    }}
+                  />
+                  <Tooltip>
+                    <TooltipTrigger
+                      render={
+                        <SidebarTrigger
+                          variant="outline"
+                          aria-keyshortcuts="H"
+                          className="absolute top-4 left-4"
+                        />
+                      }
                     />
-                  }
-                />
-                <TooltipPopup side="right">
-                  Mission sidebar. Shortcut: <Kbd>H</Kbd>
-                </TooltipPopup>
-              </Tooltip>
-              {error && (
-                <div className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
-                  {error}
+                    <TooltipPopup side="right">
+                      Mission sidebar. Shortcut: <Kbd>H</Kbd>
+                    </TooltipPopup>
+                  </Tooltip>
+                  {error && (
+                    <div className="map-load-error" role="alert">
+                      <CircleXIcon aria-hidden />
+                      <p>Map data did not fully load: {error}. Reload to retry.</p>
+                      <Button variant="outline" onClick={() => window.location.reload()}>
+                        Reload map
+                      </Button>
+                    </div>
+                  )}
+                  {cursor && (
+                    <div className="map-coordinate-readout absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                      {cursor[1].toFixed(5)}°N{" "}
+                      {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
+                      °E
+                    </div>
+                  )}
+                  {children}
                 </div>
-              )}
-              {cursor && (
-                <div className="map-coordinate-readout absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
-                  {cursor[1].toFixed(5)}°N{" "}
-                  {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
-                  °E
-                </div>
-              )}
-              {children}
-            </MapOverlayViewport>
-            <ExpeditionHud />
-          </div>
+              </MapOverlayViewport>
+              <ExpeditionHud />
+            </div>
+          </MissionViewProvider>
         </ConditionsProvider>
       </RoutePlanProvider>
     </SidebarProvider>

@@ -17,6 +17,7 @@ import { Switch } from "@/components/ui/switch";
 import type { LngLat } from "@/lib/mars/types";
 import { DustPlayback } from "./dust-playback";
 import { GroundOverlays } from "./ground-overlays";
+import { focusHomebase, focusTarget, prefersReducedMotion } from "@/components/route/camera";
 
 // coss Slider reports number | number[]; these sliders are single-thumb.
 const single = (set: (v: number) => void) => (v: number | readonly number[]) =>
@@ -66,7 +67,13 @@ export function ScenePanelBody({
   }, [map, sites, slopeOn]);
 
   const fly = (zoom: number, pitch: number, bearing: number) =>
-    map?.flyTo({ center: habitat, zoom, pitch, bearing, duration: 3500 });
+    map?.flyTo({
+      center: habitat,
+      zoom,
+      pitch,
+      bearing,
+      duration: prefersReducedMotion() ? 0 : 1400,
+    });
 
   return (
     <div className="space-y-4">
@@ -107,7 +114,7 @@ export function ScenePanelBody({
         <summary className="cursor-pointer font-heading">Terrain and site controls</summary>
         <div className="space-y-4 pt-3">
           <div className="flex gap-2">
-            <Button size="xs" variant="outline" onClick={() => fly(18, 70, -30)}>
+            <Button size="xs" variant="outline" onClick={() => focusHomebase(map, habitat)}>
               Fly to habitat
             </Button>
             <Button size="xs" variant="outline" onClick={() => fly(1.5, 0, 0)}>
@@ -126,15 +133,7 @@ export function ScenePanelBody({
                     size="xs"
                     variant="ghost"
                     className="h-auto w-full justify-start py-1 text-left whitespace-normal"
-                    onClick={() =>
-                      map?.flyTo({
-                        center: s.center,
-                        zoom: 15,
-                        pitch: 65,
-                        bearing: -20,
-                        duration: 3500,
-                      })
-                    }
+                    onClick={() => focusTarget(map, s.center)}
                   >
                     {s.title}
                     {!s.confirmed && " (unconfirmed)"}

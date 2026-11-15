@@ -30,10 +30,7 @@ export function useRoutePlanResult(
   const destination = end
     ? (destinations.find((site) => samePoint(site.center, end)) ?? null)
     : null;
-  const compare =
-    inputs.step === "check" ||
-    inputs.showShortest ||
-    (inputs.step === "run" && inputs.route === "shortest");
+  const compare = inputs.step === "check" || inputs.showShortest || inputs.route === "shortest";
   const request: PlannerRequest | null =
     inputs.mission === "walking" && inputs.end
       ? {

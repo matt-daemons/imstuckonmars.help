@@ -17,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { useLaraBridge, useLaraContextReader } from "./lara-bridge";
 import { useLaraContext } from "./lara-context";
 import { useTraining } from "./training-provider";
+import { useIsMobile } from "@/hooks/use-media-query";
 
 /**
  * The training checklist at the map's top right while training is active. Items tick off on the
@@ -24,6 +25,7 @@ import { useTraining } from "./training-provider";
  */
 export function TrainingGuide() {
   const { state, loaded, dismiss } = useTraining();
+  const mobile = useIsMobile();
   const bridge = useLaraBridge();
   const { status } = useLaraContext();
 
@@ -57,6 +59,8 @@ export function TrainingGuide() {
 
   return (
     <MapPanel
+      key={mobile ? "compact" : "full"}
+      defaultOpen={!mobile}
       title={`Training Wheels Protocol · ${requiredDone} of ${required.length}`}
       className="absolute top-16 left-4 w-72 max-w-[calc(100%-2rem)] text-sm"
       bodyClassName="space-y-3 pt-2"

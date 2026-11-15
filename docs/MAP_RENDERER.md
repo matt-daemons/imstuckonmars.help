@@ -7,6 +7,8 @@ No Mapbox access token is required. Historical dataset provenance still mentions
 the renderer used when those files were generated; those immutable files are
 not rewritten by this migration.
 
+[MISSION_EXPERIENCE.md](MISSION_EXPERIENCE.md) describes direct entry into the map, shared camera views, route inspection and mission manifest. These reuse the renderer and do not alter scientific layers or mission timing.
+
 The following map features retain their existing data and controls:
 
 - Globe overview, local terrain, pitch, bearing and fly-to controls.

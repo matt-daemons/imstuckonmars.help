@@ -17,6 +17,7 @@ import { useConditions } from "./conditions-provider";
 import { useRoutePlan, type RoutePlan } from "./route-plan-provider";
 import { noRouteText, stormLimit, stripFields, walkMargin, type StripField } from "./strip-fields";
 import { samePoint } from "./use-route-plan-result";
+import { selectedRoute } from "./selected-route";
 
 interface StripVerdict {
   status: (typeof VERDICT_STYLES)[Verdict];
@@ -52,6 +53,7 @@ function useNow(intervalMs: number) {
  */
 export function VerdictStrip() {
   const { inputs, dispatch, walk, journey, destination, base } = useRoutePlan();
+  const selected = selectedRoute(inputs, { walk, journey });
   const expedition = useExpedition();
   const { conditions, drill } = useConditions();
   const now = useNow(500);
@@ -59,10 +61,15 @@ export function VerdictStrip() {
 
   const verdict =
     inputs.mission === "walking"
-      ? walkVerdict(walk.plan, samePoint(inputs.start, base), conditions)
-      : tripVerdict(journey, conditions);
+      ? walkVerdict(selected.walk, samePoint(inputs.start, base), conditions)
+      : tripVerdict({ ...journey, plan: selected.trip }, conditions);
   const drilling = isDrillSet(drill);
-  const noRoute = noRouteText(inputs, walk, journey, destination !== null);
+  const noRoute = noRouteText(
+    inputs,
+    { ...walk, plan: selected.walk },
+    { ...journey, plan: selected.trip },
+    destination !== null,
+  );
   const route = expedition.snapshot?.config.route;
   // A stale clock would look current, so it gives way to the link state when the link drops.
   const linkDown = expedition.link === "stale" || expedition.link === "offline";

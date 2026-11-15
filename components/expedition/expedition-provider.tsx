@@ -71,6 +71,13 @@ function useExpeditionState() {
   const [now, setNow] = useState(() => Date.now());
   const [follow, setFollow] = useState(true);
   const [reportOpen, setReportOpen] = useState(false);
+  const [completionOpen, setCompletionOpen] = useState(false);
+  const completionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const changeReportOpen = useCallback((open: boolean) => {
+    if (completionTimer.current) clearTimeout(completionTimer.current);
+    setCompletionOpen(false);
+    setReportOpen(open);
+  }, []);
   const [completedReport, setCompletedReport] = useState<MissionReport | null>(null);
   const [reportSave, setReportSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [reportSaveError, setReportSaveError] = useState<string | null>(null);
@@ -134,10 +141,20 @@ function useExpeditionState() {
 
   const completionKey = finished && snapshot ? reportKey(snapshot) : null;
   useEffect(() => {
-    if (!completionKey) return;
-    // Also runs after reload: the completed controls never reappear while report saving retries.
-    setReportOpen(true);
+    if (!completionKey) {
+      setCompletionOpen(false);
+      return;
+    }
+    setCompletionOpen(true);
+    setReportOpen(false);
     void archiveReport().catch(() => {});
+    completionTimer.current = setTimeout(() => {
+      setCompletionOpen(false);
+      setReportOpen(true);
+    }, 1600);
+    return () => {
+      if (completionTimer.current) clearTimeout(completionTimer.current);
+    };
   }, [completionKey, archiveReport]);
 
   // Open the page's one session: resume this tab's, or open a new one at the habitat.
@@ -387,7 +404,8 @@ function useExpeditionState() {
     follow,
     setFollow,
     reportOpen,
-    setReportOpen,
+    setReportOpen: changeReportOpen,
+    completionOpen,
     finished,
     completedReport,
     reportSave,

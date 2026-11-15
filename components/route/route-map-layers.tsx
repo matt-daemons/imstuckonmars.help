@@ -16,6 +16,7 @@ import {
 } from "@/components/map/route-layers";
 
 import { useRoutePlan } from "./route-plan-provider";
+import { selectedRoute } from "./selected-route";
 
 /**
  * Adds the route sources and layers to the map and keeps them in step with the route plan. The
@@ -24,6 +25,7 @@ import { useRoutePlan } from "./route-plan-provider";
 export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey } = useRoutePlan();
   const { mission, start, end, zones, showShortest } = inputs;
+  const selected = selectedRoute(inputs, { walk, journey });
 
   useEffect(() => {
     if (!map) return;
@@ -41,8 +43,8 @@ export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
   }, [map]);
 
   // Each mission draws only its own route: the walk's two lines, or the trip's legs and boulders.
-  const walkShown = mission === "walking" && walk.plan;
-  const trip = journey.plan?.collection;
+  const walkShown = mission === "walking" && selected.walk;
+  const trip = selected.trip?.collection;
   const boulders = journey.siteGrid?.boulders;
   useEffect(
     () => setData(map, "planned-route", walkShown ? routeFeatures(walkShown) : []),
@@ -56,10 +58,20 @@ export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
   // The shortest route's lines, only while the operator compares it on the map.
   const shortest = useMemo(() => {
     if (!showShortest) return [];
-    if (mission === "walking") return walk.shortest ? routeFeatures(walk.shortest) : [];
-    const lines = journey.shortest?.collection?.features ?? [];
+    const comparedWalk = inputs.route === "shortest" ? walk.plan : walk.shortest;
+    const comparedTrip = inputs.route === "shortest" ? journey.plan : journey.shortest;
+    if (mission === "walking") return comparedWalk ? routeFeatures(comparedWalk) : [];
+    const lines = comparedTrip?.collection?.features ?? [];
     return lines.filter((feature) => feature.geometry.type === "LineString");
-  }, [showShortest, mission, walk.shortest, journey.shortest]);
+  }, [
+    showShortest,
+    mission,
+    inputs.route,
+    walk.plan,
+    walk.shortest,
+    journey.plan,
+    journey.shortest,
+  ]);
   useEffect(() => setData(map, "shortest-route", shortest), [map, shortest]);
   useEffect(() => setData(map, "no-go-zones", zones.map(zoneFeature)), [map, zones]);
   useEffect(() => setData(map, "route-ends", endFeatures(start, end)), [map, start, end]);

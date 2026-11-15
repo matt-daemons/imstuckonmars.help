@@ -16,7 +16,7 @@ import { useExpedition } from "./expedition-provider";
 import { missionTime } from "./present";
 
 export function EndSimulation() {
-  const { snapshot, command, lastCommand, setReportOpen } = useExpedition();
+  const { snapshot, command, lastCommand } = useExpedition();
   const [confirm, setConfirm] = useState(false);
   if (!snapshot?.config.route) return null;
   const busy = lastCommand?.state === "running";
@@ -27,7 +27,6 @@ export function EndSimulation() {
     const result = await command({ type: "end" }, "End simulation");
     if (result) {
       setConfirm(false);
-      setReportOpen(true);
     }
   }
 
