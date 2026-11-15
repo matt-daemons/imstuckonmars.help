@@ -13,7 +13,7 @@ export type Placement = ReturnType<typeof usePlacement>;
 
 /**
  * Placing the start or the end, or drawing a no-go zone, by clicking the map. Placing is transient,
- * so it is not in the route plan. The sidebar holds it rather than step ②, because below md the
+ * so it is not in the route plan. The sidebar holds it rather than step 02, because below md the
  * step sits in a sheet that closes (and unmounts) while the operator clicks the map.
  */
 export function usePlacement(map: MapLibreMap | null) {
@@ -29,7 +29,7 @@ export function usePlacement(map: MapLibreMap | null) {
     setMode(next);
   }
 
-  // Placing belongs to step ②, so any change of step cancels it: the sidebar's tabs, Back / Next,
+  // Placing belongs to step 02, so any change of step cancels it: the sidebar's tabs, Back / Next,
   // or the verdict strip. Set during render, React's way to reset state when an input changes.
   if (step !== inputs.step) {
     setStep(inputs.step);

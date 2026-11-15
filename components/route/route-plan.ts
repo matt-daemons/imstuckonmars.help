@@ -63,8 +63,8 @@ export function initialRoutePlan(base: LngLat): RoutePlanInputs {
 
 /** What the operator still has to choose before a route can be planned, or null when nothing is. */
 export function missingChoice(inputs: Pick<RoutePlanInputs, "mission" | "end">) {
-  if (!inputs.mission) return "Pick a mission type in step ① Mission.";
-  if (!inputs.end) return "Pick a destination in step ② Where.";
+  if (!inputs.mission) return "Pick a mission type in step 01 Mission.";
+  if (!inputs.end) return "Pick a destination in step 02 Where.";
   return null;
 }
 

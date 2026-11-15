@@ -11,12 +11,12 @@ import type { LngLat } from "@/lib/mars/types";
 
 import { ChoiceCard } from "./choice-card";
 
-/** Step ①: what kind of mission, and for a drive + walk, its power and time at the site. */
+/** Step 01: what kind of mission, and for a drive + walk, its power and time at the site. */
 export function MissionStep({ map, base }: { map: MapLibreMap | null; base: LngLat }) {
   const { inputs, dispatch, destinations } = useRoutePlan();
   const { mission, power, samplingMin } = inputs;
 
-  // A mission starts at the base with no destination: step ② is where the operator picks one.
+  // A mission starts at the base with no destination: step 02 is where the operator picks one.
   function chooseMission(next: MissionType) {
     dispatch({ type: "setMission", mission: next, start: base });
     if (next === "drive-walk") fitPoints(map, [base, ...destinations.map((site) => site.center)]);

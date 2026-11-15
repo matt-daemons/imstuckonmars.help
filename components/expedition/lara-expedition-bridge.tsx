@@ -6,7 +6,7 @@ import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { useExpedition, type Speed } from "./expedition-provider";
 import { routeToPlan } from "./route-to-plan";
 
-/** The speed step ③ offers first, so a voice launch plays like a click on Launch. */
+/** The speed step 03 offers first, so a voice launch plays like a click on Launch. */
 const LAUNCH_SPEED: Speed = 60;
 
 /**

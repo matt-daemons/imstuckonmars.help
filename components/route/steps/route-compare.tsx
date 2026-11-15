@@ -29,7 +29,7 @@ const COLUMN = "px-1.5 py-1.5 text-right text-xs";
 const VALUE = cn(COLUMN, "font-mono tabular-nums");
 
 /**
- * Step ③'s comparison of the planned (safest) route with the shortest one the same walls allow:
+ * Step 03's comparison of the planned (safest) route with the shortest one the same walls allow:
  * the numbers side by side, their route-rule verdicts, and the ground along the way out. The
  * operator, or LARA, chooses which one the expedition follows.
  */

@@ -222,7 +222,7 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
   return `Not checked: ${items.join(", ")}.`;
 }
 
-/** Step ③'s line on the space-weather feed, such as "Space weather: none · NASA DONKI, updated 10:42 UTC". */
+/** Step 03's line on the space-weather feed, such as "Space weather: none · NASA DONKI, updated 10:42 UTC". */
 export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
   if (feed === "loading") return "Space weather: loading NASA DONKI…";
   if (feed === "failed") return "Space weather: NASA DONKI unavailable";

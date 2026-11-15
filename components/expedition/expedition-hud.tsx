@@ -260,7 +260,7 @@ export function ExpeditionHud() {
               ? `Mission server unavailable: ${expedition.openError}.`
               : !snapshot
                 ? "Opening the mission session…"
-                : "No expedition loaded. Plan a route, then launch it from ③ Check."}
+                : "No expedition loaded. Plan a route, then launch it from 03 Check."}
           </span>
           {expedition.openError && (
             <Button size="sm" variant="outline" onClick={expedition.retryOpen}>

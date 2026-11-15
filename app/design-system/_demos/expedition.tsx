@@ -146,7 +146,7 @@ export function ExpeditionComponents() {
         </Alert>
         <p>
           Live alerts expose their ID, mission time, source, acknowledgment and inhibition state in
-          ④ Run. Acknowledgment never changes the simulation.
+          04 Run. Acknowledgment never changes the simulation.
         </p>
       </Section>
       <Section id="expedition-end" title="End simulation" className="flex-col">

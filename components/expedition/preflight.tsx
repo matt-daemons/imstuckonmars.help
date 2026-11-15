@@ -34,7 +34,7 @@ import {
 import { routeToPlan } from "./route-to-plan";
 
 /**
- * Step ③'s simulated budget for the planned route, computed by the mission engine without
+ * Step 03's simulated budget for the planned route, computed by the mission engine without
  * launching anything, and the launch control.
  */
 export function Preflight({

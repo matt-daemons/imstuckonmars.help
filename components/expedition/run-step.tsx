@@ -610,7 +610,7 @@ function AlertRow({
   );
 }
 
-/** Step ④: the running expedition: timeline, replan options, faults, alerts and the report. */
+/** Step 04: the running expedition: timeline, replan options, faults, alerts and the report. */
 export function RunStep() {
   const { snapshot, clockAt, outlook, setReportOpen } = useExpedition();
   const { dispatch } = useRoutePlan();
@@ -621,11 +621,11 @@ export function RunStep() {
       <div className="flex flex-col gap-3 text-sm">
         <p>No expedition is running.</p>
         <p className="text-muted-foreground">
-          Plan a route, check its simulated resource budget in ③ Check, then launch it. The crew,
+          Plan a route, check its simulated resource budget in 03 Check, then launch it. The crew,
           the suit supplies and the clock then run here and on the map.
         </p>
         <Button variant="outline" onClick={() => dispatch({ type: "goTo", step: "check" })}>
-          Go to ③ Check
+          Go to 03 Check
         </Button>
       </div>
     );
@@ -657,14 +657,14 @@ export function RunStep() {
       <Section title="Options from here" detail={departed ? undefined : "After departure"}>
         {ended ? (
           <p>
-            Simulation ended at {missionTime(at)}. Launch a new expedition from ③ Check to run
+            Simulation ended at {missionTime(at)}. Launch a new expedition from 03 Check to run
             again.
           </p>
         ) : departed ? (
           <Replan />
         ) : (
           <p className="text-sm text-muted-foreground">
-            Options appear once the crew leaves the {shelter}. The pre-flight budget is in ③ Check.
+            Options appear once the crew leaves the {shelter}. The pre-flight budget is in 03 Check.
           </p>
         )}
       </Section>

@@ -2,9 +2,9 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** The walk's verdict (and so the strip and step ③) includes dust, radiation, solar-alert and daylight rules, fed by real data where the app has it and by a labelled storm drill.
+**Goal:** The walk's verdict (and so the strip and step 03) includes dust, radiation, solar-alert and daylight rules, fed by real data where the app has it and by a labelled storm drill.
 
-**Architecture:** A pure `evaluateWithConditions` in `lib/flight-rules/evaluate.ts` runs the existing route checks plus each storm check whose input is known, and lists the unknown ones. A small `ConditionsProvider` gathers the real values (Mars clock, LARA's radiation, the dust frame at the habitat) and the drill overrides; the strip and step ③ use one pure merge to get the final walk or trip verdict.
+**Architecture:** A pure `evaluateWithConditions` in `lib/flight-rules/evaluate.ts` runs the existing route checks plus each storm check whose input is known, and lists the unknown ones. A small `ConditionsProvider` gathers the real values (Mars clock, LARA's radiation, the dust frame at the habitat) and the drill overrides; the strip and step 03 use one pure merge to get the final walk or trip verdict.
 
 **Tech Stack:** React 19.3, TypeScript, coss/Base UI, Vitest.
 
@@ -80,6 +80,6 @@ export function tripWithStorms(plan: DriveWalkPlan, conditions: Conditions): Tri
 
 - [ ] Tests first (`conditions.test.ts`): a drill value wins over a real one and marks its source `"drill"`; clearing the drill restores the real value; a drill reason contains "Drill, not real data"; `tripWithStorms` with a solar warning → NO_GO limiting `"radiation"` even when the drive is GO; null dust → `not_checked` includes `"dust"` with the reason text.
 - [ ] Real sources in `ConditionsProvider`: daylight from `readMarsClock(new Date(), habitat, <landing date constant>)` refreshed once a minute; radiation = `snapshot.observed.radiation.observation.dose_rate_e_ugy_day / 24` from `useLaraContext()`, unknown when LARA is not ready or its last successful poll is older than three poll intervals; dust from DustPlayback's published value. Drill state lives here too.
-- [ ] Strip and step ③ use `walkWithStorms` / `tripWithStorms`; margin for a storm limit: dust (value vs limit), dose rate (value vs limit), daylight (minutes to spare); solar alert has no numeric margin (show the level). Time to shelter stays the walk back (habitat, or rover in drive + walk). DRILL tag in the strip while any drill value is set; LARA's clock shows "LARA not answering" when stale.
-- [ ] Storm drill (closed by default) in step ③: solar alert none/watch/warning, dust opacity (off or a number), start time (off or a local solar hour). Coss components only.
+- [ ] Strip and step 03 use `walkWithStorms` / `tripWithStorms`; margin for a storm limit: dust (value vs limit), dose rate (value vs limit), daylight (minutes to spare); solar alert has no numeric margin (show the level). Time to shelter stays the walk back (habitat, or rover in drive + walk). DRILL tag in the strip while any drill value is set; LARA's clock shows "LARA not answering" when stale.
+- [ ] Storm drill (closed by default) in step 03: solar alert none/watch/warning, dust opacity (off or a number), start time (off or a local solar hour). Coss components only.
 - [ ] Full check line; browser check of the Review Focus items at 1440 × 900; commit `route-ui(feat): Storms and a storm drill in the route check`.

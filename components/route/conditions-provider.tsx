@@ -40,7 +40,7 @@ interface ConditionsContextValue {
 
 const ConditionsContext = createContext<ConditionsContextValue | null>(null);
 
-/** Gathers the storm conditions at the habitat and the storm drill, for the strip and step ③. */
+/** Gathers the storm conditions at the habitat and the storm drill, for the strip and step 03. */
 export function ConditionsProvider({
   habitat,
   children,

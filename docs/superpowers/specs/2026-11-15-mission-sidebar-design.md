@@ -16,17 +16,17 @@ The map screen is overwhelming: four floating panels (Layers, Scene, Route, LARA
 
 ## Approaches considered
 
-| Approach                                                            | Trade-off                                             |
-| ------------------------------------------------------------------- | ----------------------------------------------------- |
-| **A. Docked sidebar with steps ① Mission ② Where ③ Check (picked)** | Calmest; gives every future feature a home; most work |
-| B. Docked sidebar with tabs (Mission · Route · Layers · Sources)    | Everything has a home, but each tab stays busy        |
-| C. Trim what is there (collapse panels, hide advanced route tools)  | Quick, but future features still have nowhere to go   |
+| Approach                                                               | Trade-off                                             |
+| ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| **A. Docked sidebar with steps 01 Mission 02 Where 03 Check (picked)** | Calmest; gives every future feature a home; most work |
+| B. Docked sidebar with tabs (Mission · Route · Layers · Sources)       | Everything has a home, but each tab stays busy        |
+| C. Trim what is there (collapse panels, hide advanced route tools)     | Quick, but future features still have nowhere to go   |
 
 ## Layout
 
 ```
 ┌ LARA · Arcadia base ─────────┐  ┌──── CAUTION · walk slope 17° · margin 3° · shelter 22 min ────┐
-│ ① Mission  ② Where  ③ Check  │
+│ 01 Mission  02 Where  03 Check  │
 │ ──────────────────────────── │
 │  (one step's content)        │                     map (fills the rest)
 │                              │
@@ -39,12 +39,12 @@ The map screen is overwhelming: four floating panels (Layers, Scene, Route, LARA
 ```
 
 - **Sidebar:** the repo's coss `Sidebar` (`components/ui/sidebar.tsx`), docked left, about 360 px, collapsible off-canvas with its trigger and with H (H now hides the sidebar instead of the four panels). Below `md` it becomes the coss bottom `Drawer`. The map gets `setPadding({ left: sidebar width })` so fits and centring ignore the covered strip.
-- **Step ① Mission:** two large choices, "Walk from the base" and "Drive + walk to a site", each with one line saying what it means. Drive + walk shows Power (Fission / Solar) and Sampling time.
-- **Step ② Where:** Walk: the end point (click the map or pick the science stop); Drive + walk: the four sites as a list with distance from the base. "Edit route" (closed by default) holds Set start, Set end, Draw no-go zone, Clear zones and their hint.
-- **Step ③ Check:** the verdict alert and its reasons, then three headline numbers (Walk: distance, time, steepest slope; Drive + walk: sols, battery after the hardest day, suit minutes left), "Fit whole trip" / "Fit walk", and a "Details" accordion holding every other readout, the legend and "Assumptions and data". This step is also where the timeline and playback will go.
-- **Steps are free to move between:** the header is clickable, Back / Next move in order, and nothing is lost when moving. Changing ① or ② replans; ③ is always current.
+- **Step 01 Mission:** two large choices, "Walk from the base" and "Drive + walk to a site", each with one line saying what it means. Drive + walk shows Power (Fission / Solar) and Sampling time.
+- **Step 02 Where:** Walk: the end point (click the map or pick the science stop); Drive + walk: the four sites as a list with distance from the base. "Edit route" (closed by default) holds Set start, Set end, Draw no-go zone, Clear zones and their hint.
+- **Step 03 Check:** the verdict alert and its reasons, then three headline numbers (Walk: distance, time, steepest slope; Drive + walk: sols, battery after the hardest day, suit minutes left), "Fit whole trip" / "Fit walk", and a "Details" accordion holding every other readout, the legend and "Assumptions and data". This step is also where the timeline and playback will go.
+- **Steps are free to move between:** the header is clickable, Back / Next move in order, and nothing is lost when moving. Changing 01 or 02 replans; 03 is always current.
 - **Bottom of the sidebar:** accordion items closed by default: "Map layers" (today's Layer panel content and the Sources link), "Scene and dust" (today's Scene panel content, including the site list, slope hazard, terrain exaggeration and dust playback).
-- **Verdict strip:** a slim bar at the top centre of the map: status · limiting constraint · margin · time to shelter (the expert note in CLAUDE.md), read from the mission state; it says "No route yet" when there is none; clicking it opens step ③.
+- **Verdict strip:** a slim bar at the top centre of the map: status · limiting constraint · margin · time to shelter (the expert note in CLAUDE.md), read from the mission state; it says "No route yet" when there is none; clicking it opens step 03.
 - **LARA:** a floating "Ask LARA" button at the bottom right that opens today's chat panel in a popover or sheet; the wake word keeps working because the panel stays mounted.
 - **Map overlays left:** only the verdict strip, the LARA button, the cursor readout, the attribution and the map error badge.
 
@@ -56,14 +56,14 @@ The map screen is overwhelming: four floating panels (Layers, Scene, Route, LARA
 
 ## Future features and where they go
 
-| Feature (owner)                                               | Home                                                                      |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------- |
-| Verdict banner (M)                                            | The verdict strip; styling is M's call                                    |
-| Timeline and playback with the rover marker (M, Nova offered) | Step ③ section plus a map marker reading `start_offset_min` from the legs |
-| Compare shortest vs safest route (story step 3)               | Step ③ toggle; a second plan in the mission state                         |
-| Solar-storm alert flips the verdict (demo moment)             | Live feed into the mission state; the strip and step ③ update             |
-| Soft ground from THEMIS thermal inertia, roughness            | Planner inputs; no UI change except a line in "Assumptions and data"      |
-| LARA answering about the current route                        | LARA reads `useRoutePlan()`                                               |
+| Feature (owner)                                               | Home                                                                       |
+| ------------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Verdict banner (M)                                            | The verdict strip; styling is M's call                                     |
+| Timeline and playback with the rover marker (M, Nova offered) | Step 03 section plus a map marker reading `start_offset_min` from the legs |
+| Compare shortest vs safest route (story step 3)               | Step 03 toggle; a second plan in the mission state                         |
+| Solar-storm alert flips the verdict (demo moment)             | Live feed into the mission state; the strip and step 03 update             |
+| Soft ground from THEMIS thermal inertia, roughness            | Planner inputs; no UI change except a line in "Assumptions and data"       |
+| LARA answering about the current route                        | LARA reads `useRoutePlan()`                                                |
 
 ## Constraints
 
@@ -80,7 +80,7 @@ The map screen is overwhelming: four floating panels (Layers, Scene, Route, LARA
 - **Persistent region (rule L-6):** the time and alert summary must always be visible. The verdict strip therefore also shows LARA's mission clock and its alert summary, read from the existing `useLara` hook (read only). The rest of LARA (chat, readouts, "Play 20×") sits behind the "Ask LARA" button; a new LARA alert puts a badge on the button and appears in the strip, it does not pop the chat open. LaraPanel's insides are not rewritten; only its container moves.
 - **Dust legend:** while dust is on, its legend and simulation label stay on the map as a small overlay (AGENTS.md requires it), whether or not the "Scene and dust" section is open or the sidebar is hidden.
 - **Walk strip fields:** a walk shows status · limiting constraint · margin (the tightest of slope, walk-back and suit time against `FLIGHT_RULES`, computed from the existing summary numbers) · time to shelter (the walk back to the habitat). No new verdict logic.
-- **Small screens:** desktop first. Below `md` the coss Sidebar's built-in left sheet is used as is; no custom bottom drawer. Step ② closes the sheet while a point is being placed.
+- **Small screens:** desktop first. Below `md` the coss Sidebar's built-in left sheet is used as is; no custom bottom drawer. Step 02 closes the sheet while a point is being placed.
 
 ## Left to the builder
 

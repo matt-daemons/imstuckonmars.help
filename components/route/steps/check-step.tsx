@@ -44,7 +44,7 @@ import { StormDrill } from "./storm-drill";
 const WALK_HEADLINE = ["slope", "time", "distance"];
 const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 
-/** Step ③: the verdict and its reasons, three headline numbers, then the rest one click down. */
+/** Step 03: the verdict and its reasons, three headline numbers, then the rest one click down. */
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey, destination, planningError, retryPlanning } = useRoutePlan();
   const { conditions } = useConditions();

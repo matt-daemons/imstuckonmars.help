@@ -21,7 +21,7 @@ export function PlacementHint({ mode }: { mode: PlaceMode }) {
 }
 
 /**
- * The hint over the map, for below md: placing closes the sheet that holds step ②'s hint. Mounted
+ * The hint over the map, for below md: placing closes the sheet that holds step 02's hint. Mounted
  * while the sidebar is a sheet, so screen readers announce the hint when it appears.
  */
 export function MapPlacementHint({ placement, shown }: { placement: Placement; shown: boolean }) {

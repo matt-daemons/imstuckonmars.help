@@ -4,7 +4,7 @@ Date: 15 November 2026. Size: a small change. Approach picked by the user: **rea
 
 ## Why
 
-Step ③ and the verdict strip say "Not checked: radiation, dust, daylight". The team's demo moment is a solar alert arriving mid-trip and the verdict flipping to CAUTION with a time to shelter. Storms cannot be routed around (a regional dust storm is bigger than the whole trip area, and a solar storm hits the whole surface), so they belong in the go / no-go decision, not in the path.
+Step 03 and the verdict strip say "Not checked: radiation, dust, daylight". The team's demo moment is a solar alert arriving mid-trip and the verdict flipping to CAUTION with a time to shelter. Storms cannot be routed around (a regional dust storm is bigger than the whole trip area, and a solar storm hits the whole surface), so they belong in the go / no-go decision, not in the path.
 
 ## Approaches
 
@@ -24,8 +24,8 @@ Step ③ and the verdict strip say "Not checked: radiation, dust, daylight". The
   - **Solar alert:** no feed. Drill only.
 - **Stale is unknown too:** when LARA stops answering (no successful poll for a while), its radiation value counts as unknown and the strip marks LARA's clock as not answering (final-review finding M-3).
 - **Unknown is never fine:** each storm check runs only when its value is known. Otherwise the result says "Not checked: …" with the reason (e.g. "load the dust simulation", "LARA unavailable", "no solar-alert feed").
-- **Storm drill:** a closed section in step ③. It can set a solar alert (none / watch / warning), a dust opacity, and a start time (local solar time at the habitat). Every drill value is labelled "Drill, not real data" in the reasons, and the strip shows a DRILL tag while any drill value is set. It is off by default.
-- **Output:** the walk verdict (walking mission) and the trip verdict (worst of drive and walk) include storm findings. The strip and step ③ show them with the existing limiting factor, margin and time to shelter. When a storm finding limits, time to shelter is the walk back to shelter (the habitat, or the rover in drive + walk).
+- **Storm drill:** a closed section in step 03. It can set a solar alert (none / watch / warning), a dust opacity, and a start time (local solar time at the habitat). Every drill value is labelled "Drill, not real data" in the reasons, and the strip shows a DRILL tag while any drill value is set. It is off by default.
+- **Output:** the walk verdict (walking mission) and the trip verdict (worst of drive and walk) include storm findings. The strip and step 03 show them with the existing limiting factor, margin and time to shelter. When a storm finding limits, time to shelter is the walk back to shelter (the habitat, or the rover in drive + walk).
 
 ## Non-goals and anti-goals
 

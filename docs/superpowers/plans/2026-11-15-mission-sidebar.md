@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Replace the four floating map panels with one docked sidebar that shows one step at a time (① Mission ② Where ③ Check), a verdict strip, and an "Ask LARA" button, on top of one shared route-plan state that future features can read.
+**Goal:** Replace the four floating map panels with one docked sidebar that shows one step at a time (01 Mission 02 Where 03 Check), a verdict strip, and an "Ask LARA" button, on top of one shared route-plan state that future features can read.
 
 **Architecture:** Route inputs move out of `route-planner.tsx` into a `RoutePlanProvider` (context + reducer); planning moves into a `useRoutePlanResult` hook built from the existing lib functions; map sources are synced by a DOM-less `RouteMapLayers`. The coss `Sidebar` hosts three step components and two closed sections that wrap today's Layer and Scene panel contents. The backend mission session stays the single mission-state owner; a last task sends the chosen route to it.
 
@@ -23,7 +23,7 @@
 ## Review Focus
 
 1. Switching steps or hiding the sidebar loses no input (destination, zones, power, sampling).
-2. Placing a point on the map from step ② still works with the sidebar open, and on a small screen the sheet gets out of the way.
+2. Placing a point on the map from step 02 still works with the sidebar open, and on a small screen the sheet gets out of the way.
 3. The verdict strip never shows a stale verdict after inputs change.
 4. With dust on, its legend stays visible even with the sidebar hidden.
 5. LARA's clock and alert stay visible while the chat is closed; a new alert badges the button.
@@ -86,8 +86,8 @@ export interface RoutePlanResult {
 
 **Files:** create `components/route/route-sidebar.tsx`, `components/route/steps/mission-step.tsx`, `where-step.tsx`, `check-step.tsx`, `components/route/sidebar-sections.tsx`; modify `components/map/mars-map.tsx` (sidebar instead of the Layer, Scene and Route panels; H toggles the sidebar; remove the hide-all toggle), `components/map/layer-panel.tsx` and `scene-panel.tsx` (export their bodies so the sections can host them unchanged), `app/globals.css` only if needed.
 
-- [ ] coss `SidebarProvider` + `Sidebar` (left, off-canvas, ~360 px) with header "LARA · Arcadia base", step tabs ① ② ③ (clickable), Back / Next, and footer accordion items "Map layers" and "Scene and dust" (closed by default; Sources link inside Map layers).
-- [ ] Step ①: two large choices with one line each; Drive + walk adds Power and Sampling time. Step ②: Walk end point / site list with distances; "Edit route" (closed) holds Set start, Set end, Draw no-go zone, Clear zones and the mode hint. Step ③: verdict alert + reasons, three headline numbers (the limiting factor's readout always among them), Fit buttons, "Details" accordion with the remaining readouts, legend and "Assumptions and data".
+- [ ] coss `SidebarProvider` + `Sidebar` (left, off-canvas, ~360 px) with header "LARA · Arcadia base", step tabs 01 02 03 (clickable), Back / Next, and footer accordion items "Map layers" and "Scene and dust" (closed by default; Sources link inside Map layers).
+- [ ] Step 01: two large choices with one line each; Drive + walk adds Power and Sampling time. Step 02: Walk end point / site list with distances; "Edit route" (closed) holds Set start, Set end, Draw no-go zone, Clear zones and the mode hint. Step 03: verdict alert + reasons, three headline numbers (the limiting factor's readout always among them), Fit buttons, "Details" accordion with the remaining readouts, legend and "Assumptions and data".
 - [ ] `map.setPadding({ left: sidebarWidth })` while open; 0 when hidden. Below `md` the coss sheet; it closes while a point is being placed.
 - [ ] Browser check at 1440 × 900, 1280 × 720 and the pane size; full check line; commit `route-ui(feat): Mission sidebar with steps`.
 
@@ -95,7 +95,7 @@ export interface RoutePlanResult {
 
 **Files:** create `components/route/verdict-strip.tsx`, `components/copilot/lara-launcher.tsx`; modify `app/page.tsx` / `components/map/mars-map.tsx` (mount points), `components/map/dust-playback.tsx` only to let its legend render as a map overlay when the section is closed (or render the legend from mars-map; pick the smaller change).
 
-- [ ] Verdict strip at the top centre: status · limiting constraint · margin · time to shelter from `useRoutePlan().result` (walk margin = tightest of slope, walk-back, suit time vs `FLIGHT_RULES`; shelter = walk back time) plus LARA's clock and alert summary from `useLara` (read only); "No route yet" when empty; click → step ③. Truncates on narrow screens.
+- [ ] Verdict strip at the top centre: status · limiting constraint · margin · time to shelter from `useRoutePlan().result` (walk margin = tightest of slope, walk-back, suit time vs `FLIGHT_RULES`; shelter = walk back time) plus LARA's clock and alert summary from `useLara` (read only); "No route yet" when empty; click → step 03. Truncates on narrow screens.
 - [ ] "Ask LARA" button bottom right opens LaraPanel (mounted always) in a popover/sheet; a new alert shows a badge.
 - [ ] Dust legend and simulation label visible on the map whenever dust is on.
 - [ ] Browser check; full check line; commit `route-ui(feat): Verdict strip and LARA launcher`.

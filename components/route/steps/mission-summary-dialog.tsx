@@ -43,18 +43,18 @@ import type { RouteCollection } from "@/lib/mars/types";
 
 /**
  * The mission on one page, to read, print or save: the verdict first, then the objective,
- * timeline, key numbers, assumptions and sources. Step ③ hands over what it already shows.
+ * timeline, key numbers, assumptions and sources. Step 03 hands over what it already shows.
  */
 export function MissionSummary({
   status,
   keyNumbers,
   assumptions,
 }: {
-  /** Step ③'s verdict with its reasons and the "Not checked" line. */
+  /** Step 03's verdict with its reasons and the "Not checked" line. */
   status: ReactNode;
-  /** Step ③'s headline readouts. */
+  /** Step 03's headline readouts. */
   keyNumbers: ReadoutItem[];
-  /** Step ③'s "Assumptions and data" lines. */
+  /** Step 03's "Assumptions and data" lines. */
   assumptions: ReactNode;
 }) {
   const { inputs, walk, journey, base } = useRoutePlan();
@@ -105,7 +105,7 @@ function SummaryBody({
   const { conditions, drill } = useConditions();
   // The popup mounts on opening, so this is when the summary was made.
   const [madeAt] = useState(() => new Date());
-  // Named as step ② names it, so an unconfirmed site says so.
+  // Named as step 02 names it, so an unconfirmed site says so.
   const site =
     mission === "drive-walk" && destination
       ? { ...destination, title: siteLabel(destination) }

@@ -22,7 +22,7 @@ import type { LngLat } from "@/lib/mars/types";
 
 import { ChoiceCard } from "./choice-card";
 
-/** Step ②: where the mission goes, picked from a list or set on the map, and its no-go zones. */
+/** Step 02: where the mission goes, picked from a list or set on the map, and its no-go zones. */
 export function WhereStep({
   map,
   base,
@@ -70,7 +70,7 @@ export function WhereStep({
             </ChoiceCard>
           ))}
         </RadioGroup>
-        {!mission && <p className="text-xs">Pick a mission type in step ① Mission first.</p>}
+        {!mission && <p className="text-xs">Pick a mission type in step 01 Mission first.</p>}
         {mission && !end && <p className="text-xs">No destination yet. Pick one above.</p>}
         {end && !chosen && <p className="text-xs">The end is a point set on the map.</p>}
         {mission === "walking" && (

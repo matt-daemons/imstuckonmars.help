@@ -41,7 +41,7 @@ export interface MissionAlert extends AlertInstance {
   inhibited: boolean;
 }
 
-const REPLAN = "Open ④ Run and apply the recommended replan, or end sampling and walk back.";
+const REPLAN = "Open 04 Run and apply the recommended replan, or end sampling and walk back.";
 
 /** Suit draw per hour at the current activity, the same terms the engine integrates. */
 export function suitRates(snapshot: ResourceSnapshot) {
@@ -174,7 +174,7 @@ export function activeAlerts(
         ? `As planned, the crew reaches the ${shelter.toLowerCase()} ${short} under reserve. ${best!.title} keeps every reserve.`
         : `Every option ends under a suit reserve. ${best ? `${best.title} leaves the most margin.` : ""}`,
       response: rescue
-        ? `Apply “${best!.title}” in ④ Run.`
+        ? `Apply “${best!.title}” in 04 Run.`
         : "Apply the option with the most margin now and stop sampling.",
     });
   }

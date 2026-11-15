@@ -2,7 +2,7 @@
 
 The expedition has only explicit, operator-injected weather risks. It does not select a historical date, fetch weather for the simulation, change scene lighting, or show weather particles/crew effects. The dashboard's existing NASA environmental reference and the separate NASA Ames dust-map replay are unchanged.
 
-In **④ Run → Risk simulations**, confirm **Dust front** or **Cold snap**. Each appends a revisioned `weather_risk` event with `risk: "dust" | "cold"` and `active: boolean`. No weather release, date, or observations are needed.
+In **04 Run → Risk simulations**, confirm **Dust front** or **Cold snap**. Each appends a revisioned `weather_risk` event with `risk: "dust" | "cold"` and `active: boolean`. No weather release, date, or observations are needed.
 
 - Dust multiplies outside oxygen demand by **1.25** and adds the corresponding exertion load to fixed suit equipment power. It compounds with an independently injected exertion fault. The profile's existing 30 W thermal allowance per two crew is not multiplied again by dust.
 - Cold adds **70 W per two crew** of heater load while outside, on top of the original activity profile. This is a bounded equipment assumption, not a measured temperature or validated suit model.

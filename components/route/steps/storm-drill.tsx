@@ -21,7 +21,7 @@ import { isDrillSet, NO_DRILL } from "../conditions";
 import { useConditions } from "../conditions-provider";
 
 /**
- * Step ③'s storm drill, closed by default: sets a solar alert, a dust opacity or a start time by
+ * Step 03's storm drill, closed by default: sets a solar alert, a dust opacity or a start time by
  * hand, to rehearse a storm. Each set value is labelled as drill in the verdict's reasons.
  */
 export function StormDrill() {

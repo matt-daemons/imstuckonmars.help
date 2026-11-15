@@ -48,7 +48,7 @@ function useNow(intervalMs: number) {
 
 /**
  * The always-visible line over the map: the route verdict at a glance, then the expedition's
- * mission clock and its highest active alert. Clicking it opens step ③, or ④ while one runs.
+ * mission clock and its highest active alert. Clicking it opens step 03, or 04 while one runs.
  */
 export function VerdictStrip() {
   const { inputs, dispatch, walk, journey, destination, base } = useRoutePlan();
@@ -80,7 +80,7 @@ export function VerdictStrip() {
   const verdictText = `${drilling ? "DRILL · " : ""}${verdict ? `${verdict.status.label} · ${fieldsText}` : noRoute}`;
   const laraText = clock ? `Mission ${clock} · ${alert?.name ?? "No alerts"}` : missionState;
 
-  // Step ③ announces the verdict with its reasons, so this region stays quiet while step ③ shows.
+  // Step 03 announces the verdict with its reasons, so this region stays quiet while step 03 shows.
   const checkShown = inputs.step === "check" && (isMobile ? openMobile : open);
 
   function openCheck() {
@@ -155,7 +155,7 @@ export function VerdictStrip() {
           <span className="truncate text-muted-foreground">{missionState}</span>
         )}
       </p>
-      {/* Covers the whole strip, so a click anywhere opens step ③; the title holds the full text. */}
+      {/* Covers the whole strip, so a click anywhere opens step 03; the title holds the full text. */}
       <button
         type="button"
         title={`${verdictText} · ${laraText}`}
