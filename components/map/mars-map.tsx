@@ -89,7 +89,6 @@ export function MarsMap() {
       m.on("mousemove", (e) => setCursor([e.lngLat.lng, e.lngLat.lat]));
       m.on("load", () => {
         addTerrain(m);
-        addThermalInertia(m);
         addSites(
           m,
           pois.map((f) => f.properties),
@@ -181,6 +180,8 @@ export function MarsMap() {
             );
           }
         }
+        // Above the manifest imagery so the overlay isn't hidden under CTX near the habitat.
+        addThermalInertia(m);
         m.addLayer(habitatLayer(maplibregl, HABITAT));
         setLoaded(m);
       });
