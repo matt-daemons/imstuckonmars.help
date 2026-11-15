@@ -29,8 +29,9 @@ MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json MAP_RELEASE_URL=https://tiles
 
 The public catalog, all eight routing rasters and representative imagery,
 thermal-inertia and regional-slope tiles passed full SHA-256, byte-length,
-CORS and immutable-header checks. Full release verification is recorded below
-when complete.
+CORS and immutable-header checks. Full verification also passed for all 33,801
+published objects: SHA-256, byte length, CORS and immutable-cache headers. The
+public release inventory matches the local upload inventory exactly.
 
 The packaged Worker planned all four sites from these public rasters. Three
 returned complete drive/walk plans; the other retained its no-staging result.
