@@ -13,8 +13,8 @@ import { solarAlertLevel } from "@/lib/flight-rules/solar-alert";
 
 import { MissionError } from "../../lib/mission/types";
 
-// CCMC's own DONKI API, which api.nasa.gov passes through. It needs no key, so no rate limit can
-// be hit, and its flare endpoint answers while api.nasa.gov's returned 404 (checked 15 Nov 2026).
+// CCMC's own DONKI API needs no key. Its flare endpoint answered while api.nasa.gov's
+// returned 404 (checked 15 Nov 2026); keyless access does not guarantee availability.
 const DONKI_API = "https://ccmc.gsfc.nasa.gov/DONKI-API/get";
 const CACHE_SECONDS = 15 * 60;
 // The last report DONKI gave, kept for a day to answer while DONKI does not.

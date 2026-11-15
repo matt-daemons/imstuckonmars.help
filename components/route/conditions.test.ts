@@ -14,6 +14,7 @@ import {
   notCheckedText,
   realConditions,
   simLocalHour,
+  spaceWeatherAt,
   spaceWeatherLine,
   sunTimes,
   tripWithStorms,
@@ -87,6 +88,27 @@ describe("realConditions", () => {
     expect(loading.solar_alert_level).toBeNull();
     expect(loading.reasons_unknown.radiation).toBe("DONKI loading");
   });
+
+  it.each(["none", "warning"] as const)(
+    "keeps a stale %s report as history, not a current solar-alert input",
+    (level) => {
+      const stale = realConditions({
+        clock: midday,
+        doseRate: 9,
+        simulatedDust: 0.4,
+        spaceWeather: { ...quietSun, level, stale: true },
+      });
+      expect(stale.solar_alert_level).toBeNull();
+      expect(stale.sources.radiation).toBeUndefined();
+      expect(stale.reasons_unknown.radiation).toContain("DONKI stale");
+      expect(walkWithStorms(route, stale).not_checked).toContain("radiation");
+      expect(mergeConditions(stale, { ...NO_DRILL, solar_alert_level: "watch" })).toMatchObject({
+        solar_alert_level: "watch",
+        sources: { radiation: "drill" },
+        reasons_unknown: {},
+      });
+    },
+  );
 });
 
 describe("mergeConditions", () => {
@@ -266,15 +288,35 @@ describe("spaceWeatherLine", () => {
     { feed: quietSun, line: "Solar alert: none · NASA DONKI, read 10:42 UTC" },
     {
       feed: { ...quietSun, stale: true as const },
-      line: "Solar alert: none · NASA DONKI · stale, read 10:42 UTC",
+      line: "NASA DONKI solar alert unavailable · stale (16 min old) · last reported none, read 2026-11-15 10:42 UTC",
     },
     { feed: "loading" as const, line: "Solar alert: loading NASA DONKI…" },
     {
       feed: "failed" as const,
-      line: "Solar alert: NASA DONKI unavailable, so the solar alert rule is not checked. Retried every 15 min.",
+      line: "Solar alert: NASA DONKI unavailable. Retried every 15 min.",
     },
   ])("reads $line", ({ feed, line }) => {
-    expect(spaceWeatherLine(feed)).toBe(line);
+    expect(spaceWeatherLine(feed, Date.parse(quietSun.fetched_at) + 16 * 60_000)).toBe(line);
+  });
+});
+
+describe("spaceWeatherAt", () => {
+  const readAt = Date.parse(quietSun.fetched_at);
+  it("expires a report after the server's 15-minute freshness window", () => {
+    expect(spaceWeatherAt(quietSun, readAt + 15 * 60_000)).toBe(quietSun);
+    expect(spaceWeatherAt(quietSun, readAt + 15 * 60_000 + 1)).toEqual({
+      ...quietSun,
+      stale: true,
+    });
+  });
+  it("retains failure/loading states and does not refresh an explicitly stale fallback", () => {
+    expect(spaceWeatherAt("failed", readAt)).toBe("failed");
+    expect(spaceWeatherAt("loading", readAt)).toBe("loading");
+    const stale = { ...quietSun, stale: true as const };
+    expect(spaceWeatherAt(stale, readAt)).toBe(stale);
+  });
+  it("does not use a report with an invalid read time as current", () => {
+    expect(spaceWeatherAt({ ...quietSun, fetched_at: "" }, readAt)).toMatchObject({ stale: true });
   });
 });
 

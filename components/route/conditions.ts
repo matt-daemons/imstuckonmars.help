@@ -79,6 +79,13 @@ export function isDrillSet(drill: Drill): boolean {
 /** NASA DONKI's last space-weather report, or where fetching it stands. */
 export type SpaceWeatherFeed = (SpaceWeatherReport & { stale?: true }) | "loading" | "failed";
 
+/** Expire the displayed report even when a later browser request has not answered. */
+export function spaceWeatherAt(feed: SpaceWeatherFeed, nowMs: number): SpaceWeatherFeed {
+  if (typeof feed !== "object" || feed.stale) return feed;
+  const age = nowMs - Date.parse(feed.fetched_at);
+  return !Number.isFinite(age) || age > 15 * 60_000 ? { ...feed, stale: true } : feed;
+}
+
 /** What the app reads for real, before any drill. */
 export interface RealReadings {
   /** The Mars clock at the habitat now. */
@@ -105,12 +112,16 @@ export function realConditions({
     sources: {},
     reasons_unknown: {},
   };
-  if (typeof spaceWeather === "object") {
+  if (typeof spaceWeather === "object" && !spaceWeather.stale) {
     conditions.solar_alert_level = spaceWeather.level;
     conditions.sources.radiation = "real";
   } else {
     conditions.reasons_unknown.radiation =
-      spaceWeather === "failed" ? "DONKI unavailable" : "DONKI loading";
+      typeof spaceWeather === "object"
+        ? "DONKI stale; current solar alert unavailable"
+        : spaceWeather === "failed"
+          ? "DONKI unavailable"
+          : "DONKI loading";
   }
   if (typeof doseRate === "number") {
     conditions.radiation_dose_rate = doseRate;
@@ -254,10 +265,14 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
 }
 
 /** Step 03's line on the solar alert's feed, such as "Solar alert: none · NASA DONKI, read 10:42 UTC". */
-export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
+export function spaceWeatherLine(feed: SpaceWeatherFeed, nowMs = Date.now()): string {
   if (feed === "loading") return "Solar alert: loading NASA DONKI…";
-  if (feed === "failed")
-    return "Solar alert: NASA DONKI unavailable, so the solar alert rule is not checked. Retried every 15 min.";
-  // fetched_at is ISO 8601 UTC, so characters 11 to 16 are the hours and minutes.
-  return `Solar alert: ${feed.level} · NASA DONKI${feed.stale ? " · stale" : ""}, read ${feed.fetched_at.slice(11, 16)} UTC`;
+  if (feed === "failed") return "Solar alert: NASA DONKI unavailable. Retried every 15 min.";
+  if (feed.stale) {
+    const readAt = feed.fetched_at.slice(0, 16).replace("T", " ");
+    const age = (nowMs - Date.parse(feed.fetched_at)) / 60_000;
+    const ageLabel = Number.isFinite(age) ? ` (${Math.max(0, Math.floor(age))} min old)` : "";
+    return `NASA DONKI solar alert unavailable · stale${ageLabel} · last reported ${feed.level}, read ${readAt} UTC`;
+  }
+  return `Solar alert: ${feed.level} · NASA DONKI, read ${feed.fetched_at.slice(11, 16)} UTC`;
 }

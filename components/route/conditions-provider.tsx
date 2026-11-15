@@ -14,6 +14,7 @@ import {
   NO_DRILL,
   realConditions,
   simLocalHour,
+  spaceWeatherAt,
   sunTimes,
   withSimTime,
   type Conditions,
@@ -62,8 +63,9 @@ export function ConditionsProvider({
   const [drill, setDrill] = useState<Drill>(NO_DRILL);
   const [simTime, setSimTime] = useState<SimTime | null>(null);
   const [simulatedDust, setSimulatedDust] = useState<number | null>(null);
-  const spaceWeather = useSpaceWeather();
+  const weatherFeed = useSpaceWeather();
   const now = useNow(POLL_MS);
+  const spaceWeather = spaceWeatherAt(weatherFeed, now);
   const laraNotAnswering = lara.polledAt !== null && now - lara.polledAt > STALE_AFTER_MS;
   const doseRate = laraDoseRate(lara, laraNotAnswering);
   // The Mars clock is read once a minute: sunset comes no closer than that in between.
