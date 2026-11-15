@@ -32,6 +32,12 @@ node --test scripts/models/models.test.mjs
 
 Edit `scripts/models/vehicles.mjs` for the vehicle shapes and equipment. `geometry.mjs` owns primitive construction, GLB serialization, and the small deterministic PNG preview renderer. Regeneration also updates the manifest. Commit generated GLBs, previews, and manifest together with their source.
 
+Model tests compare regenerated geometry with a tolerance of `1e-6` absolute
+plus `1e-6` relative, allowing platform-specific floating-point rounding.
+They still require matching topology, materials and structure, finite geometry,
+valid GLB chunks, and exact checksums for the committed assets. Regenerated
+files need not have identical bytes or JSON lengths across operating systems.
+
 The previews render the source triangles with back-face culling and a depth buffer. They establish shape and winding, not pixel parity with a browser's physically based materials. Check the GLBs in the target renderer before integrating them into the map.
 
 ## Packaging

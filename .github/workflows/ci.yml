@@ -11,8 +11,6 @@ permissions:
 env:
   NEXT_TELEMETRY_DISABLED: "1"
   WRANGLER_SEND_METRICS: "false"
-  # Public Mapbox pk.* token (repo variable, not a secret); inlined into the client at build time.
-  NEXT_PUBLIC_MAPBOX_TOKEN: ${{ vars.NEXT_PUBLIC_MAPBOX_TOKEN }}
 
 jobs:
   check:

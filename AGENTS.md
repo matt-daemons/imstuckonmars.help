@@ -45,7 +45,12 @@ Read the detailed evidence and proposed scope before implementation:
 - Curiosity RAD Level 2 observations overlapping sol 816 by UTC live in a separate immutable
   release (`RADIATION_RELEASE`, manifest `data/telemetry/msl_rad_l2/sources.json`). They are
   Gale crater absorbed dose rates, a distant proxy: never Jezero/base radiation or crew exposure.
-  Wind and dust are not acquired; the MEDA wind sensor has no product after sol 313's damage.
+  Observed wind and dust are not acquired; the MEDA wind sensor has no product after sol 313's damage.
+- The dust map replays a bounded NASA Ames 2018 storm reference simulation, not observations.
+  `public/data/dust/nasa-2018-v1/` holds two fields on a 2° grid sampled every two model sols;
+  provenance and masks are in its manifest. Source NetCDF stays immutable in `data/raw/dust/`.
+  No wind vectors, particle trajectories or independently identified settling are provided by
+  this subset. Keep playback separate from mission state and never label it live habitat weather.
 - MEDA derived products still contain artifacts and metadata conflicts. Follow ingestion masks,
   field definitions and geometry warnings; do not assume finite or derived means valid.
 - Candidate CTX DEM: 20 m, Jezero, float32; matched image approximately 5 m. PDS4 labels use
@@ -163,6 +168,9 @@ above, it wins, with these accepted deviations:
 - K-2: red also marks destructive actions (`destructive` button variants), and yellow also forms
   the hazard tape below.
 - K-3: green means success only.
+- The labeled dust-intensity raster uses blue through cyan, yellow, orange, red and plum as
+  a continuous low-to-high data scale, not alert levels. It never uses green, and its legend
+  and simulation label must stay visible when enabled.
 
 Alert levels use coss variant names. In the skill's terms, from highest priority:
 

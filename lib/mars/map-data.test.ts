@@ -8,6 +8,7 @@ import {
   GLOBAL_COLOR_ROOT,
   GLOBAL_COLOR_SOURCE,
   MAP_DATA_ROOT,
+  SITE_DATA_ROOT,
   mapAsset,
 } from "./map-data";
 
@@ -17,6 +18,7 @@ describe("R2 map delivery", () => {
     expect(mapAsset("viking/{z}/{x}/{y}.jpg")).toBe(`${MAP_DATA_ROOT}/viking/{z}/{x}/{y}.jpg`);
     expect(mapAsset("global-dem/0/0/0.png")).toBe(`${MAP_DATA_ROOT}/global-dem/0/0/0.png`);
     expect(GLOBAL_COLOR_ROOT).toBe("https://tiles.imstuckonmars.help/viking-native-v1");
+    expect(SITE_DATA_ROOT).toBe("https://tiles.imstuckonmars.help/sites-v1");
   });
 
   it("uses bounded tiled imagery instead of downloading a whole regional image", async () => {

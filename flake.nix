@@ -41,6 +41,7 @@
           ./postcss.config.mjs
           ./tsconfig.json
           ./vite.config.ts
+          ./vite-env.d.ts
           ./vitest.config.ts
           ./wrangler.jsonc
         ];

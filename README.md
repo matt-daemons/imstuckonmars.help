@@ -20,6 +20,9 @@ nix run .#dev       # http://localhost:5173
 ```
 
 The dev shell provides Node.js 24, pnpm, and nixfmt, and disables Next.js and Wrangler telemetry.
+The map uses BSD-licensed MapLibre GL JS and public R2 datasets. No Mapbox account,
+token or font service is required. See [renderer notes](docs/MAP_RENDERER.md) for
+feature checks and [MapLibre's bundled license notices](public/licenses/maplibre-gl.txt).
 
 ## Layout
 

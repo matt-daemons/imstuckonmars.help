@@ -8,4 +8,3 @@ DIAGNOSTICS_API_KEY=
 DIAGNOSTICS_PROVIDER=openrouter
 DIAGNOSTICS_MODEL=openai/gpt-4.1-mini
 # Public browser token. Also set this in .env.local for client builds.
-NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=

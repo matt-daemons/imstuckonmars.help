@@ -10,6 +10,7 @@ import {
 import type { ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
+import { DustLegend } from "@/components/map/dust-legend";
 import {
   Table,
   TableBody,
@@ -393,6 +394,15 @@ export function Operational() {
             ))}
           </TableBody>
         </Table>
+        <div className="w-72 space-y-2">
+          <p>NASA model dust fields</p>
+          <DustLegend />
+          <DustLegend field="dst_mass_source" />
+          <p className="text-sm text-muted-foreground">
+            Blue to plum represents increasing model values, not alert levels. NASA model output is
+            not observed weather or a forecast.
+          </p>
+        </div>
       </Section>
     </>
   );
