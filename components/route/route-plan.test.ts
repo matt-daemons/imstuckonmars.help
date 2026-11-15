@@ -14,11 +14,8 @@ import {
 const base: LngLat = [-176.05, 45.97];
 const target: LngLat = [-175.95, 46.03];
 const site: LngLat = [-176.33383, 44.41589];
-const zone: NoGoZone = {
-  id: "zone-1",
-  name: "No-go zone 1",
-  ring: [base, target, site],
-};
+const ring: LngLat[] = [base, target, site];
+const zone: NoGoZone = { id: "zone-1", name: "No-go zone 1", ring };
 const initial = initialRoutePlan(base, target);
 
 describe("initialRoutePlan", () => {
@@ -30,6 +27,7 @@ describe("initialRoutePlan", () => {
       power: "fission",
       samplingMin: 60,
       zones: [EXAMPLE_ZONE],
+      zonesDrawn: 0,
       step: "mission",
     });
   });
@@ -41,7 +39,7 @@ describe("routePlanReducer", () => {
     { action: { type: "setEnd", point: site }, changed: { end: site } },
     { action: { type: "setPower", power: "solar" }, changed: { power: "solar" } },
     { action: { type: "setSampling", minutes: 90 }, changed: { samplingMin: 90 } },
-    { action: { type: "addZone", zone }, changed: { zones: [EXAMPLE_ZONE, zone] } },
+    { action: { type: "addZone", ring }, changed: { zones: [EXAMPLE_ZONE, zone], zonesDrawn: 1 } },
     { action: { type: "clearZones" }, changed: { zones: [] } },
     { action: { type: "goTo", step: "check" }, changed: { step: "check" } },
   ];
@@ -70,8 +68,19 @@ describe("routePlanReducer", () => {
   });
 
   it("addZone appends without changing the old list", () => {
-    const next = routePlanReducer(initial, { type: "addZone", zone });
+    const next = routePlanReducer(initial, { type: "addZone", ring });
     expect(next.zones).toEqual([EXAMPLE_ZONE, zone]);
     expect(initial.zones).toEqual([EXAMPLE_ZONE]);
+  });
+
+  it("addZone numbers drawn zones in order, without reusing a number after clearing", () => {
+    const actions: RoutePlanAction[] = [
+      { type: "addZone", ring },
+      { type: "addZone", ring },
+      { type: "clearZones" },
+      { type: "addZone", ring },
+    ];
+    const next = actions.reduce(routePlanReducer, initial);
+    expect(next.zones).toEqual([{ id: "zone-3", name: "No-go zone 3", ring }]);
   });
 });

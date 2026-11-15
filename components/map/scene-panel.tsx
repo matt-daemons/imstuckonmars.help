@@ -10,7 +10,6 @@ import {
   setSlopeVisible,
   updateTerrain,
 } from "@/components/map/scene";
-import { MapPanel } from "@/components/map/map-panel";
 import { GLOBAL_TERRAIN_SOURCE, LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -38,7 +37,7 @@ interface ScenePanelProps {
 }
 
 /** Camera, terrain-scale, and archived dust simulation controls. */
-export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
+export function ScenePanelBody({ map, habitat, sites }: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [terrainSource, setTerrainSource] = useState<string | null>(null);
   const [slopeOn, setSlopeOn] = useState(false);
@@ -61,11 +60,7 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
     map?.flyTo({ center: habitat, zoom, pitch, bearing, duration: 3500 });
 
   return (
-    <MapPanel
-      title="Scene"
-      className="absolute top-4 right-4 max-h-[calc(100svh-2rem)] w-80 max-w-[calc(100%-2rem)] overflow-y-auto rounded-none bg-background/95 text-sm shadow-none backdrop-blur-none"
-      bodyClassName="space-y-4"
-    >
+    <div className="space-y-4">
       <div>
         <p className="mt-1 text-xs text-muted-foreground">
           Terrain: {TERRAIN_SOURCE}. The habitat is an illustration. Planet image: NASA/Viking,
@@ -156,6 +151,6 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
           </div>
         </div>
       </details>
-    </MapPanel>
+    </div>
   );
 }

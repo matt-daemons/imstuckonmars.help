@@ -10,14 +10,6 @@ import {
   NumberFieldInput,
   NumberFieldScrubArea,
 } from "@/components/ui/number-field";
-import {
-  Select,
-  SelectItem,
-  SelectLabel,
-  SelectPopup,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { PowerSource } from "@/lib/mars/driving";
@@ -32,24 +24,17 @@ export function nearestFirst(sites: SitePoi[], base: LngLat): SitePoi[] {
 }
 
 /** Named the way the scene panel names them. */
-function siteLabel(site: SitePoi): string {
+export function siteLabel(site: SitePoi): string {
   return site.confirmed ? site.title : `${site.title} (unconfirmed)`;
 }
 
-/** The destination, power and sampling-time choices of a drive + walk mission. */
+/** The power and sampling-time choices of a drive + walk mission. */
 export function DriveControls({
-  sites,
-  destination,
-  onDestination,
   power,
   onPower,
   samplingMin,
   onSamplingMin,
 }: {
-  sites: SitePoi[];
-  /** The site the end is on, or null when the end was set on the map. */
-  destination: SitePoi | null;
-  onDestination: (site: SitePoi) => void;
   power: PowerSource;
   onPower: (power: PowerSource) => void;
   samplingMin: number;
@@ -58,29 +43,8 @@ export function DriveControls({
   const powerLabel = useId();
   // What the field shows while typing; the planner only sees committed values.
   const [sampling, setSampling] = useState<number | null>(samplingMin);
-  const items = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
   return (
     <div className="flex flex-col gap-3">
-      <Select
-        items={items}
-        value={destination?.id ?? null}
-        onValueChange={(id) => {
-          const site = sites.find((candidate) => candidate.id === id);
-          if (site) onDestination(site);
-        }}
-      >
-        <SelectLabel>Destination</SelectLabel>
-        <SelectTrigger size="sm">
-          <SelectValue placeholder="Point set on the map" />
-        </SelectTrigger>
-        <SelectPopup>
-          {items.map((item) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectPopup>
-      </Select>
       <div className="flex flex-col gap-2">
         <span id={powerLabel} className="text-sm font-medium">
           Power

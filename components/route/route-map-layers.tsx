@@ -19,7 +19,7 @@ import { useRoutePlan } from "./route-plan-provider";
 
 /**
  * Adds the route sources and layers to the map and keeps them in step with the route plan. The
- * zone being drawn is not in the plan yet, so the route panel fills "zone-draft" itself.
+ * zone being drawn is not in the plan yet, so usePlacement fills "zone-draft" itself.
  */
 export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey } = useRoutePlan();

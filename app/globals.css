@@ -531,7 +531,8 @@
   outline-offset: -2px;
 }
 
-/* Hide map panels with CSS, not unmounting, so they keep their state (route, zones, chat). */
-[data-panels-hidden] [data-map-panel] {
+/* LARA's panel hides with the docked sidebar, so H still clears the map. CSS, not unmounting,
+   so the chat keeps its state. */
+[data-slot="sidebar"][data-state="collapsed"] ~ * [data-map-panel] {
   display: none;
 }

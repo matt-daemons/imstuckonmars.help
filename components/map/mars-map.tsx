@@ -2,13 +2,11 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 
-import { Eye, EyeOff } from "lucide-react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import mapWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 
-import { LayerPanel } from "@/components/map/layer-panel";
-import { RoutePlanner } from "@/components/map/route-planner";
+import { LayerPanelBody } from "@/components/map/layer-panel";
 import {
   type SiteProps,
   addSites,
@@ -16,11 +14,13 @@ import {
   habitatLayer,
   setMarsSky,
 } from "@/components/map/scene";
-import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
+import { ScenePanelBody, type SitePoi } from "@/components/map/scene-panel";
 import { RouteMapLayers } from "@/components/route/route-map-layers";
 import { RoutePlanProvider } from "@/components/route/route-plan-provider";
-import { Button } from "@/components/ui/button";
+import { RouteSidebar } from "@/components/route/route-sidebar";
+import { SidebarSections } from "@/components/route/sidebar-sections";
 import { Kbd } from "@/components/ui/kbd";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { Tooltip, TooltipPopup, TooltipTrigger } from "@/components/ui/tooltip";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
 
@@ -35,14 +35,12 @@ interface SitesGeoJSON {
   features: { properties: SiteProps; geometry: { type: string; coordinates: unknown } }[];
 }
 
-const hasModifier = (e: KeyboardEvent) => e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
-const isTyping = (target: EventTarget | null) =>
-  target instanceof HTMLElement &&
-  (target.isContentEditable || target.closest("input, textarea, select") !== null);
+// About 360 px: room for the steps while the map keeps most of a 1280 px screen.
+const SIDEBAR_STYLE = { "--sidebar-width": "22.5rem" } as CSSProperties;
 
 // MapLibre assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
-/** `children` are more panels over the map, such as LARA, so the hide toggle covers them too. */
+/** `children` are more panels over the map, such as LARA. */
 export function MarsMap({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
@@ -52,7 +50,6 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [cursor, setCursor] = useState<LngLat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sites, setSites] = useState<SitePoi[]>([]);
-  const [panelsHidden, setPanelsHidden] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -192,7 +189,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
             });
             // Click a POI to fly in for the sub-metre HiRISE view.
             m.on("click", `${layer.id}-point`, (e) => {
-              // The route panel is placing a point with this click, so stay put.
+              // The sidebar is placing a point with this click, so stay put.
               if (m.getCanvas().dataset.placing) return;
               m.flyTo({ center: e.lngLat, zoom: 15, pitch: 65, duration: 3500 });
             });
@@ -213,18 +210,6 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     };
   }, []);
 
-  // H shows or hides the panels, unless the operator is typing or using another shortcut.
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.key !== "h" && e.key !== "H") || e.repeat || hasModifier(e) || isTyping(e.target)) {
-        return;
-      }
-      setPanelsHidden((hidden) => !hidden);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, []);
-
   function toggle(id: string, on: boolean) {
     setVisible((v) => ({ ...v, [id]: on }));
     const m = map.current;
@@ -234,45 +219,51 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     }
   }
 
-  // data-panels-hidden is set only while hidden, since the rule in globals.css matches its presence.
+  // The sidebar reserves its own width, so the map container shrinks beside it and MapLibre's
+  // resize observer keeps fits and centring clear of the sidebar.
   return (
-    <div className="relative h-svh w-full" data-panels-hidden={panelsHidden || undefined}>
-      {/* The renderer positions the container relatively, so size it with h-full. */}
-      <div ref={container} className="h-full w-full" />
-      {/* bottom-12 keeps it above the attribution and cursor readout, level with the bottom panels. */}
-      <Tooltip>
-        <TooltipTrigger
-          render={<Button size="sm" variant={panelsHidden ? "default" : "outline"} />}
-          aria-pressed={panelsHidden}
-          aria-keyshortcuts="H"
-          onClick={() => setPanelsHidden(!panelsHidden)}
-          className="absolute bottom-12 left-1/2 -translate-x-1/2"
-        >
-          {panelsHidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
-          {panelsHidden ? "Show panels" : "Hide panels"}
-        </TooltipTrigger>
-        <TooltipPopup side="top">
-          Shortcut: <Kbd>H</Kbd>
-        </TooltipPopup>
-      </Tooltip>
-      {/* The route plan is shared by the panels over the map; it renders no DOM of its own. */}
+    <SidebarProvider style={SIDEBAR_STYLE}>
+      {/* The route plan is shared by the sidebar and the map layers; it renders no DOM of its own. */}
       <RoutePlanProvider base={HABITAT} target={SCIENCE_STOP} sites={sites}>
-        {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
-        <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
-        <RouteMapLayers map={loaded} />
-        <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} />
-        {error && (
-          <div className="absolute bottom-22 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
-            {error}
-          </div>
-        )}
-        {cursor && (
-          <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
-            {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}°E
-          </div>
-        )}
-        {children}
+        <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
+          <SidebarSections
+            layers={
+              manifest && <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
+            }
+            scene={<ScenePanelBody map={loaded} habitat={HABITAT} sites={sites} />}
+          />
+        </RouteSidebar>
+        <div className="relative h-svh min-w-0 flex-1">
+          {/* The renderer positions the container relatively, so size it with h-full. */}
+          <div ref={container} className="h-full w-full" />
+          <RouteMapLayers map={loaded} />
+          <Tooltip>
+            <TooltipTrigger
+              render={
+                <SidebarTrigger
+                  variant="outline"
+                  aria-keyshortcuts="H"
+                  className="absolute top-4 left-4"
+                />
+              }
+            />
+            <TooltipPopup side="right">
+              Mission sidebar. Shortcut: <Kbd>H</Kbd>
+            </TooltipPopup>
+          </Tooltip>
+          {error && (
+            <div className="absolute bottom-12 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+              {error}
+            </div>
+          )}
+          {cursor && (
+            <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+              {cursor[1].toFixed(5)}°N {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}°E
+            </div>
+          )}
+          {children}
+        </div>
       </RoutePlanProvider>
-    </div>
+    </SidebarProvider>
   );
 }

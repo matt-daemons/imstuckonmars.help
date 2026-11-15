@@ -48,6 +48,6 @@ export function useRoutePlanResult(
   return { walk: { plan, loadFailed }, journey, destinations, destination };
 }
 
-function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
+export function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
   return lngA === lngB && latA === latB;
 }

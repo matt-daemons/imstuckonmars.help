@@ -16,6 +16,8 @@ export interface RoutePlanInputs {
   power: PowerSource;
   samplingMin: number;
   zones: NoGoZone[];
+  /** How many zones the operator has drawn, so each new one gets the next number. */
+  zonesDrawn: number;
   step: Step;
 }
 
@@ -26,7 +28,7 @@ export type RoutePlanAction =
   | { type: "setEnd"; point: LngLat }
   | { type: "setPower"; power: PowerSource }
   | { type: "setSampling"; minutes: number }
-  | { type: "addZone"; zone: NoGoZone }
+  | { type: "addZone"; ring: LngLat[] }
   | { type: "clearZones" }
   | { type: "goTo"; step: Step };
 
@@ -42,6 +44,7 @@ export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs 
     power: "fission",
     samplingMin: DEFAULT_SAMPLING_MIN,
     zones: [EXAMPLE_ZONE],
+    zonesDrawn: 0,
     step: "mission",
   };
 }
@@ -61,8 +64,12 @@ export function routePlanReducer(state: RoutePlanInputs, action: RoutePlanAction
       const max = FLIGHT_RULES.suit_supply.primary_minutes;
       return { ...state, samplingMin: Math.min(Math.max(action.minutes, 0), max) };
     }
-    case "addZone":
-      return { ...state, zones: [...state.zones, action.zone] };
+    case "addZone": {
+      // Numbered here, not by the drawing controls, so the count survives them remounting.
+      const n = state.zonesDrawn + 1;
+      const zone = { id: `zone-${n}`, name: `No-go zone ${n}`, ring: action.ring };
+      return { ...state, zones: [...state.zones, zone], zonesDrawn: n };
+    }
     case "clearZones":
       return { ...state, zones: [] };
     case "goTo":
