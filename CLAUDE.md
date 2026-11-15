@@ -312,11 +312,12 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 ### Next steps (Jess, Sun Nov 15)
 
 1. **Push** local `main` (4 sites commits) — CI will still fail on the teammates' model test until they fix it; tell them.
-2. **Send M the 4 `<HiRISE ID>_mapbox.tif`** (274 MB) → get tileset IDs → paste into `lib/mars/site-tilesets.ts`.
+2. ~~Send M the 4 `<HiRISE ID>_mapbox.tif`~~ ✅ sent Sun Nov 15 — **waiting for tileset IDs** → paste into `lib/mars/site-tilesets.ts`.
 3. **Ask the R2 owner** to host site terrain + slope tiles (and the slope COGs for C); otherwise the deployed site shows MOLA only at the sites.
 4. **Raise the habitat↔site distance** with A + C (and M for the story): it decides whether routing is base→site or local EVAs within a site.
-5. **Brief C** (above) and agree the cost-surface format (slope only, or slope + hazard mask + future roughness/thermal inertia).
-6. **SWIM** (4a): retry download; then THEMIS thermal inertia.
+5. ~~Brief C~~ ✅ sent. **Agreed: slope-only cost surface first**; add hazard mask / roughness / thermal inertia later.
+6. **SWIM** (4a): swim.psi.edu still down. NASA's "SWIM map shows subsurface water ice on Mars" (PIA26045) is a **PNG illustration**,
+   not georeferenced data (and its ammos.nasa.gov/marswatermaps link 404s) → story/slide use only, not a map layer. Then THEMIS thermal inertia.
 7. **3b visual check** in the browser: imagery vs relief vs slope alignment at each crater rim.
 8. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (teammates') with C's real routes; keep every layer's source visible.
 
