@@ -2,32 +2,12 @@ import { describe, expect, it } from "vitest";
 
 import {
   answerWakeQuestion,
-  FOLLOW_UP_PAUSE_S,
-  FOLLOW_UP_PROMPTS,
   isDecline,
   pickPhrase,
   SIGN_OFFS,
   stripWakePhrase,
-  withFollowUp,
   type WakeTurnSteps,
 } from "./follow-up";
-
-describe("withFollowUp", () => {
-  it("strips a standalone LARA prefix from the recognized question", () => {
-    expect(stripWakePhrase("LARA, how much oxygen?")).toBe("how much oxygen?");
-  });
-  it("puts a pause between the answer and the prompt", () => {
-    expect(withFollowUp("The battery has 71 percent.", "Anything else?")).toBe(
-      `The battery has 71 percent. <break time="${FOLLOW_UP_PAUSE_S}s" /> Anything else?`,
-    );
-  });
-
-  it("adds no prompt when the answer asks the operator a question", () => {
-    const answer =
-      "The shortest route saves 9 kilometers. Do you want me to choose it? It uses more battery.";
-    expect(withFollowUp(answer, "Anything else?")).toBe(answer);
-  });
-});
 
 describe("isDecline", () => {
   it.each([
@@ -79,6 +59,9 @@ describe("isDecline", () => {
 });
 
 describe("stripWakePhrase", () => {
+  it("strips a standalone LARA prefix from the recognized question", () => {
+    expect(stripWakePhrase("LARA, how much oxygen?")).toBe("how much oxygen?");
+  });
   it("drops a leading wake phrase and its punctuation", () => {
     expect(stripWakePhrase("Hey LARA, what's the dose rate?")).toBe("what's the dose rate?");
     expect(stripWakePhrase("ok laura. battery?")).toBe("battery?");
@@ -91,18 +74,16 @@ describe("stripWakePhrase", () => {
 
 describe("pickPhrase", () => {
   it("never repeats the previous phrase", () => {
-    for (const previous of FOLLOW_UP_PROMPTS) {
+    for (const previous of SIGN_OFFS) {
       for (const r of [0, 0.3, 0.6, 0.99]) {
-        expect(pickPhrase(FOLLOW_UP_PROMPTS, previous, () => r)).not.toBe(previous);
+        expect(pickPhrase(SIGN_OFFS, previous, () => r)).not.toBe(previous);
       }
     }
   });
 
   it("can pick any phrase when there is no previous one", () => {
-    const picked = new Set(
-      [0, 0.26, 0.51, 0.76].map((r) => pickPhrase(FOLLOW_UP_PROMPTS, null, () => r)),
-    );
-    expect(picked.size).toBe(FOLLOW_UP_PROMPTS.length);
+    const picked = new Set([0, 0.26, 0.51, 0.76].map((r) => pickPhrase(SIGN_OFFS, null, () => r)));
+    expect(picked.size).toBe(SIGN_OFFS.length);
   });
 
   it("repeats the only phrase there is", () => {
@@ -120,7 +101,7 @@ describe("answerWakeQuestion", () => {
         log.push("transcribe");
         return transcript;
       },
-      ask: async (question, followUp) => void log.push(`ask: ${question} | ${followUp}`),
+      ask: async (question) => void log.push(`ask: ${question}`),
       say: async (phrase) => void log.push(`say: ${phrase}`),
       choose: (phrases) => phrases[0],
     };
@@ -128,15 +109,10 @@ describe("answerWakeQuestion", () => {
   }
   const clip = new Blob(["wav"]);
 
-  it("answers, offers more help once the answer is spoken, and keeps listening", async () => {
+  it("answers and keeps listening without asking another question", async () => {
     const { log, steps } = recordingSteps("Hey LARA, what's the battery level?");
     await expect(answerWakeQuestion(clip, steps)).resolves.toBe("follow-up");
-    expect(log).toEqual([
-      "wait",
-      "transcribe",
-      `ask: what's the battery level? | ${FOLLOW_UP_PROMPTS[0]}`,
-      "wait",
-    ]);
+    expect(log).toEqual(["wait", "transcribe", "ask: what's the battery level?", "wait"]);
   });
 
   it("signs off and stops listening after a decline", async () => {
@@ -148,7 +124,7 @@ describe("answerWakeQuestion", () => {
   it("asks a question that starts with no", async () => {
     const { log, steps } = recordingSteps("No, what's the battery level?");
     await expect(answerWakeQuestion(clip, steps)).resolves.toBe("follow-up");
-    expect(log).toContain(`ask: No, what's the battery level? | ${FOLLOW_UP_PROMPTS[0]}`);
+    expect(log).toContain("ask: No, what's the battery level?");
   });
 
   it("stops listening without a word when the transcript is empty", async () => {

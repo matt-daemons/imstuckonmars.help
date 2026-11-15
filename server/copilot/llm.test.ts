@@ -23,6 +23,7 @@ describe("LARA tool loop", () => {
     // NASA media guidelines: AI output is attributed to the AI product, never to NASA.
     expect(SYSTEM_PROMPT).toContain("Never attribute your answers to NASA");
     expect(SYSTEM_PROMPT).not.toContain("say what the app does");
+    expect(SYSTEM_PROMPT).toContain("End after answering the request");
   });
   it("runs requested tools and returns the spoken answer", async () => {
     const { fetcher, requests } = provider([

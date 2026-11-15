@@ -13,7 +13,6 @@ import {
   pickPhrase,
   SIGN_OFFS,
   stripWakePhrase,
-  withFollowUp,
   type WakeTurnSteps,
 } from "./follow-up";
 import type { AfterUtterance } from "./wake-session";
@@ -339,8 +338,6 @@ export function useLara(shared?: { id: string; token: string } | null) {
     async (
       input: { question: string } | { alert: { code: string; detail?: string } },
       via: AskVia = "text",
-      /** Spoken after the answer, in the same recording, for a wake-word conversation. */
-      followUp?: string,
     ) => {
       if (busy.current) return;
       // The training command is handled here, without the model or the mission session, so it
@@ -392,7 +389,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
           ...t,
           { role: "assistant", content: displaySpeechText(answer.text), alert: userTurn.alert },
         ]);
-        await speak(followUp ? withFollowUp(answer.text, followUp) : answer.text);
+        await speak(answer.text);
       } catch (e) {
         setError(
           e instanceof Error ? e.message : "LARA could not complete the request. Please try again.",
@@ -598,7 +595,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
       while (busy.current) await new Promise((r) => setTimeout(r, ASK_DONE_CHECK_MS));
     },
     transcribe,
-    ask: (question, followUp) => ask({ question }, "wake_word", followUp),
+    ask: (question) => ask({ question }, "wake_word"),
     say: sayPhrase,
     choose: (phrases) => (lastPhrase.current = pickPhrase(phrases, lastPhrase.current)),
   };

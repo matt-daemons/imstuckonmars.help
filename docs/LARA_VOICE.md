@@ -21,6 +21,10 @@ before recognized words, the latest three provisional words during capture, and
 `Thinking` while requesting a response. Vosk supplies local provisional text for
 both wake-word and push-to-talk capture. If local recognition cannot load, recording
 and final server transcription remain available without a live preview.
+After a spoken answer, the microphone quietly allows a follow-up without another
+wake word. LARA does not append an "anything else?" prompt. Silence closes that
+window and returns to waiting for the wake word; necessary clarification questions
+remain available.
 
 Replies appear in a dismissible bottom-centered panel. With voice enabled, the
 client requests `/api/copilot/:id/speak` with `timestamps: true`. The Worker uses
