@@ -4,8 +4,12 @@ import { cellAt, cellCenter, type EquirectMeta, type RouteGrid } from "./route-g
 import { marsDistanceM } from "./routing";
 import {
   findStagingPoint,
+  PARKING_FALLBACK_SLOPE_DEG,
+  PARKING_MAX_ROUGHNESS_M,
+  PARKING_MAX_SLOPE_DEG,
   PARKING_SQUARE_M,
   siteGridFromSlope,
+  STAGING_MIN_M,
   withZones,
   type SiteGrid,
 } from "./site-grid";
@@ -75,8 +79,8 @@ describe("withZones", () => {
   });
 });
 
-/** A flat site of 10 m cells centred on the POI at the grid's middle cell, with the base far to the east. */
-function flatSite(size = 261, cellM = 10): { site: SiteGrid; poi: LngLat; base: LngLat } {
+/** A flat site of 2 m cells centred on the POI at the grid's middle cell. */
+function flatSite(size = 1101, cellM = 2): { site: SiteGrid; poi: LngLat } {
   const cellDeg = cellM * DEG_PER_M;
   const grid: RouteGrid = {
     width: size,
@@ -88,51 +92,88 @@ function flatSite(size = 261, cellM = 10): { site: SiteGrid; poi: LngLat; base: 
   };
   const middle = Math.floor(size / 2);
   const poi = cellCenter(grid, middle * size + middle);
-  const site = {
+  const site: SiteGrid = {
     grid,
     slope: new Float32Array(size * size),
     walls: new Uint8Array(size * size),
     boulders: [],
+    roughness: null,
   };
-  return { site, poi, base: [poi[0] + 1, poi[1]] };
+  return { site, poi };
+}
+
+/** Sets every cell within radiusM of the POI to value. */
+function fillNear(
+  site: SiteGrid,
+  poi: LngLat,
+  radiusM: number,
+  layer: Float32Array,
+  value: number,
+) {
+  layer.forEach((_, cell) => {
+    if (marsDistanceM(poi, cellCenter(site.grid, cell)) <= radiusM) layer[cell] = value;
+  });
 }
 
 describe("findStagingPoint", () => {
-  it("parks on flat ground 0.5 km from the POI, on the bearing to base", () => {
-    const { site, poi, base } = flatSite();
-    const staging = findStagingPoint(site, poi, base)!;
-    expect(staging[1]).toBeCloseTo(poi[1], 9); // due east, like the base
-    expect(staging[0]).toBeGreaterThan(poi[0]);
-    expect(marsDistanceM(poi, staging)).toBeGreaterThanOrEqual(500);
-    expect(marsDistanceM(poi, staging)).toBeLessThan(511);
+  it("parks on flat ground just past 25 m from the POI, on the strict slope", () => {
+    const { site, poi } = flatSite();
+    const staging = findStagingPoint(site, poi)!;
+    expect(marsDistanceM(poi, staging.point)).toBeGreaterThanOrEqual(STAGING_MIN_M);
+    expect(marsDistanceM(poi, staging.point)).toBeLessThan(STAGING_MIN_M + 10);
+    expect(staging).toMatchObject({ slopeLimitDeg: PARKING_MAX_SLOPE_DEG, fallback: false });
+    expect(staging.roughnessChecked).toBe(false);
   });
 
-  it("parks on a gently rough square but never next to a boulder", () => {
-    const { site, poi, base } = flatSite();
-    const free = findStagingPoint(site, poi, base)!;
-    site.slope[cellAt(site.grid, free)!] = 15; // one rough cell: the square's mean stays under 5°
-    const blocked = findStagingPoint(site, poi, base)!;
-    expect(blocked).toEqual(free);
-    site.walls[cellAt(site.grid, blocked)!] = 1; // a boulder where the free site parks
-    const staging = findStagingPoint(site, poi, base)!;
-    expect(marsDistanceM(staging, blocked)).toBeGreaterThan(PARKING_SQUARE_M / 2);
-    expect(marsDistanceM(poi, staging)).toBeLessThanOrEqual(1000);
+  it("rejects a square with one cell over 5° and never parks next to a boulder", () => {
+    const { site, poi } = flatSite();
+    const free = findStagingPoint(site, poi)!.point;
+    const freeCell = cellAt(site.grid, free)!;
+    site.slope[freeCell] = PARKING_MAX_SLOPE_DEG + 0.5; // one steep cell: the square's maximum fails
+    const moved = findStagingPoint(site, poi)!.point;
+    expect(marsDistanceM(moved, free)).toBeGreaterThan(PARKING_SQUARE_M / 2 - 2);
+    site.slope[freeCell] = 0;
+    site.walls[freeCell] = 1; // a boulder where the free site parks
+    const staging = findStagingPoint(site, poi)!.point;
+    expect(marsDistanceM(staging, free)).toBeGreaterThan(PARKING_SQUARE_M / 2 - 2);
   });
 
-  it("falls back to the nearest flat spot within the 2 km walk-back limit", () => {
-    const { site, poi, base } = flatSite();
-    // Too steep to park (10° > the rover's 5° caution slope) everywhere within 1 km.
-    site.slope.forEach((_, cell) => {
-      if (marsDistanceM(poi, cellCenter(site.grid, cell)) <= 1000) site.slope[cell] = 10;
+  it("takes the nearest qualifying square beyond a crater-like steep zone", () => {
+    const { site, poi } = flatSite();
+    fillNear(site, poi, 300, site.slope, 8); // over 5°, under the 20° wall limit
+    fillNear(site, poi, 400, site.slope, 8);
+    site.slope.forEach((value, cell) => {
+      if (marsDistanceM(poi, cellCenter(site.grid, cell)) > 400) site.slope[cell] = 0;
     });
-    const staging = findStagingPoint(site, poi, base)!;
-    expect(marsDistanceM(poi, staging)).toBeGreaterThan(1000);
-    expect(marsDistanceM(poi, staging)).toBeLessThan(1100);
+    const staging = findStagingPoint(site, poi)!;
+    expect(staging.fallback).toBe(false);
+    expect(marsDistanceM(poi, staging.point)).toBeGreaterThan(400 + PARKING_SQUARE_M / 2 - 2);
+    expect(marsDistanceM(poi, staging.point)).toBeLessThan(400 + PARKING_SQUARE_M / 2 + 12);
+  });
+
+  it("falls back to the 10° limit, flagged, when nothing within the walk-back limit is ≤ 5°", () => {
+    const { site, poi } = flatSite();
+    site.slope.fill(8);
+    const staging = findStagingPoint(site, poi)!;
+    expect(staging).toMatchObject({ slopeLimitDeg: PARKING_FALLBACK_SLOPE_DEG, fallback: true });
+    expect(marsDistanceM(poi, staging.point)).toBeLessThan(STAGING_MIN_M + 10);
+  });
+
+  it("checks roughness when the site has it", () => {
+    const { site, poi } = flatSite();
+    site.roughness = new Float32Array(site.slope.length);
+    const smooth = findStagingPoint(site, poi)!;
+    expect(smooth.roughnessChecked).toBe(true);
+    fillNear(site, poi, 300, site.roughness, PARKING_MAX_ROUGHNESS_M + 0.05);
+    const rough = findStagingPoint(site, poi)!;
+    expect(marsDistanceM(poi, rough.point)).toBeGreaterThan(300);
+    site.roughness.fill(NaN); // no roughness data anywhere: nothing is cleared to park
+    expect(findStagingPoint(site, poi)).toBeNull();
   });
 
   it("returns null when nothing is flat enough", () => {
-    const { site, poi, base } = flatSite();
-    site.slope.fill(10);
-    expect(findStagingPoint(site, poi, base)).toBeNull();
+    const { site, poi } = flatSite();
+    site.slope.fill(PARKING_FALLBACK_SLOPE_DEG + 1);
+    expect(findStagingPoint(site, poi)).toBeNull();
   });
 });

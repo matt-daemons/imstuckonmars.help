@@ -33,6 +33,7 @@ function setup() {
     slope: new Float32Array(261 * 261),
     walls: new Uint8Array(261 * 261),
     boulders: [],
+    roughness: null,
   };
   const poi = cellCenter(siteGrid, 130 * 261 + 130);
   const siteInfo: SiteInfo = { id: "DTEEC_TEST", hiriseId: "ESP_TEST", poi };
@@ -117,7 +118,7 @@ describe("planDriveWalk", () => {
     const { plan } = setup();
     const { walk } = plan();
     const walkedKm = (walk!.outbound.distance_m + walk!.back.distance_m) / 1000;
-    expect(walkedKm).toBeGreaterThan(1);
+    expect(walkedKm).toBeGreaterThan(0.05); // the rover parks just past 25 m out
     expect(walk!.timing).toEqual(walkLegTiming({ walk_distance_km: walkedKm, sampling_min: 60 }));
   });
 
@@ -129,7 +130,7 @@ describe("planDriveWalk", () => {
 
   it("reports a missing staging point, a failed drive and a failed walk", () => {
     const noStaging = setup();
-    noStaging.site.slope.fill(10);
+    noStaging.site.slope.fill(11); // over the 10° fallback parking slope everywhere
     expect(noStaging.plan().status).toBe("no_staging");
 
     const noDrive = setup();
@@ -143,12 +144,16 @@ describe("planDriveWalk", () => {
 });
 
 describe("planDriveWalk, shortest", () => {
-  /** setup() with a 19° patch, 200 × 300 m, across the walk's straight line east of the POI. */
+  /**
+   * setup() with a 19° patch, 200 × 300 m, east of the POI, and 6° ground (walkable, too steep to park)
+   * everywhere west of 350 m east, so the rover parks east of the patch.
+   */
   function steepSite() {
     const trip = setup();
     trip.site.slope.forEach((_, cell) => {
       const row = Math.floor(cell / 261);
       const col = cell % 261;
+      if (col < 165) trip.site.slope[cell] = 6;
       if (col >= 140 && col <= 160 && row >= 115 && row <= 145) trip.site.slope[cell] = 19;
     });
     return trip;
@@ -165,7 +170,7 @@ describe("planDriveWalk, shortest", () => {
     );
     expect(shortest.walk!.outbound.distance_m).toBeLessThan(safest.walk!.outbound.distance_m);
     expect(shortest.walk!.route!.max_slope).toBe(19);
-    expect(safest.walk!.route!.max_slope).toBe(0);
+    expect(safest.walk!.route!.max_slope).toBe(6);
   });
 
   it("keeps the drive out of walls", () => {

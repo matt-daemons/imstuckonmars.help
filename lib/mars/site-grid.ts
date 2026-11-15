@@ -1,7 +1,7 @@
 import { fromUrl } from "geotiff";
 
-import { ROVER_RULES } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
+import { ROUGHNESS_DATA_ROOT } from "./ground-layers";
 import { SITE_DATA_ROOT } from "./map-data";
 import { cellAt, cellCenter, cellSize, type EquirectMeta, type RouteGrid } from "./route-grid";
 import { marsDistanceM, wallMask, type NoGoZone } from "./routing";
@@ -11,6 +11,7 @@ import type { LngLat } from "./types";
 const DEGREES_TO_RADIANS = Math.PI / 180;
 const RADIANS_TO_DEGREES = 180 / Math.PI;
 const TENTHS_PER_DEGREE = 10; // the slope COGs store Int16 tenths of a degree
+const CM_PER_M = 100; // the roughness COGs store Int16 centimetres
 
 /** Walk grid cell size: the 1 m slope is max-pooled to about this. */
 export const SITE_CELL_M = 2;
@@ -18,12 +19,21 @@ export const SITE_CELL_M = 2;
 const WINDOW_M = 1200;
 /** Clearance added to every boulder's radius. Our assumption, not a NASA value. */
 export const BOULDER_CLEARANCE_M = 1;
-/** Staging rule (drive + walk design): 0.5–1 km from the POI, within ±60° of the bearing to base. */
-const STAGING_MIN_M = 500;
-const STAGING_MAX_M = 1000;
-const STAGING_HALF_ANGLE_DEG = 60;
+/**
+ * Staging rule (team decision, Sun Nov 15): park at the nearest qualifying square at least 25 m from the POI,
+ * after Apollo 17 Station 7 (LRV ~25 m from the boulder). NASA sets only a maximum, the walk-back limit.
+ */
+export const STAGING_MIN_M = 25;
 /** Side of the square the parked rover needs flat and boulder-free. */
-export const PARKING_SQUARE_M = 50;
+export const PARKING_SQUARE_M = 40;
+/** Steepest 1 m slope allowed anywhere in the square. */
+export const PARKING_MAX_SLOPE_DEG = 5;
+/** Used, and flagged as a caution, only when no square within the walk-back limit meets PARKING_MAX_SLOPE_DEG. */
+export const PARKING_FALLBACK_SLOPE_DEG = 10;
+/** Highest RMS roughness allowed anywhere in the square, when the site's roughness is published. */
+export const PARKING_MAX_ROUGHNESS_M = 0.25;
+/** The staging rule in words, for the assumptions panel and the sources screen. */
+export const STAGING_RULE = `The staging point is our rule: the rover parks at the nearest ${PARKING_SQUARE_M} m square at least ${STAGING_MIN_M} m from the site (Apollo 17 parked ~25 m from its sample boulder) where no 1 m slope exceeds ${PARKING_MAX_SLOPE_DEG}°, roughness stays under ${PARKING_MAX_ROUGHNESS_M} m and no boulder lies, within the ${FLIGHT_RULES.walk_back.max_distance_km} km walk-back limit. If no square there is that flat, it parks where none exceeds ${PARKING_FALLBACK_SLOPE_DEG}° and the trip carries a caution.`;
 /** Spacing of the staging candidates, which keeps the scan fast. */
 const CANDIDATE_SPACING_M = 10;
 const BOULDERS_URL = "/data/processed/boulders.geojson";
@@ -47,14 +57,20 @@ export interface SiteGrid {
   slope: Float32Array;
   walls: Uint8Array;
   boulders: Boulder[];
+  /** RMS roughness in metres per cell (steepest pixel), NaN without data; null when the site has none published. */
+  roughness: Float32Array | null;
 }
 
-/** Max-pools the 1 m slope (tenths of a degree) to cells of about cellM and walls steep cells, gaps and boulders. */
+/**
+ * Max-pools the 1 m slope (tenths of a degree) to cells of about cellM and walls steep cells, gaps and boulders.
+ * Roughness (centimetres, on the same 1 m grid) is max-pooled alongside it, for the parking check only.
+ */
 export function siteGridFromSlope(
   meta: EquirectMeta,
   slopeTenths: ArrayLike<number>,
   boulders: Boulder[],
   cellM = SITE_CELL_M,
+  roughnessCm: ArrayLike<number> | null = null,
 ): SiteGrid {
   const { stepX, stepY } = poolSteps(meta, cellM);
   const width = Math.floor(meta.width / stepX);
@@ -71,10 +87,11 @@ export function siteGridFromSlope(
     // Flat on purpose: walls come from the slope, so findPath's step-grade check never fires.
     heights: new Float32Array(width * height),
   };
-  const slope = maxPool(meta, slopeTenths, grid, stepX, stepY);
+  const slope = maxPool(meta, slopeTenths, grid, stepX, stepY, TENTHS_PER_DEGREE);
+  const roughness = roughnessCm && maxPool(meta, roughnessCm, grid, stepX, stepY, CM_PER_M);
   const walls = wallMask(grid, slope, []);
   for (const boulder of boulders) wallCircle(grid, walls, boulder);
-  return { grid, slope, walls, boulders };
+  return { grid, slope, walls, boulders, roughness };
 }
 
 /** Pixels per cell in each direction; lon/lat pixels are narrower east-west than north-south. */
@@ -88,23 +105,24 @@ function poolSteps(meta: EquirectMeta, cellM: number): { stepX: number; stepY: n
   };
 }
 
-// A cell takes its steepest pixel so walls are never under-counted; one nodata pixel makes it NaN, a wall.
+// A cell takes its highest pixel so walls are never under-counted; one nodata pixel makes it NaN, a wall.
 function maxPool(
   meta: EquirectMeta,
-  slopeTenths: ArrayLike<number>,
+  values: ArrayLike<number>,
   grid: RouteGrid,
   stepX: number,
   stepY: number,
+  perUnit: number,
 ): Float32Array {
-  const slope = new Float32Array(grid.width * grid.height).fill(-Infinity);
+  const pooled = new Float32Array(grid.width * grid.height).fill(-Infinity);
   for (let y = 0; y < grid.height * stepY; y++) {
     for (let x = 0; x < grid.width * stepX; x++) {
-      const value = slopeTenths[y * meta.width + x];
+      const value = values[y * meta.width + x];
       const cell = Math.floor(y / stepY) * grid.width + Math.floor(x / stepX);
-      slope[cell] = value === meta.nodata ? NaN : Math.max(slope[cell], value / TENTHS_PER_DEGREE);
+      pooled[cell] = value === meta.nodata ? NaN : Math.max(pooled[cell], value / perUnit);
     }
   }
-  return slope;
+  return pooled;
 }
 
 /** The site with hand-drawn no-go zones walled too, so neither the walk nor the parking spot enters them. */
@@ -132,19 +150,25 @@ function wallCircle(grid: RouteGrid, walls: Uint8Array, { center, radius_m }: Bo
   }
 }
 
-/** Reads the site's slope around the POI and its mapped boulders (in the browser: the boulder file is a relative URL). */
+/**
+ * Reads the site's slope around the POI, its mapped boulders (in the browser: the boulder file is a relative URL)
+ * and, once published, its roughness on the same 1 m grid.
+ */
 export async function loadSiteGrid(site: SiteInfo, signal?: AbortSignal): Promise<SiteGrid> {
-  const [{ meta, slopeTenths }, boulders] = await Promise.all([
-    readSlopeWindow(site, signal),
+  if (!SITE_DATA_ROOT) throw new Error("Site slope needs the published site data (SITE_DATA_ROOT)");
+  const [{ meta, values: slopeTenths }, boulders, roughness] = await Promise.all([
+    readWindow(`${SITE_DATA_ROOT}/slope/${site.hiriseId}_slope.tif`, site, signal),
     loadBoulders(site.id, signal),
+    ROUGHNESS_DATA_ROOT
+      ? readWindow(`${ROUGHNESS_DATA_ROOT}/roughness/${site.hiriseId}_roughness.tif`, site, signal)
+      : null,
   ]);
-  return siteGridFromSlope(meta, slopeTenths, boulders);
+  return siteGridFromSlope(meta, slopeTenths, boulders, SITE_CELL_M, roughness?.values ?? null);
 }
 
 /** Range-reads only the window around the POI, placed with the COG's own origin and pixel size. */
-async function readSlopeWindow(site: SiteInfo, signal?: AbortSignal) {
-  if (!SITE_DATA_ROOT) throw new Error("Site slope needs the published site data (SITE_DATA_ROOT)");
-  const tiff = await fromUrl(`${SITE_DATA_ROOT}/slope/${site.hiriseId}_slope.tif`, {}, signal);
+async function readWindow(url: string, site: SiteInfo, signal?: AbortSignal) {
+  const tiff = await fromUrl(url, {}, signal);
   const image = await tiff.getImage();
   const [originLng, originLat] = image.getOrigin();
   const [degreesPerPixel] = image.getResolution(); // the COGs have square pixels in degrees
@@ -160,7 +184,7 @@ async function readSlopeWindow(site: SiteInfo, signal?: AbortSignal) {
     col(lng + halfLngDeg),
     row(lat - halfLatDeg),
   ];
-  const [slopeTenths] = await image.readRasters({ window, samples: [0], signal });
+  const [values] = await image.readRasters({ window, samples: [0], signal });
   const meta: EquirectMeta = {
     width: window[2] - window[0],
     height: window[3] - window[1],
@@ -169,7 +193,7 @@ async function readSlopeWindow(site: SiteInfo, signal?: AbortSignal) {
     degreesPerPixel,
     nodata: image.getGDALNoData(),
   };
-  return { meta, slopeTenths };
+  return { meta, values };
 }
 
 function clamp(value: number, max: number): number {
@@ -193,43 +217,48 @@ async function loadBoulders(siteId: string, signal?: AbortSignal): Promise<Bould
     }));
 }
 
-/** A staging candidate: a cell, its distance from the POI and how far its bearing is off the bearing to base. */
+/** A staging candidate: a cell and its distance from the POI. */
 interface Spot {
   cell: number;
   distanceM: number;
-  offBearingDeg: number;
+}
+
+/** Where the rover parks, and which slope limit the square met. */
+export interface StagingPoint {
+  point: LngLat;
+  /** PARKING_MAX_SLOPE_DEG, or PARKING_FALLBACK_SLOPE_DEG when no square within the walk-back limit met it. */
+  slopeLimitDeg: number;
+  fallback: boolean;
+  /** False until the site's roughness is published (ROUGHNESS_DATA_ROOT). */
+  roughnessChecked: boolean;
 }
 
 /**
- * Where the rover parks for the walk: a flat, boulder-free spot 0.5–1 km from the POI facing base,
- * nearest the bearing to base; else the nearest one on any side, still 0.5 km out (outside the crater),
- * within the walk-back limit; else null.
+ * Where the rover parks for the walk: the flat, smooth, boulder-free square nearest the POI, at least
+ * STAGING_MIN_M out and within the walk-back limit; on max PARKING_FALLBACK_SLOPE_DEG if no square meets
+ * PARKING_MAX_SLOPE_DEG; else null.
  */
-export function findStagingPoint(site: SiteGrid, poi: LngLat, base: LngLat): LngLat | null {
-  const spots = candidateSpots(site.grid, poi, bearingDeg(...eastNorthM(poi, base)));
+export function findStagingPoint(site: SiteGrid, poi: LngLat): StagingPoint | null {
   const walkBackM = FLIGHT_RULES.walk_back.max_distance_km * 1000;
-  // Bearings are compared to the whole degree, so along the bearing the spot nearer the POI wins.
-  const facingBase = spots
-    .filter(
-      (spot) =>
-        spot.distanceM >= STAGING_MIN_M &&
-        spot.distanceM <= STAGING_MAX_M &&
-        spot.offBearingDeg <= STAGING_HALF_ANGLE_DEG,
-    )
-    .sort(
-      (a, b) =>
-        Math.round(a.offBearingDeg) - Math.round(b.offBearingDeg) || a.distanceM - b.distanceM,
-    );
-  const withinWalkBack = spots
+  const spots = candidateSpots(site.grid, poi)
     .filter((spot) => spot.distanceM >= STAGING_MIN_M && spot.distanceM <= walkBackM)
     .sort((a, b) => a.distanceM - b.distanceM);
-  const parkable = (spot: Spot) => isParkable(site, spot.cell);
-  const spot = facingBase.find(parkable) ?? withinWalkBack.find(parkable);
-  return spot ? cellCenter(site.grid, spot.cell) : null;
+  for (const slopeLimitDeg of [PARKING_MAX_SLOPE_DEG, PARKING_FALLBACK_SLOPE_DEG]) {
+    const spot = spots.find((candidate) => isParkable(site, candidate.cell, slopeLimitDeg));
+    if (spot) {
+      return {
+        point: cellCenter(site.grid, spot.cell),
+        slopeLimitDeg,
+        fallback: slopeLimitDeg !== PARKING_MAX_SLOPE_DEG,
+        roughnessChecked: site.roughness !== null,
+      };
+    }
+  }
+  return null;
 }
 
 /** Cells on a lattice about CANDIDATE_SPACING_M apart, measured from the POI. */
-function candidateSpots(grid: RouteGrid, poi: LngLat, toBaseDeg: number): Spot[] {
+function candidateSpots(grid: RouteGrid, poi: LngLat): Spot[] {
   const { dx, dy } = cellSize(grid, Math.floor(grid.height / 2));
   const rowStep = Math.max(1, Math.round(CANDIDATE_SPACING_M / dy));
   const colStep = Math.max(1, Math.round(CANDIDATE_SPACING_M / dx));
@@ -238,20 +267,23 @@ function candidateSpots(grid: RouteGrid, poi: LngLat, toBaseDeg: number): Spot[]
     for (let col = 0; col < grid.width; col += colStep) {
       const cell = row * grid.width + col;
       const [east, north] = eastNorthM(poi, cellCenter(grid, cell));
-      const offBearingDeg = Math.abs(((bearingDeg(east, north) - toBaseDeg + 540) % 360) - 180);
-      spots.push({ cell, distanceM: Math.hypot(east, north), offBearingDeg });
+      spots.push({ cell, distanceM: Math.hypot(east, north) });
     }
   }
   return spots;
 }
 
 /**
- * The parking square around the cell lies on the grid, holds no wall (boulder, steep or missing slope)
- * and its mean slope is within the rover's caution slope. The mean, not the steepest cell: on the
- * 1 m DTM no 50 m square at any site keeps every cell under 5°, because DTM noise and polygon troughs
- * add metre-scale slope; noise only raises the mean, so it never hides a tilted area.
+ * The parking square around the cell lies on the grid, holds no wall (boulder, steep or missing slope),
+ * no cell steeper than slopeLimitDeg and, when roughness is published, none rougher than
+ * PARKING_MAX_ROUGHNESS_M or without roughness data. Cells keep their steepest 1 m pixel, so this is the
+ * square's maximum: DTM noise can rule a square out but never lets a tilted one through.
  */
-function isParkable({ grid, slope, walls }: SiteGrid, cell: number): boolean {
+function isParkable(
+  { grid, slope, walls, roughness }: SiteGrid,
+  cell: number,
+  slopeLimitDeg: number,
+): boolean {
   const centreRow = Math.floor(cell / grid.width);
   const centreCol = cell % grid.width;
   const { dx, dy } = cellSize(grid, centreRow);
@@ -263,16 +295,14 @@ function isParkable({ grid, slope, walls }: SiteGrid, cell: number): boolean {
     centreCol - halfCols >= 0 &&
     centreCol + halfCols < grid.width;
   if (!onGrid) return false;
-  let slopeSum = 0;
   for (let row = centreRow - halfRows; row <= centreRow + halfRows; row++) {
     for (let col = centreCol - halfCols; col <= centreCol + halfCols; col++) {
       const square = row * grid.width + col;
-      if (walls[square]) return false;
-      slopeSum += slope[square];
+      if (walls[square] || !(slope[square] <= slopeLimitDeg)) return false;
+      if (roughness && !(roughness[square] <= PARKING_MAX_ROUGHNESS_M)) return false;
     }
   }
-  const cells = (2 * halfRows + 1) * (2 * halfCols + 1);
-  return slopeSum / cells <= ROVER_RULES.slope.caution_above_degrees;
+  return true;
 }
 
 // East and north offset in metres on the Mars sphere (equirectangular), the short way across ±180°.
@@ -283,9 +313,4 @@ function eastNorthM([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): [number, number
     MARS_RADIUS_M * eastDeg * DEGREES_TO_RADIANS * Math.cos(meanLat),
     MARS_RADIUS_M * (lat2 - lat1) * DEGREES_TO_RADIANS,
   ];
-}
-
-/** Compass bearing in degrees, clockwise from north. */
-function bearingDeg(east: number, north: number): number {
-  return Math.atan2(east, north) * RADIANS_TO_DEGREES;
 }

@@ -2,16 +2,10 @@ import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
-import { ROVER_RULES } from "@/lib/flight-rules/rover-rules";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
-import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import type { RouteGrid } from "@/lib/mars/route-grid";
-import {
-  BOULDER_CLEARANCE_M,
-  PARKING_SQUARE_M,
-  SITE_CELL_M,
-  type Boulder,
-} from "@/lib/mars/site-grid";
+import { fallbackParkingReason, type DriveWalkPlan } from "@/lib/mars/drive-walk";
+import { BOULDER_CLEARANCE_M, SITE_CELL_M, STAGING_RULE, type Boulder } from "@/lib/mars/site-grid";
 import type { LngLat, RouteCollection } from "@/lib/mars/types";
 import { MAX_DURATION_S } from "@/lib/mission/types";
 
@@ -145,7 +139,8 @@ export function DriveWalkAssumptions({
   grid: RouteGrid | null;
   plan: DriveWalkPlan | null;
 }) {
-  const { slope, walk_back } = FLIGHT_RULES;
+  const { slope } = FLIGHT_RULES;
+  const parking = plan?.parking ?? null;
   return (
     <>
       <DriveAssumptions grid={grid} plan={plan?.drive ?? null} />
@@ -159,11 +154,14 @@ export function DriveWalkAssumptions({
         is walled off with {BOULDER_CLEARANCE_M} m clearance (our assumption). Coverage differs by
         site.
       </p>
-      <p>
-        Staging point (our rule): the rover parks where a {PARKING_SQUARE_M} m square is no steeper
-        than {ROVER_RULES.slope.caution_above_degrees}° and clear of boulders, on the habitat side
-        if it can, within the {walk_back.max_distance_km} km walk-back limit.
-      </p>
+      <p>{STAGING_RULE}</p>
+      {parking?.fallback && <p>{fallbackParkingReason(parking)}</p>}
+      {parking && !parking.roughnessChecked && (
+        <p>
+          Roughness was not checked at this staging point: the site&apos;s roughness data is not
+          published yet.
+        </p>
+      )}
       {plan?.walk?.timing?.assumptions.map((line) => (
         <p key={line}>{line}</p>
       ))}

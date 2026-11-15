@@ -18,7 +18,14 @@ import {
   type PlannedPath,
   type StepCostModel,
 } from "./routing";
-import { findStagingPoint, type SiteGrid, type SiteInfo } from "./site-grid";
+import {
+  findStagingPoint,
+  PARKING_MAX_SLOPE_DEG,
+  PARKING_SQUARE_M,
+  type SiteGrid,
+  type SiteInfo,
+  type StagingPoint,
+} from "./site-grid";
 import type {
   LngLat,
   RouteCollection,
@@ -54,6 +61,8 @@ export interface DriveWalkPlan {
   drive: DrivePlan | null;
   walk: WalkPlan | null;
   staging: LngLat | null;
+  /** Which parking rule the staging point met (fallback slope, roughness checked); null without one. */
+  parking?: StagingPoint | null;
   /** The worse of the drive and walk verdicts, with that leg's limiting factor and reasons. */
   verdict: TripVerdict | null;
 }
@@ -76,17 +85,19 @@ export function planDriveWalk(
   samplingMin: number,
   route: RouteChoice = "safest",
 ): DriveWalkPlan {
-  const staging = findStagingPoint(site, siteInfo.poi, base);
-  if (!staging) {
+  const parking = findStagingPoint(site, siteInfo.poi);
+  if (!parking) {
     return {
       status: "no_staging",
       collection: null,
       drive: null,
       walk: null,
-      staging,
+      staging: null,
+      parking,
       verdict: null,
     };
   }
+  const staging = parking.point;
   // The strip may lie east of 180°, so points west of 0 move up by 360° before lookup.
   const inDriveGrid = ([lng, lat]: LngLat): LngLat => [toGridLng(driveGrid, lng), lat];
   const shortest = route === "shortest";
@@ -101,7 +112,7 @@ export function planDriveWalk(
   );
   const walkCost = shortest ? DISTANCE_COST : gentleWalkCost(site.slope);
   const walk = planSiteWalk(site, staging, siteInfo.poi, samplingMin, walkCost);
-  const failed = { collection: null, drive, walk, staging, verdict: null };
+  const failed = { collection: null, drive, walk, staging, parking, verdict: null };
   if (!drive.summary) return { status: "drive_failed", ...failed };
   if (!walk.route || !walk.verdict) return { status: "walk_failed", ...failed };
 
@@ -127,11 +138,12 @@ export function planDriveWalk(
     collection: {
       type: "FeatureCollection",
       features: [...legs.features, stagingPoint],
-      route: tripSummary(siteInfo, legs, verdict, limitingMargin),
+      route: tripSummary(siteInfo, legs, verdict, limitingMargin, parking),
     },
     drive,
     walk,
     staging,
+    parking,
     verdict,
   };
 }
@@ -287,6 +299,7 @@ function tripSummary(
   legs: { features: LegFeature[]; endMin: number },
   verdict: TripVerdict,
   { resource, value, limit, unit }: Margin,
+  parking: StagingPoint,
 ): RouteSummary {
   const props = legs.features.map((feature) => feature.properties);
   return {
@@ -298,12 +311,19 @@ function tripSummary(
     max_slope: Math.max(...props.map((leg) => leg.max_slope)),
     verdict: verdict.verdict,
     limiting_factor: verdict.limiting_factor,
-    reasons: verdict.reasons,
+    reasons: parking.fallback
+      ? [...verdict.reasons, fallbackParkingReason(parking)]
+      : verdict.reasons,
     margin: { resource, value, limit, unit },
     time_to_shelter_min: Math.max(...props.map((leg) => leg.time_to_shelter_min)),
     simulated: false,
     source: SOURCE,
   };
+}
+
+/** The caution shown when no square within the walk-back limit was flat enough for the strict parking slope. */
+export function fallbackParkingReason({ slopeLimitDeg }: StagingPoint): string {
+  return `CAUTION: no ${PARKING_SQUARE_M} m parking square within the walk-back limit is ≤ ${PARKING_MAX_SLOPE_DEG}° throughout; the rover parks where it is ≤ ${slopeLimitDeg}°.`;
 }
 
 /** A resource against its no-go limit; `used` is the share of the limit taken, for finding the tightest. */

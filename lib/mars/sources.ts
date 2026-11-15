@@ -5,9 +5,9 @@
  */
 
 import { PARTICLE_EVENT_HOURS } from "../flight-rules/donki";
-import { GROUND, ROVER_RULES } from "../flight-rules/rover-rules";
+import { GROUND } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
-import { BOULDER_CLEARANCE_M, PARKING_SQUARE_M, SITE_CELL_M } from "./site-grid";
+import { BOULDER_CLEARANCE_M, SITE_CELL_M, STAGING_RULE } from "./site-grid";
 
 /** What kind of evidence an entry is. Drives the badge on the sources screen. */
 export type EvidenceKind =
@@ -238,7 +238,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           `Soft ground: on loose dust (thermal inertia below ${GROUND.loose_dust.below_thermal_inertia}) the drive uses rolling resistance ${GROUND.loose_dust.rolling_resistance.toFixed(2)}, double the study's ${GROUND.sand_crust.rolling_resistance}, our assumption: no rolling resistance has been measured on Mars. Thermal inertia is ±20 %, describes only the top few centimetres, averages 100 m pixels and covers about 57 % of the area; cells without data keep ${GROUND.no_data.rolling_resistance}, which is unknown ground, not firm ground.`,
           `The walk takes each ${SITE_CELL_M} m cell's steepest 1 m slope, so steep ground is never under-counted. The 1 m slope still misses rocks smaller than a metre.`,
           `Walk boulders are the automated HiRISE shadow detections near each site. A sample review confirmed none as rocks (most are pits or trough shading), so walling every one off, with ${BOULDER_CLEARANCE_M} m clearance (our assumption), errs on the side of caution. Coverage differs by site: the ridges site has one.`,
-          `The staging point is our rule: the rover parks where a ${PARKING_SQUARE_M} m square is no steeper than ${ROVER_RULES.slope.caution_above_degrees}° and clear of boulders, on the habitat side if it can, within the ${FLIGHT_RULES.walk_back.max_distance_km} km walk-back limit.`,
+          `${STAGING_RULE} Roughness is checked only where the site's roughness data is published.`,
           "The example no-go zone is a placeholder.",
           `The route check's solar alert comes from NASA DONKI: flares and particle events measured near Earth, and WSA-Enlil model arrival times at Mars. Mars may be on the far side of the Sun, so an alert at Earth may miss Mars and a storm at Mars may not show. DONKI gives when a particle event began, not when it ended; it counts as under way for ${PARTICLE_EVENT_HOURS} h (our assumption).`,
         ],
