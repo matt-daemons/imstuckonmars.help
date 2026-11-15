@@ -14,6 +14,7 @@ import { laraContextSchema, readLaraContext } from "../../lib/copilot/lara-conte
 import { trainingNote } from "../../lib/copilot/training";
 import { askCopilot } from "../copilot/llm";
 import { answerDestinationRequest } from "../copilot/destination-request";
+import { answerMapRequest, verifyMapActionText } from "../copilot/map-request";
 import { laraToolbox } from "../copilot/toolbox";
 import { copilotTools } from "../copilot/tools";
 import { createSession, sessionFor } from "../mission/service";
@@ -142,9 +143,11 @@ copilot.post("/:id/ask", async (c) => {
   const prompt = body.alert
     ? `[Automatic alert from the mission monitor. This is not a question from the crew.] ${body.alert.code}${body.alert.detail ? `: ${body.alert.detail}` : ""}. Call the tools that apply to this alert. Then tell the crew about the alert in one or two sentences. Include the most important number.`
     : (body.question as string);
-  const destinationAnswer = body.question ? answerDestinationRequest(body.question, context) : null;
+  const directAnswer = body.question
+    ? (answerMapRequest(body.question, context) ?? answerDestinationRequest(body.question, context))
+    : null;
   const answer =
-    destinationAnswer ??
+    directAnswer ??
     (await askCopilot({
       key: c.env.DIAGNOSTICS_API_KEY,
       model: c.env.DIAGNOSTICS_MODEL,
@@ -153,9 +156,11 @@ copilot.post("/:id/ask", async (c) => {
       note: context.training.status === "present" ? trainingNote(context.training.value) : null,
       run: toolbox.run,
     }));
+  const actions = directAnswer?.actions ?? toolbox.actions;
   return c.json({
     ...answer,
-    actions: destinationAnswer?.actions ?? toolbox.actions,
+    text: verifyMapActionText(answer.text, actions),
+    actions,
     mission_id: session.id,
     revision: session.revision,
     evaluated_at_s: tools.snapshot.state.elapsed_s,

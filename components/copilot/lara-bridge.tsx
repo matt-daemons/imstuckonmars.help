@@ -32,10 +32,13 @@ export interface LaraBridge {
    * several handlers, for example focus_map for the route and for the rover: each runs, and each
    * ignores what is not its own.
    */
-  handle<T extends LaraActionType>(type: T, fn: (action: ActionOf<T>) => void): () => void;
+  handle<T extends LaraActionType>(
+    type: T,
+    fn: (action: ActionOf<T>) => boolean | void,
+  ): () => void;
   /** Registers a reader for one context key; returns a function that removes it. */
   provide(key: LaraContextKey, read: () => unknown): () => void;
-  /** Runs the action; false when nothing handles it. */
+  /** False when no handler accepts the action, including unavailable map targets. */
   run(action: LaraAction): boolean;
   /** The current value of every registered context key; a key whose reader throws is left out. */
   context(): Partial<Record<LaraContextKey, unknown>>;
@@ -46,12 +49,12 @@ export interface LaraBridge {
 }
 
 export function createLaraBridge(): LaraBridge {
-  const handlers = new Map<LaraActionType, Set<(action: LaraAction) => void>>();
+  const handlers = new Map<LaraActionType, Set<(action: LaraAction) => boolean | void>>();
   const readers = new Map<LaraContextKey, () => unknown>();
   let speak: ((text: string) => void) | null = null;
   return {
     handle(type, fn) {
-      const handler = fn as (action: LaraAction) => void;
+      const handler = fn as (action: LaraAction) => boolean | void;
       const forType = handlers.get(type) ?? new Set();
       handlers.set(type, forType.add(handler));
       return () => {
@@ -66,8 +69,11 @@ export function createLaraBridge(): LaraBridge {
     },
     run(action) {
       const forType = [...(handlers.get(action.type) ?? [])];
-      for (const handler of forType) handler(action);
-      return forType.length > 0;
+      let accepted = false;
+      for (const handler of forType) {
+        if (handler(action) !== false) accepted = true;
+      }
+      return accepted;
     },
     context() {
       return Object.fromEntries([...readers].flatMap(([key, read]) => readSafely(key, read)));
@@ -114,7 +120,7 @@ export function useLaraBridge(): LaraBridge {
 /** Handles one action type with the latest `fn`, for as long as the caller is mounted. */
 export function useLaraAction<T extends LaraActionType>(
   type: T,
-  fn: (action: ActionOf<T>) => void,
+  fn: (action: ActionOf<T>) => boolean | void,
 ) {
   const bridge = useLaraBridge();
   const latest = useRef(fn);

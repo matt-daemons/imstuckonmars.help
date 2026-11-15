@@ -40,7 +40,7 @@ interface MissionView {
   tilesLoading: boolean;
   inspectedLeg: InspectedLeg | null;
   inspectLeg: (leg: InspectedLeg | null) => void;
-  focus: (view: CameraView) => void;
+  focus: (view: CameraView) => boolean;
 }
 const MissionViewContext = createContext<MissionView | null>(null);
 
@@ -71,7 +71,7 @@ export function MissionViewProvider({
 
   const focus = useCallback(
     (view: CameraView) => {
-      if (!map) return;
+      if (!map) return false;
       map.stop();
       expedition.setFollow(view === "crew");
       if (view === "overview") {
@@ -99,13 +99,15 @@ export function MissionViewProvider({
                     ? feature.geometry.coordinates
                     : [feature.geometry.coordinates],
                 ) ?? []);
+        if (!points.length && !route) return false;
         fitPoints(
           map,
           points.length || !route
             ? points
             : [route.shelter_lnglat, ...route.legs.flatMap((leg) => leg.path)],
         );
-      }
+      } else return false;
+      return true;
     },
     [
       map,

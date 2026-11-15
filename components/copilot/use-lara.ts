@@ -326,11 +326,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
     async (actions: LaraAction[]) => {
       for (const [index, action] of actions.entries()) {
         if (index > 0) await afterRender();
-        try {
-          bridge.run(action);
-        } catch {
-          setError(`The app could not carry out ${action.type.replaceAll("_", " ")}`);
-        }
+        if (!bridge.run(action))
+          throw new Error(
+            `I could not carry out ${action.type.replaceAll("_", " ")}. The requested view or action is not available yet. Try again when the map is ready.`,
+          );
       }
     },
     [bridge],
@@ -377,14 +376,27 @@ export function useLara(shared?: { id: string; token: string } | null) {
             body: JSON.stringify({ ...input, history, context: bridge.context() }),
           }),
         );
-        await runActions(answer.actions ?? []);
+        try {
+          await runActions(answer.actions ?? []);
+        } catch (cause) {
+          const message =
+            cause instanceof Error
+              ? cause.message
+              : "I could not complete the requested action. Please try again.";
+          setError(message);
+          setTurns((turns) => [...turns, { role: "assistant", content: message }]);
+          await speak(message);
+          return;
+        }
         setTurns((t) => [
           ...t,
           { role: "assistant", content: displaySpeechText(answer.text), alert: userTurn.alert },
         ]);
         await speak(followUp ? withFollowUp(answer.text, followUp) : answer.text);
       } catch (e) {
-        setError((e as Error).message);
+        setError(
+          e instanceof Error ? e.message : "LARA could not complete the request. Please try again.",
+        );
       } finally {
         busy.current = false;
         setStatus("idle");

@@ -14,6 +14,8 @@ import { useConditions } from "./conditions-provider";
 import { focusView, routePlanContext, type FocusView } from "./lara-route-context";
 import { chooseRoute } from "./route-choice";
 import { useRoutePlan } from "./route-plan-provider";
+import { useMissionView } from "@/components/map/mission-view";
+import { useExpedition } from "@/components/expedition/expedition-provider";
 
 /**
  * Carries out LARA's route actions on the plan and the map, and reports the plan to her before each
@@ -24,19 +26,24 @@ export function LaraRouteBridge({ map }: { map: MapLibreMap | null }) {
   const { conditions } = useConditions();
   const bridge = useLaraBridge();
   const { inputs, dispatch, base, destinations } = plan;
+  const { focus } = useMissionView();
+  const { setFollow } = useExpedition();
 
   useLaraContextReader("route_plan", () => routePlanContext(plan, conditions));
 
   useLaraAction("show_destinations", () => {
+    if (!map || !destinations.length) return false;
     if (inputs.mission !== "drive-walk")
       dispatch({ type: "setMission", mission: "drive-walk", start: base });
     dispatch({ type: "goTo", step: "where" });
-    fitPoints(map, [base, ...destinations.map((site) => site.center)]);
+    // Share the manual Overview camera path, including disabling crew-follow.
+    return focus("overview");
   });
 
   useLaraAction("select_destination", ({ number }) => {
     const site = destinations[number - 1];
-    if (!site) return;
+    if (!map || !site) return false;
+    setFollow(false);
     if (inputs.mission !== "drive-walk")
       dispatch({ type: "setMission", mission: "drive-walk", start: base });
     dispatch({ type: "setEnd", point: site.center });
@@ -56,7 +63,10 @@ export function LaraRouteBridge({ map }: { map: MapLibreMap | null }) {
 
   useLaraAction("focus_map", ({ target }) => {
     const view = focusView(target, plan);
-    if (view) showView(map, view);
+    if (!map || !view) return false;
+    setFollow(false);
+    showView(map, view);
+    return true;
   });
 
   return null;

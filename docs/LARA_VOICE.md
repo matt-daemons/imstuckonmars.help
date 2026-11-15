@@ -9,6 +9,13 @@ still requires browser permission. Turning it off persists; the hidden local-dat
 reset removes the preference and returns it to off. Other open tabs follow storage
 changes. If storage is blocked, the toggle works only for the current page.
 
+Direct requests to show destinations queue a map action without a model call.
+The action uses the same Overview camera control as the map menu, which disables
+crew-follow before fitting all destinations. Missing maps and unavailable targets
+reject the action; the reply shows an error rather than an unexecuted success claim.
+Model replies that claim camera movement without a camera action are replaced with
+an explicit failure message.
+
 The launcher shows `Say "Hey Lara"` when waiting for the wake word, `Listening…`
 before recognized words, the latest three provisional words during capture, and
 `Thinking` while requesting a response. Vosk supplies local provisional text for

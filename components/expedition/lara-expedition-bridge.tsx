@@ -21,7 +21,7 @@ export function LaraExpeditionBridge() {
   useLaraAction("start_simulation", () => {
     const selected = selectedRoute(inputs, { walk, journey });
     const { plan } = routeToPlan(inputs, base, selected.walk, selected.trip);
-    if (!plan) return;
+    if (!plan) return false;
     dispatch({ type: "goTo", step: "run" });
     const loaded = snapshot?.config.route?.id === plan.id;
     const resumable =
@@ -37,7 +37,9 @@ export function LaraExpeditionBridge() {
   useLaraAction("reset_simulation", () => void command({ type: "reset" }, "Restart expedition"));
 
   useLaraAction("focus_map", ({ target }) => {
-    if (target === "rover") setFollow(true);
+    if (target !== "rover" || !snapshot?.state.position) return false;
+    setFollow(true);
+    return true;
   });
 
   return null;

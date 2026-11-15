@@ -3,6 +3,14 @@ import { describe, expect, it, vi } from "vitest";
 import { createLaraBridge } from "./lara-bridge";
 
 describe("createLaraBridge", () => {
+  it("does not report an ignored or unavailable action as accepted", () => {
+    const bridge = createLaraBridge();
+    bridge.handle("focus_map", () => false);
+    expect(bridge.run({ type: "focus_map", target: "destination" })).toBe(false);
+    bridge.handle("focus_map", ({ target }) => target === "rover");
+    expect(bridge.run({ type: "focus_map", target: "destination" })).toBe(false);
+    expect(bridge.run({ type: "focus_map", target: "rover" })).toBe(true);
+  });
   it("runs the registered handler and reports when none is registered", () => {
     const bridge = createLaraBridge();
     const fn = vi.fn();
