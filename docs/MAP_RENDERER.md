@@ -21,6 +21,15 @@ queries already include exaggeration in MapLibre, so no second multiplier is
 applied to the queried ground height. The inherited display elevation offset
 and Mars model scaling are unchanged.
 
+## Space-to-sky transition
+
+The canvas background fades from dark space at zoom 3 to the Mars sky color
+at `TERRAIN_MIN_ZOOM`, currently zoom 5. MapLibre makes the globe sky transparent
+above the atmospheric limb, so `setSky` alone cannot supply that backdrop.
+The zoom listener updates the canvas background continuously and reverses when
+zooming out. It does not change the planet imagery, terrain or dust fields.
+Regression tests bind both ends of the fade to the terrain threshold.
+
 ## Dust display
 
 The dust control replays the NASA Ames reference simulation of the 2018

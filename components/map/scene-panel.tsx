@@ -7,7 +7,6 @@ import {
   MARS_TO_MAP,
   SITE_ATTRIBUTION,
   TERRAIN_SOURCE,
-  setMarsSky,
   setSlopeVisible,
   updateTerrain,
 } from "@/components/map/scene";
@@ -54,10 +53,6 @@ export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
   useEffect(() => {
     if (map) setSlopeVisible(map, sites, slopeOn);
   }, [map, sites, slopeOn]);
-
-  useEffect(() => {
-    if (map) setMarsSky(map);
-  }, [map]);
 
   const fly = (zoom: number, pitch: number, bearing: number) =>
     map?.flyTo({ center: habitat, zoom, pitch, bearing, duration: 3500 });

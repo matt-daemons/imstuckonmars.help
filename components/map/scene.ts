@@ -1,6 +1,7 @@
 // 3D scene helpers: MOLA terrain, the habitat model, and the dust-storm effect.
 import type { CustomLayerInterface, Map as MapLibreMap } from "maplibre-gl";
 import * as THREE from "three";
+import { MARS_HORIZON_COLOR, MARS_SKY_COLOR, skyBackground } from "@/lib/mars/sky";
 
 import type { LngLat } from "@/lib/mars/types";
 import { GLOBAL_COLOR_SOURCE, SITE_DATA_ROOT, mapAsset } from "@/lib/mars/map-data";
@@ -163,19 +164,25 @@ export function setSlopeVisible(m: MapLibreMap, sites: { id: string }[], on: boo
   }
 }
 
-const CLEAR = { sky: [176, 132, 104], horizon: [214, 172, 132] };
-
 /** A visual atmosphere, independent of the NASA dust measurements and model fields. */
 export function setMarsSky(m: MapLibreMap) {
   m.setSky({
-    "sky-color": `rgb(${CLEAR.sky.join(",")})`,
-    "horizon-color": `rgb(${CLEAR.horizon.join(",")})`,
-    "fog-color": `rgb(${CLEAR.horizon.join(",")})`,
+    "sky-color": MARS_SKY_COLOR,
+    "horizon-color": MARS_HORIZON_COLOR,
+    "fog-color": MARS_HORIZON_COLOR,
     "sky-horizon-blend": 0.5,
     "horizon-fog-blend": 0.2,
     "fog-ground-blend": 0.1,
     "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 0],
   });
+  // MapLibre leaves the globe's space transparent; setSky alone cannot fade that backdrop.
+  const canvas = m.getCanvas();
+  const updateBackground = () => {
+    canvas.style.backgroundColor = skyBackground(m.getZoom());
+  };
+  updateBackground();
+  m.on("zoom", updateBackground);
+  m.once("remove", () => m.off("zoom", updateBackground));
 }
 
 /** Placeholder habitat built from primitives: hab module, airlock, solar arrays. Units are Mars metres. */
