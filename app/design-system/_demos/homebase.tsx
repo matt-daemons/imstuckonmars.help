@@ -8,6 +8,7 @@ import { ExperimentLog } from "@/components/homebase/experiment-log";
 import { ConsolePane } from "@/components/homebase/pane";
 import type { HomebaseMetric } from "@/lib/homebase/types";
 import { Section } from "../_components/section";
+import { DebugMenu } from "@/components/debug/debug-menu";
 
 const fixture: HomebaseMetric = {
   id: "temperature",
@@ -35,6 +36,18 @@ export function HomebaseComponents() {
   const [generation, setGeneration] = useState(1);
   return (
     <>
+      <Section id="debug-menu" title="Debug menu">
+        <DebugMenu
+          page="Design system fixture"
+          shortcut={false}
+          readSections={() => [
+            {
+              title: "Fixture",
+              rows: [{ label: "Data", value: "Synthetic · not NASA measurements" }],
+            },
+          ]}
+        />
+      </Section>
       <Section id="homebase-readout" title="Archive readout" className="flex-col">
         <p>
           Homebase is a read-only tiled terminal workspace, not a mission launcher. Numeric values

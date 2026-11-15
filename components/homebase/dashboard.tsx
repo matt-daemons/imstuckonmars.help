@@ -14,6 +14,7 @@ import { ObservationInspector } from "./observation-inspector";
 import { ReferenceInspector } from "./reference-inspector";
 import "./terminal.css";
 import faviconUrl from "@/app/icon.svg?url";
+import { DebugMenu } from "@/components/debug/debug-menu";
 
 export type DashboardPage = "overview" | "experiments";
 const PLACEHOLDERS = [
@@ -368,6 +369,33 @@ export function HomebaseDashboard({
         base={base}
         generation={generation}
         onExperiments={() => navigate("experiments")}
+      />
+      <DebugMenu
+        page="Mission console"
+        readSections={() => [
+          {
+            title: "Archive",
+            rows: [
+              { label: "Page", value: page },
+              {
+                label: "Connection",
+                value: loading ? "Loading" : error ? (data ? "Stale" : "Unavailable") : "Connected",
+              },
+              { label: "Release", value: data?.release_id ?? "Unavailable" },
+              { label: "Archive error", value: error || "None" },
+              { label: "Reference date", value: data?.demo_today.date ?? "Unavailable" },
+              { label: "Reference sol", value: data?.demo_today.sol ?? "Unavailable" },
+              { label: "Experiments", value: data?.experiments.length ?? "Unavailable" },
+            ],
+          },
+          {
+            title: "Observations",
+            rows: data?.metrics.map((metric) => ({
+              label: metric.title,
+              value: `${metric.status} · ${metric.points.filter((point) => point.value !== null && Number.isFinite(point.value) && point.count > 0).length}/${metric.points.length} valid samples · ${metric.cadence_s} s cadence`,
+            })) ?? [{ label: "Metrics", value: "Unavailable" }],
+          },
+        ]}
       />
     </div>
   );

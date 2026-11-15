@@ -7,6 +7,7 @@ export const sectionGroups: SectionGroup[] = [
   {
     title: "Homebase dashboard",
     sections: [
+      { id: "debug-menu", title: "Debug menu" },
       { id: "homebase-readout", title: "Archive readout" },
       { id: "homebase-history", title: "Observation history" },
       { id: "homebase-log", title: "Experiment log" },

@@ -11,6 +11,7 @@ import { CrewLayer } from "@/components/expedition/crew-layer";
 import { ExpeditionHud } from "@/components/expedition/expedition-hud";
 import { LaraExpeditionBridge } from "@/components/expedition/lara-expedition-bridge";
 import { HomebaseMapEntry } from "@/components/homebase/map-entry";
+import { DebugMenu } from "@/components/debug/debug-menu";
 import {
   type SiteProps,
   addSites,
@@ -265,6 +266,67 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               <LaraExpeditionBridge />
               <CrewLayer map={loaded} />
               <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
+              <DebugMenu
+                page="Map"
+                readSections={() => {
+                  const m = map.current;
+                  const center = m?.getCenter();
+                  const terrain = m?.getTerrain();
+                  return [
+                    {
+                      title: "View",
+                      rows: [
+                        { label: "Renderer", value: m?.loaded() ? "Loaded" : "Loading" },
+                        {
+                          label: "Center latitude",
+                          value: center ? `${center.lat.toFixed(6)}°` : "Unavailable",
+                        },
+                        {
+                          label: "Center longitude",
+                          value: center ? `${center.lng.toFixed(6)}°` : "Unavailable",
+                        },
+                        { label: "Zoom", value: m?.getZoom().toFixed(3) ?? "Unavailable" },
+                        {
+                          label: "Pitch",
+                          value: m ? `${m.getPitch().toFixed(2)}°` : "Unavailable",
+                        },
+                        {
+                          label: "Bearing",
+                          value: m ? `${m.getBearing().toFixed(2)}°` : "Unavailable",
+                        },
+                        {
+                          label: "Projection",
+                          value: m ? JSON.stringify(m.getProjection()?.type) : "Unavailable",
+                        },
+                      ],
+                    },
+                    {
+                      title: "Terrain and habitat",
+                      rows: [
+                        { label: "Terrain source", value: terrain?.source ?? "Disabled" },
+                        { label: "Exaggeration", value: terrain?.exaggeration ?? "Unavailable" },
+                        {
+                          label: "Base elevation",
+                          value:
+                            m?.queryTerrainElevation(HABITAT) == null
+                              ? "Unavailable"
+                              : `${m.queryTerrainElevation(HABITAT)?.toFixed(2)} m · display datum`,
+                        },
+                        {
+                          label: "Habitat display",
+                          value:
+                            !m || m.getZoom() < 7 || !terrain
+                              ? "Hidden at this view"
+                              : habitatEnlarged
+                                ? "Enlarged · not to scale"
+                                : "Authored scale",
+                        },
+                        { label: "Map error", value: error || "None" },
+                      ],
+                    },
+                  ];
+                }}
+              />
               <Tooltip>
                 <TooltipTrigger
                   render={

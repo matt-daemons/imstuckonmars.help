@@ -1,5 +1,11 @@
 # Homebase dashboard
 
+Shift+D opens a read-only debug menu on the map and mission console. It reports
+the active view or archive, with Refresh and Copy diagnostics controls. Escape
+or Shift+D closes it. The shortcut ignores text fields, editable content,
+selection controls, composition, key repeat and extra modifiers. Other dialogs
+keep their keyboard focus; a map-opened mission console owns its own debug menu.
+
 Click the homebase marker or the **Mission dashboard** button on `/` to open the console over the existing map. Full map or Escape closes it without recreating the map or changing its simulation. `/mission` opens the overview directly, and `/mission/experiments` opens the experiment log. Inside the map dialog, both pages share the same fetched response and preserve the map underneath. There is no entry screen, mission creation, replay control, fault injection or simulation state in this dashboard.
 
 ## Data connection
