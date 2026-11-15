@@ -69,8 +69,8 @@ import { Section } from "../_components/section";
 
 const sites = [
   { value: "acidalia", label: "Acidalia Planitia" },
-  { value: "ares3", label: "Ares 3 Hab" },
-  { value: "ares4", label: "Ares 4 MAV" },
+  { value: "arcadia", label: "Arcadia Planitia base" },
+  { value: "jezero", label: "Jezero Crater" },
   { value: "pathfinder", label: "Pathfinder" },
   { value: "schiaparelli", label: "Schiaparelli Crater" },
 ];
@@ -142,7 +142,7 @@ export function Forms() {
       <Section id="label" title="Label">
         <div className="flex flex-col gap-2">
           <Label htmlFor="label-demo">Callsign</Label>
-          <Input id="label-demo" placeholder="Ares III" className="w-64" />
+          <Input id="label-demo" placeholder="LARA-1" className="w-64" />
         </div>
       </Section>
 

@@ -253,17 +253,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
       },
       {
-        id: "plan",
-        title: "Science stops and hand-drawn route",
-        kind: "placeholder",
-        credit: "LARA routing team",
-        use: "Science stops on the map, and the old hand-drawn route layer (off by default).",
-        caveats: [
-          "Placeholder geometry. Real routes come from the route planner above; this layer is not a planned traverse.",
-        ],
-        layerIds: ["stops", "route"],
-      },
-      {
         id: "fake-sensors",
         title: "Fake data mode (future sensors)",
         kind: "simulated",
@@ -284,6 +273,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         detail: "Hypothetical base at 45.97°N, 183.95°E",
         use: "Shows where the crew lives and parks.",
         caveats: ["The base location and models are illustrations, not a NASA design."],
+        layerIds: ["stops"],
       },
     ],
   },

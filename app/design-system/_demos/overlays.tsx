@@ -190,9 +190,7 @@ export function Overlays() {
           <PreviewCardTrigger href="#preview-card" className="underline underline-offset-4">
             Acidalia Planitia
           </PreviewCardTrigger>
-          <PreviewCardPopup>
-            A plain in the northern lowlands and the Ares 3 landing site.
-          </PreviewCardPopup>
+          <PreviewCardPopup>A plain in the northern lowlands.</PreviewCardPopup>
         </PreviewCard>
       </Section>
 

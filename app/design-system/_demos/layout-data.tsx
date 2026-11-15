@@ -102,7 +102,7 @@ export function LayoutData() {
         <CardFrame className="w-80">
           <CardFrameHeader>
             <CardFrameTitle>Crew</CardFrameTitle>
-            <CardFrameDescription>Ares III</CardFrameDescription>
+            <CardFrameDescription>LARA-1</CardFrameDescription>
             <CardFrameAction>
               <Button size="sm" variant="outline">
                 <PlusIcon />
