@@ -17,6 +17,7 @@ import type { LngLat } from "@/lib/mars/types";
 import { ClearZonesButton } from "./clear-zones-button";
 import { DriveControls, nearestFirst } from "./drive-controls";
 import { DriveAssumptions, DriveResult } from "./drive-result";
+import { MapPanel } from "./map-panel";
 import { useDrivePlan, useLoadedGrid } from "./route-hooks";
 import {
   collection,
@@ -188,14 +189,13 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
     setDraft([]);
   }
 
+  // From lg up it can sit over the bottom centre, so it ends above the hide-panels toggle there.
   return (
-    <aside
-      aria-labelledby="route-title"
-      className="absolute right-4 bottom-12 flex max-h-[max(16rem,calc(100svh-31rem))] w-72 max-w-[calc(100%-2rem)] flex-col gap-3 overflow-y-auto rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur lg:top-4 lg:right-80 lg:bottom-auto lg:max-h-[calc(100svh-2rem)]"
+    <MapPanel
+      title="Route"
+      className="absolute right-4 bottom-12 max-h-[max(16rem,calc(100svh-31rem))] w-72 max-w-[calc(100%-2rem)] overflow-y-auto text-sm lg:top-4 lg:right-80 lg:bottom-auto lg:max-h-[calc(100svh-6.5rem)]"
+      bodyClassName="mt-2 flex flex-col gap-3"
     >
-      <h2 id="route-title" className="font-heading text-sm font-semibold">
-        Route
-      </h2>
       <ToggleGroup
         aria-label="Mission type"
         variant="outline"
@@ -296,7 +296,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
           )}
         </CollapsiblePanel>
       </Collapsible>
-    </aside>
+    </MapPanel>
   );
 }
 

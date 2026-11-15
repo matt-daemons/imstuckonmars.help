@@ -236,18 +236,19 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     <div className="relative h-svh w-full" data-panels-hidden={panelsHidden || undefined}>
       {/* The renderer positions the container relatively, so size it with h-full. */}
       <div ref={container} className="h-full w-full" />
+      {/* bottom-12 keeps it above the attribution and cursor readout, level with the bottom panels. */}
       <Tooltip>
         <TooltipTrigger
           render={<Button size="sm" variant={panelsHidden ? "default" : "outline"} />}
           aria-pressed={panelsHidden}
           aria-keyshortcuts="H"
           onClick={() => setPanelsHidden(!panelsHidden)}
-          className="absolute top-4 left-1/2 -translate-x-1/2"
+          className="absolute bottom-12 left-1/2 -translate-x-1/2"
         >
           {panelsHidden ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
           {panelsHidden ? "Show panels" : "Hide panels"}
         </TooltipTrigger>
-        <TooltipPopup side="bottom">
+        <TooltipPopup side="top">
           Shortcut: <Kbd>H</Kbd>
         </TooltipPopup>
       </Tooltip>
@@ -255,7 +256,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
       <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
       <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} sites={sites} />
       {error && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
+        <div className="absolute bottom-22 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
           {error}
         </div>
       )}
