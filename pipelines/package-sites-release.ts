@@ -1,13 +1,16 @@
 // Gathers the HiRISE water-ice site outputs into one folder for M's R2 upload:
-//   data/map-assets/sites-v1/sites/<dtm>/{imagery,terrain,slope}/{z}/{x}/{y}  (map tiles)
-//   data/map-assets/sites-v1/slope/<HiRISE ID>_slope.tif                       (routing COGs, Int16 tenths of a degree)
-//   data/map-assets/sites-v1/sites.geojson + catalog.json
-// Upload: MAP_RELEASE_CONFIG=pipelines/sites-release.json pnpm maps:upload
-// Usage: pnpm sites:package (after pnpm pipe:sites and pnpm pipe:slope for every site)
+//   data/map-assets/sites-v2/sites/<dtm>/{imagery,terrain,slope,roughness}/{z}/{x}/{y}  (map tiles)
+//   data/map-assets/sites-v2/slope/<HiRISE ID>_slope.tif          (routing COGs, Int16 tenths of a degree)
+//   data/map-assets/sites-v2/roughness/<HiRISE ID>_roughness.tif  (Int16 cm, same grid as slope)
+//   data/map-assets/sites-v2/sites.geojson + catalog.json
+// sites-v1 (no roughness) is an immutable prefix on R2, so roughness ships as a new version.
+// Upload: MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload
+// Usage: pnpm sites:package (after pnpm pipe:sites, pipe:slope and pipe:roughness for every site)
 import { cp, mkdir, readdir, rm, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-const root = "data/map-assets/sites-v1";
+const version = "sites-v2";
+const root = join("data/map-assets", version);
 const sites = JSON.parse(
   await (await import("node:fs/promises")).readFile("public/data/processed/sites.geojson", "utf8"),
 ) as { features: { properties: { id: string; hirise_id: string; kind: string } }[] };
@@ -15,9 +18,10 @@ const pois = sites.features.filter((f) => f.properties.kind === "poi").map((f) =
 
 await rm(root, { recursive: true, force: true });
 await mkdir(join(root, "slope"), { recursive: true });
+await mkdir(join(root, "roughness"), { recursive: true });
 let sourceBytes = 0;
 for (const { id, hirise_id } of pois) {
-  for (const layer of ["imagery", "terrain", "slope"]) {
+  for (const layer of ["imagery", "terrain", "slope", "roughness"]) {
     await cp(join("public/data/sites", id, layer), join(root, "sites", id, layer), {
       recursive: true,
     });
@@ -25,6 +29,10 @@ for (const { id, hirise_id } of pois) {
   await cp(
     join("data/processed/sites", id, "slope.tif"),
     join(root, "slope", `${hirise_id}_slope.tif`),
+  );
+  await cp(
+    join("data/processed/sites", id, "roughness.tif"),
+    join(root, "roughness", `${hirise_id}_roughness.tif`),
   );
   for (const file of await readdir(join("data/raw/hirise", id))) {
     sourceBytes += (await stat(join("data/raw/hirise", id, file))).size;
@@ -36,7 +44,7 @@ await writeFile(
   join(root, "catalog.json"),
   JSON.stringify(
     {
-      id: "sites-v1",
+      id: version,
       sourceBytes,
       attribution: "NASA/JPL/University of Arizona (MRO HiRISE)",
       sites: pois.map((p) => p.id),
@@ -45,6 +53,9 @@ await writeFile(
         terrain: "sites/<dtm>/terrain/{z}/{x}/{y}.png (Terrarium, z9–15, +10 km display offset)",
         slopeTiles: "sites/<dtm>/slope/{z}/{x}/{y}.webp (z11–16, colour classes)",
         slopeCogs: "slope/<HiRISE ID>_slope.tif (Int16, value / 10 = degrees, nodata −9999)",
+        roughnessTiles: "sites/<dtm>/roughness/{z}/{x}/{y}.webp (z11–16, colour classes)",
+        roughnessCogs:
+          "roughness/<HiRISE ID>_roughness.tif (Int16 cm, value / 100 = m RMS height deviation from the 5 m trend; 5 m cells, same lon/lat grid as the slope COG; nodata −9999)",
       },
     },
     null,
