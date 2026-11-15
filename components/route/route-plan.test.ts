@@ -29,6 +29,7 @@ describe("initialRoutePlan", () => {
       zones: [],
       zonesDrawn: 0,
       step: "mission",
+      showShortest: false,
     });
   });
 });
@@ -42,6 +43,7 @@ describe("routePlanReducer", () => {
     { action: { type: "addZone", ring }, changed: { zones: [zone], zonesDrawn: 1 } },
     { action: { type: "clearZones" }, changed: { zones: [] } },
     { action: { type: "goTo", step: "check" }, changed: { step: "check" } },
+    { action: { type: "showShortest", shown: true }, changed: { showShortest: true } },
   ];
   it.each(cases)("$action.type changes only its own field", ({ action, changed }) => {
     expect(routePlanReducer(initial, action)).toEqual({ ...initial, ...changed });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { walkLegTiming } from "../flight-rules/walk-leg";
-import { gentleWalkCost, planDriveWalk, SOL_MINUTES } from "./drive-walk";
+import { gentleWalkCost, planDriveWalk, SOL_MINUTES, type RouteChoice } from "./drive-walk";
 import { NO_THERMAL_INERTIA, type PowerSource } from "./driving";
 import { cellAt, cellCenter, type RouteGrid } from "./route-grid";
 import { findPath, slopeDegrees } from "./routing";
@@ -42,7 +42,11 @@ function setup() {
     thermalInertia: new Int16Array(46 * 9).fill(NO_THERMAL_INERTIA),
   };
   const driveWalls = new Uint8Array(46 * 9);
-  const plan = ({ power = "fission" as PowerSource, samplingMin = 60 } = {}) =>
+  const plan = ({
+    power = "fission" as PowerSource,
+    samplingMin = 60,
+    route = "safest" as RouteChoice,
+  } = {}) =>
     planDriveWalk(
       driveGrid,
       slopeDegrees(driveGrid),
@@ -52,8 +56,9 @@ function setup() {
       base,
       power,
       samplingMin,
+      route,
     );
-  return { site, siteInfo, driveWalls, plan };
+  return { site, siteInfo, driveGrid, driveWalls, plan };
 }
 
 function legsOf(
@@ -134,6 +139,44 @@ describe("planDriveWalk", () => {
     const noWalk = setup();
     noWalk.site.walls[cellAt(noWalk.site.grid, noWalk.siteInfo.poi)!] = 1;
     expect(noWalk.plan()).toMatchObject({ status: "walk_failed", collection: null });
+  });
+});
+
+describe("planDriveWalk, shortest", () => {
+  /** setup() with a 19° patch, 200 × 300 m, across the walk's straight line east of the POI. */
+  function steepSite() {
+    const trip = setup();
+    trip.site.slope.forEach((_, cell) => {
+      const row = Math.floor(cell / 261);
+      const col = cell % 261;
+      if (col >= 140 && col <= 160 && row >= 115 && row <= 145) trip.site.slope[cell] = 19;
+    });
+    return trip;
+  }
+
+  it("parks at the same staging point and is no longer than the safest trip", () => {
+    const { plan } = steepSite();
+    const safest = plan();
+    const shortest = plan({ route: "shortest" });
+    expect(shortest.status).toBe("ok");
+    expect(shortest.staging).toEqual(safest.staging);
+    expect(shortest.drive!.outbound.distance_m).toBeLessThanOrEqual(
+      safest.drive!.outbound.distance_m,
+    );
+    expect(shortest.walk!.outbound.distance_m).toBeLessThan(safest.walk!.outbound.distance_m);
+    expect(shortest.walk!.route!.max_slope).toBe(19);
+    expect(safest.walk!.route!.max_slope).toBe(0);
+  });
+
+  it("keeps the drive out of walls", () => {
+    const { plan, driveGrid, driveWalls } = setup();
+    // A wall across the strip at column 20, open only in the top row.
+    for (let row = 1; row < 9; row++) driveWalls[row * 46 + 20] = 1;
+    const { drive } = plan({ route: "shortest" });
+    expect(drive!.summary).not.toBeNull();
+    for (const point of [...drive!.outbound.path, ...drive!.back.path]) {
+      expect(driveWalls[cellAt(driveGrid, point)!]).toBe(0);
+    }
   });
 });
 

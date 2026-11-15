@@ -191,6 +191,10 @@ export function WalkAssumptions({ plan }: { plan: Plan | null }) {
         Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit, assumed
         for Mars).
       </p>
+      <p>
+        The route prefers gentle ground: each step counts as its length × (1 + (slope /{" "}
+        {FLIGHT_RULES.slope.caution_above_degrees}°)²), our assumption.
+      </p>
       <p>{searchLine(plan)}</p>
     </>
   );

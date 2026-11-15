@@ -113,7 +113,8 @@ export interface StepCostModel {
   costPerMetreLowerBound: number;
 }
 
-const DISTANCE_COST: StepCostModel = {
+/** Plain 3D distance: A* then finds the shortest route the walls allow. */
+export const DISTANCE_COST: StepCostModel = {
   stepCost: (horizontalM, riseM) => Math.hypot(horizontalM, riseM),
   costPerMetreLowerBound: 1,
 };
@@ -285,9 +286,10 @@ export function planWalk(
   walls: Uint8Array,
   base: LngLat,
   target: LngLat,
+  cost: StepCostModel = DISTANCE_COST,
 ): { outbound: PlannedPath; back: PlannedPath; summary: RouteSummary | null } {
-  const outbound = findPath(grid, slope, walls, base, target);
-  const back = findPath(grid, slope, walls, target, base);
+  const outbound = findPath(grid, slope, walls, base, target, { cost });
+  const back = findPath(grid, slope, walls, target, base, { cost });
   if (outbound.status !== "ok" || back.status !== "ok") return { outbound, back, summary: null };
   return {
     outbound,

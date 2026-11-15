@@ -3,9 +3,21 @@ import { evaluateRoute, type EvaPlan, type EvaVerdict } from "../flight-rules/ev
 import { ROVER, ROVER_RULES, type RoverFactor } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES, type Factor } from "../flight-rules/rules";
 import { walkLegTiming, type WalkLegTiming } from "../flight-rules/walk-leg";
-import { planDrive, type DriveGrid, type DriveSummary, type PowerSource } from "./driving";
+import {
+  drivingCost,
+  planDrive,
+  type DriveGrid,
+  type DriveSummary,
+  type PowerSource,
+} from "./driving";
 import { toGridLng } from "./route-grid";
-import { findPath, marsDistanceM, type PlannedPath, type StepCostModel } from "./routing";
+import {
+  DISTANCE_COST,
+  findPath,
+  marsDistanceM,
+  type PlannedPath,
+  type StepCostModel,
+} from "./routing";
 import { findStagingPoint, type SiteGrid, type SiteInfo } from "./site-grid";
 import type {
   LngLat,
@@ -46,6 +58,12 @@ export interface DriveWalkPlan {
   verdict: TripVerdict | null;
 }
 
+/**
+ * Which route A* looks for: "safest" spends the least drive energy and keeps the walk to gentle
+ * ground; "shortest" is the shortest route within the same walls, for comparison.
+ */
+export type RouteChoice = "safest" | "shortest";
+
 /** Drive base → staging point and back on the MOLA strip; walk staging point → POI and back on the site grid. */
 export function planDriveWalk(
   driveGrid: DriveGrid,
@@ -56,6 +74,7 @@ export function planDriveWalk(
   base: LngLat,
   power: PowerSource,
   samplingMin: number,
+  route: RouteChoice = "safest",
 ): DriveWalkPlan {
   const staging = findStagingPoint(site, siteInfo.poi, base);
   if (!staging) {
@@ -70,6 +89,7 @@ export function planDriveWalk(
   }
   // The strip may lie east of 180°, so points west of 0 move up by 360° before lookup.
   const inDriveGrid = ([lng, lat]: LngLat): LngLat => [toGridLng(driveGrid, lng), lat];
+  const shortest = route === "shortest";
   const drive = planDrive(
     driveGrid,
     driveSlope,
@@ -77,8 +97,10 @@ export function planDriveWalk(
     inDriveGrid(base),
     inDriveGrid(staging),
     power,
+    shortest ? DISTANCE_COST : drivingCost(driveGrid),
   );
-  const walk = planSiteWalk(site, staging, siteInfo.poi, samplingMin);
+  const walkCost = shortest ? DISTANCE_COST : gentleWalkCost(site.slope);
+  const walk = planSiteWalk(site, staging, siteInfo.poi, samplingMin, walkCost);
   const failed = { collection: null, drive, walk, staging, verdict: null };
   if (!drive.summary) return { status: "drive_failed", ...failed };
   if (!walk.route || !walk.verdict) return { status: "walk_failed", ...failed };
@@ -114,9 +136,15 @@ export function planDriveWalk(
   };
 }
 
-/** Walks out and back on the site grid, preferring gentle ground, and checks the walk against the suit rules. */
-function planSiteWalk(site: SiteGrid, staging: LngLat, poi: LngLat, samplingMin: number): WalkPlan {
-  const options = { cost: gentleWalkCost(site.slope) };
+/** Walks out and back on the site grid at the given cost, and checks the walk against the suit rules. */
+function planSiteWalk(
+  site: SiteGrid,
+  staging: LngLat,
+  poi: LngLat,
+  samplingMin: number,
+  cost: StepCostModel,
+): WalkPlan {
+  const options = { cost };
   const outbound = findPath(site.grid, site.slope, site.walls, staging, poi, options);
   const back = findPath(site.grid, site.slope, site.walls, poi, staging, options);
   if (outbound.status !== "ok" || back.status !== "ok") {

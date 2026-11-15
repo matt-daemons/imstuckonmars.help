@@ -20,6 +20,8 @@ export interface RoutePlanInputs {
   /** How many zones the operator has drawn, so each new one gets the next number. */
   zonesDrawn: number;
   step: Step;
+  /** Draw the shortest route under the planned one, to compare them on the map. */
+  showShortest: boolean;
 }
 
 export type RoutePlanAction =
@@ -33,7 +35,8 @@ export type RoutePlanAction =
   | { type: "setSampling"; minutes: number }
   | { type: "addZone"; ring: LngLat[] }
   | { type: "clearZones" }
-  | { type: "goTo"; step: Step };
+  | { type: "goTo"; step: Step }
+  | { type: "showShortest"; shown: boolean };
 
 // Time at the site, a planning input like the walk-leg timing's, not a NASA value.
 const DEFAULT_SAMPLING_MIN = 60;
@@ -53,6 +56,7 @@ export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs 
     zones: [],
     zonesDrawn: 0,
     step: "mission",
+    showShortest: false,
   };
 }
 
@@ -92,5 +96,7 @@ export function routePlanReducer(state: RoutePlanInputs, action: RoutePlanAction
       return { ...state, zones: [] };
     case "goTo":
       return { ...state, step: action.step };
+    case "showShortest":
+      return { ...state, showShortest: action.shown };
   }
 }

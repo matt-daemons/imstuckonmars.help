@@ -30,6 +30,7 @@ import {
 
 import { splitHeadline } from "./headline";
 import { ReturnCheck } from "./return-check";
+import { RouteCompare } from "./route-compare";
 import { StormDrill } from "./storm-drill";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
@@ -96,7 +97,7 @@ function CheckLayout({
   source?: string;
   assumptions: ReactNode;
 }) {
-  const { mission, zones } = useRoutePlan().inputs;
+  const { mission, zones, showShortest } = useRoutePlan().inputs;
   const split = splitHeadline(readouts, headline);
   return (
     <div className="flex flex-col gap-3">
@@ -105,6 +106,7 @@ function CheckLayout({
       <ReturnCheck />
       {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
       {fit}
+      <RouteCompare />
       <Accordion multiple>
         <AccordionItem value="details">
           <AccordionTrigger>Details</AccordionTrigger>
@@ -114,7 +116,7 @@ function CheckLayout({
             <p className="text-xs">
               No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
             </p>
-            <RouteLegend mode={mission} />
+            <RouteLegend mode={mission} shortest={showShortest} />
           </AccordionPanel>
         </AccordionItem>
         <AccordionItem value="assumptions">
