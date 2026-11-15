@@ -1,10 +1,11 @@
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
+import type { RouteChoice } from "@/lib/mars/drive-walk";
 import type { PowerSource } from "@/lib/mars/driving";
 import type { NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 export type MissionType = "walking" | "drive-walk";
-export type Step = "mission" | "where" | "check";
+export type Step = "mission" | "where" | "check" | "go";
 
 /** The operator's route choices. The destination is not stored: it is the site the end is on. */
 export interface RoutePlanInputs {
@@ -22,6 +23,8 @@ export interface RoutePlanInputs {
   step: Step;
   /** Draw the shortest route under the planned one, to compare them on the map. */
   showShortest: boolean;
+  /** The route the expedition follows. */
+  route: RouteChoice;
 }
 
 export type RoutePlanAction =
@@ -36,7 +39,8 @@ export type RoutePlanAction =
   | { type: "addZone"; ring: LngLat[] }
   | { type: "clearZones" }
   | { type: "goTo"; step: Step }
-  | { type: "showShortest"; shown: boolean };
+  | { type: "showShortest"; shown: boolean }
+  | { type: "chooseRoute"; route: RouteChoice };
 
 // Time at the site, a planning input like the walk-leg timing's, not a NASA value.
 const DEFAULT_SAMPLING_MIN = 60;
@@ -57,6 +61,7 @@ export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs 
     zonesDrawn: 0,
     step: "mission",
     showShortest: false,
+    route: "safest",
   };
 }
 
@@ -98,5 +103,7 @@ export function routePlanReducer(state: RoutePlanInputs, action: RoutePlanAction
       return { ...state, step: action.step };
     case "showShortest":
       return { ...state, showShortest: action.shown };
+    case "chooseRoute":
+      return { ...state, route: action.route };
   }
 }

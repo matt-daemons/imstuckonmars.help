@@ -1,3 +1,4 @@
+import { LaraBridgeProvider } from "@/components/copilot/lara-bridge";
 import { LaraProvider } from "@/components/copilot/lara-context";
 import { LaraLauncher } from "@/components/copilot/lara-launcher";
 import { LaraPanel } from "@/components/copilot/lara-panel";
@@ -8,14 +9,16 @@ export default function Home() {
   return (
     <main className="relative">
       {/* One LARA session, shared by the verdict strip and the chat. */}
-      <LaraProvider>
-        <MarsMap>
-          <VerdictStrip />
-          <LaraLauncher>
-            <LaraPanel />
-          </LaraLauncher>
-        </MarsMap>
-      </LaraProvider>
+      <LaraBridgeProvider>
+        <LaraProvider>
+          <MarsMap>
+            <VerdictStrip />
+            <LaraLauncher>
+              <LaraPanel />
+            </LaraLauncher>
+          </MarsMap>
+        </LaraProvider>
+      </LaraBridgeProvider>
     </main>
   );
 }
