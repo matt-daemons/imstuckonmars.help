@@ -9,6 +9,7 @@ import { Sidebar, SidebarContent, SidebarHeader, useSidebar } from "@/components
 import { Tabs, TabsList, TabsPanel, TabsTab } from "@/components/ui/tabs";
 import type { LngLat } from "@/lib/mars/types";
 
+import { MapPlacementHint } from "./placement-hint";
 import type { Step } from "./route-plan";
 import { useRoutePlan } from "./route-plan-provider";
 import { CheckStep } from "./steps/check-step";
@@ -43,7 +44,7 @@ export function RouteSidebar({
   children: ReactNode;
 }) {
   const { inputs, dispatch } = useRoutePlan();
-  const { toggleSidebar } = useSidebar();
+  const { isMobile, openMobile, toggleSidebar } = useSidebar();
   const placement = usePlacement(map);
   const index = STEPS.findIndex(({ step }) => step === inputs.step);
 
@@ -62,55 +63,58 @@ export function RouteSidebar({
   const goTo = (step: Step) => dispatch({ type: "goTo", step });
 
   return (
-    // invisible once slid away, so Tab cannot reach controls that are off screen
-    <Sidebar className="transition-[left,right,width,visibility] group-data-[collapsible=offcanvas]:invisible">
-      <Tabs
-        value={inputs.step}
-        // Safe cast: the only values are the step tabs below.
-        onValueChange={(step) => goTo(step as Step)}
-        className="min-h-0 flex-1 gap-0"
-      >
-        <SidebarHeader className="gap-3 border-b bg-secondary p-4">
-          <h2 className="font-heading text-sm font-semibold">LARA · Arcadia base</h2>
-          <TabsList aria-label="Mission steps" className="w-full">
-            {STEPS.map(({ step, number, label }) => (
-              <TabsTab key={step} value={step}>
-                <span aria-hidden>{number}</span>
-                {label}
-              </TabsTab>
-            ))}
-          </TabsList>
-        </SidebarHeader>
-        <SidebarContent className="gap-4 p-4 text-sm">
-          <TabsPanel value="mission">
-            <MissionStep map={map} base={base} target={target} />
-          </TabsPanel>
-          <TabsPanel value="where">
-            <WhereStep map={map} base={base} target={target} placement={placement} />
-          </TabsPanel>
-          <TabsPanel value="check">
-            <CheckStep map={map} />
-          </TabsPanel>
-          <div className="flex justify-between gap-2">
-            <Button
-              variant="outline"
-              disabled={index === 0}
-              onClick={() => goTo(STEPS[index - 1].step)}
-            >
-              <ArrowLeftIcon aria-hidden />
-              Back
-            </Button>
-            <Button
-              disabled={index === STEPS.length - 1}
-              onClick={() => goTo(STEPS[index + 1].step)}
-            >
-              Next
-              <ArrowRightIcon aria-hidden />
-            </Button>
-          </div>
-          {children}
-        </SidebarContent>
-      </Tabs>
-    </Sidebar>
+    <>
+      {/* invisible once slid away, so Tab cannot reach controls that are off screen */}
+      <Sidebar className="transition-[left,right,width,visibility] group-data-[collapsible=offcanvas]:invisible">
+        <Tabs
+          value={inputs.step}
+          // Safe cast: the only values are the step tabs below.
+          onValueChange={(step) => goTo(step as Step)}
+          className="min-h-0 flex-1 gap-0"
+        >
+          <SidebarHeader className="gap-3 border-b bg-secondary p-4">
+            <h2 className="font-heading text-sm font-semibold">LARA · Arcadia base</h2>
+            <TabsList aria-label="Mission steps" className="w-full">
+              {STEPS.map(({ step, number, label }) => (
+                <TabsTab key={step} value={step}>
+                  <span aria-hidden>{number}</span>
+                  {label}
+                </TabsTab>
+              ))}
+            </TabsList>
+          </SidebarHeader>
+          <SidebarContent className="gap-4 p-4 text-sm">
+            <TabsPanel value="mission">
+              <MissionStep map={map} base={base} target={target} />
+            </TabsPanel>
+            <TabsPanel value="where">
+              <WhereStep map={map} base={base} target={target} placement={placement} />
+            </TabsPanel>
+            <TabsPanel value="check">
+              <CheckStep map={map} />
+            </TabsPanel>
+            <div className="flex justify-between gap-2">
+              <Button
+                variant="outline"
+                disabled={index === 0}
+                onClick={() => goTo(STEPS[index - 1].step)}
+              >
+                <ArrowLeftIcon aria-hidden />
+                Back
+              </Button>
+              <Button
+                disabled={index === STEPS.length - 1}
+                onClick={() => goTo(STEPS[index + 1].step)}
+              >
+                Next
+                <ArrowRightIcon aria-hidden />
+              </Button>
+            </div>
+            {children}
+          </SidebarContent>
+        </Tabs>
+      </Sidebar>
+      {isMobile && <MapPlacementHint placement={placement} shown={!openMobile} />}
+    </>
   );
 }

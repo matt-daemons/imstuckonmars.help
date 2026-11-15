@@ -63,17 +63,23 @@ export function LaraPanel() {
     log.current?.lastElementChild?.scrollIntoView({ block: "end" });
   }, [lara.turns]);
 
-  // Space bar is push-to-talk when focus is not in a text field.
+  // Space bar is push-to-talk unless focus is where Space already does something: a text field
+  // types it, and a control (button, tab, radio, checkbox, switch, link, summary, select) is
+  // activated by it, which keyboard users rely on.
   useEffect(() => {
-    const typing = (e: KeyboardEvent) =>
-      e.target instanceof HTMLElement && e.target.closest("input, textarea, [contenteditable]");
+    const ownsSpace = (e: KeyboardEvent) =>
+      e.target instanceof HTMLElement &&
+      e.target.closest(
+        "input, textarea, select, [contenteditable], button, a[href], summary, " +
+          "[role=button], [role=tab], [role=radio], [role=checkbox], [role=switch], [role=link]",
+      );
     const down = (e: KeyboardEvent) => {
-      if (e.code !== "Space" || e.repeat || typing(e) || busy) return;
+      if (e.code !== "Space" || e.repeat || ownsSpace(e) || busy) return;
       e.preventDefault();
       void lara.startListening();
     };
     const up = (e: KeyboardEvent) => {
-      if (e.code === "Space" && !typing(e)) lara.stopListening();
+      if (e.code === "Space" && !ownsSpace(e)) lara.stopListening();
     };
     window.addEventListener("keydown", down);
     window.addEventListener("keyup", up);

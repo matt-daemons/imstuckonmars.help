@@ -41,7 +41,7 @@ type Status = "starting" | "idle" | "listening" | "transcribing" | "thinking" | 
 
 const WAKE_REPLY = "Yes?";
 const LEADING_WAKE_PHRASE = /^\s*(hey|okay|ok)[\s,]+(lara|laura|lora)\b[\s,.!?]*/i;
-const POLL_MS = 2000;
+export const POLL_MS = 2000;
 const HISTORY_TURNS = 8;
 
 async function json<T>(response: Response): Promise<T> {
@@ -57,6 +57,8 @@ export function useLara() {
   const [turns, setTurns] = useState<Turn[]>([]);
   const [status, setStatus] = useState<Status>("starting");
   const [error, setError] = useState<string | null>(null);
+  // When the last poll succeeded (ms since epoch), so readers can tell a stale snapshot.
+  const [polledAt, setPolledAt] = useState<number | null>(null);
   const [voice, setVoice] = useState(true);
   const seenReasons = useRef<Set<string> | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
@@ -104,6 +106,7 @@ export function useLara() {
     if (!mission) return null;
     const next = await json<MissionSnapshot>(await authed(`missions/${mission.id}`));
     store(next);
+    setPolledAt(Date.now());
     return next;
   }, [authed, mission, store]);
 
@@ -315,6 +318,7 @@ export function useLara() {
   return {
     ready: Boolean(mission),
     snapshot,
+    polledAt,
     turns,
     status,
     error,

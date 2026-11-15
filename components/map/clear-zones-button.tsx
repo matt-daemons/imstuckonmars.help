@@ -13,7 +13,6 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
-import { EXAMPLE_ZONE } from "@/lib/mars/route-zones";
 import type { NoGoZone } from "@/lib/mars/routing";
 
 /** Clearing zones can turn a NO-GO into a GO, so it asks first. */
@@ -29,7 +28,6 @@ export function ClearZonesButton({
   // The zones as they were when the dialog opened, so its copy holds still while it closes.
   const [zonesAtOpen, setZonesAtOpen] = useState<NoGoZone[]>([]);
   const count = zonesAtOpen.length;
-  const includesExample = zonesAtOpen.some((zone) => zone.id === EXAMPLE_ZONE.id);
   return (
     <AlertDialog onOpenChange={(open) => open && setZonesAtOpen(zones)}>
       <AlertDialogTrigger
@@ -46,8 +44,6 @@ export function ClearZonesButton({
           </AlertDialogTitle>
           <AlertDialogDescription>
             {count === 1 ? "Routes will no longer avoid it." : "Routes will no longer avoid them."}
-            {includesExample &&
-              (count === 1 ? " This is the example zone." : " This includes the example zone.")}
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>

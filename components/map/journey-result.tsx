@@ -1,3 +1,4 @@
+import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { DriveSummary } from "@/lib/mars/driving";
 import type { RouteSummary } from "@/lib/mars/types";
@@ -20,10 +21,16 @@ const FAILURES: Partial<Record<string, string>> = {
 };
 
 /** The verdict, the reason no journey was found, or the pending line. */
-export function JourneyStatus({ route, status }: { route: RouteSummary | null; status: string }) {
-  if (route) {
-    return <VerdictAlert check={route} notChecked="Not checked: radiation, dust, daylight." />;
-  }
+export function JourneyStatus({
+  check,
+  notChecked,
+  status,
+}: {
+  check: EvaVerdict<string> | null;
+  notChecked: string;
+  status: string;
+}) {
+  if (check) return <VerdictAlert check={check} notChecked={notChecked} />;
   const failure = FAILURES[status];
   if (!failure) return <p className="text-muted-foreground">Planning route…</p>;
   // The key replays the shake each time the reason changes.

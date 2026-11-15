@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
+import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
 import { ROVER_RULES } from "@/lib/flight-rules/rover-rules";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
@@ -24,14 +25,22 @@ import type { SitePoi } from "./scene-panel";
 export function DriveWalkStatus({
   journey,
   destination,
+  check,
+  notChecked,
 }: {
   journey: DriveWalk;
   destination: SitePoi | null;
+  /** The trip's verdict, storms included; null until the trip is planned. */
+  check: EvaVerdict<string> | null;
+  notChecked: string;
 }) {
-  const { plan } = journey;
   return (
     waitingLine(journey, destination) ?? (
-      <JourneyStatus route={plan?.collection?.route ?? null} status={plan?.status ?? "planning"} />
+      <JourneyStatus
+        check={check}
+        notChecked={notChecked}
+        status={journey.plan?.status ?? "planning"}
+      />
     )
   );
 }

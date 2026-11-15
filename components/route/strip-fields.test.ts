@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { noRouteText, stripFields, walkMargin } from "./strip-fields";
+import { noRouteText, stormLimit, stripFields, walkMargin } from "./strip-fields";
 
 describe("walkMargin", () => {
   it("measures the margin on the verdict's limiting rule, even when another rule is tighter", () => {
@@ -53,6 +53,47 @@ describe("stripFields", () => {
       { label: "Rover battery", value: "67%" },
       { label: "Margin", value: "47%" },
     ]);
+  });
+});
+
+describe("stormLimit", () => {
+  // 180 min x 1.3 terrain margin = 234 min of walking.
+  const route = { est_time_min: 180, max_slope: 8, farthest_from_base_km: 1.2 };
+  const known = {
+    solar_alert_level: "warning" as const,
+    radiation_dose_rate: 20,
+    dust_opacity: 2.5,
+    minutes_until_sunset: 200,
+  };
+
+  it("measures dust and dose rate against their no-go limits", () => {
+    expect(stripFields(stormLimit("dust", known, route)!, 30).slice(0, 2)).toEqual([
+      { label: "Dust opacity", value: "2.50" },
+      { label: "Margin", value: "−0.50" },
+    ]);
+    expect(stripFields(stormLimit("dose_rate", known, route)!, 30).slice(0, 2)).toEqual([
+      { label: "Dose rate", value: "20.0 µGy/h" },
+      { label: "Margin", value: "70.0 µGy/h" },
+    ]);
+  });
+
+  it("gives the minutes to spare before sunset for daylight", () => {
+    expect(stripFields(stormLimit("daylight", known, route)!, 30).slice(0, 2)).toEqual([
+      { label: "Until sunset", value: "200 min" },
+      { label: "Margin", value: "−34 min" },
+    ]);
+  });
+
+  it("shows the solar alert's level, which has no number, then the time to shelter", () => {
+    expect(stripFields(stormLimit("radiation", known, route)!, 30)).toEqual([
+      { label: "Solar alert", value: "Warning" },
+      { label: "Shelter", value: "30 min" },
+    ]);
+  });
+
+  it("is null when a route or rover rule limits the verdict", () => {
+    expect(stormLimit("slope", known, route)).toBeNull();
+    expect(stormLimit(null, known, route)).toBeNull();
   });
 });
 
