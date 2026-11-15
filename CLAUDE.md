@@ -240,8 +240,8 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 - 2e. ✅ **Pipelines:** `pnpm pipe:sites [dtm]` (`pipelines/stable/hirise-sites.ts`, ~2 min/site; `REBUILD_IMAGERY=1` to re-cut imagery) then
   `pnpm pipe:slope <dtm>` (`pipelines/stable/slope.ts`, ~20 s/site). Shared tile helpers: `pipelines/lib/xyz.ts`. Raw inputs ~1.8 GB (gitignored).
   Outputs (all **gitignored**, local only until hosted): `public/data/sites/<dtm>/{imagery,terrain,slope}/`, `data/processed/sites/<dtm>/slope.tif` (COG),
-  `data/interim/hirise/<dtm>/ortho-mapbox.tif` (upload file). Committed: `public/data/processed/sites.geojson` (POIs + footprints).
-- 2f. **Hosting — imagery → M's Mapbox account (M's call).** Upload the 4 `ortho-mapbox.tif` in Mapbox Studio → Tilesets → New tileset, then put
+  `data/interim/hirise/<dtm>/<HiRISE ID>_mapbox.tif` (upload file, named per site so Mapbox tilesets are distinguishable). Committed: `public/data/processed/sites.geojson` (POIs + footprints).
+- 2f. **Hosting — imagery → M's Mapbox account (M's call).** Upload the 4 `<HiRISE ID>_mapbox.tif` (e.g. `ESP_033225_2250_mapbox.tif`) in Mapbox Studio → Tilesets → New tileset, then put
   each tileset ID in `lib/mars/site-tilesets.ts`; the map switches from local tiles to `mapbox://` automatically. **Open:** site terrain + slope tiles
   (Mapbox doesn't host custom Terrarium DEMs simply) → teammates' **R2** release (`tiles.imstuckonmars.help`, `pnpm maps:*` scripts) — ask its owner.
 - 2h. **SWIM ice layer (Step 4a) — queued.** swim.psi.edu (SWIM4MIM products: combined ice-consistency GeoTIFF, 0–1 m / 1–5 m / >5 m,

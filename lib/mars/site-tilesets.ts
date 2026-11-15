@@ -1,6 +1,6 @@
 /**
  * Mapbox-hosted HiRISE site imagery on M's account (Studio → Tilesets → New tileset, upload
- * data/interim/hirise/<dtm>/ortho-mapbox.tif). Fill in each tileset ID ("user.tileset") after
+ * data/interim/hirise/<dtm>/<HiRISE ID>_mapbox.tif, e.g. ESP_033225_2250_mapbox.tif). Fill in each tileset ID ("user.tileset") after
  * upload; until then the map uses locally generated tiles from `pnpm pipe:sites`.
  */
 export const SITE_TILESETS: Record<string, string> = {
