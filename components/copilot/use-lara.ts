@@ -67,7 +67,12 @@ export function useLara() {
 
   useEffect(() => {
     let cancelled = false;
-    fetch("/api/copilot/session", { method: "POST" })
+    const scenario = new URLSearchParams(window.location.search).get("scenario");
+    fetch("/api/copilot/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(scenario ? { scenario } : {}),
+    })
       .then((r) => json<{ id: string; token: string }>(r))
       .then((m) => {
         if (cancelled) return;

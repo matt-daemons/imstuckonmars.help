@@ -3,6 +3,13 @@ import { eq } from "drizzle-orm";
 import { bodyLimit } from "hono/body-limit";
 import * as zod from "zod";
 import { MissionError } from "../../lib/mission/types";
+import {
+  DEFAULT_SCENARIO,
+  DEMO_SCENARIO_IDS,
+  DEMO_SCENARIOS,
+  demoMissionConfig,
+  prepareDemoMission,
+} from "../copilot/demo-mission";
 import { askCopilot } from "../copilot/llm";
 import { copilotTools } from "../copilot/tools";
 import { createSession, sessionFor } from "../mission/service";
@@ -45,6 +52,10 @@ const askSchema = zod
   });
 
 const speakSchema = zod.object({ text: zod.string().trim().min(1).max(800) });
+
+const sessionSchema = zod.object({
+  scenario: zod.enum(DEMO_SCENARIO_IDS).default(DEFAULT_SCENARIO),
+});
 
 function parse<T>(schema: zod.ZodType<T>, value: unknown): T {
   const result = schema.safeParse(value);
@@ -93,8 +104,14 @@ copilot.post("/session", async (c) => {
       `No illustrative preset exists for release ${release}`,
       503,
     );
-  const result = await createSession(db, release, JSON.parse(preset.config_json));
-  return c.json(result, 201);
+  const { scenario } = parse(sessionSchema, await c.req.json<unknown>().catch(() => ({})));
+  const result = await createSession(
+    db,
+    release,
+    demoMissionConfig(JSON.parse(preset.config_json)),
+  );
+  await prepareDemoMission(db, result, DEMO_SCENARIOS[scenario]);
+  return c.json({ ...result, scenario, scenario_title: DEMO_SCENARIOS[scenario].title }, 201);
 });
 
 copilot.post("/:id/ask", async (c) => {

@@ -24,9 +24,13 @@ const WAKE_TEXT: Record<WakeState, string> = {
   error: "Wake word is not available. The microphone or the model did not load.",
 };
 
+/** Playback speed of the demo. At 20×, the scripted battery failure plays out in about 3 minutes. */
+const DEMO_SPEED = 20;
+
+/** Mission time as minutes and seconds, so the readout moves every second during playback. */
 const fmtMin = (s: number) => {
-  const m = Math.floor(s / 60);
-  return `${Math.floor(m / 60)}:${String(m % 60).padStart(2, "0")}`;
+  const whole = Math.floor(s);
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 };
 
 function Readout({ label, value, note }: { label: string; value: string; note?: string }) {
@@ -109,17 +113,17 @@ export function LaraPanel() {
             size="xs"
             variant="outline"
             disabled={!s}
-            aria-label={playing ? "Pause replay" : "Play replay at 10× speed"}
+            aria-label={playing ? "Pause replay" : "Play replay at 20× speed"}
             onClick={() =>
               playing
                 ? lara.command({ type: "pause" })
                 : lara
-                    .command({ type: "speed", speed: 10 })
+                    .command({ type: "speed", speed: DEMO_SPEED })
                     .then(() => lara.command({ type: "play" }))
             }
           >
             {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-            {playing ? "Pause" : "Play 10×"}
+            {playing ? "Pause" : "Play 20×"}
           </Button>
           <Button
             size="xs"
