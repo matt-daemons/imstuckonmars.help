@@ -146,25 +146,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         layerIds: ["ctx-context"],
       },
       {
-        id: "ai-visual-preview",
-        title: "AI texture experiment",
-        kind: "ai",
-        credit: "Generated with openai/gpt-image-2 from one CTX tile",
-        detail: "2× visual upscale of a single CTX tile near the habitat",
-        use: "Optional visual comparison only. Off by default.",
-        caveats: [
-          "Generated pixels are not measurements.",
-          "Never used for elevation, slope, hazard detection, routing or resource calculations.",
-        ],
-        links: [
-          {
-            label: "Provenance and prompt",
-            url: "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json",
-          },
-        ],
-        layerIds: ["ai-visual-preview"],
-      },
-      {
         id: "sites",
         title: "Water-ice sites (HiRISE)",
         kind: "observation",

@@ -3,7 +3,7 @@ import { z } from "zod";
 
 import { exists, json, releaseRoot } from "./lib/map-assets.ts";
 
-// Preserve original terrain and AI provenance alongside the new release.
+// Preserve the original source archive alongside the new release.
 await mkdir(`${releaseRoot}/legacy`, { recursive: true });
 // The first migration reads public assets. Subsequent builds retain the archived R2 input.
 if (await exists("public/data/terrain")) {

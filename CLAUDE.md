@@ -191,7 +191,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Before feature freeze (~6 h before deadline)
 
-- Every layer shows its NASA source; references (§12) in sync; AI disclosures (voice, AI texture watermark) in place.
+- Every layer shows its NASA source; references (§12) in sync; AI voice disclosure in place.
 - Check: Workers static-asset per-file limit (believed 25 MiB) — move larger COGs to R2.
 
 ### Future data layers (horizon)
@@ -450,7 +450,6 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
 
 - **OpenRouter** — language model **openai/gpt-4.1-mini** behind the LARA copilot (set by `DIAGNOSTICS_MODEL` on the server). Explains results; verdicts come from `lib/flight-rules`, never from the model.
 - **ElevenLabs** — LARA's voice. **The voice is AI-generated speech**: acknowledge it wherever it is heard (demo video, project page).
-- **openai/gpt-image-2** — the optional "AI texture experiment" layer (provenance: `https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json`). AI images need a visible watermark under Space Apps rules.
 - **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs; commits carry a `Co-Authored-By` trailer where recorded.
 
 ### Fonts

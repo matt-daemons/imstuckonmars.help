@@ -7,6 +7,9 @@ import { SOURCE_GROUPS } from "./sources";
 const entries = SOURCE_GROUPS.flatMap((g) => g.entries);
 
 describe("sources and caveats", () => {
+  it("does not advertise the retired AI texture experiment", () => {
+    expect(entries.some((entry) => entry.id === "ai-visual-preview")).toBe(false);
+  });
   it("covers every layer in the manifest", async () => {
     const manifest = JSON.parse(await readFile("public/data/processed/manifest.json", "utf8")) as {
       layers: { id: string }[];

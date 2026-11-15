@@ -48,24 +48,6 @@
       }
     },
     {
-      "id": "ai-visual-preview",
-      "title": "AI texture experiment · unverified",
-      "kind": "raster",
-      "path": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-map.png",
-      "corners": [
-        [-176.0888671875, 46.0107421875],
-        [-176.044921875, 46.0107421875],
-        [-176.044921875, 45.966796875],
-        [-176.0888671875, 45.966796875]
-      ],
-      "opacity": 1,
-      "visible": false,
-      "source": {
-        "name": "AI-generated texture from orbital imagery · never elevation",
-        "url": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json"
-      }
-    },
-    {
       "id": "sites",
       "title": "Water-ice sites (HiRISE)",
       "kind": "vector",
