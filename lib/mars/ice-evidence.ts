@@ -48,8 +48,8 @@ export const ICE_EVIDENCE_CAVEAT =
   "Indirect evidence from orbit. No lander or drill has confirmed ice at any of these sites.";
 
 export const ICE_EVIDENCE_CITATIONS = [
-  "Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. GRL 42, 6566–6574.",
-  "Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. Nature Astronomy 5, 230–236.",
+  "Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. GRL 42, 6566–6574. doi:10.1002/2015GL064844",
+  "Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. Nature Astronomy 5, 230–236. doi:10.1038/s41550-020-01290-z",
 ];
 
 export function iceEvidenceFor(hiriseId: string): IceEvidence | undefined {

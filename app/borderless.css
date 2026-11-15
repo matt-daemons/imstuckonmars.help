@@ -1,0 +1,44 @@
+/* Reversible visual experiment. Keep border widths so controls and panels do not shift. */
+html[data-borderless] :where(*, *::before, *::after) {
+  border-color: transparent !important;
+}
+
+html[data-borderless] :is([data-slot="separator"], [data-slot="sidebar-separator"]) {
+  background-color: transparent;
+}
+
+/* These shared edges expose a hairline of the map when only their color is hidden. */
+html[data-borderless] [data-slot="sidebar-container"] {
+  border-inline-width: 0 !important;
+}
+
+html[data-borderless] :is(.expedition-hud, [data-slot="sidebar-footer"]) {
+  border-top-width: 0 !important;
+}
+
+/* Borders that encode state or shape are not panel chrome. */
+html[data-borderless]
+  :is(
+    [data-slot="checkbox"],
+    [data-slot="radio"],
+    [data-slot="switch"],
+    [data-slot="slider-thumb"]
+  ) {
+  border-color: currentColor !important;
+}
+
+html[data-borderless] [data-slot="spinner"] {
+  border-color: currentColor transparent transparent !important;
+}
+
+/* Keyboard focus and the striped border on destructive confirmations remain visible. */
+html[data-borderless] :focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (forced-colors: active) {
+  html[data-borderless] :is(button, input, textarea, select, [role="button"]) {
+    border-color: ButtonText !important;
+  }
+}

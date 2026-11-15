@@ -28,15 +28,49 @@ export interface Conditions extends KnownConditions {
 export interface Drill {
   solar_alert_level: SolarAlertLevel | null;
   dust_opacity: number | null;
-  /** Local solar hour at the habitat, 0 to 23. */
-  start_local_hour: number | null;
 }
 
 export const NO_DRILL: Drill = {
   solar_alert_level: null,
   dust_opacity: null,
-  start_local_hour: null,
 };
+
+/** A local solar hour chosen for the simulation at an Earth instant. From then on it runs with real time. */
+export interface SimTime {
+  /** Local solar hour at the habitat, 0 to 23. */
+  hour: number;
+  set_at_ms: number;
+}
+
+/** The simulated local solar hour at nowMs, 0 up to 24. */
+export function simLocalHour({ hour, set_at_ms }: SimTime, nowMs: number): number {
+  const elapsedMs = Math.max(0, nowMs - set_at_ms);
+  return wrapHour(hour + elapsedMs / (EARTH_MINUTES_PER_MARS_HOUR * 60_000));
+}
+
+/** "HH:MM" for a local solar hour such as 13.5. */
+export function formatLocalHour(hour: number): string {
+  const totalMinutes = Math.floor(wrapHour(hour) * 60);
+  const hh = String(Math.floor(totalMinutes / 60)).padStart(2, "0");
+  const mm = String(totalMinutes % 60).padStart(2, "0");
+  return `${hh}:${mm}`;
+}
+
+/** The real conditions with the walk starting at a simulated local solar hour of the same sol. */
+export function withSimTime(
+  real: Conditions,
+  localHour: number,
+  clock: Pick<MarsClockReading, "ltst" | "minutes_until_sunset">,
+): Conditions {
+  const minutesUntilSunset = minutesUntilSunsetAt(localHour, clock);
+  if (minutesUntilSunset === null) return real;
+  return {
+    ...real,
+    minutes_until_sunset: minutesUntilSunset,
+    start_time: formatLocalHour(localHour),
+    sources: { ...real.sources, daylight: "simulation" },
+  };
+}
 
 export function isDrillSet(drill: Drill): boolean {
   return Object.values(drill).some((value) => value !== null);
@@ -94,15 +128,8 @@ export function realConditions({
   return conditions;
 }
 
-/**
- * The real conditions with each set drill value in their place. sunsetAtHour gives the minutes
- * until sunset for a walk starting at a local solar hour, or null when the sun does not set.
- */
-export function mergeConditions(
-  real: Conditions,
-  drill: Drill,
-  sunsetAtHour: (hour: number) => number | null,
-): Conditions {
+/** The real conditions with each set drill value in their place. */
+export function mergeConditions(real: Conditions, drill: Drill): Conditions {
   const merged: Conditions = {
     ...real,
     sources: { ...real.sources },
@@ -120,13 +147,6 @@ export function mergeConditions(
     merged.dust_opacity = drill.dust_opacity;
     markDrill("dust");
   }
-  const hour = drill.start_local_hour;
-  const minutesUntilSunset = hour === null ? null : sunsetAtHour(hour);
-  if (hour !== null && minutesUntilSunset !== null) {
-    merged.minutes_until_sunset = minutesUntilSunset;
-    merged.start_time = `${String(hour).padStart(2, "0")}:00`;
-    markDrill("daylight");
-  }
   return merged;
 }
 
@@ -138,16 +158,24 @@ export function minutesUntilSunsetAt(
   startHour: number,
   clock: Pick<MarsClockReading, "ltst" | "minutes_until_sunset">,
 ): number | null {
+  const sun = sunTimes(clock);
+  if (!sun) return null;
+  // Before sunrise, the sunset that counts is last night's.
+  const hoursUntilSunset =
+    startHour < sun.sunrise ? sun.sunset - startHour - 24 : sun.sunset - startHour;
+  return hoursUntilSunset * EARTH_MINUTES_PER_MARS_HOUR;
+}
+
+/** Sunrise and sunset as local solar hours, from a clock reading of the same sol. */
+export function sunTimes(
+  clock: Pick<MarsClockReading, "ltst" | "minutes_until_sunset">,
+): { sunrise: number; sunset: number } | null {
   if (clock.minutes_until_sunset === null) return null;
   const [hours, minutes, seconds] = clock.ltst.split(":").map(Number);
   const nowHour = hours + minutes / 60 + seconds / 3600;
-  const sunsetHour = wrapHour(nowHour + clock.minutes_until_sunset / EARTH_MINUTES_PER_MARS_HOUR);
+  const sunset = wrapHour(nowHour + clock.minutes_until_sunset / EARTH_MINUTES_PER_MARS_HOUR);
   // Local true solar time is symmetric about noon, so sunrise is as far before noon as sunset is after.
-  const sunriseHour = 24 - sunsetHour;
-  // Before sunrise, the sunset that counts is last night's.
-  const hoursUntilSunset =
-    startHour < sunriseHour ? sunsetHour - startHour - 24 : sunsetHour - startHour;
-  return hoursUntilSunset * EARTH_MINUTES_PER_MARS_HOUR;
+  return { sunrise: 24 - sunset, sunset };
 }
 
 function wrapHour(hour: number): number {
@@ -166,8 +194,8 @@ const REAL_LABELS: Partial<Record<StormFactor, string>> = {
 function sourceLabel(factor: StormFactor, { sources, start_time }: Conditions): string {
   const isDrill = sources[factor] === "drill";
   if (factor === "daylight") {
-    return isDrill
-      ? `Walk starts at ${start_time} local solar time. ${DRILL_LABEL}`
+    return sources.daylight === "simulation"
+      ? `Walk starts at ${start_time} simulated local solar time.`
       : `Walk starts now, at ${start_time} local solar time.`;
   }
   if (isDrill) return DRILL_LABEL;

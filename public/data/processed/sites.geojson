@@ -9,7 +9,7 @@
         "title": "Possible Terraced Crater in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_033225_2250",
         "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
         "terrain_bbox": [
@@ -42,7 +42,7 @@
         "title": "Possible Terraced Crater in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_033225_2250",
         "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
         "terrain_bbox": [
@@ -66,7 +66,7 @@
         "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_034082_2260",
         "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
         "terrain_bbox": [
@@ -99,7 +99,7 @@
         "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_034082_2260",
         "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
         "terrain_bbox": [
@@ -123,7 +123,7 @@
         "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": true,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_037352_2245",
         "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
         "terrain_bbox": [
@@ -156,7 +156,7 @@
         "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": true,
         "site_kind": "crater",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)",
         "url": "https://www.uahirise.org/ESP_037352_2245",
         "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
         "terrain_bbox": [
@@ -180,7 +180,7 @@
         "title": "Ridges in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "ridges",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): ridges, regional evidence only — Arcadia's buried ice is mapped from orbit (Morgan et al. 2021), nothing at this site points to ice by itself",
         "url": "https://www.uahirise.org/ESP_054060_2265",
         "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
         "terrain_bbox": [
@@ -213,7 +213,7 @@
         "title": "Ridges in Arcadia Planitia",
         "confirmed": false,
         "site_kind": "ridges",
-        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+        "objective": "Water-ice procurement (ISRU): ridges, regional evidence only — Arcadia's buried ice is mapped from orbit (Morgan et al. 2021), nothing at this site points to ice by itself",
         "url": "https://www.uahirise.org/ESP_054060_2265",
         "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
         "terrain_bbox": [

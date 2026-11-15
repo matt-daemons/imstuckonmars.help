@@ -63,7 +63,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Product name             | **LARA** (only name; the assessment engine is part of LARA, not a separate "ARES").                                                                                                                                                                                                                                                                                                                                           |
 | Landing & base           | **Arcadia Planitia** (plains) — final. Smooth terrain, subsurface water ice, sunlight for power, despite sparse surface data. Habitat at −176.05°E, 45.97°N.                                                                                                                                                                                                                                                                  |
-| Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: terraced craters (buried-ice evidence, Bramson et al. 2015) + one ridge site.                                                                                                                                                                                                                                                                     |
+| Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: 3 terraced craters (buried-ice evidence, Bramson et al. 2015) + 1 ridge site (regional evidence only, Morgan et al. 2021; outside Bramson's verified 180–225°E study area — `lib/mars/ice-evidence.ts`).                                                                                                                                          |
 | Mobility                 | **2-leg journeys** (Jess + Role C, Sun Nov 15): drive (rover) base → staging point, then walk (EVA) staging point → POI and back. Drive leg: rover rules + slope + thermal inertia. Walk leg: suit rules + slope + roughness. _Superseded: "rover drives only" (same morning)._                                                                                                                                               |
 | Staging point            | **Jess, Sun Nov 15:** nearest **40 × 40 m** square **≥ 25 m** from the POI, within 2 km, **no 1 m slope > 5°** (10° fallback → CAUTION reason), **roughness < 0.25 m**, no boulders. In code: `findStagingPoint` (`lib/mars/site-grid.ts`) and `pnpm pipe:staging`. Rationale + sources: §9 "Staging point".                                                                                                                  |
 | Far sites (> 200 km)     | **Team, Sun Nov 15:** ESP_037352 (424 km) and ESP_054060 (468 km) are shown as **NO-GO** under the 200 km rover range rule — for now.                                                                                                                                                                                                                                                                                         |
@@ -154,7 +154,7 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 - **Terrain:** HiRISE DTM (~1 m) where available; CTX DEM/mosaic; MOLA for regional context
 - **Imagery:** HiRISE, CTX
 - **Geology/minerals:** USGS geologic maps; CRISM where covered
-- **Ice:** SWIM (Subsurface Water Ice Mapping) — especially relevant to Arcadia Planitia
+- **Ice:** SWIM (Subsurface Water Ice Mapping) — swim.psi.edu down long-term; not used. Ice evidence = Bramson 2015 terraced craters
 - **Thermal:** THEMIS (thermal inertia)
 - **Weather:** REMS (Curiosity, Gale), MEDA (Perseverance, Jezero), Mars Climate Database
 - **Radiation:** RAD (Curiosity, Gale)
@@ -162,43 +162,17 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 
 ## 7. Open items — the one to-do list
 
-Grouped by who acts. Strike through and move to §11 when done.
+Grouped by who acts. Delete items when done and log them in §11.
 
-### Team decisions (shared role A)
+### M (UI)
 
-1. ~~Regional slope 200 m~~ — display only (live on the map).
-2. ~~Manifest format change~~ — M OK'd (§4); `sceneControl` + `caveats` are on `StableLayer` (`lib/mars/types.ts`).
-3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Wording added Sun Nov 15 (Sources screen MEDA/RAD caveats + LARA vitals footnote).
-4. ~~Owner names for C/D~~ — dropped (not needed).
-
-### M (hosting + UI)
-
-1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
-2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
-3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
-4. Before freeze: make sure no placeholder route ships. `stops.geojson` now holds only the real habitat point; no `route.geojson` remains (routes come from the router).
-5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+1. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
+2. Polish (incl. tinted HiRISE RED, imagery to z18): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+3. AI-voice statement in the demo video and on the project page.
 
 ### Jess (role B)
 
-1. ~~Thermal-inertia R2 prefix~~ — `sites-v2/thermal-inertia`; wired (`THERMAL_INERTIA_DATA_ROOT`).
-2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
-3. Slides: pin the page of the Hassler 2014 average dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are
-   2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
-4. ~~Ice evidence~~ — dropped Sun Nov 15. (Old notes:) swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
-5. **Regional slope tiles** regenerated with 1° / 2° / 5° / 10° / 20° classes (the corridor is flat: ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %). **M: re-upload `sites-v2/regional-slope`** (local tiles are new; R2 still has the old 10°+ classes, so the overlay looks blank until then).
-
-### Roles C / D
-
-- C: route GeoJSON fixtures for both legs (demo dry run) so M can build UI; `POST /api/routes/plan` returning `RouteResult`; distances on the Mars radius.
-- D: replace `/api/live` stub with replayed snapshots, show `proxy_source`; never display stub zeros as real data.
-  _Code check (Sun Nov 15):_ the `/api/live` stub (`server/api/app.ts`) is unused by the app — live data reaches the UI via `/api/telemetry` (D1)
-  and `/api/space-weather` (DONKI). Team to decide: delete the stub or wire it.
-
-### Before feature freeze (~6 h before deadline)
-
-- Every layer shows its NASA source; references (§12) in sync; AI voice disclosure in place.
-- Check: Workers static-asset per-file limit (believed 25 MiB) — move larger COGs to R2.
+1. Slides: pin the page of the Hassler 2014 **average** dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are 2× / 10× it (`config.yaml`).
 
 ### Future data layers (horizon)
 
@@ -245,7 +219,7 @@ tiles. The map measures with Earth's radius (~1.88× Mars) — compute distances
 | DTEEC_033225_2250_033146_2250_A01 | ESP_033225_2250 | −176.33383, 44.41589     | Possible terraced crater, ~130 m, 12 m deep           | 93 km                 | Picked by Claude from the ortho; confirmed by Jess |
 | DTEEC_034082_2260_033014_2260_A01 | ESP_034082_2260 | −171.38243, 45.64829     | Possible terraced bullseye crater, bowl ~28 m deep    | 194 km                | Circled by Jess; DTM-refined (moved 35 m)          |
 | DTEEC_037352_2245_037418_2245_A01 | ESP_037352_2245 | −166.14298, 44.39035     | Terraced bullseye crater (confirmed), bowl ~41 m deep | 424 km                | Circled by Jess; DTM-refined (moved 85 m)          |
-| DTEEC_054060_2265_054126_2265_A01 | ESP_054060_2265 | 172.56388, 46.07022      | Ridges (not a crater)                                 | 468 km                | DTM centre                                         |
+| DTEEC_054060_2265_054126_2265_A01 | ESP_054060_2265 | 172.56388, 46.07022      | Ridges (regional ice evidence only)                   | 468 km                | DTM centre                                         |
 
 POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid of the lowest 30 % of relief within 250 m on the 1 m DTM. Logged in
 `pipelines/stable/hirise-sites.ts` and `sites.geojson` (`position_note`). Distances: great-circle, Mars 2000 sphere.
@@ -286,7 +260,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 
 - **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
   0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
-  Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
+  Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Display only; the router uses 463 m MOLA.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
   on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. On the map:
   Scene panel switch "Geology" (`addGeology`, `components/map/ground-overlays.tsx`).
@@ -304,7 +278,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 - Code: `findStagingPoint` returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`; constants `STAGING_MIN_M`, `PARKING_*`, `STAGING_RULE`.
   Roughness is checked once `ROUGHNESS_DATA_ROOT` is set (now → sites-v2).
 
-### Rover range (context for §7 team item 1)
+### Rover range
 
 Two pressurized rovers give a "mobile safe haven" that could extend range to **100 km or more**; the rescue rover stays within an **8-hour drive**;
 rovers "notionally never travel farther than 100 km" from the ascent vehicle (EVA-EXP-0042 Rev B §4.2.1.3.1, §7.3.2). That is Artemis-era **Moon**
@@ -385,6 +359,10 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - ✅ By teammates: rover energy-cost A* (`5d9c6e84`), soft ground from TI (`fa2b8526`), walk-leg time/consumables (`245aee73`), sources screen
   (`eb50f3fc`), mission summary (`fc249a77`), `/api/verdict`, RAD telemetry, Mars clock.
 
+- ✅ Sun Nov 15 afternoon: proxy-data wording (Sources + LARA vitals), Grok + regional-slope source entries, ridges site = regional ice
+  evidence only, Bramson/Morgan DOIs, Bramson study area (180–225°E, 38–50°N) verified, `/api/routes/plan` live, `/api/live` stub removed
+  (Nova), AI/NASA source disclosures checked, Workers/R2 limits checked. Dropped: ice-map layer, owner names, regional-slope router input.
+
 ## 12. References (cite every external source — required for submission)
 
 > Keep this list in sync whenever a dataset, paper or rule source is added. Each map layer also shows its credit in the UI.
@@ -398,7 +376,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Viking global colour mosaic** (teammates' basemap): USGS/NASA Ames colorized Viking MDIM 2.1. Credit: NASA/Viking; USGS; NASA Ames.
 - **CTX global mosaic** (imagery around the habitat, ~5 m): Caltech Murray Lab, served by Esri (https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer). Credit: NASA/JPL/MSSS/The Murray Lab. Murray Lab "grants free use of the V01 version of the mosaic for all purposes" and asks users to cite Dickson et al. 2024 (https://murray-lab.caltech.edu/CTX/). Note: the Esri service labels itself beta01.
 - **NASA Ames Mars GCM 2018 global dust storm simulation** (dust playback): https://data.nas.nasa.gov/legacygcm/ — Bertrand et al. 2020.
-- **SWIM — Subsurface Water Ice Mapping** (swim.psi.edu down long-term; use the papers + Odyssey neutron-spectrometer maps instead, see §7): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
+- **SWIM — Subsurface Water Ice Mapping** (swim.psi.edu down long-term; not used as data — cited via Bramson 2015 / Morgan 2021 on slides only): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
 - **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
 - **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
 - **Geologic Map of Mars** (USGS SIM 3292, 1:20M; geologic units along the drive corridor, `pnpm pipe:geology`): USGS Astrogeology / NASA — Tanaka et al. 2014. https://pubs.usgs.gov/sim/3292/
@@ -411,7 +389,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130(3), 22. doi:10.1007/s10569-017-9805-5 (Mars sphere R = 3,396,190 m — this is the IAU **equatorial** radius; the mean radius is 3,389.5 km. Say "equatorial", not "mean", on slides) ✓
 - Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115(E7), E00F03. doi:10.1029/2010JE003633 (Spirit embedded at "Troy" — soft-ground pitch line) ✓
 - Bertrand, T., Wilson, R. J., Kahre, M. A. et al. (2020). Simulation of the 2018 Global Dust Storm on Mars Using the NASA Ames Mars GCM: A Multitracer Approach. _JGR: Planets_ 125(7), e2019JE006122. doi:10.1029/2019JE006122 (dust playback) ✓
-- Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. (terraced craters → buried ice)
+- Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. doi:10.1002/2015GL064844 ✓ (terraced craters → buried ice)
 - Christensen, P. R. et al. (2004). The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission. _Space Science Reviews_ 110, 85–130.
 - Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. _Earth and Space Science_ 11(7), e2024EA003555. doi:10.1029/2024EA003555 ✓
 - Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
@@ -427,7 +405,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24. (DTM vertical precision → roughness noise floor)
 - Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
-- Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
+- Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. doi:10.1038/s41550-020-01290-z ✓ (SWIM)
 - Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412(6845), 411–414. doi:10.1038/35086515 (ice-rich mantle with pitted texture — why the sites are rock-poor) ✓
 - NASA NSSDC, "The Apollo Lunar Roving Vehicle", https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html (LRV ground clearance 36 cm loaded — rover obstacle analogue)
 

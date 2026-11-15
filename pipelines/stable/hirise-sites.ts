@@ -262,7 +262,10 @@ for (const site of SITES) {
     title: site.title,
     confirmed: site.confirmed,
     site_kind: site.kind,
-    objective: "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
+    objective:
+      site.kind === "crater"
+        ? "Water-ice procurement (ISRU): terraced craters indicate buried ice (Bramson et al. 2015)"
+        : "Water-ice procurement (ISRU): ridges, regional evidence only — Arcadia's buried ice is mapped from orbit (Morgan et al. 2021), nothing at this site points to ice by itself",
     url: `https://www.uahirise.org/${site.obs}`,
     bbox: [b.west, b.south, b.east, b.north],
     terrain_bbox: [padded.west, padded.south, padded.east, padded.north],

@@ -10,6 +10,7 @@ import { ExpeditionProvider } from "@/components/expedition/expedition-provider"
 import { LocalDataReset } from "@/components/debug/local-data-reset";
 
 import "./globals.css";
+import "./borderless.css";
 
 const atkinson = Atkinson_Hyperlegible_Next({
   subsets: ["latin"],
@@ -31,6 +32,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html
       lang="en"
+      data-borderless
       // The Hermes theme is dark only; `dark` also enables coss's dark-surface tweaks.
       className={cn(
         "dark font-sans antialiased",

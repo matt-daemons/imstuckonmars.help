@@ -11,11 +11,14 @@ import type { LngLat } from "@/lib/mars/types";
 
 import {
   mergeConditions,
-  minutesUntilSunsetAt,
   NO_DRILL,
   realConditions,
+  simLocalHour,
+  sunTimes,
+  withSimTime,
   type Conditions,
   type Drill,
+  type SimTime,
   type SpaceWeatherFeed,
 } from "./conditions";
 
@@ -30,6 +33,13 @@ interface ConditionsContextValue {
   conditions: Conditions;
   drill: Drill;
   setDrill: (drill: Drill) => void;
+  /** The chosen simulation start hour, or null to use the real local time. */
+  simTime: SimTime | null;
+  setSimTime: (simTime: SimTime | null) => void;
+  /** Local solar hour at the habitat the verdict uses, real or simulated, 0 up to 24. */
+  localHour: number;
+  /** Today's sunrise and sunset as local solar hours, or null when the sun does not rise or set. */
+  sun: { sunrise: number; sunset: number } | null;
   /** For the dust playback: the habitat's dust opacity while the simulation is shown, else null. */
   setSimulatedDust: (opacity: number | null) => void;
   /** True once LARA's last successful poll is too old to trust. */
@@ -50,6 +60,7 @@ export function ConditionsProvider({
 }) {
   const lara = useLaraContext();
   const [drill, setDrill] = useState<Drill>(NO_DRILL);
+  const [simTime, setSimTime] = useState<SimTime | null>(null);
   const [simulatedDust, setSimulatedDust] = useState<number | null>(null);
   const spaceWeather = useSpaceWeather();
   const now = useNow(POLL_MS);
@@ -66,10 +77,35 @@ export function ConditionsProvider({
       { longitude_east_degrees: longitude, latitude_north_degrees: latitude },
       PERSEVERANCE_LANDING_UTC,
     );
+    const [hours, minutes, seconds] = clock.ltst.split(":").map(Number);
+    const realHour = hours + minutes / 60 + seconds / 3600;
+    const localHour = simTime ? simLocalHour(simTime, minute * MINUTE_MS) : realHour;
     const real = realConditions({ clock, doseRate, simulatedDust, spaceWeather });
-    const conditions = mergeConditions(real, drill, (hour) => minutesUntilSunsetAt(hour, clock));
-    return { conditions, drill, setDrill, setSimulatedDust, laraNotAnswering, spaceWeather };
-  }, [minute, longitude, latitude, doseRate, simulatedDust, spaceWeather, drill, laraNotAnswering]);
+    const simulated = simTime ? withSimTime(real, localHour, clock) : real;
+    const conditions = mergeConditions(simulated, drill);
+    return {
+      conditions,
+      drill,
+      setDrill,
+      simTime,
+      setSimTime,
+      localHour,
+      sun: sunTimes(clock),
+      setSimulatedDust,
+      laraNotAnswering,
+      spaceWeather,
+    };
+  }, [
+    minute,
+    longitude,
+    latitude,
+    doseRate,
+    simulatedDust,
+    spaceWeather,
+    drill,
+    simTime,
+    laraNotAnswering,
+  ]);
 
   return <ConditionsContext value={value}>{children}</ConditionsContext>;
 }
