@@ -1,6 +1,10 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 — **staging point decided (25 m, ≤ 5°, 40 × 40 m; §7 item 5)**, 2 rovers per mission, driving-range limit open (§7 item 8); earlier ~08:30: overnight runs reconciled with teammates' morning work (see "▶ Team items to agree"); **2-leg journeys confirmed (drive to a staging point, then walk/EVA)**; roughness + boulder bounds done for all 4 sites; MapLibre port landed (`1bbb6d0`); role A now shared by the team (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sun Nov 15, 2026 (hackathon day 2 of Nov 14–15). Team of 5. Reorganised: one decisions log, one open-items list (§7), finished work in §11 "Completed"._
+
+**How this file is organised:** §1–2 the brief · §3 who does what · §4 decisions (what's settled) · §5–6 user story + data architecture ·
+**§7 open items — the only to-do list** · §8 how we work + how to run · §9 data reference (what exists, where, caveats) · §10 advisor personas ·
+§11 completed log · §12 references.
 
 ## 1. The challenge (summary)
 
@@ -33,13 +37,16 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 
 ## 3. Team roles
 
-> **Naming note:** Roles **A–D and M** in this table are _human team members_. They are unrelated to the **Claude advisor personas** in §9. When a request says "Role 1/2/3" in the context of asking Claude for advice, it means the §9 personas; when it refers to team ownership of work, it means this table. Jess = team role **B** (stable data).
-> | Role | Owner | Scope | |---|---|---|
-> | **A — Flight rules, GO/NO-GO, integration** | **Shared by the whole team** (Sun Nov 15) | No single owner any more: the team decides A items together, so everyone is on board with format/schema/threshold changes. Covers: the flight rules/assumptions sheet; every GO/NO-GO cites it. Owns integration: common time base, file names, CRS, `config.yaml`, `schemas/`, `validate.ts`. The GO/NO-GO logic and flight rules are the critical decisions NASA would want from the data. |
-> | **B — Stable data (geospatial/mapping)** | **Jess** | Terrain (DEM), slope, roughness, hazard masks, shadows (sun + terrain), geology. Reproject → clip → snap to common grid → clean → derive → export. |
-> | **C — Routing & mission planning** | TBD | Picks science stops (sample/data collection sites); cost surface → least-cost **rover** route base → site; drive time; **battery / return-to-base margin**. Builds on B and D. Rover energy figures are labelled assumptions (or simulated). |
-> | **D — Live data + forecast (space weather/radiation console)** | TBD | Replays archived live data as a "live" feed; same-day forecast as threshold rules with confidence; RAG explanation (stretch/might drop). |
-> | ⭐ **M — UI + story/pitch** | **M** | Map UI, layer panel, timeline, verdict banner, demo script, video, slides. |
+> **Naming note:** Roles **A–D and M** are _human team members_, unrelated to the **Claude advisor personas** in §10. "Role 1/2/3" in an
+> advice request means the §10 personas; team ownership of work means this table. Jess = team role **B** (stable data).
+
+| Role                                        | Owner                                     | Scope                                                                                                                                                                                                                              |
+| ------------------------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **A — Flight rules, GO/NO-GO, integration** | **Shared by the whole team** (Sun Nov 15) | Decided together so everyone is on board with format/schema/threshold changes. Flight rules/assumptions sheet (every GO/NO-GO cites it); integration: common time base, file names, CRS, `config.yaml`, `schemas/`, `validate.ts`. |
+| **B — Stable data (geospatial/mapping)**    | **Jess**                                  | Terrain (DEM), slope, roughness, hazard masks, shadows, geology, thermal inertia. Reproject → clip → snap to common grid → clean → derive → export.                                                                                |
+| **C — Routing & mission planning**          | TBD (confirm name)                        | Science stops; cost surface → least-cost rover route base → staging point → walk; drive time; battery / return-to-base margin. Rover energy figures are labelled assumptions/simulated.                                            |
+| **D — Live data + forecast**                | TBD (confirm name)                        | Replays archived live data as a "live" feed; same-day forecast as threshold rules with confidence; RAG explanation (stretch).                                                                                                      |
+| ⭐ **M — UI + story/pitch**                 | **M**                                     | Map UI, layer panel, timeline, verdict banner, demo script, video, slides. Owns R2 hosting/uploads.                                                                                                                                |
 
 ### Notes from expert review (sanity check, not official NASA guidance)
 
@@ -50,19 +57,26 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 - Mars crews operate autonomously (4–24 min one-way light delay). Line-of-sight/comm = one pitch sentence or a simple viewshed back to habitat, not a full category.
 - Data caveats: Curiosity's RAD (radiation) + REMS (weather) are co-located at **Gale crater**. REMS does **not** measure dust opacity directly (that comes from imaging). NASA DONKI space-weather alerts are Earth-centric — must reason about Mars's position relative to each event.
 
-## 4. Key decisions log
+## 4. Key decisions log (settled — change only as a team)
 
-| Question                | Decision                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Data output formats     | **Stable layers:** Cloud-Optimized GeoTIFF rasters on a common grid; GeoJSON for stops/features. **Live feed:** JSON, 1 snapshot per update, e.g. `{timestamp, radiation_dose_rate, solar_alert_level, dust_opacity, temp, wind, sun_elevation}`. **Route output:** GeoJSON line + `{distance_km, est_time_min, max_slope, verdict: GO/CAUTION/NO_GO, limiting_factor, reasons[]}`. **Forecast output:** `[{hour, dust, radiation, verdict}]` + `explanation`.                           |
-| UI theme                | _The Martian_-inspired (original design — no copyrighted assets/logos)                                                                                                                                                                                                                                                                                                                                                                                                                   |
-| Landing & base location | **Arcadia Planitia** (plains) — **final**. Chosen because it's a much more favorable base location (smooth terrain, good access to subsurface water ice, sunlight for power), **despite sparse surface data** (no rover has operated there). Landing and base in the same general area, with distance between them for landing safety.                                                                                                                                                   |
-| Live data for Arcadia   | Use Gale (Curiosity: REMS weather, RAD radiation) and/or Jezero (Perseverance: MEDA) data as a **clearly labeled proxy feed**, optionally adjusted with Mars Climate Database values for Arcadia. Orbital imagery (HiRISE/CTX) replaces rover imagery.                                                                                                                                                                                                                                   |
-| Product name            | **LARA** (only name — the assessment engine is part of LARA, not a separate "ARES")                                                                                                                                                                                                                                                                                                                                                                                                      |
-| Map library             | **MapLibre GL JS 6.18.0** (M, Sun Nov 15, due to an unexpected ruling; landed in `1bbb6d0`, see `docs/MAP_RENDERER.md`; no access token needed). Previously **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre. |
-| Toolchain               | No jj; Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI; Mapbox GL v3 → **MapLibre GL** (Sun Nov 15). (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                    |
-| Data home               | Telemetry in **D1** (teammate's backend). Static map rasters/tiles in `public/data/`. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                                                 |
-| Mapbox account          | ~~Owned by **M**; public token in `NEXT_PUBLIC_MAPBOX_TOKEN`.~~ Obsolete since the MapLibre port (no token). (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                          |
+| Question                 | Decision                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Product name             | **LARA** (only name; the assessment engine is part of LARA, not a separate "ARES").                                                                                                                                                                                                                                                                                                                                           |
+| Landing & base           | **Arcadia Planitia** (plains) — final. Smooth terrain, subsurface water ice, sunlight for power, despite sparse surface data. Habitat at −176.05°E, 45.97°N.                                                                                                                                                                                                                                                                  |
+| Science problem          | **Water-ice procurement (ISRU)** (Jess, Sat ~20:00). POIs = 4 HiRISE sites: terraced craters (buried-ice evidence, Bramson et al. 2015) + one ridge site.                                                                                                                                                                                                                                                                     |
+| Mobility                 | **2-leg journeys** (Jess + Role C, Sun Nov 15): drive (rover) base → staging point, then walk (EVA) staging point → POI and back. Drive leg: rover rules + slope + thermal inertia. Walk leg: suit rules + slope + roughness. _Superseded: "rover drives only" (same morning)._                                                                                                                                               |
+| Staging point            | **Jess, Sun Nov 15:** nearest **40 × 40 m** square **≥ 25 m** from the POI, within 2 km, **no 1 m slope > 5°** (10° fallback → CAUTION reason), **roughness < 0.25 m**, no boulders. In code: `findStagingPoint` (`lib/mars/site-grid.ts`) and `pnpm pipe:staging`. Rationale + sources: §9 "Staging point".                                                                                                                  |
+| Rovers per mission       | **2 rovers go out together** (mutual rescue).                                                                                                                                                                                                                                                                                                                                                                                 |
+| Suit / walk flight rules | Sourced values (`config.yaml` ↔ `lib/flight-rules/rules.ts`, synced by `config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), suit walk-back ≤ 2 km. NASA has no Mars limits — Moon/ISS values are labelled assumptions.                                                                                                        |
+| Rover flight rules       | **AGREED by the team, Sun Nov 15** (`lib/flight-rules/rover-rules.ts`): slope 5° caution / 10° no-go on the 463 m MOLA grid (halved because MOLA reads slopes low; 5° is the lower limit), battery 30 / 20 %, reserve 20 / 10 km, range 100 / 200 km (EVA-EXP-0042 two-rover source added), trip 7 / 14 sols, rover breakdown walk-back 15 km. ⚠ On slides, name the suit walk-back (2 km) and rover walk-back (15 km) apart. |
+| Level 2 forecast         | Code/threshold rules with stated confidence, not a model. RAG (if any) only explains verdicts, citing the rule that fired.                                                                                                                                                                                                                                                                                                    |
+| Data output formats      | **Stable:** COG rasters on a common grid; GeoJSON for stops/features. **Live:** JSON snapshot `{timestamp, radiation_dose_rate, solar_alert_level, dust_opacity, temp, wind, sun_elevation}`. **Route:** GeoJSON line + `{distance_km, est_time_min, max_slope, verdict, limiting_factor, reasons[]}`. **Forecast:** `[{hour, dust, radiation, verdict}]` + `explanation`.                                                    |
+| Live data for Arcadia    | Gale (Curiosity RAD) / Jezero (Perseverance MEDA, MOXIE) as a **clearly labelled proxy feed**, optionally adjusted with Mars Climate Database values. Orbital imagery (HiRISE/CTX) replaces rover imagery.                                                                                                                                                                                                                    |
+| Map library              | **MapLibre GL JS 6.18.0** (M, Sun Nov 15, unexpected ruling; `1bbb6d0`, `docs/MAP_RENDERER.md`; no token). Replaced Mapbox GL JS v3.                                                                                                                                                                                                                                                                                          |
+| Toolchain                | Plain Git + GitHub (no jj); Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI. Details §8.                                                                                                                                                                                                                                                                                                                        |
+| Data home                | Telemetry in **D1** (teammate's backend). Static rasters/tiles on **R2** (`tiles.imstuckonmars.help`, M uploads) or locally in `public/data/`.                                                                                                                                                                                                                                                                                |
+| Schemas                  | Owned by a teammate — don't build `schemas/` here. Longitude: store −180..180, display 0–360 °E.                                                                                                                                                                                                                                                                                                                              |
+| UI theme                 | _The Martian_-inspired, original design — no copyrighted assets/logos.                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Telemetry units (team table, Sat Nov 14 — the table was titled "ARES" by mistake; the product is **LARA**)
 
@@ -89,10 +103,6 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | RAD     | Radiation absorbed-dose rate          | µGy/h                                         |
 
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
-| Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and rover battery. |
-| Mobility (traverse mode) | **Confirmed Sun Nov 15 (Jess + Role C): 2-leg journeys — drive (rover) base → staging point, then walk (EVA) staging point → POI and back.** Drive leg uses rover rules + slope/thermal inertia; walk leg uses suit rules + slope + roughness. No new POI is being added — the 4 sites stay. _Superseded earlier decision:_ **Rover drives only — no walking portion** (team meeting, Sun Nov 15). Why: POIs are 93–468 km from the base. Rover + walk (2 legs) was too complex (different risks and datasets per leg). Walking-only would mean moving the base next to one POI (proof of concept only). Driving wins because (1) **battery running low on bad terrain** is a real risk, which gives the slope/terrain model its value; (2) we can use **all 4 sites**, not a POC; (3) battery data is easy to add or simulate (label it simulated). Pitch line for spacesuit mobility: crew stay in the pressurized rover; suited sampling at the stop is out of scope. |
-| Staging point (rover parking before the walk) | **Decided by Jess, Sun Nov 15:** park at the nearest **40 × 40 m** square **≥ 25 m** from the POI, **no 1 m slope > 5°** in it (10° fallback, flagged CAUTION), **roughness < 0.25 m**, no boulders, within 2 km. In code (`findStagingPoint`). Chosen to be conservative and precise: a shorter walk saves suit oxygen and keeps the rover (safe haven) close. 25 m follows Apollo practice (Apollo 17 Station 7, ~25 m). NASA sets only a **maximum** (stay within a 1-hour walk back to the rover, EVA-EXP-0042 §9.6), no minimum. Full reasoning + caveats: §7 item 5. **2 rovers go out per mission** (mutual rescue); driving-range limit not decided (§7 item 8). |
-| Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. **⚠ With drive + walk, keep the suit/walk rules (20° suit slope, 8 h suit, walk-back 2 km) for EVA legs and ADD rover rules** (rover slope limit, range/battery + reserve, drive hours per sol) — team (shared role A). |
 
 ## 5. User story — "Plan a science mission and get home"
 
@@ -142,61 +152,234 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 - **Radiation:** RAD (Curiosity, Gale)
 - **Space weather:** NASA DONKI API (`DEMO_KEY` works for light use)
 
-## 7. Open questions / known inconsistencies to resolve
+## 7. Open items — the one to-do list
 
-1. ~~**Science objective**~~ ✅ water-ice procurement (ISRU) — see §4.
-2. **HiRISE DTM coverage in Arcadia Planitia:** check which DTMs exist, then pick an AOI that fits.
-3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
-4. **Fill in flight rules:** suit/walk rules stay (EVA legs); radiation thresholds done. **Rover rules are PROPOSED** in `lib/flight-rules/rover-rules.ts`
-   (`8a2f06df`): slope 5° caution / 10° no-go on the 463 m MOLA grid (halved because MOLA reads slopes low), battery 30 / 20 %, reserve 20 / 10 km,
-   range 100 / 200 km, rover breakdown walk-back 15 km. ⏳ Team sign-off. Note: suit walk-back 2 km (`config.yaml`) ≠ rover walk-back 15 km — name them apart on slides.
-5. ~~Journey structure~~ ✅ 2-leg (drive + walk). ✅ **Staging point standard — decided by Jess (Sun Nov 15)**, replacing two competing
-   definitions (the app's `findStagingPoint` in `lib/mars/site-grid.ts`: 500–1000 m from the POI facing the base, 50 × 50 m, mean slope ≤ 5°, no
-   crater walls; Role B's draft `pnpm pipe:staging`: ≥ 100 m, 20 × 20 m, max slope < 15°, roughness < 0.25 m):
-   - **Rover parks at the nearest qualifying 40 × 40 m square at least 25 m from the POI** (not 500 m or 100 m; not 50 or 20 m), within the
-     2 km walk-back · **no 1 m slope > 5° anywhere in the square** (not 15°, not a mean) · **roughness < 0.25 m** (decided) · no boulders.
-   - **10° fallback (Jess):** if no square within 2 km meets 5°, park where none exceeds 10° and flag the trip with a CAUTION reason. Needed
-     because the 1 m DTM's noise + polygon troughs add metre-scale slope: **no 40 m square within 2 km of ESP_034082 meets 5°**.
-   - **Why:** every value is the more conservative, more precise choice. A shorter walk means less suit oxygen and fewer consumables spent getting
-     to and from the site, and a quicker way back to the rover (safe haven) if something goes wrong. The 25 m comes from Apollo practice: at
-     Apollo 17 Station 7 the LRV was parked ~25 m from the boulder; at Apollo 15 Central Station it was 26 m from the panorama spot (ALSJ). One
-     report on Desert RATS 2011 also says EVA crews stayed within 25 m of the pressurized rover (primary paper not checked).
-   - **NASA gives only a maximum, never a minimum:** "EVA crewmembers will stay within a one hour walk back to their rover" (EVA-EXP-0042 Rev B §9.6;
-     8 h suit consumables + 1 h contingency; a rescuer must get an incapacitated crewmember to a safe haven within 60 min). At the assumed
-     ~2 km/h that's ~2 km (§4.2.1.3.1). Getting back safely is the constraint that matters, so NASA caps the walk rather than requiring a standoff.
-     NASA's Sim Series 2 test parked on crater rims and picked each spot for comm relay, task lighting, camera view and solar charging, with no
-     fixed distance. The only fixed standoff found (500 m) is rover ↔ **lander** (engine debris), not rover ↔ sample site.
-   - ✅ **In code:** `findStagingPoint` (`lib/mars/site-grid.ts`; returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`, constants
-     `STAGING_MIN_M`, `PARKING_*`, shared wording `STAGING_RULE`); the fallback adds a CAUTION line to the route `reasons` and the assumptions panel
-     (the verdict itself is unchanged). The habitat-facing preference is gone (nearest wins). **Roughness is only checked once `ROUGHNESS_DATA_ROOT`
-     is set** (sites-v2 on R2, not uploaded yet); until then the panel says "roughness not checked". `pnpm pipe:staging` uses the same rule
-     (10 m cells max-pooled, 4 × 4 block). Its results (straight-line walks; the app's pathfinder may detour): ESP_033225 0.17 km · ESP_034082 0.19 km
-     **(10° fallback)** · ESP_037352 0.37 km · ESP_054060 0.06 km. Crater sites park on the flat outside the bowl, so "25 m" is a minimum: the nearest
-     flat square is 60–370 m out. Most straight walks still cross > 20° crater walls (ESP_034082 9–13 % of the walk).
-6. ✅ **MapLibre port (M)** landed (`1bbb6d0`, `docs/MAP_RENDERER.md`). ✅ Site layers re-checked on MapLibre 6.18.0 (Sun Nov 15 ~01:30, Step 3b). Original note: Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
-7. ~~Role A owner~~ ✅ **Role A is shared by the whole team** (Sun Nov 15): flight rules, thresholds, formats/schemas and integration are agreed together. Owners for C and D: confirm names.
-8. **Driving distance limits — NOT decided, note for later.** Our missions send **2 rovers out at a time** for safety (one can rescue the other's crew).
-   For when we decide whether we can drive to the farther sites (ESP_037352 424 km, ESP_054060 468 km): NASA's lunar ConOps (EVA-EXP-0042 Rev B
-   §4.2.1.3.1, §7.3.2) says **two pressurized rovers give a "mobile safe haven" that could extend the range to 100 km or more**. The rescue rover must
-   stay **within an 8-hour drive** of the EV crew, and rovers "notionally never travel farther than **100 km** from the ascent vehicle". Note: that
-   100 km is Artemis-era **Moon** planning, not Apollo (Apollo's walkback limit was 7.6 km; LRV designed for ~8 km). Compare with the proposed
-   rover rules (§7 item 4: range 100 / 200 km, breakdown walk-back 15 km).
+Grouped by who acts. Strike through and move to §11 when done.
 
-## 8. Working agreements
+### Team decisions (shared role A)
+
+1. **Driving-range limit for the farthest sites** — ESP_037352 (424 km) and ESP_054060 (468 km) exceed the agreed 200 km no-go. Decide: drop
+   them, show them as NO-GO, or treat them as a separate expedition. Context: §9 "Rover range".
+2. **Roughness classes (0.25 / 0.5 / 1 m) + walker rock sizes (0.3 / 0.5 / 1 m)** — Role B assumptions; legend says "not team-agreed". No NASA
+   limit exists (nearest: Apollo LRV clearance ~36 cm; MER < 1 % area with rocks > 0.5 m; InSight rock abundance < 10 %). Slide notes: `docs/PITCH_NOTES.md`.
+3. **Regional slope 200 m** — router input (would mean re-setting the halved MOLA slope limits) or display-only?
+4. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
+5. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
+6. Confirm owner names for roles C and D. Tell the team the staging-point rule and that rover rules are agreed.
+
+### M (hosting + UI)
+
+1. **Upload sites-v2** (718 MB, 27,856 files; OK the 850 MB limit): `MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload`, then
+   set `SITE_DATA_ROOT` and `ROUGHNESS_DATA_ROOT` (`lib/mars/ground-layers.ts`) to `…/sites-v2`. Until then roughness works locally only and the
+   staging panel says "roughness not checked". (Jess has local, uncommitted sites-v2 wiring waiting for this.)
+2. Host regional-slope tiles (needs a release config).
+3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
+4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` / AOI name with real routes so nothing fake ships.
+5. Polish: map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
+
+### Jess (role B)
+
+1. **Give the thermal-inertia R2 prefix** → set `THERMAL_INERTIA_DATA_ROOT` (`lib/mars/ground-layers.ts`, currently `null` → TI layer empty on
+   the deployed site).
+2. Geology + regional slope onto the map, with coverage + caveats.
+3. Slides: pin the page of the Hassler 2014 dose-rate figure; use the Golombek 2012 journal URL (DOI doesn't resolve).
+4. **SWIM** ice layer — swim.psi.edu down (HTTP 523); retry. PIA26045 is a PNG illustration → slides only.
+5. Optional polish: tinted HiRISE RED; imagery to z18 (~4× tiles).
+
+### Roles C / D
+
+- C: route GeoJSON fixtures for both legs (demo dry run) so M can build UI; `/api/route` returning `RouteResult`; distances on the Mars radius.
+- D: replace `/api/live` stub with replayed snapshots, show `proxy_source`; never display stub zeros as real data.
+
+### Before feature freeze (~6 h before deadline)
+
+- Every layer shows its NASA source; references (§12) in sync; AI disclosures (voice, AI texture watermark) in place.
+- Check: Workers static-asset per-file limit (believed 25 MiB) — move larger COGs to R2.
+
+### Future data layers (horizon)
+
+Dust-raising potential / dust cover (TES DCI + TI + wind) · illumination/shadows (sun position + DTM horizon) · CRISM where covered ·
+line-of-sight to habitat (one pitch sentence or simple viewshed) · click-to-inspect values via `geotiff.js`.
+
+## 8. How we work
+
+### Working agreements
 
 - Don't change the data format without telling everyone; update the sample files the same hour.
 - Build the demo path first: one location, one route, one live event, one verdict.
 - Every layer shows its NASA source (supports Validity criterion).
 - Hourly 5-minute check-in: done / blocked.
 - Freeze features ~6 hours before the deadline; then integrate, test, record.
+- **Jess:** work directly on `main`, no feature branches; ask before pushing; explain jargon in plain language.
 
-## 9. Claude roles (advisor personas — NOT team roles)
+### Toolchain + how to run (team-agreed Sat Nov 14; wins over `AGENTS.md` where they disagree)
+
+- Plain Git + GitHub, small commits, message style `area(type): Summary`. Every push to `main` runs CI (`.github/workflows/ci.yml`: frozen
+  install → `fmt:check` → `lint` → `typecheck` → `test` → `build` → deploy).
+- Node 24 (fnm) + pnpm via Corepack; GDAL via `brew install gdal`. Nix optional.
+- `pnpm dev` → http://localhost:5173. **Restart it after running any tile pipeline.**
+- Pre-push check = `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
+- Pipelines: TypeScript run with Node 24, shelling out to GDAL; run locally, never in Workers. `pnpm pipe:check` verifies GDAL + the Mars 2000
+  sphere. Pipelines that write committed JSON print it unformatted → `pnpm fmt` afterwards.
+- Site pipeline: `pnpm pipe:sites [dtm]` → `pnpm pipe:slope <dtm>` → `pnpm sites:package`. Raw inputs (1.8 GB) in `data/raw/hirise/` (URLs in
+  `data/raw/README.md`); intermediates in `data/interim/hirise/<dtm>/` (keep `dem.tif`, `ortho.tif`, `*.vrt`, `slope-deg.tif`, `mola-pad.tif`,
+  `footprint.geojson`, `dtm-srs.wkt`).
+- Other Role B pipelines: `pipe:roughness`, `pipe:boulders`, `pipe:thermal-inertia`, `pipe:regional-slope`, `pipe:geology`, `pipe:staging`.
+
+### Architecture (summary)
+
+TypeScript pipelines (Node + GDAL CLI) → COGs + tiles + GeoJSON (R2 / `public/data/`); telemetry → D1 (`/api/telemetry`, `/api/missions`).
+MapLibre in the vinext app reads `manifest.json`; Hono `/api/*` serves `/live`, `/route`, `/verdict`. Each raster = COG (true values) + coloured
+tiles. The map measures with Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code; no built-in scale bar.
+
+## 9. Data reference (Role B — what exists, where, caveats)
+
+### Water-ice sites (POIs)
+
+| DTM                               | HiRISE obs      | POI (lon −180..180, lat) | Type                                                  | Distance from habitat | POI provenance                                     |
+| --------------------------------- | --------------- | ------------------------ | ----------------------------------------------------- | --------------------- | -------------------------------------------------- |
+| DTEEC_033225_2250_033146_2250_A01 | ESP_033225_2250 | −176.33383, 44.41589     | Possible terraced crater, ~130 m, 12 m deep           | 93 km                 | Picked by Claude from the ortho; confirmed by Jess |
+| DTEEC_034082_2260_033014_2260_A01 | ESP_034082_2260 | −171.38243, 45.64829     | Possible terraced bullseye crater, bowl ~28 m deep    | 194 km                | Circled by Jess; DTM-refined (moved 35 m)          |
+| DTEEC_037352_2245_037418_2245_A01 | ESP_037352_2245 | −166.14298, 44.39035     | Terraced bullseye crater (confirmed), bowl ~41 m deep | 424 km                | Circled by Jess; DTM-refined (moved 85 m)          |
+| DTEEC_054060_2265_054126_2265_A01 | ESP_054060_2265 | 172.56388, 46.07022      | Ridges (not a crater)                                 | 468 km                | DTM centre                                         |
+
+POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid of the lowest 30 % of relief within 250 m on the 1 m DTM. Logged in
+`pipelines/stable/hirise-sites.ts` and `sites.geojson` (`position_note`). Distances: great-circle, Mars 2000 sphere.
+
+- **Files:** `public/data/processed/sites.geojson` (committed; per site `poi` point + `footprint` polygon; props `id`, `hirise_id`, `title`,
+  `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`). Tiles on R2 `sites-v1` (`SITE_DATA_ROOT`).
+- **Slope:** `data/processed/sites/<dtm>/slope.tif` (R2: `sites-v1/slope/<HiRISE ID>_slope.tif`) — COG, Int16 tenths of a degree, lon/lat Mars
+  2000, ~1 m, nodata −9999 (incl. 10 m trimmed edge). Mean / % ≥ 20°: ESP_033225 4.3° / 0.1 % · ESP_034082 7.3° / 1.8 % · ESP_037352 4.1° /
+  0.2 % · ESP_054060 5.5° / 0.7 %. Hazards are crater walls / ridge flanks. Overlay: yellow 10–15°, orange 15–20°, red ≥ 20°.
+- **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` (1 m, nodata −32768); MOLA 463 m around it. Never read heights from display tiles (+10 km).
+- **Map code:** `components/map/scene.ts` (`addSites`, slope, terrain switching), `components/map/scene-panel.tsx`, `components/map/mars-map.tsx`,
+  `lib/mars/terrain.ts` (`terrainSourceForView`), `lib/mars/map-data.ts` (`SITE_DATA_ROOT`), `lib/mars/ground-layers.ts` (TI/roughness roots).
+
+### Walking-scale ground: roughness + boulders
+
+- **Roughness** (`pnpm pipe:roughness <dtm>`): RMS height deviation from the local 5 m trend, 5 m cells. COG `data/processed/sites/<dtm>/roughness.tif`
+  (Int16 cm), tiles `public/data/sites/<dtm>/roughness/` z11–16, summary `public/data/processed/roughness-sites.json`. p50 0.08–0.15 m, mostly DTM
+  noise (Kirk et al. 2008); only crater rims/ridge flanks stand out. In the `sites-v2` package (not uploaded — §7 M item 1).
+- **Boulders** (`pnpm pipe:boulders [dtm]`): rock-shadow candidates within 500 m of each POI on the 0.25 m ortho (Golombek et al. 2008/2012) →
+  36-candidate review (`pipelines/stable/boulders-review.json`) → upper bound on rock abundance (rule of three / Wilson) → Golombek & Rapp (1997).
+  Review found **0/36, 0/36, 0/36, 0/1** real rocks (confirmed by Jess). Upper bounds k ≤ 6.7 % · 10.7 % · 9.3 % · 4.0 %; rocks ≥ 0.5 m ≤ 2.5 · 5.5 ·
+  4.5 · 0.8 per 100 m² (033225 · 034082 · 037352 · 054060). Reviewing 100 would tighten to ≤ 3 %. Pitch: "no boulder fields near the stops; the
+  walking hazards are polygon troughs and crater walls."
+
+### Thermal inertia (THEMIS, 100 m)
+
+- `pnpm pipe:thermal-inertia` (~4 min), 170–196°E, 43–48°N → `data/processed/thermal-inertia/thermal-inertia.tif` (Int16, nodata −9999, **lon
+  0..360 °E**), tiles `public/data/thermal-inertia/` z5–11 (uploaded to R2 by Jess; prefix not yet recorded — §7 Jess item 1), summary
+  `public/data/processed/thermal-inertia-sites.json`.
+- Classes (±20 %): < 150 fine dust · 150–400 sand/crusted soil · ≥ 400 firm/rock. Mean within 5 km: ESP_033225 94 (85 % fine dust) · habitat 126 ·
+  ESP_034082 186 · ESP_037352 190 · ESP_054060 367. Class robust only for ESP_033225 (dust) and ESP_037352 (sand).
+- **Coverage — always state which number:** THEMIS covers **~57 % of our AOI** (57.4 %; the rest is _no data_, not safe ground) but only **47 % of
+  Joseph's drive strip**. Per-site coverage within 5 km is 100 %. JSON carries `caveats[]` (coverage, ±20 %, top few cm, 100 m pixels, not ground-truthed).
+- In the route cost (Joseph, `64333362` + `fa2b8526`): loose dust (< 150) → rolling resistance 0.30 instead of 0.15 (`GROUND` in `rover-rules.ts`).
+- Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/suits); firmest ground is farthest away.
+
+### Regional slope + geology (drive corridor)
+
+- **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
+  0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 10° 0.04 %, ≥ 20° 0 %.
+  Not used by the router (which uses 463 m MOLA) — §7 team item 3.
+- **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
+  on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. Not on the map yet.
+
+### Staging point (rationale for the §4 rule)
+
+- Every value is the more conservative, more precise choice: shorter walk = less suit oxygen, quicker return to the rover (safe haven).
+- **25 m** follows Apollo practice (Apollo 17 Station 7 LRV ~25 m from the boulder; Apollo 15 Central Station 26 m). Desert RATS 2011 reportedly
+  kept EVA crews within 25 m of the rover (primary paper not checked).
+- **NASA sets only a maximum:** "stay within a one hour walk back to their rover" (EVA-EXP-0042 Rev B §9.6) ≈ 2 km at ~2 km/h. Sim Series 2 chose
+  parking per spot (comm, lighting, camera, solar). The only fixed standoff found (500 m) is rover ↔ lander.
+- **10° fallback** exists because the 1 m DTM noise + polygon troughs add metre-scale slope: no 40 m square within 2 km of ESP_034082 meets 5°.
+- Results (straight-line walks; the app's pathfinder may detour): ESP_033225 0.17 km · ESP_034082 0.19 km (10° fallback) · ESP_037352 0.37 km ·
+  ESP_054060 0.06 km. Crater sites park on the flat outside the bowl. Most straight walks still cross > 20° crater walls (ESP_034082 9–13 %).
+- Code: `findStagingPoint` returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`; constants `STAGING_MIN_M`, `PARKING_*`, `STAGING_RULE`.
+  Roughness is checked only once `ROUGHNESS_DATA_ROOT` is set.
+
+### Rover range (context for §7 team item 1)
+
+Two pressurized rovers give a "mobile safe haven" that could extend range to **100 km or more**; the rescue rover stays within an **8-hour drive**;
+rovers "notionally never travel farther than 100 km" from the ascent vehicle (EVA-EXP-0042 Rev B §4.2.1.3.1, §7.3.2). That is Artemis-era **Moon**
+planning, not Apollo (Apollo walk-back limit 7.6 km). Agreed rover range: 100 km caution / 200 km no-go.
+
+### Data quality & processing decisions (HiRISE sites)
+
+- **Slope results** (1 m DTM, metre grid, edges trimmed; limit 20°): ESP_033225 mean 4.3°, **0.1 %** ≥ 20° · ESP_034082 mean 7.3°,
+  **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All gentle terrain; hazards are crater walls/ridge flanks.
+- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~430 MB total**; slope COGs **277 MB** as Int16 tenths (990 MB as Float32); Mapbox upload GeoTIFFs **274 MB total**
+  (JPEG Q75 + mask; RGBA deflate was 1.55 GB, Q85 355 MB; single-band grey saves nothing).
+
+- **Reprojection decision:** everything is stored as **lon/lat on the Mars 2000 sphere** (`+proj=longlat +R=3396190`), east-positive −180..180.
+  HiRISE DTMs ship in equirectangular on **local-radius spheres** (3,386,150.7 m / 3,387,887.7 m) with site-specific standard parallels; lat/lon angles
+  carry over unchanged between Mars spheres (no datum shift), so we reproject rather than resample heights. Tiles are cut by labelling the Mars lon/lat
+  as EPSG:4326 for `gdal2tiles` (it only knows Earth) — correct because Mapbox also treats Mars degrees as Earth degrees.
+- **Slope is computed in metres, not degrees:** DTM → local equirectangular metre grid centred on each site (lat_ts = site latitude, Mars 2000 sphere,
+  1 m) → `gdaldem slope` → back to the DTM's lon/lat grid. Computing slope on a lon/lat grid would distort x vs y by cos(lat) (~30 % at 45°N).
+- **Broken JP2 georeferencing:** RED_A orthos for ESP_034082 and ESP_037352 have a GeoJP2 header with standard parallel 0° → GDAL places them at
+  **~84–90°N**. Their projected metre coordinates match the DTM exactly, so the pipeline assigns the **DTM label's CRS** to the ortho.
+- **Unreliable DTM edges:** HiRISE DTM borders produce fake ~90° slopes. `-compute_edges` and a footprint cutline did not fix it; the pipeline
+  **blanks slope within 10 m of the DTM's no-data area** (`gdal_proximity`). A few isolated 1-px spikes remain → report **percentiles / % ≥ limit**, not max.
+- **Display datum shift:** site terrain tiles add the team's `DISPLAY_ELEVATION_OFFSET_M` (+10 km; Mapbox camera can't go below 0) like their other
+  terrain sources — **display only**; true heights are in the DTM/COGs. Terrain blends to MOLA 463 m (`/vsicurl/`, ~1 km pad) outside each DTM.
+- **Antimeridian:** ESP_054060 is at 172.56°E (positive), the others at −176…−166 → the AOI crosses ±180; MOLA pads are cut per site.
+- **Resolution choices:** imagery tiled to z17 (~0.45 m/px; source 0.25 m); terrain mesh to z15 (~1.8 m; DTM 1 m); slope tiles to z16.
+- **Terrain switching:** `terrainSourceForView` (teammates' `lib/mars/terrain.ts`) now prefers a site's 1 m terrain when the whole view is inside its
+  padded box at zoom ≥ 11 (tested in `lib/mars/terrain.test.ts`).
+
+### Gotchas
+
+- vinext dev server crashes ("Maximum call stack size exceeded", `als-registry.js`) when thousands of files change under `public/` (pipelines,
+  broken rebase) → restart `pnpm dev`.
+- A half-finished rebase leaves conflict markers in `package.json` → `JSONError … key must be a string`. Finish/abort the rebase.
+- The map container CSS forces `position: relative` → size it with `h-full w-full`, not `absolute inset-0`. The map needs absolute tile/GeoJSON
+  URLs (prefix `location.origin`).
+- **Site terrain drops to MOLA 463 m at steep or zoomed-out tilts** (e.g. ESP_033225 z15/80°, z14/70°, z11.5/60°): `terrainSourceForView` needs
+  the whole view inside the site's padded box (`lib/mars/terrain.ts:29-31`). Landing view (z15/65°) is fine. Fix pending M.
+- Local `POST /api/copilot/session` → 500 = local D1 not migrated/seeded → `docs/BACKEND.md` "Reproduce locally" (import once only).
+- Display terrain tiles are **not** true heights (+10 km `DISPLAY_ELEVATION_OFFSET_M`).
+- Mars datasets mix planetocentric/planetographic latitude and east/west longitude — record each file's CRS. Turf/MapLibre distances assume Earth.
+
+### Unverified claims to treat with caution
+
+25 MiB static-asset limit · NASA Trek tile projections. Verified: Mars 2000 radius = 3396190 m in PROJ (`IAU_2015:49900`) · vinext dev serves `public/`.
+
+## 10. Claude roles (advisor personas — NOT team roles)
 
 > These 1/2/3 are perspectives Claude advises Jess from. They are not the team roles A–D/M in §3. To avoid confusion, refer to them as **Advisor 1 (geospatial), Advisor 2 (data scientist / data pipelines & I/O), Advisor 3 (space mission-planning veteran)**.
 
 Respond from these perspectives/expertise: A: You are a geospatial professional (10+ years of experience with GIS, working with agentic workflows and constantly keeping your skills up-to-date since 2024) whom I've hired to complete simpler tasks I want to offload, and can advise me on the best workflows to complete these tasks if I need to be the one doing them. B. A data scientist with 15 years of experience and great enthusiasm about automating data pipelines and aggregating data to extract value, especially in the age of Gen AI. Most of your expertise has been in creating CLEAN data pipelines. 3 years ago, you pivoted your career to education and have been tutoring adults who want to make the career transition to data science, so you know how to tailor individual education plans. C. NASA veteran who's been chief engineer in mission planning for various Apollo and Artemis missions, and has experience from the Moon landing in 1969.
 
-## 10. References (cite every external source — required for submission)
+## 11. Completed (log)
+
+**Decisions + setup (Sat Nov 14)**
+
+- ✅ Toolchain, CI, data contracts (`LayerManifest` / `StableLayer`), telemetry units, data home (D1 + static rasters), sourced suit/radiation flight rules.
+- ✅ Skeleton app + map verified; pipeline skeleton (GDAL 3.13.3, `pnpm pipe:check`). Mapbox v3 port (Sat ~19:30), later replaced by MapLibre.
+- ✅ Science objective: water-ice procurement (ISRU).
+
+**Role B data (Jess)**
+
+- ✅ AOI → 4 HiRISE water-ice sites as POIs (found via ODE REST, 59 DTMs in 160–215°E, 30–65°N); CRS per file in `data/raw/README.md`; `sites` layer in the manifest.
+- ✅ Site pipelines (`pipe:sites`, `pipe:slope`) — 0.45 m imagery, 1 m terrain, slope + 20° hazard overlay, attribution; pushed.
+- ✅ Hosting on R2: `sites-v1` uploaded and `SITE_DATA_ROOT` set by M (`f9bbf09`, `docs/SITE_STORAGE.md`); `_mapbox.tif` upload files obsolete.
+- ✅ Visual check on MapLibre 6.18.0 (Sun ~01:30): all 4 sites pass.
+- ✅ Roughness + boulder bounds for all 4 sites; `sites-v2` package built (`34a4626a`, not uploaded).
+- ✅ Thermal inertia pipeline, uploaded to R2; in the route cost (Joseph) and on the map (Scene panel).
+- ✅ Overnight run (pushed): references verified (`a1ae6279`), regional slope (`1e9b17ca`), geology (`88026c48`), staging-point pipeline (`cc8b6fcd`, now on the team rule). Report: `docs/agent-briefs/overnight-data-REPORT.md`.
+- ✅ Role C brief sent; agreed slope-only cost surface first.
+
+**Team (Sun Nov 15)**
+
+- ✅ Role A shared by the whole team. MapLibre port (`1bbb6d0`). CI model test fixed (`1e0e423`).
+- ✅ 2-leg journeys (`lib/mars/drive-walk.ts`); staging-point rule decided and in code (`d0e24861`); 2 rovers per mission.
+- ✅ Rover rules agreed (5° lower slope limit; EVA-EXP-0042 range source added).
+- ✅ By teammates: rover energy-cost A* (`5d9c6e84`), soft ground from TI (`fa2b8526`), walk-leg time/consumables (`245aee73`), sources screen
+  (`eb50f3fc`), mission summary (`fc249a77`), `/api/verdict`, RAD telemetry, Mars clock.
+
+## 12. References (cite every external source — required for submission)
 
 > Keep this list in sync whenever a dataset, paper or rule source is added. Each map layer also shows its credit in the UI.
 > ✓ All former **(verify)** citations were checked against Crossref / publisher pages on Sun Nov 15 (✓ = verified; DOIs added). One open item: the page of the Hassler 2014 dose-rate figure.
@@ -242,7 +425,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412(6845), 411–414. doi:10.1038/35086515 (ice-rich mantle with pitted texture — why the sites are rock-poor) ✓
 - NASA NSSDC, "The Apollo Lunar Roving Vehicle", https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html (LRV ground clearance 36 cm loaded — rover obstacle analogue)
 
-### Staging-point and rover-range sources (§7 items 5 and 8)
+### Staging-point and rover-range sources (§9)
 
 - NASA (2020). _Exploration EVA System Concept of Operations_, EVA-EXP-0042 Rev B. https://www.nasa.gov/wp-content/uploads/2017/02/eva-exp-0042_xeva_system_con_ops_rev_b_final_dtd_10192020_ref_doc.pdf — §4.2.1.3.1 (walk-back ranges: ~2 km/h, 2 km on foot, 10 km unpressurized rover, 12 km single pressurized rover, 100 km+ with two pressurized rovers; rescue rover within an 8-hour drive), §7.3.2 (rovers within 100 km of the ascent vehicle; 8 h + 1 h contingency consumables ≈ 1 h walk from the rover), §9.6 ("stay within a one hour walk back to their rover"), §9.2 (rescue to safe haven within 60 min). Lunar values; Mars ranges are "forward work".
 - Apollo Lunar Surface Journal (NASA History). Apollo 17 Station 7: LRV parked ~25 m ENE of the boulder (https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/images17.html); Apollo 15: rover 26 m from the D-16 pan spot near Central Station; Final LRV parking places (https://www.nasa.gov/wp-content/uploads/static/history/alsj/alsj-LRVFinalParking.html); Apollo 15 Station 9, TV-coverage parking remark (https://nasa.gov/wp-content/uploads/static/history/alsj/a15/a15.sta9.html).
@@ -274,329 +457,3 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
 ### Fonts
 
 Atkinson Hyperlegible Next · IBM Plex Sans Condensed · JetBrains Mono (all SIL Open Font License, via Google Fonts).
-
-# Project Handoff/Next Steps as of 14:32 on 14 November 2026
-
-## ▶ Handoff — start here (Jess / team role B, as of Sun Nov 15, 2026)
-
-**Where things stand**
-
-- Role B work so far = **4 HiRISE water-ice sites** (science objective: water-ice procurement / ISRU) as POIs on the team's globe map (MapLibre since `1bbb6d0`):
-  0.45 m imagery, 1 m 3D terrain, slope + 20° hazard overlay, NASA/JPL/University of Arizona attribution. Details: Steps 2–3 and
-  "Data quality & processing decisions" below.
-- ✅ **Sites work is pushed** (on `origin/main`). The CI model test failure was fixed by `1e0e423`.
-- **Hosting:** M uploads `data/map-assets/sites-v1/` (from `pnpm sites:package`) to R2 and **sets `SITE_DATA_ROOT`** in
-  `lib/mars/map-data.ts` himself. ✅ **Done (Sun Nov 15):** M uploaded `sites-v1` to R2 and set `SITE_DATA_ROOT`.
-- **Role C** has the brief (below) and agreed a **slope-only cost surface first**; slope COGs are in `sites-v1/slope/` (Int16, value/10 = °).
-- **Mobility (Sun Nov 15, with Role C): 2-leg journeys (drive, then walk)** — see §4 "Mobility". Built by teammates in `lib/mars/drive-walk.ts`. No new POI.
-- **Map library: M replaced Mapbox with MapLibre** (`1bbb6d0`, unexpected ruling). ✅ Site layers re-checked after the port (Step 3b): all 4 sites pass; steep-tilt terrain caveat under Gotchas.
-
-**Walking-scale ground: roughness + boulders ✅ (Sun Nov 15, Role B, for the walking EVA legs):**
-
-- `pnpm pipe:roughness <dtm>` (`pipelines/stable/roughness.ts`, ~15 s): RMS height deviation from the local 5 m trend, 5 m cells, from the 1 m DTM.
-  COG `data/processed/sites/<dtm>/roughness.tif` (Int16 cm, same grid as `slope.tif`), tiles `public/data/sites/<dtm>/roughness/` z11–16 (both
-  gitignored), summary `public/data/processed/roughness-sites.json`. **Finding:** p50 0.08–0.15 m, mostly DTM noise (precision ~tens of cm, Kirk
-  et al. 2008); only crater rims/ridge flanks stand out. ESP_034082's higher values look like a noisier DTM, not rougher ground. The DTM can't see
-  walker-size obstacles → boulders below.
-- `pnpm pipe:boulders [dtm]` (`pipelines/stable/boulders.ts`, ~10 s/site): rock-shadow candidates within 500 m of each POI on the 0.25 m ortho
-  (Golombek et al. 2008/2012 method; sun geometry from each PDS RDR label) + lit-face/pit filters → **seeded random gallery of 36 candidates**
-  (`data/interim/hirise/<dtm>/boulders-review.png`) → human review recorded in `pipelines/stable/boulders-review.json` → **upper bound** on rock
-  abundance k (rule of three / Wilson) → Golombek & Rapp (1997) model predicts rocks per 100 m² below HiRISE resolution.
-  **Finding:** the ground is polygonised, pitted ice-rich mantle; the automatic step flags pits and trough shading, and review found **0/36, 0/36, 0/36, 0/1** real rocks
-  (Claude's visual check, **confirmed by Jess**; ESP_034082 #21 was ambiguous → judged not a rock). Upper bounds: k ≤ 6.7 % · 10.7 % · 9.3 % · 4.0 %;
-  rocks ≥ 0.5 m ≤ 2.5 · 5.5 · 4.5 · 0.8 per 100 m² (033225 · 034082 · 037352 · 054060). Bounds are loose because only 36 were reviewed (review 100 →
-  precision ≤ 3 %). Re-running with changed thresholds marks the review stale. Analogue: InSight required rock abundance < 10 % (Golombek et al. 2017).
-  Pitch line: "no boulder fields near the stops; the walking hazards are polygon troughs and crater walls."
-- ⚠ **Categories/sizes NOT yet confirmed with the team:** roughness classes (0.25 / 0.5 / 1 m) and walker rock sizes (0.3 / 0.5 / 1 m) are
-  **Role B ASSUMPTIONS** kept in the pipelines (adding keys to `config.yaml` would break `config.test.ts`). **No published NASA limit exists** for
-  suited walking over rocks or roughness (xEVA ConOps only gives 20° slope, ~2 km/h, 2 km walk-back). Nearest sourced figures: Apollo LRV ground
-  clearance ~35–36 cm (NASA NSSDC); MER: < 1 % of area covered by rocks > 0.5 m high; InSight: rock abundance < 10 %. Agree with the team (shared role A).
-  Why roughness (0.25) and rock size (0.3) differ, as slide notes: `docs/PITCH_NOTES.md`.
-- ✅ Roughness is now in `sites:package` as **`sites-v2`** (overnight, `34a4626a`): `data/map-assets/sites-v2/` = sites-v1 + `sites/<dtm>/roughness/` tiles
-  - `roughness/<HiRISE ID>_roughness.tif` COGs; **718 MB, 27,856 files**. Upload config `pipelines/sites-release-v2.json` (output limit raised to
-    850 MB). ⏳ **Not uploaded** — M uploads (`MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload`) and then switches
-    `SITE_DATA_ROOT` **and `ROUGHNESS_DATA_ROOT`** (`lib/mars/ground-layers.ts`) to `…/sites-v2`. Roughness overlay is in the Scene panel +
-    `manifest.json` (map agent branch `map/ti-roughness-layers`, merged Sun Nov 15 morning); until the upload it only works locally.
-
-**Thermal inertia ✅ (Sun Nov 15):** `pnpm pipe:thermal-inertia` (`pipelines/stable/thermal-inertia.ts`, ~4 min) reads THEMIS quantitative TI
-(100 m) over HTTP for 170–196°E, 43–48°N. Outputs: `data/processed/thermal-inertia/thermal-inertia.tif` (Int16 TI, nodata −9999, **lon 0..360 °E**
-because the AOI crosses ±180; ~57 % of the box has THEMIS data, gaps are mosaic holes), overlay tiles `public/data/thermal-inertia/` z5–11
-(both gitignored, ~70 MB; ✅ **uploaded to R2** — Jess, Sun Nov 15), committed summary `public/data/processed/thermal-inertia-sites.json`.
-Classes (indicative, ±20 %): < 150 fine dust/loose fines · 150–400 sand/crusted soil · ≥ 400 firm/rock. Mean within 5 km:
-**ESP_033225 94 (85 % fine dust)** · habitat 126 · ESP_034082 186 · ESP_037352 190 · **ESP_054060 367 (12 % firm/rock)**.
-**Always present with the uncertainty:** the run prints and the JSON stores AOI coverage (**57.4 %** — say "~57 %", the rest is _no data_,
-not safe ground), per-site `coverage_percent` (100 % within 5 km of every site), `mean_range` (±20 %) and `class_robust`. The class is
-**not robust** for the habitat, ESP_034082 and ESP_054060 (±20 % crosses a break) — only ESP_033225 (dust) and ESP_037352 (sand) are firm calls.
-JSON also carries `caveats[]` (incomplete coverage, ±20 %, top few cm only, 100 m pixels, not ground-truthed) for the UI/slides.
-Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/suits); firmest ground is farthest away.
-
-- ✅ **In the route cost** (Joseph, `64333362` + `fa2b8526`): `thermal-inertia-corridor.bin` on the 463 m drive grid; loose dust (< 150) → rolling
-  resistance 0.30 instead of 0.15 (`GROUND` in `rover-rules.ts`). ⚠ THEMIS covers **47 % of his drive strip** vs **57 % of our AOI** — slides must say which.
-- ✅ **Map overlay** (map agent, merged): Scene panel switch with 3-class legend, coverage line, per-site mean/range/"not robust", caveats.
-  ⚠ **`THERMAL_INERTIA_DATA_ROOT` in `lib/mars/ground-layers.ts` is `null`** (local `/data/thermal-inertia/` only) because the R2 prefix of
-  Jess's upload isn't recorded anywhere → **layer is empty on the deployed site** until it's set.
-
-**Overnight data run (Sun Nov 15, Claude) — ✅ pushed** (rebased, so hashes changed). Report: `docs/agent-briefs/overnight-data-REPORT.md` (uncommitted; its hashes are pre-rebase).
-
-- ✅ **References** (`a1ae6279`): all §10 "(verify)" items checked; Golombek et al. 2012 DOI doesn't resolve (use the journal URL). Hassler 2014 page still open.
-- ✅ **Regional slope, drive leg** (`1e9b17ca`): `pnpm pipe:regional-slope` (~30 s) → MOLA/HRSC 200 m → local metre grid (eqc, lat_ts 45.5°) →
-  `gdaldem slope`. COG `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, nodata −9999, **lon 0..360 °E**, 172.07–194.35 °E,
-  44.05–46.41 °N, 6602 × 698), tiles `public/data/regional-slope/` z5–10 (both gitignored, ~2 MB + 156 KB), summary
-  `public/data/processed/regional-slope.json`. **Mean 0.45°; ≥ 10° 0.04 %, ≥ 15° 0.01 %, ≥ 20° 0 %** — the 200 m plains are flat; hazards are
-  shorter than 200 m (caveat: drive-leg routing only). Not on R2 yet (no release config). ⚠ **Not used by the router**, which drives on the
-  463 m MOLA grid with slope limits halved for that grid. Switching to 200 m would mean re-setting those limits → team decides; else display-only.
-- ✅ **sites-v2 package with roughness** (`34a4626a`) — see the roughness bullet above.
-- ✅ **Geology** (`88026c48`): `pnpm pipe:geology` → USGS SIM 3292 (Tanaka et al. 2014, 1:20M; already lon/lat on the Mars sphere) clipped to the
-  corridor → `public/data/processed/geology.geojson` (7 polygons, 60 KB, not simplified) + `geology-sites.json`. Habitat + ESP_033225/034082/037352
-  sit on **Av (Amazonian volcanic unit)**; ESP_054060 on **lHl (Late Hesperian lowland unit)**. Contacts are km-scale; the ice-rich mantle seen in HiRISE
-  isn't mapped at 1:20M. Raw zip (809 MB) in `data/raw/geology/`. Not on the map yet.
-- ✅ **Staging points, DRAFT** (`cc8b6fcd`) — ⚠ **not used by the app** (it has its own finder, see §7 item 5): `pnpm pipe:staging [dtm]` (~8 s) → `public/data/processed/staging-points.geojson` (top 3 per site).
-  Rover parking = slope < 15° and roughness < 0.25 m (**Role B ASSUMPTIONS**, Apollo LRV sources), ≥ 20 × 20 m, 100 m–2 km from the POI.
-  ⚠ **Superseded:** the pipeline now uses the team staging-point rule (≥ 25 m, max 5° / 10° fallback, roughness < 0.25 m, 40 × 40 m — §7 item 5) and was re-run.
-  Ground is flat almost everywhere, so every #1 spot is ~110 m from the POI (the 100 m standoff decides). **ESP_034082:** every short walk crosses
-  > 20° bowl walls (max 32–37°, 7–10 % of the walk) — sample from the rim or detour. No walk leaves a DTM footprint. The app's walk planner
-  > (`planSiteWalk`) is a pathfinder and may already detour → check in the app before raising it.
-
-**▶ Team items to agree (shared role A) — as of Sun Nov 15 ~08:30:**
-
-1. Sign off the **proposed rover rules** (§7 item 4).
-2. ~~Staging point definition~~ ✅ decided by Jess and in code: ≥ 25 m, max 5° (10° fallback), roughness < 0.25 m, 40 × 40 m (§7 item 5). Tell the team.
-3. **Roughness classes (0.25 / 0.5 / 1 m) + walker rock sizes (0.3 / 0.5 / 1 m)** — Role B assumptions, legend says "not team-agreed".
-4. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`); layer
-   panel shows "Scene panel" instead of a switch for those; TI drawn above imagery at 0.7 opacity.
-5. **Regional slope 200 m**: router input or display-only?
-
-**For M:** upload sites-v2 (OK the 850 MB limit) → set `SITE_DATA_ROOT` + `ROUGHNESS_DATA_ROOT` to `…/sites-v2` · host regional-slope tiles
-(needs a release config) · steep-tilt terrain fallback fix. **For Jess:** give the TI R2 prefix → `THERMAL_INERTIA_DATA_ROOT`.
-
-**Next step for Role B:** TI R2 prefix → geology + regional slope onto the map (with coverage + caveats) → Hassler 2014 page, Golombek 2012
-journal URL on slides → **SWIM** (still down, HTTP 523).
-
-**Delegation candidates (Sun Nov 15) — for the free team member, or to take load off Role C (now owns 2-leg routing):**
-
-- ~~**Rover energy model**~~ ✅ done by teammates (`5d9c6e84` energy-cost A*, `fa2b8526` soft ground from TI).
-- ~~**Staging-point finder**~~ ✅ teammates' runtime finder in `lib/mars/site-grid.ts`; Role B draft also exists (see team items).
-- ~~**Walk-leg time/consumables**~~ ✅ done by teammates (`245aee73`).
-- ~~**Regional slope for the drive leg**~~ ✅ done (overnight, `pnpm pipe:regional-slope`) — not used by the router yet.
-- ~~**Mission summary / sources panel**~~ ✅ done by Joseph (`eb50f3fc` sources screen, `fc249a77` mission summary).
-- ~~**References check**~~ ✅ (Sun Nov 15 night): all §10 citations verified; open: page of the Hassler 2014 dose-rate figure.
-- **Demo-script dry run + test data**: route GeoJSON fixtures for both legs so M can build the UI before C's routes land.
-
-**How to run (from repo root, Node 24 via fnm, GDAL via brew)**
-
-- `pnpm dev` → http://localhost:5173 (no map token needed since the MapLibre port). **Restart it after running any tile pipeline.**
-- Site pipeline: `pnpm pipe:sites [dtm]` → `pnpm pipe:slope <dtm>` → `pnpm sites:package`. Raw inputs (1.8 GB) in `data/raw/hirise/`
-  (URLs in `data/raw/README.md`); intermediates in `data/interim/hirise/<dtm>/` (keep `dem.tif`, `ortho.tif`, `*.vrt`, `slope-deg.tif`,
-  `mola-pad.tif`, `footprint.geojson`, `dtm-srs.wkt`; the rest is regenerable scratch).
-- Checks before pushing: `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build`.
-
-**Key files (Role B)**
-
-- Pipelines: `pipelines/stable/hirise-sites.ts`, `pipelines/stable/slope.ts`, `pipelines/lib/xyz.ts`, `pipelines/package-sites-release.ts`,
-  `pipelines/sites-release.json` (v1) + `pipelines/sites-release-v2.json`, `pipelines/stable/{thermal-inertia,roughness,boulders,regional-slope,geology,staging-points}.ts`.
-  Pipelines that write committed JSON print it unformatted → run `pnpm fmt` after re-running them.
-- Map: `components/map/scene.ts` (`addSites`, `setSlopeVisible`, terrain switching), `components/map/scene-panel.tsx` (site list, slope switch),
-  `components/map/mars-map.tsx` (sites.geojson, labels, click-to-fly, attribution control), `lib/mars/terrain.ts` (`terrainSourceForView` + sites),
-  `lib/mars/map-data.ts` (`SITE_DATA_ROOT`).
-- Data: `public/data/processed/sites.geojson` (committed), `public/data/processed/manifest.json` (`sites` layer).
-
-**Working preferences (Jess):** work directly on `main`, no feature branches; ask before pushing; explain jargon in plain language.
-
-## Toolchain (team-agreed Sat Nov 14)
-
-- **No jj.** Plain Git + GitHub. Small commits, message style `area(type): Summary`. Jess works **directly on `main`** (no feature branches).
-  Every push to `main` runs CI (`.github/workflows/ci.yml`: frozen install → `fmt:check` → `lint` → `typecheck` → `test` → `build` → deploy).
-- **Nix is optional.** Use the Nix dev shell if you have it; otherwise plain **Node.js 24 + pnpm via Corepack** (`corepack enable`) works fine.
-  CI no longer uses Nix. Where `AGENTS.md` and this file disagree on tooling, this section wins.
-- **Scripts:** `pnpm install` · `pnpm dev` · `pnpm fmt` · `pnpm lint` · `pnpm typecheck` · `pnpm test` · `pnpm build`.
-  Pre-push check = `pnpm fmt:check && pnpm lint && pnpm typecheck && pnpm test && pnpm build` (same as CI).
-- **Pipelines: TypeScript** run with Node 24 (`node pipelines/…/x.ts`), shelling out to the **GDAL CLI** (`brew install gdal`) for raster work.
-  Deps: `zod`, `yaml`, `geotiff`, `@turf/turf`, `@duckdb/node-api`, `execa`, `pngjs`. `pnpm pipe:check` verifies GDAL + the Mars 2000 sphere.
-  Pipelines run locally, never in the Workers runtime.
-- **Map: MapLibre GL JS 6.18.0** (+ `three` for 3D models), replaced Mapbox GL JS v3 in `1bbb6d0` (`docs/MAP_RENDERER.md`). No access token.
-
-## Current state (as of Sun Nov 15, 2026)
-
-- **Map (team):** MapLibre **globe** view, Viking global colour, MOLA global/regional + MOLA/HRSC 200 m terrain near the habitat, served from
-  **R2** (`tiles.imstuckonmars.help`, `lib/mars/map-data.ts`); terrain is display-shifted +10 km (`DISPLAY_ELEVATION_OFFSET_M`). Sourced flight
-  rules, `/api/verdict`, RAD telemetry, Mars clock are in (teammates).
-- **Water-ice sites (Jess, Step 2–3):** 4 HiRISE POIs + footprints (`public/data/processed/sites.geojson`), 0.45 m imagery, 1 m terrain and slope
-  overlay per site, wired into the teammates' map (`addSites` in `components/map/scene.ts`, Scene panel site list + "Slope hazard" switch,
-  attribution control credits **NASA/JPL/University of Arizona**). Site tiles are served from **R2** (`sites-v1`, 2f).
-- Sites integration, upload-file naming and Q75 compression are **pushed**.
-- **CI:** `scripts/models/models.test.mjs` (teammates' 3D model byte-compare) failed on `origin/main` — ✅ fixed by `1e0e423` (cross-platform GLB rounding).
-- **Habitat vs sites distance:** habitat (−176.05°E, 45.97°N) → ESP_033225 **93 km**, ESP_034082 **194 km**, ESP_037352 **424 km**,
-  ESP_054060 **468 km** (great-circle, Mars 2000 sphere). No site is reachable on foot → **2-leg journeys: drive to a staging point, then walk** (§4 "Mobility").
-- **Gotchas:**
-  - vinext dev server crashes ("Maximum call stack size exceeded", `als-registry.js`) when thousands of files change under `public/` (e.g. while
-    `pnpm pipe:sites` / `pipe:slope` run, or during a broken rebase) → restart `pnpm dev`. The vite watch-ignore for `public/data/sites` doesn't prevent it.
-  - A half-finished rebase leaves conflict markers in `package.json` → the app fails with `JSONError … key must be a string`. Finish/abort the rebase.
-  - `mapbox-gl.css` forces `position: relative` on the container → size it with `h-full w-full`, not `absolute inset-0`.
-  - The map needs absolute tile/GeoJSON URLs (we prefix `location.origin`).
-  - **Site terrain drops to MOLA 463 m at steep or zoomed-out tilts** (e.g. ESP_033225 z15/80°, z14/70°, z11.5/60°): `terrainSourceForView`
-    needs the whole view bounds inside the site's padded box (`lib/mars/terrain.ts:29-31`, bounds from `components/map/scene.ts:33-36`), and a
-    tilted view reaches the horizon. Landing view (z15/65°) is fine. Possible fix: centre-based check — pending M.
-  - Local `POST /api/copilot/session` → 500 = local D1 not migrated/seeded → follow `docs/BACKEND.md` "Reproduce locally" (import once only).
-  - Display terrain tiles are **not** true heights (+10 km offset) — read elevations from the DTM / COGs.
-
-## Architecture (summary)
-
-TypeScript pipelines (Node + GDAL CLI) → static rasters/GeoJSON in `public/data/` ; telemetry → **D1** (teammate's backend, `/api/telemetry`, `/api/missions`).
-MapLibre GL JS in the vinext app reads `manifest.json`; Hono `/api/*` serves `/live`, `/route`, `/verdict`.
-Each raster = COG (true values) + coloured PNG/WebP preview with 4 corners, or XYZ tiles for terrain. Mapbox measures with
-Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no built-in scale bar.
-
-## Step-by-step plan (∥ = can run in parallel)
-
-### Step 0 — decisions ✅ (team, Sat Nov 14)
-
-- ~~0a. Toolchain + CI~~ ✅ No jj; Nix optional (pnpm works without it); TypeScript pipelines; **Mapbox instead of MapLibre**. CI is pnpm-based now.
-- ~~0b. Data contracts~~ ✅ `LayerManifest` / `StableLayer` fields approved as proposed. Telemetry units = §4 "Telemetry units" table.
-  Anything not in that table stays a **PLACEHOLDER** (labelled in `lib/mars/types.ts`): `sol`, `lmst`, `solar_alert_level`, `sun_elevation`.
-  Longitude convention (store −180..180, display 0–360 °E) — not raised; current code does this.
-- ~~0c. Schemas~~ ✅ **Someone else owns the schemas** — don't build `schemas/` here.
-- ~~0d. Flight-rule values~~ ✅ **replaced by team role A with sourced values** (see §4) (earlier PLACEHOLDER defaults are gone).
-- ~~0e. Data home~~ ✅ **Telemetry data lives in D1**; usage is fine. Static map rasters/tiles stay in `public/data/`.
-- ~~0f. Mapbox account + token~~ ✅ **M owns the account**; public token shared with Jess, kept in `NEXT_PUBLIC_MAPBOX_TOKEN`.
-
-### Step 1 — Skeleton + Mapbox ✅ DONE
-
-- ~~1a–1g~~ ✅ install, build, tests, map verified in browser, pipeline skeleton (GDAL 3.13.3, `pnpm pipe:check`).
-- ~~1h. Port to Mapbox v3~~ ✅ (Sat ~19:30) — see Current state. Needs `NEXT_PUBLIC_MAPBOX_TOKEN` locally and in the CI build.
-
-### Step 2 — AOI → 4 HiRISE water-ice sites (team role B / Jess, with Advisor A) ✅
-
-- ~~2a. Pick AOI~~ ✅ **All 4 shortlisted DTMs are POIs** (MVP: craters/ridges we route to for water-ice procurement). Found via ODE REST
-  (160–215°E, 30–65°N → 59 HiRISE DTMs). The team **habitat stays at −176.05°E, 45.97°N** (teammates' HAB terrain); sites are POIs.
-  | DTM                                                                                                                                                 | HiRISE obs      | POI (lon −180..180, lat)         | Type                                                                     | POI provenance                                         |
-  | --------------------------------------------------------------------------------------------------------------------------------------------------- | --------------- | -------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------------ |
-  | DTEEC_033225_2250_033146_2250_A01                                                                                                                   | ESP_033225_2250 | −176.33383, 44.41589 (183.666°E) | Possible terraced crater, ~130 m, 12 m deep                              | Picked by Claude from the ortho; **confirmed by Jess** |
-  | DTEEC_034082_2260_033014_2260_A01                                                                                                                   | ESP_034082_2260 | −171.38243, 45.64829 (188.618°E) | Possible terraced bullseye crater, bowl ~28 m deep                       | Circled by Jess; DTM-refined (moved 35 m)              |
-  | DTEEC_037352_2245_037418_2245_A01                                                                                                                   | ESP_037352_2245 | −166.14298, 44.39035 (193.857°E) | Terraced bullseye crater (confirmed), bowl ~41 m deep, flat surroundings | Circled by Jess; DTM-refined (moved 85 m)              |
-  | DTEEC_054060_2265_054126_2265_A01                                                                                                                   | ESP_054060_2265 | 172.56388, 46.07022              | **Ridges** (not a crater) — worth exploring for ice                      | DTM centre                                             |
-  | POI refinement: circle position → lon/lat via the ortho footprint extremes (±~50 m), then centroid of the lowest 30 % of relief within 250 m on the |
-  | 1 m DTM (the crater bowl). Logged in `pipelines/stable/hirise-sites.ts` (`poi`, `poiNote`) and `sites.geojson` (`position_note`).                   |
-- ~~2b. CRS per file~~ ✅ `data/raw/README.md` (HiRISE section).
-- ~~2c. Data home~~ ✅ 0e.
-- ~~2d. Manifest~~ ✅ `sites` vector layer added to the teammates' manifest; their AOI, base, stops and route kept.
-- 2e. ✅ **Pipelines:** `pnpm pipe:sites [dtm]` (`pipelines/stable/hirise-sites.ts`, ~2 min/site; `REBUILD_IMAGERY=1` to re-cut imagery) then
-  `pnpm pipe:slope <dtm>` (`pipelines/stable/slope.ts`, ~20 s/site). Shared tile helpers: `pipelines/lib/xyz.ts`. Raw inputs ~1.8 GB (gitignored).
-  Outputs (all **gitignored**, local only until hosted): `public/data/sites/<dtm>/{imagery,terrain,slope}/`, `data/processed/sites/<dtm>/slope.tif` (COG),
-  `data/interim/hirise/<dtm>/<HiRISE ID>_mapbox.tif` (upload file, named per site so Mapbox tilesets are distinguishable). Committed: `public/data/processed/sites.geojson` (POIs + footprints).
-- 2f. ✅ **Hosting → M's R2 (M's call, Sun Nov 15; replaces the Mapbox-tileset plan).** `pnpm sites:package` gathers everything into
-  `data/map-assets/sites-v1/` (722 MB, ~23.5k files, gitignored): `sites/<dtm>/{imagery,terrain,slope}/` tiles, `slope/<HiRISE ID>_slope.tif`
-  routing COGs, `sites.geojson`, `catalog.json`. M uploads with `MAP_RELEASE_CONFIG=pipelines/sites-release.json pnpm maps:upload`
-  (his uploader; immutable prefix `sites-v1` in bucket `ares-mars-data`). Then set `SITE_DATA_ROOT` in `lib/mars/map-data.ts` to
-  `https://tiles.imstuckonmars.help/sites-v1` — ✅ done by M (`f9bbf09`, `docs/SITE_STORAGE.md`). The `<HiRISE ID>_mapbox.tif` files are obsolete.
-- 2h. **SWIM ice layer (Step 4a) — queued.** swim.psi.edu (SWIM4MIM products: combined ice-consistency GeoTIFF, 0–1 m / 1–5 m / >5 m,
-  ~3 km/px, simple cylindrical 0–360°E, −60..60°N, nodata −30, values −1..+1) was **down (HTTP 523)** on Sun Nov 15; retry. Context: Morgan et al.
-  2021 (Nature Astronomy) — Arcadia plains match the most criteria for accessible ice.
-- 2g. OPEN (polish) HiRISE RED is greyscale; optional tint. z18 (0.22 m) possible at ~4× tiles.
-
-### Step 3 — First real layers (team role B)
-
-- 3a. ✅ **Slope + hazard classes for all 4 sites** — results in "Data quality & processing decisions" below. Overlay: yellow 10–15°, orange 15°–limit,
-  red ≥ limit (`config.yaml` `slope_max_deg` = 20°, NASA lunar suit limit assumed for Mars); "Slope hazard" switch in the Scene panel. Hillshade: teammates' terrain stack.
-- 3b. ✅ **Visual check on MapLibre 6.18.0** (Sun Nov 15 ~01:30): all 4 sites pass — imagery loads, relief matches imagery (no visible offset),
-  slope red/orange on crater walls/ridge flanks, POI in the bowl, NASA/JPL/University of Arizona credit in panel + map attribution, tiles from R2
-  `sites-v1`, no console errors. Caveat: steep-tilt terrain fallback (Current state → Gotchas).
-- 3c. ✅ Sources: `sites` layer in the layer panel + compact Mapbox attribution control credits **NASA/JPL/University of Arizona** on every site source.
-
-### Data quality & processing decisions (HiRISE sites)
-
-- **Slope results** (1 m DTM, metre grid, edges trimmed; limit 20°): ESP_033225 mean 4.3°, **0.1 %** ≥ 20° · ESP_034082 mean 7.3°,
-  **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All gentle terrain; hazards are crater walls/ridge flanks.
-- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~430 MB total**; slope COGs **277 MB** as Int16 tenths (990 MB as Float32); Mapbox upload GeoTIFFs **274 MB total**
-  (JPEG Q75 + mask; RGBA deflate was 1.55 GB, Q85 355 MB; single-band grey saves nothing).
-
-- **Reprojection decision:** everything is stored as **lon/lat on the Mars 2000 sphere** (`+proj=longlat +R=3396190`), east-positive −180..180.
-  HiRISE DTMs ship in equirectangular on **local-radius spheres** (3,386,150.7 m / 3,387,887.7 m) with site-specific standard parallels; lat/lon angles
-  carry over unchanged between Mars spheres (no datum shift), so we reproject rather than resample heights. Tiles are cut by labelling the Mars lon/lat
-  as EPSG:4326 for `gdal2tiles` (it only knows Earth) — correct because Mapbox also treats Mars degrees as Earth degrees.
-- **Slope is computed in metres, not degrees:** DTM → local equirectangular metre grid centred on each site (lat_ts = site latitude, Mars 2000 sphere,
-  1 m) → `gdaldem slope` → back to the DTM's lon/lat grid. Computing slope on a lon/lat grid would distort x vs y by cos(lat) (~30 % at 45°N).
-- **Broken JP2 georeferencing:** RED_A orthos for ESP_034082 and ESP_037352 have a GeoJP2 header with standard parallel 0° → GDAL places them at
-  **~84–90°N**. Their projected metre coordinates match the DTM exactly, so the pipeline assigns the **DTM label's CRS** to the ortho.
-- **Unreliable DTM edges:** HiRISE DTM borders produce fake ~90° slopes. `-compute_edges` and a footprint cutline did not fix it; the pipeline
-  **blanks slope within 10 m of the DTM's no-data area** (`gdal_proximity`). A few isolated 1-px spikes remain → report **percentiles / % ≥ limit**, not max.
-- **Display datum shift:** site terrain tiles add the team's `DISPLAY_ELEVATION_OFFSET_M` (+10 km; Mapbox camera can't go below 0) like their other
-  terrain sources — **display only**; true heights are in the DTM/COGs. Terrain blends to MOLA 463 m (`/vsicurl/`, ~1 km pad) outside each DTM.
-- **Antimeridian:** ESP_054060 is at 172.56°E (positive), the others at −176…−166 → the AOI crosses ±180; MOLA pads are cut per site.
-- **Resolution choices:** imagery tiled to z17 (~0.45 m/px; source 0.25 m); terrain mesh to z15 (~1.8 m; DTM 1 m); slope tiles to z16.
-- **Terrain switching:** `terrainSourceForView` (teammates' `lib/mars/terrain.ts`) now prefers a site's 1 m terrain when the whole view is inside its
-  padded box at zoom ≥ 11 (tested in `lib/mars/terrain.test.ts`).
-
-### Role C (routing) brief — data available now (Sun Nov 15)
-
-- **POIs:** `public/data/processed/sites.geojson` — per site a `poi` point (crater bowl centre, DTM-refined; ridges site = DTM centre) and a
-  `footprint` polygon; props `id` (DTM), `hirise_id`, `title`, `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`.
-- **Slope:** `data/processed/sites/<dtm>/slope.tif` (on R2: `sites-v1/slope/<HiRISE ID>_slope.tif`) — COG, **Int16 tenths of a degree**
-  (value / 10 = degrees; scale metadata 0.1), lon/lat Mars 2000 sphere, ~1 m grid, nodata −9999
-  (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. Shared via R2 (`sites-v1`) or `pnpm pipe:slope`.
-- **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` — 1 m DTM, lon/lat Mars 2000, nodata −32768. MOLA 463 m around it.
-- **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — currently suit/walk values (slope ≤ 20°, suit 8 h, 30 min reserve,
-  walk-back ≤ 2 km) + radiation 18 / 90 µGy/h. **Rover rules PROPOSED** in `lib/flight-rules/rover-rules.ts` (team sign-off pending).
-- **Conventions:** lon −180..180 east-positive in files (ESP_054060 is at +172.56, the rest negative — **AOI crosses ±180**); distances with
-  Mars radius 3,396,190 m, never Mapbox/Turf defaults (Earth); don't read heights from display tiles (+10 km).
-- **Known limits:** DTMs cover ~6 × 6–13 km each; roughness (mostly DTM noise) and boulder upper bounds now exist (Walking-scale ground);
-  no soil strength or dust data; slope from 1 m DTM misses sub-metre rocks (visible only in the 0.25 m imagery).
-- ~~Open question for C + A~~ **Decided: 2-leg journeys** (superseded "rover drives only"). Drive = MOLA 463 m grid, cost = slope + thermal
-  inertia → battery energy; walk = 1 m site grid from the staging point (`lib/mars/drive-walk.ts`).
-
-### Future data layers (horizon, not built yet)
-
-- **SWIM ice consistency** (Step 4a, queued; swim.psi.edu down 523 on Sun Nov 15) — regional ~3 km/px evidence for buried ice.
-- **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost). **Higher priority now:** soft ground drains rover battery.
-- **Dust-raising potential / dust cover** — e.g. TES dust cover index + thermal inertia + wind; feeds the dust-storm verdicts and suit/visor wear.
-- ~~**Geology**~~ ✅ SIM 3292 units along the corridor (overnight). A finer regional map doesn't exist for Arcadia (only SIM 2888, 1:15M, older).
-- **Illumination / shadows** — sun position (teammates' Mars clock) + DTM horizon → shadowed terrain and timing of EVAs.
-- **CRISM** where covered (hydrated/ice-related minerals); **line-of-sight to habitat** (one-sentence comms story or simple viewshed).
-- **Upgrades:** imagery to z18 (0.22 m, ~4× tiles); tinted HiRISE RED.
-
-### Next steps (Jess, Sun Nov 15)
-
-1. ~~**Push** local `main` (4 sites commits) — CI will still fail on the teammates' model test until they fix it; tell them.~~ ✅ pushed.
-2. ~~**M hosts site data on R2 instead of Mapbox** — send/upload `data/map-assets/sites-v1/`; ask M to confirm the public URL
-   (`https://tiles.imstuckonmars.help/sites-v1/...`) → set `SITE_DATA_ROOT`. The `_mapbox.tif` files he received can be ignored.~~ ✅ live on R2.
-3. ~~Ask the R2 owner~~ → M (same person, item 2).
-4. ~~Raise the habitat↔site distance~~ ✅ **Decided: 2-leg journeys** (§4 "Mobility"; earlier "rover drives only" superseded). Regional slope
-   ✅ done (not in the router), thermal inertia ✅ in the route cost.
-5. ~~Brief C~~ ✅ sent. **Agreed: slope-only cost surface first**; add hazard mask / roughness / thermal inertia later.
-6. **SWIM** (4a): swim.psi.edu still down. NASA's "SWIM map shows subsurface water ice on Mars" (PIA26045) is a **PNG illustration**,
-   not georeferenced data (and its ammos.nasa.gov/marswatermaps link 404s) → story/slide use only, not a map layer. Then THEMIS thermal inertia.
-7. **3b visual check** in the browser: imagery vs relief vs slope alignment at each crater rim.
-8. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (teammates') with C's real routes; keep every layer's source visible.
-
-### Step 4 — ≥3 NASA data types
-
-- 4a. CTX/HiRISE imagery, SWIM ice, THEMIS thermal inertia via manifest entries.
-- 4b. ∥ Optional check: whether any NASA Trek endpoint offers a Web Mercator tile grid (regional basemap). Non-blocking.
-
-### Step 5 — Route (team role C)
-
-- 5a. Route GeoJSON + `/api/route` returning `RouteResult`.
-- 5b. Check: distances use Mars radius in pipeline, never Mapbox; no built-in scale bar.
-
-### Step 6 — Live feed (team role D)
-
-- 6a. Replace `/api/live` stub with replayed snapshots; show `proxy_source` in UI.
-- 6b. Check: stub zeros never displayed as real data.
-
-### Step 7 — Verdict banner + timeline (team roles A + M)
-
-- 7a. Server-side `/api/verdict` citing the fired flight rule; banner = status · limiting constraint · margin · time to shelter; SEP demo flip to CAUTION.
-- 7b. Polish: move hardcoded map hex colors to theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
-
-### Step 8 — Scale / stretch
-
-- 8a. Check: verify Workers static-asset per-file limit (believed 25 MiB) in Cloudflare docs; move larger COGs to R2.
-- 8b. Click-to-inspect values via `geotiff.js` reading COGs.
-
-### Before feature freeze
-
-- Remove/replace all placeholders (`stops.geojson`, `route.geojson`, AOI name) so nothing fake ships.
-
-## Unverified claims to treat with caution
-
-25 MiB static-asset limit · NASA Trek tile projections · AOI coordinates.
-Verified 15:30: Mars 2000 radius = 3396190 m in PROJ (`IAU_2015:49900`) · vinext dev serves `public/`.

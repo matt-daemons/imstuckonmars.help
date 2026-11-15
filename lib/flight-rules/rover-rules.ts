@@ -1,8 +1,9 @@
 /**
- * PROPOSED rover rules: the limits a crewed rover trip on Mars is checked against.
+ * AGREED rover rules: the limits a crewed rover trip on Mars is checked against.
  *
- * NASA has no flight rules for a crewed Mars rover. These are the team's proposal
- * (docs/research/rover/proposed_rover_rules.md); ids such as C6 point to the evidence
+ * NASA has no flight rules for a crewed Mars rover. The team agreed these values on
+ * Sun Nov 15, 2026, from its proposal (docs/research/rover/proposed_rover_rules.md),
+ * with 5° as the lower (caution) slope limit; ids such as C6 point to the evidence
  * tables in docs/research/rover/rover_guidelines_research.md. Role A owns flight rules
  * and may change any value.
  */
@@ -38,7 +39,7 @@ export const ROVER_RULES = {
     applies_to: "Mars crewed study",
     no_go_applies_to: "assumption", // the 100 km zone is NASA's; the 200 km hard limit is ours
     source:
-      "Exploration Zone radius about 100 km; a small pressurized rover reaches about 100 km in a straight line (Toups, Hoffman & Watts 2016, NTRS 20160002369, slide 10, E1 and E5, https://ntrs.nasa.gov/api/citations/20160002369/downloads/20160002369.pdf). No NASA concept goes beyond about 200 km: two SEVs reach over 125 mi (SEV fact sheet FS-2011-08-045-JSC, O3, https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf), 4 fission units 225 km (Rucker 2015, E15). Using 200 km as a hard limit is our assumption.",
+      "Exploration Zone radius about 100 km; a small pressurized rover reaches about 100 km in a straight line (Toups, Hoffman & Watts 2016, NTRS 20160002369, slide 10, E1 and E5, https://ntrs.nasa.gov/api/citations/20160002369/downloads/20160002369.pdf). No NASA concept goes beyond about 200 km: two SEVs reach over 125 mi (SEV fact sheet FS-2011-08-045-JSC, O3, https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf), 4 fission units 225 km (Rucker 2015, E15). Using 200 km as a hard limit is our assumption. Two rovers per mission (team decision): NASA's lunar ConOps says two pressurized rovers give a mobile safe haven that could extend range to 100 km or more, with the rescue rover within an 8-hour drive, and rovers notionally never more than 100 km from the ascent vehicle (EVA-EXP-0042 Rev B, 2020, §4.2.1.3.1 and §7.3.2, https://www.nasa.gov/wp-content/uploads/2017/02/eva-exp-0042_xeva_system_con_ops_rev_b_final_dtd_10192020_ref_doc.pdf). Lunar planning, assumed for Mars.",
   },
   trip_length: {
     caution_above_sols: 7,
