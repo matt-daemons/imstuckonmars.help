@@ -16,7 +16,8 @@ export const SOURCES = ["planned-route", "no-go-zones", "zone-draft", "route-end
 /** Layer specs for the route, zones, draft and end points, coloured from theme tokens. */
 export function routeLayers(token: (name: string) => string): LayerSpecification[] {
   const danger = token("--destructive");
-  // Line borders in the background colour keep lines readable over bright terrain.
+  // Background-coloured borders keep lines readable over bright terrain. Mapbox draws a border
+  // inside line-width, so each width is the visible core plus two borders.
   const background = token("--background");
   return [
     {
@@ -31,7 +32,7 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       source: "no-go-zones",
       paint: {
         "line-color": danger,
-        "line-width": 2,
+        "line-width": 4,
         "line-border-width": 1,
         "line-border-color": background,
       },
@@ -43,8 +44,8 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       filter: ["==", ["geometry-type"], "LineString"],
       paint: {
         "line-color": danger,
-        "line-width": 2,
-        "line-dasharray": [1, 1],
+        "line-width": 4,
+        "line-dasharray": [0.5, 0.5],
         "line-border-width": 1,
         "line-border-color": background,
       },
@@ -54,7 +55,12 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       type: "circle",
       source: "zone-draft",
       filter: ["==", ["geometry-type"], "Point"],
-      paint: { "circle-radius": 4, "circle-color": danger },
+      paint: {
+        "circle-radius": 4,
+        "circle-color": danger,
+        "circle-stroke-width": 1,
+        "circle-stroke-color": background,
+      },
     },
     {
       id: "planned-route",
@@ -63,7 +69,7 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       filter: ["==", ["get", "leg"], "outbound"],
       paint: {
         "line-color": token("--primary"),
-        "line-width": 3,
+        "line-width": 6,
         "line-border-width": 1.5,
         "line-border-color": background,
       },
@@ -73,7 +79,13 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       type: "line",
       source: "planned-route",
       filter: ["==", ["get", "leg"], "back"],
-      paint: { "line-color": token("--foreground"), "line-width": 2, "line-dasharray": [2, 2] },
+      paint: {
+        "line-color": token("--foreground"),
+        "line-width": 4,
+        "line-dasharray": [1, 1],
+        "line-border-width": 1,
+        "line-border-color": background,
+      },
     },
     {
       id: "route-ends",

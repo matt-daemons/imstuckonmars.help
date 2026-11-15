@@ -61,6 +61,29 @@ describe("routeLayers", () => {
     expect(paint("no-go-zones-outline")).toMatchObject({ "line-color": "T(--destructive)" });
   });
 
+  it("colours the return leg, draft and end ring from theme tokens", () => {
+    expect(paint("planned-route-back")).toMatchObject({ "line-color": "T(--foreground)" });
+    expect(paint("zone-draft-line")).toMatchObject({ "line-color": "T(--destructive)" });
+    expect(paint("zone-draft")).toMatchObject({ "circle-color": "T(--destructive)" });
+    // The end is the fallback, the last value of each match expression.
+    const ends = paint("route-ends") as Record<string, unknown[]>;
+    expect(ends["circle-color"].at(-1)).toBe("T(--background)");
+    expect(ends["circle-stroke-color"].at(-1)).toBe("#fde68a");
+    expect(ends["circle-stroke-width"].at(-1)).toBe(3);
+  });
+
+  // Mapbox draws the border inside line-width, so the visible core is width minus both borders.
+  it.each([
+    ["planned-route", 3],
+    ["planned-route-back", 2],
+    ["no-go-zones-outline", 2],
+    ["zone-draft-line", 2],
+  ])("%s keeps a %i px core inside a background border", (id, core) => {
+    const line = paint(id) as Record<string, number | string>;
+    expect(line["line-border-color"]).toBe("T(--background)");
+    expect(Number(line["line-width"]) - 2 * Number(line["line-border-width"])).toBe(core);
+  });
+
   it("uses no hex colour except the two end-point colours", () => {
     const hexes = JSON.stringify(layers).match(/#[0-9a-f]{3,8}/gi) ?? [];
     expect(new Set(hexes)).toEqual(new Set(["#7dd3fc", "#fde68a"]));
