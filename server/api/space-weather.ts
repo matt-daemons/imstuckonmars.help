@@ -17,11 +17,25 @@ import { MissionError } from "../../lib/mission/types";
 // be hit, and its flare endpoint answers while api.nasa.gov's returned 404 (checked 15 Nov 2026).
 const DONKI_API = "https://ccmc.gsfc.nasa.gov/DONKI-API/get";
 const CACHE_SECONDS = 15 * 60;
-// The Cache API keys entries by URL; this one is a name only and is never fetched.
+// The last report DONKI gave, kept for a day to answer while DONKI does not.
+const LAST_GOOD_SECONDS = 24 * 60 * 60;
+// A failure is kept briefly, so later requests answer at once instead of waiting on DONKI again.
+const FAILURE_SECONDS = 60;
+// The Cache API keys entries by URL; these are names only and are never fetched.
 const CACHE_KEY = "https://lara.cache/api/space-weather";
+const LAST_GOOD_KEY = "https://lara.cache/api/space-weather/last-good";
+const FAILURE_KEY = "https://lara.cache/api/space-weather/failure";
 // A DONKI that does not answer must not hold the route check up.
-const TIMEOUT_MS = 5_000;
+const TIMEOUT_MS = 3_000;
 const HOUR_MS = 3_600_000;
+
+/**
+ * A report as this route answers it. `stale` is set when DONKI did not answer and the report is
+ * the last one it gave, still carrying its original `fetched_at`. (Kept here rather than in
+ * `SpaceWeatherReport`, which lib/flight-rules owns; the field is optional, so clients that read
+ * a `SpaceWeatherReport` still type-check.)
+ */
+export type SpaceWeatherAnswer = SpaceWeatherReport & { stale?: true };
 
 export const spaceWeather = new Hono();
 
@@ -31,15 +45,39 @@ spaceWeather.get("/", async (context) => {
   const cached = await cache.match(CACHE_KEY);
   if (cached) return context.json(await cached.json());
 
-  const report = await readDonki(new Date());
-  await cache.put(
-    CACHE_KEY,
-    new Response(JSON.stringify(report), {
-      headers: { "Cache-Control": `max-age=${CACHE_SECONDS}` },
-    }),
-  );
+  const failed = await cache.match(FAILURE_KEY);
+  if (failed) {
+    const { message } = (await failed.json()) as { message: string };
+    return context.json(
+      await lastGoodOr(cache, new MissionError("donki_unavailable", message, 503)),
+    );
+  }
+
+  let report: SpaceWeatherReport;
+  try {
+    report = await readDonki(new Date());
+  } catch (error) {
+    if (!(error instanceof MissionError)) throw error;
+    await cache.put(FAILURE_KEY, cachedJson({ message: error.message }, FAILURE_SECONDS));
+    return context.json(await lastGoodOr(cache, error));
+  }
+  await cache.put(CACHE_KEY, cachedJson(report, CACHE_SECONDS));
+  await cache.put(LAST_GOOD_KEY, cachedJson(report, LAST_GOOD_SECONDS));
   return context.json(report);
 });
+
+/** DONKI's last good report, marked stale, or `failure` thrown when there is none. */
+async function lastGoodOr(cache: Cache, failure: MissionError): Promise<SpaceWeatherAnswer> {
+  const lastGood = await cache.match(LAST_GOOD_KEY);
+  if (!lastGood) throw failure;
+  return { ...((await lastGood.json()) as SpaceWeatherReport), stale: true };
+}
+
+function cachedJson(body: unknown, seconds: number): Response {
+  return new Response(JSON.stringify(body), {
+    headers: { "Cache-Control": `max-age=${seconds}` },
+  });
+}
 
 async function readDonki(now: Date): Promise<SpaceWeatherReport> {
   const [flares, particleEvents, simulations] = await Promise.all([
