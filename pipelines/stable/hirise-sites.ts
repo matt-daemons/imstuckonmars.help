@@ -149,10 +149,11 @@ for (const site of SITES) {
     ]);
   }
   // Same image as one GeoTIFF for a Mapbox raster tileset upload (Mapbox tiles it itself).
-  // Grey → RGB + mask with JPEG: ~10× smaller than RGBA deflate (1.55 GB → 355 MB for 4 sites).
+  // Grey → RGB + mask with JPEG: ~10× smaller than RGBA deflate. Quality 75: no visible loss at full
+  // resolution, with headroom for Mapbox re-compressing its own tiles (65 also looked identical).
   await execa("gdal_translate", [
     ...["-q", "-of", "COG", "-b", "1", "-b", "1", "-b", "1", "-mask", "4"],
-    ...["-co", "COMPRESS=JPEG", "-co", "QUALITY=85", "-co", "BIGTIFF=IF_SAFER"],
+    ...["-co", "COMPRESS=JPEG", "-co", "QUALITY=75", "-co", "BIGTIFF=IF_SAFER"],
     ...[orthoAsEarth, join(work, `${site.obs}_mapbox.tif`)],
   ]);
 

@@ -260,8 +260,8 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 
 - **Slope results** (1 m DTM, metre grid, edges trimmed; limit 20°): ESP_033225 mean 4.3°, **0.1 %** ≥ 20° · ESP_034082 mean 7.3°,
   **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All very walkable; hazards are crater walls/ridge flanks.
-- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~395 MB total**; Mapbox upload GeoTIFFs **355 MB total**
-  (JPEG + mask; RGBA deflate was 1.55 GB).
+- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~395 MB total**; Mapbox upload GeoTIFFs **274 MB total**
+  (JPEG Q75 + mask; RGBA deflate was 1.55 GB, Q85 355 MB; single-band grey saves nothing).
 
 - **Reprojection decision:** everything is stored as **lon/lat on the Mars 2000 sphere** (`+proj=longlat +R=3396190`), east-positive −180..180.
   HiRISE DTMs ship in equirectangular on **local-radius spheres** (3,386,150.7 m / 3,387,887.7 m) with site-specific standard parallels; lat/lon angles
