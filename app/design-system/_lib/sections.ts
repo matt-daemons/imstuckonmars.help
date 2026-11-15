@@ -86,6 +86,7 @@ export const sectionGroups: SectionGroup[] = [
   {
     title: "Operational standards",
     sections: [
+      { id: "local-data-reset", title: "Local data reset" },
       { id: "lookalike-characters", title: "Lookalike characters" },
       { id: "typeface-roles", title: "Typeface roles" },
       { id: "text-size", title: "Text size" },

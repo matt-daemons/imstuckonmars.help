@@ -29,7 +29,7 @@ import { usePathname } from "next/navigation";
 import { reportKey, simulationFinished } from "@/lib/mission/completion";
 import { saveReport } from "@/lib/mission/report-history";
 
-const STORAGE_KEY = "imstuckonmars.expedition";
+import { MISSION_STORAGE_KEY as STORAGE_KEY } from "@/lib/browser-data";
 const PLAYING_POLL_MS = 1000;
 const IDLE_POLL_MS = 10_000;
 const OUTLOOK_PLAYING_MS = 4000;

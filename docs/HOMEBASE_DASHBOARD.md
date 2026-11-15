@@ -10,6 +10,14 @@ Click the **Mission dashboard** button on `/` to open the console over the exist
 
 **Simulation reports** reads immutable browser-local copies saved when a run completes or is ended. It retains the latest 20 reports independently of the six-hour mission session and subsequent plans. It does not recompute simulations, require a live session, or query NASA observations. Search by date, outcome or report ID; open the shared read-only report viewer to inspect and print. Storage/fetch failures are explicit, with retry. These reports are not synced to another browser or device and are removed when site data is cleared. The NASA experiment log remains separate and unchanged. Keyboard shortcuts 1/2/3 select Overview, Experiments and Reports outside form controls.
 
+The hidden reset shortcut is **↑ ↑ ↓ ↓**, with no more than 1.5 seconds between keys.
+It opens a confirmation before deleting this browser's saved reports, training
+progress, current-tab mission session and sidebar preference, then reloading.
+Cancel or Escape leaves data unchanged. Text entry, selection controls, open
+dialogs, held keys and modified keys do not activate it. Other tabs retain their
+mission sessions. Server missions, NASA data, unrelated storage and downloaded
+speech models are not deleted.
+
 ## Data connection
 
 The dashboard shows a fixed, deterministic archived reference day. It is not synchronized to a simulation's clock or a selected weather date. Saved simulation reports are separate read-only browser records.

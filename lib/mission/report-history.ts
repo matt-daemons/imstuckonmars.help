@@ -1,7 +1,7 @@
 import type { MissionReport } from "./client";
 import { reportKey } from "./completion";
 
-const DATABASE = "ares-simulation-reports";
+import { REPORTS_DATABASE as DATABASE } from "../browser-data";
 const STORE = "reports";
 export const REPORT_HISTORY_LIMIT = 20;
 export const REPORT_HISTORY_CHANGED = "ares-report-history-changed";
@@ -16,7 +16,10 @@ function openDatabase(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DATABASE, 1);
     request.onupgradeneeded = () => request.result.createObjectStore(STORE, { keyPath: "id" });
-    request.onsuccess = () => resolve(request.result);
+    request.onsuccess = () => {
+      request.result.onversionchange = () => request.result.close();
+      resolve(request.result);
+    };
     request.onerror = () => reject(request.error);
     request.onblocked = () =>
       reject(new Error("Close other ARES tabs and retry saving the report"));
