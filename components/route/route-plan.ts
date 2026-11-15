@@ -1,6 +1,5 @@
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { PowerSource } from "@/lib/mars/driving";
-import { EXAMPLE_ZONE } from "@/lib/mars/route-zones";
 import type { NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
@@ -35,7 +34,7 @@ export type RoutePlanAction =
 // Time at the site, a planning input like the walk-leg timing's, not a NASA value.
 const DEFAULT_SAMPLING_MIN = 60;
 
-/** A walk from the base to the target, with the example zone drawn. */
+/** A walk from the base to the target, with no zones. */
 export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs {
   return {
     mission: "walking",
@@ -43,7 +42,7 @@ export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs 
     end: target,
     power: "fission",
     samplingMin: DEFAULT_SAMPLING_MIN,
-    zones: [EXAMPLE_ZONE],
+    zones: [],
     zonesDrawn: 0,
     step: "mission",
   };

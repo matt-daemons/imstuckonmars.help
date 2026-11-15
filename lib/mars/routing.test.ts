@@ -4,7 +4,6 @@ import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
 
 import { cellAt, cellCenter, gridFromTiles, type RouteGrid } from "./route-grid";
-import { EXAMPLE_ZONE } from "./route-zones";
 import { findPath, planWalk, slopeDegrees, wallMask, type NoGoZone } from "./routing";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat } from "./types";
@@ -191,14 +190,25 @@ describe("A* route", () => {
     expect(summary!.max_slope).toBe(0);
   });
 
-  it("avoids the placeholder zone on the real tile", async () => {
+  it("avoids a zone between the base and the science stop on the real tile", async () => {
+    // A diamond about 1.5 km across, centred on the straight line between them.
+    const zone: NoGoZone = {
+      id: "zone-1",
+      name: "No-go zone 1",
+      ring: [
+        [-176.018, 46.0],
+        [-176.0, 46.012],
+        [-175.982, 46.0],
+        [-176.0, 45.988],
+      ],
+    };
     const png = PNG.sync.read(await readFile("lib/mars/fixtures/hab-display.png"));
     const grid = gridFromTiles(9, 5, 182, [[png.data]]);
     const slope = slopeDegrees(grid);
-    const walls = wallMask(grid, slope, [EXAMPLE_ZONE]);
+    const walls = wallMask(grid, slope, [zone]);
     const result = findPath(grid, slope, walls, [-176.05, 45.97], [-175.95, 46.03]);
     expect(result.status).toBe("ok");
-    const zoneWalls = wallMask(grid, new Float32Array(walls.length), [EXAMPLE_ZONE]);
+    const zoneWalls = wallMask(grid, new Float32Array(walls.length), [zone]);
     expect(zoneWalls.some((wall) => wall === 1)).toBe(true);
     for (const cell of cellsOf(grid, result.path)) expect(zoneWalls[cell]).toBe(0);
   });
