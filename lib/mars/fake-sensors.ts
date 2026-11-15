@@ -3,6 +3,7 @@ import type { LngLat } from "./types";
 export const FAKE_SENSOR_VERSION = "future-sensors-v1";
 export const FAKE_SOL_SECONDS = 88775.244;
 export const FAKE_SOL_COUNT = 7;
+export const FAKE_SENSOR_COUNT = 580;
 export const FAKE_SAMPLE_SECONDS = 10;
 export const FAKE_DURATION_SECONDS = FAKE_SOL_COUNT * FAKE_SOL_SECONDS;
 export const FAKE_LAST_FRAME = Math.ceil(FAKE_DURATION_SECONDS / FAKE_SAMPLE_SECONDS);
@@ -42,15 +43,14 @@ export interface FakeSensor {
   position: LngLat;
 }
 
-/** A fictional 15° network, plus polar stations. No NASA observations are inputs. */
-export const FAKE_SENSORS: FakeSensor[] = [
-  ...Array.from({ length: 12 * 24 }, (_, index): FakeSensor => ({
-    id: `FS-${String(index + 1).padStart(3, "0")}`,
-    position: [-172.5 + (index % 24) * 15, -82.5 + Math.floor(index / 24) * 15],
-  })),
-  { id: "FS-289", position: [0, -90] },
-  { id: "FS-290", position: [0, 90] },
-];
+/** Equal-area Fibonacci sphere avoids the polar crowding of a longitude/latitude grid. */
+export const FAKE_SENSORS: FakeSensor[] = Array.from({ length: FAKE_SENSOR_COUNT }, (_, index) => ({
+  id: `FS-${String(index + 1).padStart(3, "0")}`,
+  position: [
+    ((index * 180 * (3 - Math.sqrt(5))) % 360) - 180,
+    (Math.asin(1 - (2 * (index + 0.5)) / FAKE_SENSOR_COUNT) * 180) / Math.PI,
+  ],
+}));
 
 export interface FakeReading {
   sensor: FakeSensor;

@@ -15,12 +15,18 @@ import {
 } from "./fake-sensors";
 
 describe("fictional future sensor network", () => {
-  it("covers all longitudes, both hemispheres and poles with stable unique stations", () => {
-    expect(FAKE_SENSORS).toHaveLength(290);
-    expect(new Set(FAKE_SENSORS.map((sensor) => sensor.id)).size).toBe(290);
-    expect(Math.min(...FAKE_SENSORS.map((sensor) => sensor.position[1]))).toBe(-90);
-    expect(Math.max(...FAKE_SENSORS.map((sensor) => sensor.position[1]))).toBe(90);
-    expect(new Set(FAKE_SENSORS.map((sensor) => sensor.position[0])).size).toBe(25);
+  it("covers both hemispheres without crowding the poles", () => {
+    expect(FAKE_SENSORS).toHaveLength(580);
+    expect(new Set(FAKE_SENSORS.map((sensor) => sensor.id)).size).toBe(580);
+    expect(Math.min(...FAKE_SENSORS.map((sensor) => sensor.position[1]))).toBeLessThan(-85);
+    expect(Math.max(...FAKE_SENSORS.map((sensor) => sensor.position[1]))).toBeGreaterThan(85);
+    expect(new Set(FAKE_SENSORS.map((sensor) => sensor.position[0])).size).toBe(580);
+    const bands = Array.from({ length: 10 }, () => 0);
+    for (const sensor of FAKE_SENSORS) {
+      const area = (Math.sin((sensor.position[1] * Math.PI) / 180) + 1) / 2;
+      bands[Math.min(9, Math.floor(area * 10))]++;
+    }
+    expect(bands).toEqual(Array.from({ length: 10 }, () => 58));
   });
 
   it("spans seven full Martian solar days, including the final boundary", () => {
