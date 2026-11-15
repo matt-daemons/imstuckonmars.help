@@ -11,21 +11,6 @@
   "crs": "Equirectangular on Mars 2000 sphere (R = 3396190 m), centered on AOI",
   "layers": [
     {
-      "id": "mola-base",
-      "title": "Elevation-colored hillshade",
-      "kind": "raster",
-      "path": "https://tiles.imstuckonmars.help/mars-v2/catalog.json",
-      "tiles": ["https://tiles.imstuckonmars.help/mars-v2/legacy/mola/base/{z}/{x}/{y}.png"],
-      "tileBounds": [-180, 40, -168, 52],
-      "minzoom": 5,
-      "maxzoom": 8,
-      "opacity": 1,
-      "visible": false,
-      "source": {
-        "name": "MOLA elevation colors · illustrative shading, not surface color"
-      }
-    },
-    {
       "id": "ctx-context",
       "title": "Orbital imagery · 5 m source",
       "kind": "raster",
@@ -45,24 +30,6 @@
       "source": {
         "name": "NASA/JPL/MSSS/Caltech Murray Lab/Esri · image only",
         "url": "https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer"
-      }
-    },
-    {
-      "id": "ai-visual-preview",
-      "title": "AI texture experiment · unverified",
-      "kind": "raster",
-      "path": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-map.png",
-      "corners": [
-        [-176.0888671875, 46.0107421875],
-        [-176.044921875, 46.0107421875],
-        [-176.044921875, 45.966796875],
-        [-176.0888671875, 45.966796875]
-      ],
-      "opacity": 1,
-      "visible": false,
-      "source": {
-        "name": "AI-generated texture from orbital imagery · never elevation",
-        "url": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json"
       }
     },
     {
@@ -119,22 +86,12 @@
     },
     {
       "id": "stops",
-      "title": "Science stops",
+      "title": "Habitat location",
       "kind": "vector",
       "path": "stops.geojson",
       "visible": true,
       "source": {
-        "name": "Placeholder — Role C"
-      }
-    },
-    {
-      "id": "route",
-      "title": "Planned route",
-      "kind": "vector",
-      "path": "route.geojson",
-      "visible": false,
-      "source": {
-        "name": "Placeholder — Role C"
+        "name": "Hypothetical base · LARA team, not a NASA site"
       }
     }
   ]

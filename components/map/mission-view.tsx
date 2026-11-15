@@ -31,6 +31,8 @@ import type { LngLat } from "@/lib/mars/types";
 import type { Activity } from "@/lib/mission/types";
 import "./mission-view.css";
 import { selectedRoute } from "@/components/route/selected-route";
+import { watchImageryLoading } from "./imagery-loading";
+import { MapDisclosure } from "./map-disclosure";
 
 type CameraView = "overview" | "homebase" | "route" | "crew" | "target";
 export type InspectedLeg = Extract<Activity, "travel" | "science" | "return">;
@@ -60,21 +62,11 @@ export function MissionViewProvider({
   const positioned = useRef<MapLibreMap | null>(null);
   const { walk: selectedWalk, trip: selectedTrip } = selectedRoute(inputs, { walk, journey });
   const route = expedition.snapshot?.config.route;
-  const [tilesLoading, setTilesLoading] = useState(true);
+  const [tilesLoading, setTilesLoading] = useState(false);
   useEffect(() => {
     if (!map) return;
-    const update = () => {
-      setTilesLoading(!map.areTilesLoaded());
-    };
-    map.on("sourcedata", update);
-    map.on("idle", update);
-    map.on("dataloading", update);
-    update();
-    return () => {
-      map.off("sourcedata", update);
-      map.off("idle", update);
-      map.off("dataloading", update);
-    };
+    setTilesLoading(false);
+    return watchImageryLoading(map, setTilesLoading);
   }, [map]);
 
   const focus = useCallback(
@@ -202,12 +194,8 @@ export function CameraViewMenu({
   };
   return (
     <nav className="map-view-controls" aria-label="Camera views">
-      <details ref={menu}>
-        <summary>
-          <CompassIcon aria-hidden />
-          Camera views
-        </summary>
-        <div>
+      <MapDisclosure title="Camera views" icon={CompassIcon} detailsRef={menu}>
+        <div className="flex flex-col gap-1">
           <Button variant="outline" onClick={() => choose("overview")}>
             <MapIcon aria-hidden />
             Overview
@@ -234,7 +222,7 @@ export function CameraViewMenu({
             Follow crew
           </Button>
         </div>
-      </details>
+      </MapDisclosure>
       {loading && (
         <p className="map-loading-status" role="status">
           Loading map imagery…

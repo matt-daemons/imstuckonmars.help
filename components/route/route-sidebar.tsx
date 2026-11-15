@@ -50,13 +50,11 @@ const isTyping = (target: EventTarget | null) =>
 export function RouteSidebar({
   map,
   base,
-  target,
   children,
 }: {
   map: MapLibreMap | null;
   base: LngLat;
-  target: LngLat;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const { inputs, dispatch } = useRoutePlan();
   const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
@@ -115,7 +113,7 @@ export function RouteSidebar({
               <MissionStep map={map} base={base} />
             </TabsPanel>
             <TabsPanel value="where" tabIndex={-1}>
-              <WhereStep map={map} base={base} target={target} placement={placement} />
+              <WhereStep map={map} base={base} placement={placement} />
             </TabsPanel>
             <TabsPanel
               value="check"

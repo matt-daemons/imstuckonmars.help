@@ -16,9 +16,11 @@ export function CompletionNotice() {
       status={
         reportSave === "saved"
           ? "Report saved in this browser"
-          : reportSave === "error"
-            ? "Report needs attention"
-            : "Preparing report"
+          : reportSave === "removed"
+            ? "Saved browser copy removed"
+            : reportSave === "error"
+              ? "Report needs attention"
+              : "Preparing report"
       }
       onOpen={() => setReportOpen(true)}
     />

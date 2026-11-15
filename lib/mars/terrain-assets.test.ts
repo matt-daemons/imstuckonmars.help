@@ -18,7 +18,7 @@ describe("archived terrain release", () => {
     }
   });
 
-  it("keeps generated imagery optional and separate from terrain", async () => {
+  it("omits the retired generated texture and retains local asset references", async () => {
     const manifest = z
       .object({
         layers: z.array(
@@ -27,8 +27,7 @@ describe("archived terrain release", () => {
       })
       .parse(JSON.parse(await readFile("public/data/processed/manifest.json", "utf8")));
     const ai = manifest.layers.find((layer) => layer.id === "ai-visual-preview");
-    expect(ai?.visible).toBe(false);
-    expect(ai?.path).toBe("https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-map.png");
+    expect(ai).toBeUndefined();
     for (const layer of manifest.layers) {
       if (!layer.path.startsWith("https://")) {
         await expect(readFile(`public/data/processed/${layer.path}`)).resolves.toBeInstanceOf(

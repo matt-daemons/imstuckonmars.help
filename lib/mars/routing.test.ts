@@ -4,7 +4,14 @@ import { PNG } from "pngjs";
 import { describe, expect, it } from "vitest";
 
 import { cellAt, cellCenter, gridFromTiles, type RouteGrid } from "./route-grid";
-import { findPath, planWalk, slopeDegrees, wallMask, type NoGoZone } from "./routing";
+import {
+  findPath,
+  marsDistanceM,
+  planWalk,
+  slopeDegrees,
+  wallMask,
+  type NoGoZone,
+} from "./routing";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat } from "./types";
 
@@ -185,7 +192,9 @@ describe("A* route", () => {
     const start = gridPoint(grid, 4.2, 4.2);
     const goal = gridPoint(grid, 4.7, 4.6);
     const result = route(grid, openWalls(grid), start, goal);
-    expect(result).toMatchObject({ status: "ok", path: [start, goal], distance_m: 0 });
+    expect(result).toMatchObject({ status: "ok", path: [start, goal] });
+    // The walk is measured from the exact start to the exact goal, not between cell centres.
+    expect(result.distance_m).toBeCloseTo(marsDistanceM(start, goal), 9);
   });
 
   it("matches Dijkstra's cost", () => {
@@ -213,7 +222,8 @@ describe("A* route", () => {
     grid.heights.forEach((_, cell) => (grid.heights[cell] = (cell % 20) * 2));
     const result = route(grid, openWalls(grid), center(grid, 10, 1), center(grid, 10, 18));
     expect(result.distance_m).toBeCloseTo(17 * Math.hypot(10, 2), 6);
-    expect(result.cost).toBeCloseTo(result.distance_m, 9);
+    // Cost steps between cell sizes; distance follows the drawn path on the sphere: equal to µm.
+    expect(result.cost).toBeCloseTo(result.distance_m, 6);
   });
 
   it("sums both legs", () => {

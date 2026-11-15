@@ -126,7 +126,7 @@ describe("training note for LARA", () => {
     const state = apply(initialTraining(), ALL_REQUIRED[0]);
     const note = trainingNote(trainingContext(state))!;
     expect(note).toContain("Done: Pick a mission type.");
-    expect(note).toContain("Next item: Browse the water-ice sites.");
+    expect(note).toContain("Next item: Browse the destinations.");
   });
 
   it("is absent unless training is active", () => {

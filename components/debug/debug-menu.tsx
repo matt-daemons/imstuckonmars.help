@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -21,10 +21,12 @@ export function DebugMenu({
   page,
   readSections,
   shortcut = true,
+  controls,
 }: {
   page: string;
   readSections: () => DebugSection[];
   shortcut?: boolean;
+  controls?: ReactNode;
 }) {
   const owner = useRef<HTMLSpanElement>(null);
   const previousFocus = useRef<HTMLElement | null>(null);
@@ -111,10 +113,13 @@ export function DebugMenu({
           <DialogHeader>
             <DialogTitle>Debug menu · {page}</DialogTitle>
             <DialogDescription>
-              Read-only diagnostics. Shift+D toggles this panel.
+              {controls
+                ? "Diagnostics and debug controls. Shift+D toggles this panel."
+                : "Read-only diagnostics. Shift+D toggles this panel."}
             </DialogDescription>
           </DialogHeader>
           <DialogPanel>
+            {controls}
             {sections.map((section) => (
               <section key={section.title} className="debug-section">
                 <h3>{section.title}</h3>

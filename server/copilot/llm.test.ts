@@ -20,6 +20,8 @@ describe("LARA tool loop", () => {
     expect(SYSTEM_PROMPT).toContain('Use "I" for your actions and "you" for the crew');
     expect(SYSTEM_PROMPT).toContain("A queued action is not a completed calculation");
     expect(SYSTEM_PROMPT).toContain("not live measurements or crew oxygen inventory");
+    // NASA media guidelines: AI output is attributed to the AI product, never to NASA.
+    expect(SYSTEM_PROMPT).toContain("Never attribute your answers to NASA");
     expect(SYSTEM_PROMPT).not.toContain("say what the app does");
   });
   it("runs requested tools and returns the spoken answer", async () => {

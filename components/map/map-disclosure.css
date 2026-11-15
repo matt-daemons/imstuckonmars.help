@@ -1,0 +1,40 @@
+.map-disclosure {
+  border: 1px solid var(--border);
+  background: var(--background);
+  min-width: 0;
+}
+.map-disclosure > summary {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 40px;
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: 1rem;
+}
+.map-disclosure > summary::-webkit-details-marker {
+  display: none;
+}
+.map-disclosure > summary > svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.map-disclosure > summary > .map-disclosure-chevron {
+  margin-inline-start: auto;
+}
+.map-disclosure[open] > summary > .map-disclosure-chevron {
+  transform: rotate(180deg);
+}
+.map-disclosure > summary:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+.map-disclosure-content {
+  border-top: 1px solid var(--border);
+  padding: 6px;
+  max-height: min(45svh, 26rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}

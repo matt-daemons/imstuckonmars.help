@@ -69,7 +69,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Far sites (> 200 km)     | **Team, Sun Nov 15:** ESP_037352 (424 km) and ESP_054060 (468 km) are shown as **NO-GO** under the 200 km rover range rule — for now.                                                                                                                                                                                                                                                                                         |
 | Roughness + rock sizes   | **Team, Sun Nov 15:** roughness classes 0.25 / 0.5 / 1 m and walker rock sizes 0.3 / 0.5 / 1 m agreed. Team assumptions — NASA has no suited-walking limit. Rationale: `docs/PITCH_NOTES.md`.                                                                                                                                                                                                                                 |
 | Rovers per mission       | **2 rovers go out together** (mutual rescue).                                                                                                                                                                                                                                                                                                                                                                                 |
-| Suit / walk flight rules | Sourced values (`config.yaml` ↔ `lib/flight-rules/rules.ts`, synced by `config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), suit walk-back ≤ 2 km. NASA has no Mars limits — Moon/ISS values are labelled assumptions.                                                                                                        |
+| Suit / walk flight rules | Sourced values (`config.yaml` ↔ `lib/flight-rules/rules.ts`, synced by `config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from the Curiosity RAD average rate), suit walk-back ≤ 2 km. NASA has no Mars limits — Moon/ISS values are labelled assumptions.                                                                                                  |
 | Rover flight rules       | **AGREED by the team, Sun Nov 15** (`lib/flight-rules/rover-rules.ts`): slope 5° caution / 10° no-go on the 463 m MOLA grid (halved because MOLA reads slopes low; 5° is the lower limit), battery 30 / 20 %, reserve 20 / 10 km, range 100 / 200 km (EVA-EXP-0042 two-rover source added), trip 7 / 14 sols, rover breakdown walk-back 15 km. ⚠ On slides, name the suit walk-back (2 km) and rover walk-back (15 km) apart. |
 | Level 2 forecast         | Code/threshold rules with stated confidence, not a model. RAG (if any) only explains verdicts, citing the rule that fired.                                                                                                                                                                                                                                                                                                    |
 | Data output formats      | **Stable:** COG rasters on a common grid; GeoJSON for stops/features. **Live:** JSON snapshot `{timestamp, radiation_dose_rate, solar_alert_level, dust_opacity, temp, wind, sun_elevation}`. **Route:** GeoJSON line + `{distance_km, est_time_min, max_slope, verdict, limiting_factor, reasons[]}`. **Forecast:** `[{hour, dust, radiation, verdict}]` + `explanation`.                                                    |
@@ -78,6 +78,8 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Toolchain                | Plain Git + GitHub (no jj); Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI. Details §8.                                                                                                                                                                                                                                                                                                                        |
 | Data home                | Telemetry in **D1** (teammate's backend). Static rasters/tiles on **R2** (`tiles.imstuckonmars.help`, M uploads) or locally in `public/data/`.                                                                                                                                                                                                                                                                                |
 | Schemas                  | Owned by a teammate — don't build `schemas/` here. Longitude: store −180..180, display 0–360 °E.                                                                                                                                                                                                                                                                                                                              |
+| Proxy-data framing       | **Team, Sun Nov 15:** Gale/Jezero data may stand in for Arcadia, always labelled as a proxy with the caveat that **Arcadia has not been ground-truthed**. **No Mars Climate Database adjustment for now** (keeps every shown number a real measurement); MCD scaling (pressure, temperature, sun elevation) is future work.                                                                                                   |
+| Manifest format          | **M OK'd, Sun Nov 15:** optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`) may be added.                                                                                                                                                                                                                                                                                                              |
 | UI theme                 | _The Martian_-inspired, original design — no copyrighted assets/logos.                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Telemetry units (team table, Sat Nov 14 — the table was titled "ARES" by mistake; the product is **LARA**)
@@ -161,8 +163,8 @@ Grouped by who acts. Strike through and move to §11 when done.
 ### Team decisions (shared role A)
 
 1. **Regional slope 200 m** — waiting on the routing teammate; router input (would mean re-setting the halved MOLA slope limits) or display-only?
-2. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
-3. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
+2. ~~Manifest format change~~ — M OK'd (§4). Jess/Role A to add `sceneControl` + `caveats` to `StableLayer`.
+3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Exact UI wording still to write (D / M).
 4. Confirm owner names for roles C and D.
 
 ### M (hosting + UI)
@@ -170,16 +172,17 @@ Grouped by who acts. Strike through and move to §11 when done.
 1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
 2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
 3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
-4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` / AOI name with real routes so nothing fake ships.
+4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (AOI name now fixed in `config.yaml`) with real routes so nothing fake ships.
 5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
 
 ### Jess (role B)
 
 1. ~~Thermal-inertia R2 prefix~~ — `sites-v2/thermal-inertia`; wired (`THERMAL_INERTIA_DATA_ROOT`).
 2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
-3. Slides: pin the page of the Hassler 2014 quiet-time dose rate (~9 µGy/h) — the radiation flight rule's 18 / 90 µGy/h thresholds are
+3. Slides: pin the page of the Hassler 2014 average dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are
    2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
-4. **SWIM** ice layer — swim.psi.edu down (HTTP 523); retry. PIA26045 is a PNG illustration → slides only.
+4. **Ice evidence** — swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
+5. **Regional slope tiles** regenerated with 1° / 2° / 5° / 10° / 20° classes (the corridor is flat: ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %). **M: re-upload `sites-v2/regional-slope`** (local tiles are new; R2 still has the old 10°+ classes, so the overlay looks blank until then).
 
 ### Roles C / D
 
@@ -188,7 +191,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Before feature freeze (~6 h before deadline)
 
-- Every layer shows its NASA source; references (§12) in sync; AI disclosures (voice, AI texture watermark) in place.
+- Every layer shows its NASA source; references (§12) in sync; AI voice disclosure in place.
 - Check: Workers static-asset per-file limit (believed 25 MiB) — move larger COGs to R2.
 
 ### Future data layers (horizon)
@@ -276,7 +279,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 ### Regional slope + geology (drive corridor)
 
 - **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
-  0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 10° 0.04 %, ≥ 20° 0 %.
+  0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
   Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
   on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. Not on the map yet.
@@ -388,7 +391,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Viking global colour mosaic** (teammates' basemap): USGS/NASA Ames colorized Viking MDIM 2.1. Credit: NASA/Viking; USGS; NASA Ames.
 - **CTX global mosaic** (imagery around the habitat, ~5 m): Caltech Murray Lab, served by Esri (https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer). Credit: NASA/JPL/MSSS/The Murray Lab. Murray Lab "grants free use of the V01 version of the mosaic for all purposes" and asks users to cite Dickson et al. 2024 (https://murray-lab.caltech.edu/CTX/). Note: the Esri service labels itself beta01.
 - **NASA Ames Mars GCM 2018 global dust storm simulation** (dust playback): https://data.nas.nasa.gov/legacygcm/ — Bertrand et al. 2020.
-- **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
+- **SWIM — Subsurface Water Ice Mapping** (swim.psi.edu down long-term; use the papers + Odyssey neutron-spectrometer maps instead, see §7): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
 - **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
 - **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
 - **Geologic Map of Mars** (USGS SIM 3292, 1:20M; geologic units along the drive corridor, `pnpm pipe:geology`): USGS Astrogeology / NASA — Tanaka et al. 2014. https://pubs.usgs.gov/sim/3292/
@@ -413,7 +416,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Guo, J. et al. (2015). Modeling the variations of dose rate measured by RAD during the first MSL Martian year: 2012–2014. _ApJ_ 810(1), 24. doi:10.1088/0004-637X/810/1/24 (quiet rate varies with air pressure and solar cycle; it gives **no** average dose rate) ✓ title corrected
 - Hanley, J. A. & Lippman-Hand, A. (1983). If nothing goes wrong, is everything all right? Interpreting zero numerators. _JAMA_ 249(13), 1743–1745. (rule of three — boulder review bound)
 - Hassler, D. M. et al. (2012). The Radiation Assessment Detector (RAD) Investigation. _Space Science Reviews_ 170(1–4), 503–558. doi:10.1007/s11214-012-9913-1 (RAD instrument) ✓
-- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; secondary summaries agree on 0.210 ± 0.040 mGy/day averaged over ~300 sols near solar maximum (range ~0.18–0.225), but the full text is paywalled and the page/section was **not** pinned (Sun Nov 15 night) — **check the page before quoting the number on a slide**)
+- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; secondary summaries agree on 0.210 ± 0.040 mGy/day averaged over ~300 sols near solar maximum (range ~0.18–0.225), but the full text is paywalled and the page/section was **not** pinned (Sun Nov 15 night) — **check the page before quoting the number on a slide**. Sun Nov 15 evening search: the paper describes 0.210 ± 0.040 mGy/day as the **average total GCR dose rate** over ~300 days near solar maximum — not a "quiet-time" value, so say "average" on slides; Guo et al. 2015 is the source for quiet-time variation. A free copy appears to be at the Smithsonian repository (https://repository.si.edu/server/api/core/bitstreams/da15cc33-ad74-4984-871a-5b82a99138e6/content) — not opened yet, page still not pinned)
 - Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24. (DTM vertical precision → roughness noise floor)
 - Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
@@ -427,7 +430,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Apollo Lunar Surface Journal (NASA History). Apollo 17 Station 7: LRV parked ~25 m ENE of the boulder (https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/images17.html); Apollo 15: rover 26 m from the D-16 pan spot near Central Station; Final LRV parking places (https://www.nasa.gov/wp-content/uploads/static/history/alsj/alsj-LRVFinalParking.html); Apollo 15 Station 9, TV-coverage parking remark (https://nasa.gov/wp-content/uploads/static/history/alsj/a15/a15.sta9.html).
 - NASA (2023). _Sim Series 2: Rover Teleoperations to Support EVA_ (incl. D-RATS 22 findings). NTRS 20230016699. https://ntrs.nasa.gov/api/citations/20230016699/downloads/Sim_Series_2_Rover_Teleops_to_Support_EVA_Rev.pdf (parking chosen per spot for comm relay, lighting, camera, solar; proximity vs distance trade-off; rover 500 m from the lander for engine debris)
 - NASA OCHMO-TB-023, _Extraterrestrial Surface Transport Vehicles (Rovers)_. https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-023-extraterrestrial-surface-transport-vehicles-rovers.pdf (Apollo 7.6 km "Walkback Limit")
-- Desert RATS 2011: Human and robotic exploration of near-Earth asteroids (Abercromby et al.). https://www.researchgate.net/publication/256935260 — **(verify)** source of the "EVA within 25 m of the SEV" figure; only seen in a search summary.
+- Desert RATS 2011: Human and robotic exploration of near-Earth asteroids (Abercromby et al.). https://www.researchgate.net/publication/256935260 — **(verify)** source of the "EVA within 25 m of the SEV" figure; only seen in a search summary. Sun Nov 15 evening: NTRS papers on the 2011 test (e.g. 20120003306, 20130000595) and ESA's write-up did not mention 25 m → cite the Apollo figures instead and drop Desert RATS unless someone finds the page.
 - Abercromby, A. F. J. et al. (2012). _Desert Research and Technology Studies (DRATS) 2009_. NASA/TP-2012-217360 (suit-port pressurized rover field test). https://www.lpi.usra.edu/lunar/analogs/blackpoint/pdf/AbercrombyEtAl_DRATS2009_TP-2012-217360.pdf
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
 - Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
@@ -447,8 +450,7 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
 
 - **OpenRouter** — language model **openai/gpt-4.1-mini** behind the LARA copilot (set by `DIAGNOSTICS_MODEL` on the server). Explains results; verdicts come from `lib/flight-rules`, never from the model.
 - **ElevenLabs** — LARA's voice. **The voice is AI-generated speech**: acknowledge it wherever it is heard (demo video, project page).
-- **openai/gpt-image-2** — the optional "AI texture experiment" layer (provenance: `https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json`). AI images need a visible watermark under Space Apps rules.
-- **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs; commits carry a `Co-Authored-By` trailer where recorded.
+- **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs.
 
 ### Fonts
 

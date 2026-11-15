@@ -32,42 +32,6 @@
   max-width: min(240px, calc(100% - 32px));
   font-size: 16px;
 }
-.map-view-controls details {
-  background: var(--background);
-  border: 1px solid var(--border);
-}
-.map-view-controls summary {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 40px;
-  padding: 8px 12px;
-  cursor: pointer;
-  list-style: none;
-}
-.map-view-controls summary::after {
-  content: "+";
-  margin-left: auto;
-  font-family: var(--font-mono);
-}
-.map-view-controls details[open] summary::after {
-  content: "−";
-}
-.map-view-controls summary svg {
-  width: 18px;
-  height: 18px;
-}
-.map-view-controls summary:focus-visible {
-  outline: 2px solid var(--ring);
-  outline-offset: 2px;
-}
-.map-view-controls details > div {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 6px;
-  border-top: 1px solid var(--border);
-}
 .map-view-controls button {
   min-height: 40px;
   justify-content: start;
@@ -143,18 +107,5 @@
   .map-view-controls {
     top: auto;
     bottom: 150px;
-  }
-  .map-view-controls details > div {
-    position: absolute;
-    bottom: 100%;
-    right: 0;
-    width: 220px;
-    max-height: 45svh;
-    overflow-y: auto;
-    background: var(--background);
-    border: 1px solid var(--border);
-  }
-  .lara-launcher-position {
-    bottom: 100px;
   }
 }

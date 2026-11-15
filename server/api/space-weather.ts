@@ -20,7 +20,7 @@ const CACHE_SECONDS = 15 * 60;
 // The Cache API keys entries by URL; this one is a name only and is never fetched.
 const CACHE_KEY = "https://lara.cache/api/space-weather";
 // A DONKI that does not answer must not hold the route check up.
-const TIMEOUT_MS = 10_000;
+const TIMEOUT_MS = 5_000;
 const HOUR_MS = 3_600_000;
 
 export const spaceWeather = new Hono();

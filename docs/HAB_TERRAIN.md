@@ -24,9 +24,9 @@ The base and route remain simulated, not historical mission positions.
   pixels. The retrieved service level has 0.0000858306884765625° pixels,
   approximately 5.1 m north-south and 3.5 m east-west at the HAB. Resampling
   does not create finer source detail.
-- **AI texture experiment:** one generated image derived from a CTX service
-  tile, off by default. Fine texture changes are unverified. This is a visual
-  comparison, not recovered measurement detail.
+
+The former AI texture experiment is retired. It is not displayed, selectable,
+or part of the current reproduction pipeline.
 
 The Scene panel identifies the active elevation grid. The local elevation
 source activates only when the entire viewport is inside its supported bounds
@@ -83,21 +83,14 @@ Run from the repository root with Node 24, pnpm and GDAL installed:
 ```sh
 pnpm pipe:hab-terrain
 pnpm pipe:hab-imagery
-node pipelines/stable/ai-imagery.ts
 pnpm pipe:display-terrain
 pnpm pipe:globe-imagery
 ```
 
-The last command only projects the saved AI image. It does not call a model.
-The original generation used the built-in image tool, `openai/gpt-image-2`,
-with the prompt recorded in `public/data/terrain/ctx/ai-provenance.json`.
-The generated image did not preserve exact pixel geometry. Its assigned
-footprint is for side-by-side visual comparison only.
-
 `data/raw/terrain/` holds source subsets and service responses, outside version
 control. `public/data/terrain/hab/` holds 21 complete Terrarium tiles at zooms
-9–11 plus metadata and hashes. `public/data/terrain/ctx/` holds imagery,
-the AI input/output and provenance. No R2 bucket or runtime imagery proxy is
+9–11 plus metadata and hashes. `public/data/terrain/ctx/` held imagery and
+provenance in the original local release. No R2 bucket or runtime imagery proxy is
 needed for this bounded static release. No large global raster was downloaded.
 
 `public/data/terrain/globe/provenance.json` records the 32 NASA Trek source tile
@@ -118,8 +111,7 @@ sample was 5902.1043 m, corresponding to about −4097.90 m after removing
 the 10,000 m display offset. This is an interpolated product value, not a
 survey measurement at the HAB.
 
-Switching the AI comparison on left the elevation value and terrain source
-unchanged. Terrain tiles and imagery loaded without request errors. The
+Terrain tiles and imagery loaded without request errors. The
 browser logged an unrelated missing favicon and software-rendering warnings.
 Full keyboard, screen-reader, mobile layout and geodetic registration checks
 remain unverified. Existing map panels retain their prior styling and behavior.

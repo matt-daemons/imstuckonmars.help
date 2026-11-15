@@ -8,6 +8,13 @@ import { PARTICLE_EVENT_HOURS } from "../flight-rules/donki";
 import { GROUND } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
 import { BOULDER_CLEARANCE_M, SITE_CELL_M, STAGING_RULE } from "./site-grid";
+import {
+  FAKE_LAYERS,
+  FAKE_SAMPLE_SECONDS,
+  FAKE_SENSOR_COUNT,
+  FAKE_SENSOR_VERSION,
+  FAKE_SOL_COUNT,
+} from "./fake-sensors";
 
 /** What kind of evidence an entry is. Drives the badge on the sources screen. */
 export type EvidenceKind =
@@ -114,15 +121,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
       },
       {
-        id: "mola-base",
-        title: "Elevation-coloured hillshade",
-        kind: "illustration",
-        credit: "NASA/MGS/MOLA",
-        use: "Optional relief shading. Off by default.",
-        caveats: ["Colours encode height. They are not surface colour."],
-        layerIds: ["mola-base"],
-      },
-      {
         id: "ctx-context",
         title: "Orbital imagery around the habitat",
         kind: "observation",
@@ -144,25 +142,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           },
         ],
         layerIds: ["ctx-context"],
-      },
-      {
-        id: "ai-visual-preview",
-        title: "AI texture experiment",
-        kind: "ai",
-        credit: "Generated with openai/gpt-image-2 from one CTX tile",
-        detail: "2× visual upscale of a single CTX tile near the habitat",
-        use: "Optional visual comparison only. Off by default.",
-        caveats: [
-          "Generated pixels are not measurements.",
-          "Never used for elevation, slope, hazard detection, routing or resource calculations.",
-        ],
-        links: [
-          {
-            label: "Provenance and prompt",
-            url: "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json",
-          },
-        ],
-        layerIds: ["ai-visual-preview"],
       },
       {
         id: "sites",
@@ -272,15 +251,33 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         ],
       },
       {
-        id: "plan",
-        title: "Science stops and hand-drawn route",
-        kind: "placeholder",
-        credit: "LARA routing team",
-        use: "Science stops on the map, and the old hand-drawn route layer (off by default).",
+        id: "fake-sensors",
+        title: "Fake data mode (future sensors)",
+        kind: "simulated",
+        credit: "ARES / LARA team · deterministic synthetic generator",
+        detail: `${FAKE_SENSOR_VERSION} · ${FAKE_SENSOR_COUNT} fictional stations · ${FAKE_SOL_COUNT} Martian solar days · readings every ${FAKE_SAMPLE_SECONDS} seconds`,
+        use: `Map-only demonstration, off by default under Debug. Layers: ${FAKE_LAYERS.map((layer) => layer.label).join(", ")}.`,
         caveats: [
-          "Placeholder geometry. Real routes come from the route planner above; this layer is not a planned traverse.",
+          "Invented, bounded equations. Not calibrated Mars models and not NASA observations.",
+          "Never enters NASA datasets, the mission database, route masks or route planning.",
+          "Storm intensity is an illustrative index, not dust opacity. Radiation is not crew dose.",
+          "Stations use an equal-area Fibonacci distribution. Repeatable spherical noise adds regional variation; shaded fields evaluate the invented equations between stations, not measured coverage.",
+          "Ground depth and air-sensor height are unspecified. Radiation uses µGy per Earth day; humidity is fictional percent. Shaded fields stop at 85° latitude.",
         ],
-        layerIds: ["stops", "route"],
+        links: [
+          {
+            label: "Fake data method and limitations",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/docs/FAKE_SENSOR_MODE.md",
+          },
+          {
+            label: "Sensor generator and units",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/lib/mars/fake-sensors.ts",
+          },
+          {
+            label: "Spatial and temporal variation",
+            url: "https://github.com/matt-daemons/imstuckonmars.help/blob/main/lib/mars/fake-field-variation.ts",
+          },
+        ],
       },
       {
         id: "habitat",
@@ -290,6 +287,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         detail: "Hypothetical base at 45.97°N, 183.95°E",
         use: "Shows where the crew lives and parks.",
         caveats: ["The base location and models are illustrations, not a NASA design."],
+        layerIds: ["stops"],
       },
     ],
   },
@@ -457,6 +455,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "LARA's voice is AI-generated speech (ElevenLabs).",
           "Explains results from LARA's tools. It does not decide.",
           "GO, CAUTION and NO-GO come from fixed flight-rule thresholds, never from the model.",
+          "NASA has not reviewed or endorsed LARA or its answers. Answers are attributed to LARA, not NASA.",
         ],
       },
       {
@@ -467,7 +466,6 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         use: "Helped write and review code, data pipelines and documentation.",
         caveats: [
           "The team chose the concept, location, science objective and flight-rule values.",
-          "Commits made with AI assistance carry a Co-Authored-By trailer where recorded.",
         ],
       },
     ],

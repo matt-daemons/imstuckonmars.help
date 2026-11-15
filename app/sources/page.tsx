@@ -11,7 +11,8 @@ import {
 
 export const metadata: Metadata = {
   title: "Sources and caveats · LARA",
-  description: "Every LARA layer and data feed with its NASA credit and limits.",
+  description:
+    "Sources, generators and limits for LARA's NASA data, simulations and fictional sensor layers.",
 };
 
 const BADGE: Record<
@@ -91,8 +92,9 @@ export default function SourcesPage() {
         </a>
         <h1 className="font-heading text-3xl font-bold">Sources and caveats</h1>
         <p className="max-w-[68ch] text-muted-foreground">
-          Every layer and reading in LARA, who measured it, and what it can't tell you. NASA terrain
-          and observations are evidence for planning, not a guarantee of safety on the ground.
+          Every layer and reading in LARA, who measured or generated it, and what it can't tell you.
+          NASA terrain and observations are evidence for planning, not a guarantee of safety on the
+          ground.
         </p>
         <ul className="flex flex-wrap gap-2" aria-label="Evidence types">
           {(Object.keys(EVIDENCE_LABEL) as EvidenceKind[]).map((k) => (

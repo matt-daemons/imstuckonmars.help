@@ -80,7 +80,6 @@ await execa("gdalwarp", [
 ]);
 await execa("gdal_translate", ["-q", "-of", "PNG", warped, join(work, "context.png")]);
 await copyFile(join(work, "context.png"), join(output, "context.png"));
-await copyFile(join(raw, "12-1001-89.jpg"), join(output, "ai-input.jpg"));
 const corners = [
   [-180 + westColumn * span, 90 - northRow * span],
   [-180 + (eastColumn + 1) * span, 90 - northRow * span],

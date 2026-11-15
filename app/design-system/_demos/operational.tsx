@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 
 import { Section } from "../_components/section";
+import { LocalDataResetDemo } from "./local-data-reset";
 
 // Every demo here follows .agents/skills/operational-ui-standards/SKILL.md and the
 // "UI standards" deviations in AGENTS.md. Rule IDs refer to that skill.
@@ -132,6 +133,7 @@ function Readout({ label, children }: { label: string; children: ReactNode }) {
 export function Operational() {
   return (
     <>
+      <LocalDataResetDemo />
       <Section id="lookalike-characters" title="Lookalike characters" className="flex-col">
         <p className="text-sm text-muted-foreground">
           T-1: each typeface renders the test string{" "}

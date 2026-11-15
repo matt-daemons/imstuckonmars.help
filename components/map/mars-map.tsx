@@ -16,6 +16,11 @@ import { MapCompass } from "@/components/map/map-compass";
 import { MapOverlayViewport } from "./map-overlay-viewport";
 import { useMapCursor } from "./use-map-cursor";
 import { SpaceBackdrop } from "./space-backdrop";
+import { useFakeSensorMode } from "./use-fake-sensor-mode";
+import { FakeDataToggle, FakeSensorControls, FakeSensorLegend } from "./fake-sensor-controls";
+import { FakeSensorLayers } from "./fake-sensor-layers";
+import { LayersPanel } from "./layers-panel";
+import { constrainGlobeCamera } from "./globe-camera";
 import "./map-overlays.css";
 import { MapViewControls, MissionViewProvider } from "./mission-view";
 import { focusTarget } from "@/components/route/camera";
@@ -48,8 +53,6 @@ import type { LayerManifest, LngLat } from "@/lib/mars/types";
 const DATA_ROOT = "/data/processed";
 // Placeholder habitat site; matches the "base" stop in stops.geojson.
 const HABITAT: LngLat = [-176.05, 45.97];
-// Placeholder science stop; matches the "s1" stop in stops.geojson.
-const SCIENCE_STOP: LngLat = [-175.95, 46.03];
 
 // sites.geojson from pipelines/stable/hirise-sites.ts: a footprint polygon + a POI point per site.
 interface SitesGeoJSON {
@@ -73,6 +76,9 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [sites, setSites] = useState<SitePoi[]>([]);
   const [habitatEnlarged, setHabitatEnlarged] = useState(false);
   const [spaceEnabled, setSpaceEnabled] = useState(true);
+  const [dashboardShortcut, setDashboardShortcut] = useState<HTMLDivElement | null>(null);
+  const [dustLegendTarget, setDustLegendTarget] = useState<HTMLDivElement | null>(null);
+  const fakeSensors = useFakeSensorMode();
 
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +121,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         pitch: 0,
         bearing: 0,
         maxPitch: 85,
+        transformCameraUpdate: constrainGlobeCamera,
         attributionControl: false,
       });
       map.current = m;
@@ -257,6 +264,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     <SidebarProvider
       style={SIDEBAR_STYLE}
       className="mars-map-shell relative isolate h-svh overflow-hidden"
+      data-fake-data={fakeSensors.state.enabled || undefined}
     >
       <SpaceBackdrop map={loaded} enabled={spaceEnabled} />
       <div ref={container} className="mars-map-canvas absolute inset-0" />
@@ -265,39 +273,61 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
         <ConditionsProvider habitat={HABITAT}>
           <MissionViewProvider map={loaded} base={HABITAT} error={error}>
-            <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
-              <SidebarSections
-                layers={
-                  manifest && (
-                    <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
-                  )
-                }
-                scene={
-                  <ScenePanelBody
-                    map={loaded}
-                    habitat={HABITAT}
-                    sites={sites}
-                    spaceEnabled={spaceEnabled}
-                    onSpaceEnabledChange={setSpaceEnabled}
-                  />
-                }
-              />
-            </RouteSidebar>
+            <RouteSidebar map={loaded} base={HABITAT} />
             {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
             <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
               <MapOverlayViewport map={loaded}>
+                <FakeSensorLayers map={loaded} mode={fakeSensors} />
+                <div className="map-camera-stack">
+                  <div className="map-control-row">
+                    <MapViewControls />
+                    <LayersPanel fakeData={fakeSensors.state.enabled}>
+                      <SidebarSections
+                        layers={
+                          <>
+                            {manifest && (
+                              <LayerPanelBody
+                                manifest={manifest}
+                                visible={visible}
+                                onToggle={toggle}
+                              />
+                            )}
+                            <FakeSensorControls mode={fakeSensors} map={loaded} />
+                          </>
+                        }
+                        scene={
+                          <ScenePanelBody
+                            map={loaded}
+                            habitat={HABITAT}
+                            sites={sites}
+                            spaceEnabled={spaceEnabled}
+                            onSpaceEnabledChange={setSpaceEnabled}
+                            legendTarget={dustLegendTarget}
+                          />
+                        }
+                      />
+                    </LayersPanel>
+                  </div>
+                  <FakeSensorLegend mode={fakeSensors} />
+                  <div ref={setDustLegendTarget} className="map-legend-slot" />
+                </div>
                 <div className="mission-map-chrome contents">
                   <RouteMapLayers map={loaded} />
                   <RouteFocus map={loaded} />
                   <LaraRouteBridge map={loaded} />
                   <LaraExpeditionBridge />
                   <CrewLayer map={loaded} />
-                  <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
+                  <HomebaseMapEntry
+                    map={loaded}
+                    habitat={HABITAT}
+                    enlarged={habitatEnlarged}
+                    shortcutTarget={dashboardShortcut}
+                  />
                   <MapCompass map={loaded} />
-                  <MapViewControls />
                   <CompletionNotice />
                   <DebugMenu
                     page="Map"
+                    controls={<FakeDataToggle mode={fakeSensors} />}
                     readSections={() => {
                       const m = map.current;
                       const center = m?.getCenter();
@@ -360,20 +390,17 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                       ];
                     }}
                   />
-                  <Tooltip>
-                    <TooltipTrigger
-                      render={
-                        <SidebarTrigger
-                          variant="outline"
-                          aria-keyshortcuts="H"
-                          className="absolute top-4 left-4"
-                        />
-                      }
-                    />
-                    <TooltipPopup side="right">
-                      Mission sidebar. Shortcut: <Kbd>H</Kbd>
-                    </TooltipPopup>
-                  </Tooltip>
+                  <div className="map-top-left-controls">
+                    <Tooltip>
+                      <TooltipTrigger
+                        render={<SidebarTrigger variant="outline" aria-keyshortcuts="H" />}
+                      />
+                      <TooltipPopup side="right">
+                        Mission sidebar. Shortcut: <Kbd>H</Kbd>
+                      </TooltipPopup>
+                    </Tooltip>
+                    <div ref={setDashboardShortcut} />
+                  </div>
                   {error && (
                     <div className="map-load-error" role="alert">
                       <CircleXIcon aria-hidden />
@@ -384,7 +411,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                     </div>
                   )}
                   {cursor && (
-                    <div className="map-coordinate-readout absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                    <div className="map-coordinate-readout absolute right-4 bottom-16 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
                       {cursor[1].toFixed(5)}°N{" "}
                       {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
                       °E

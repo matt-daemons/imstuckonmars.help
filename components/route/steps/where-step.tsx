@@ -26,18 +26,15 @@ import { ChoiceCard } from "./choice-card";
 export function WhereStep({
   map,
   base,
-  target,
   placement,
 }: {
   map: MapLibreMap | null;
   base: LngLat;
-  target: LngLat;
   placement: Placement;
 }) {
   const { inputs, dispatch, destinations } = useRoutePlan();
   const { mission, start, end } = inputs;
   const listLabel = useId();
-  // A walk has one preset end, the science stop; a drive + walk ends at one of the sites.
   const choices =
     mission === "drive-walk"
       ? destinations.map((site) => ({
@@ -46,7 +43,7 @@ export function WhereStep({
           title: siteLabel(site).replace(" in Arcadia Planitia", ""),
           center: site.center,
         }))
-      : [{ id: "science-stop", title: "Science stop (placeholder)", center: target }];
+      : [];
   const chosen = end ? choices.find((choice) => samePoint(choice.center, end)) : undefined;
 
   function chooseEnd(id: string) {
@@ -62,27 +59,31 @@ export function WhereStep({
         <h3 id={listLabel} className="font-heading text-sm font-semibold">
           Destination
         </h3>
-        <RadioGroup
-          aria-labelledby={listLabel}
-          value={chosen?.id ?? null}
-          // Safe cast: the values are the choice ids below.
-          onValueChange={(id) => chooseEnd(id as string)}
-        >
-          {choices.map((choice) => (
-            <ChoiceCard key={choice.id} value={choice.id} title={choice.title}>
-              <span className="font-mono tabular-nums">
-                {formatNumber(marsDistanceM(base, choice.center) / 1000, 1)} km
-              </span>{" "}
-              from the habitat in a straight line
-            </ChoiceCard>
-          ))}
-        </RadioGroup>
+        {mission === "drive-walk" && (
+          <RadioGroup
+            aria-labelledby={listLabel}
+            value={chosen?.id ?? null}
+            // Safe cast: the values are the choice ids below.
+            onValueChange={(id) => chooseEnd(id as string)}
+          >
+            {choices.map((choice) => (
+              <ChoiceCard key={choice.id} value={choice.id} title={choice.title}>
+                <span className="font-mono tabular-nums">
+                  {formatNumber(marsDistanceM(base, choice.center) / 1000, 1)} km
+                </span>{" "}
+                from the habitat in a straight line
+              </ChoiceCard>
+            ))}
+          </RadioGroup>
+        )}
         {!mission && <p className="text-xs">Pick a mission type in step 01 Mission first.</p>}
-        {mission && !end && <p className="text-xs">No destination yet. Pick one above.</p>}
+        {mission === "drive-walk" && !end && (
+          <p className="text-xs">No destination yet. Pick one above.</p>
+        )}
         {end && !chosen && <p className="text-xs">The end is a point set on the map.</p>}
         {mission === "walking" && (
           <p className="text-xs text-muted-foreground">
-            To end somewhere else, open Edit route and use Set end.
+            Open Edit route, choose Set end, then select a destination on the map.
           </p>
         )}
       </div>

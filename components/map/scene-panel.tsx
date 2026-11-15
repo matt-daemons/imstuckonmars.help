@@ -38,6 +38,7 @@ interface ScenePanelProps {
   sites: SitePoi[];
   spaceEnabled: boolean;
   onSpaceEnabledChange: (enabled: boolean) => void;
+  legendTarget: HTMLDivElement | null;
 }
 
 /** Camera, terrain-scale, and archived dust simulation controls. */
@@ -47,6 +48,7 @@ export function ScenePanelBody({
   sites,
   spaceEnabled,
   onSpaceEnabledChange,
+  legendTarget,
 }: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [terrainSource, setTerrainSource] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export function ScenePanelBody({
         </p>
       </div>
 
-      {map && <DustPlayback map={map} />}
+      {map && <DustPlayback map={map} legendTarget={legendTarget} />}
 
       <details>
         <summary className="cursor-pointer font-heading">Terrain and site controls</summary>

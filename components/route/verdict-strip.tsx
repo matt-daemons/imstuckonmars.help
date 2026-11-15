@@ -24,6 +24,7 @@ import { useRoutePlan, type RoutePlan } from "./route-plan-provider";
 import { noRouteText, stormLimit, stripFields, walkMargin, type StripField } from "./strip-fields";
 import { samePoint } from "./use-route-plan-result";
 import { selectedRoute } from "./selected-route";
+import { RouteCalculationProgress } from "./route-calculation-progress";
 
 interface StripVerdict {
   status: (typeof VERDICT_STYLES)[Verdict];
@@ -58,7 +59,8 @@ function useNow(intervalMs: number) {
  * mission clock and its highest active alert. Clicking it opens step 03, or 04 while one runs.
  */
 export function VerdictStrip() {
-  const { inputs, dispatch, walk, journey, destination, base } = useRoutePlan();
+  const { inputs, dispatch, walk, journey, destination, base, planning, planningError } =
+    useRoutePlan();
   const selected = selectedRoute(inputs, { walk, journey });
   const expedition = useExpedition();
   const { conditions, drill } = useConditions();
@@ -70,12 +72,16 @@ export function VerdictStrip() {
       ? walkVerdict(selected.walk, samePoint(inputs.start, base), conditions)
       : tripVerdict({ ...journey, plan: selected.trip }, conditions);
   const drilling = isDrillSet(drill);
-  const noRoute = noRouteText(
-    inputs,
-    { ...walk, plan: selected.walk },
-    { ...journey, plan: selected.trip },
-    destination !== null,
-  );
+  const noRoute = planning
+    ? "Calculating route…"
+    : planningError
+      ? "Route calculation failed"
+      : noRouteText(
+          inputs,
+          { ...walk, plan: selected.walk },
+          { ...journey, plan: selected.trip },
+          destination !== null,
+        );
   const route = expedition.snapshot?.config.route;
   // A stale clock would look current, so it gives way to the link state when the link drops.
   const linkDown = expedition.link === "stale" || expedition.link === "offline";
@@ -123,7 +129,9 @@ export function VerdictStrip() {
         // A narrow screen fits one half: while an expedition runs, the mission wins.
         className={cn("flex min-w-0 items-center gap-2", clock && "max-sm:hidden")}
       >
-        {verdict ? (
+        {planning ? (
+          <RouteCalculationProgress />
+        ) : verdict ? (
           <>
             {/* The status is what the strip is for, so it outweighs the fields and the DRILL tag. */}
             <Badge

@@ -23,7 +23,7 @@ const OUTPUT_RATE = 16000;
 export type WakeState = "off" | "loading" | "listening" | "paused" | "follow-up" | "error";
 
 let modelPromise: Promise<Model> | null = null;
-function loadSpeechModel() {
+export function loadSpeechModel() {
   modelPromise ??= import("vosk-browser").then(({ createModel }) => createModel(MODEL_URL, -1));
   modelPromise.catch(() => (modelPromise = null));
   return modelPromise;

@@ -208,6 +208,11 @@ NASA (National Aeronautics and Space Administration), RAD (Radiation Assessment 
 MAV (Mars Ascent Vehicle),
 MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP, UTC (Coordinated Universal Time),
 and UI. Add an acronym here before using it in the UI.
+Fake-data views also use SOL (one Martian solar day) and FS (fictional sensor).
+Synthetic environmental field colors are continuous data scales, not alert levels:
+temperature uses blue through neutral to orange/red,
+pressure violet to neutral to teal, and radiation sand to plum. Wind uses white
+to orange for synthetic storm intensity. Keep the fake-data label and legends visible.
 
 ## Formatting and checks
 

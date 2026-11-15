@@ -11,11 +11,35 @@ No additional imagery downloads or external assets are used.
 
 ## Full-screen map and overlays
 
+The NASA dust legend shares the stack below Camera views and Layers with the
+fake-sensor legend. Closing Layers leaves the dust label and scale visible;
+opening either dropdown pushes both legends down instead of covering them.
+
+The habitat is the only placeholder in `stops.geojson`. The retired ice-exposing
+crater and its hand-drawn route are not published. Walking destinations are
+selected on the map; drive-and-walk destinations remain the HiRISE sites.
+
+Camera views and Layers sit beside the compass, falling below it on narrow screens.
+The Layers disclosure to the right of Camera views opens map layers, synthetic-data
+controls and Scene and dust. Both use a chevron and expand beneath their labels.
+Closing the panel preserves their mounted state,
+including selected layers and playback. Escape closes it and restores button
+focus without closing a dialog on top of it.
+
 The map canvas fills the viewport behind the route sidebar and expedition HUD.
 Overlay controls keep their existing positions in the unobstructed area.
 `components/map/map-overlay-viewport.tsx` measures that area and updates camera
 padding plus the built-in map-control offsets. Collapsing the sidebar returns its
 padding without resizing the canvas; route fitting retains these insets.
+Mission dashboard sits beside the sidebar toggle at the upper left. Credits
+remain at the lower left. Coordinates sit above Ask LARA at the lower right,
+above the expedition status strip.
+
+Camera pitch is level through zoom 3, then smoothly permits tilt through zoom 5,
+where terrain begins. The camera constraint applies to gestures and camera-view
+transitions without starting another animation. Close-up views retain their tilt.
+The imagery-loading message appears only after tiles remain pending for 750 ms
+while the camera is stationary. Movement and completed loading clear it immediately.
 
 `components/map/map-overlays.css` scopes translucent surfaces and 12 px backdrop
 blur to the map, including the portaled mobile sidebar. Panels use an 82% dark
@@ -123,6 +147,24 @@ R2_LOCAL_UPLOADER=http://127.0.0.1:5294 python3 pipelines/upload-map-assets.py
 The helper uses a remote R2 binding but runs only on localhost. Never deploy
 that helper. Stop its complete process group after uploading. The application
 Worker has no R2 write route or bucket credentials.
+
+For an explicitly approved correction within an existing release, set
+`MAP_REPLACE_PREFIX` to one relative directory ending in `/`. For example:
+
+```sh
+MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json \
+MAP_REPLACE_PREFIX=regional-slope/ \
+R2_LOCAL_UPLOADER=http://127.0.0.1:5294 pnpm maps:upload
+```
+
+Back up the local directory first. This mode compares against the published
+manifest, rejects changes outside the selected directory and rejects removed
+objects. It uploads only that directory and an updated `release.json`, then
+updates the local inventory. Default publishing remains write-once. Afterward,
+purge that directory's URL prefix and the release manifest from Cloudflare's
+cache. Existing browser caches may still need a hard reload because the objects
+use immutable cache headers. Cache purging requires Zone Cache Purge permission;
+Wrangler's ordinary OAuth scopes do not provide it.
 
 CI keeps four small real-data elevation fixtures for decoding and display-offset
 regressions. Full source/output hash checks run with `check-map-release.ts`, and

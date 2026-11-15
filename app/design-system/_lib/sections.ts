@@ -11,6 +11,8 @@ export const sectionGroups: SectionGroup[] = [
       { id: "listening-effect", title: "LARA listening indicator" },
       { id: "map-overlay-surfaces", title: "Map overlay surfaces" },
       { id: "space-backdrop", title: "Illustrative space backdrop" },
+      { id: "fake-sensor-mode", title: "Fake sensor mode" },
+      { id: "map-layers-panel", title: "Map layers panel" },
       { id: "map-compass", title: "Map compass" },
       { id: "homebase-readout", title: "Archive readout" },
       { id: "homebase-history", title: "Observation history" },
@@ -18,6 +20,7 @@ export const sectionGroups: SectionGroup[] = [
       { id: "saved-simulation-report", title: "Saved simulation report" },
       { id: "mission-manifest", title: "Mission manifest" },
       { id: "camera-views", title: "Camera views" },
+      { id: "route-calculation", title: "Route calculation" },
       { id: "completion-transition", title: "Completion transition" },
     ],
   },
@@ -83,6 +86,7 @@ export const sectionGroups: SectionGroup[] = [
   {
     title: "Operational standards",
     sections: [
+      { id: "local-data-reset", title: "Local data reset" },
       { id: "lookalike-characters", title: "Lookalike characters" },
       { id: "typeface-roles", title: "Typeface roles" },
       { id: "text-size", title: "Text size" },
@@ -116,6 +120,8 @@ export const sectionGroups: SectionGroup[] = [
       { id: "expedition-alerts", title: "Return alert" },
       { id: "expedition-end", title: "End simulation" },
       { id: "expedition-report", title: "Report chart" },
+      { id: "lara-voice", title: "LARA voice states" },
+      { id: "lara-vitals", title: "Map vitals" },
     ],
   },
   {

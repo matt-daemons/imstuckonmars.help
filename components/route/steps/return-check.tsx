@@ -3,7 +3,7 @@
 import { useEffect, useEffectEvent, useState } from "react";
 
 import { useLaraContext } from "@/components/copilot/lara-context";
-import { fmtMin } from "@/components/copilot/lara-panel";
+import { fmtMin } from "@/components/copilot/lara-vitals";
 import type { ReturnAssessment } from "@/components/copilot/use-lara";
 import { MAX_DURATION_S } from "@/lib/mission/types";
 

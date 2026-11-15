@@ -7,6 +7,7 @@ import {
 
 import { cn } from "@/lib/utils";
 import { ExpeditionProvider } from "@/components/expedition/expedition-provider";
+import { LocalDataReset } from "@/components/debug/local-data-reset";
 
 import "./globals.css";
 
@@ -39,7 +40,9 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       )}
     >
       <body>
-        <ExpeditionProvider>{children}</ExpeditionProvider>
+        <LocalDataReset>
+          <ExpeditionProvider>{children}</ExpeditionProvider>
+        </LocalDataReset>
       </body>
     </html>
   );

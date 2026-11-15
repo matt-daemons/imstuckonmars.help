@@ -6,9 +6,25 @@ or Shift+D closes it. The shortcut ignores text fields, editable content,
 selection controls, composition, key repeat and extra modifiers. Other dialogs
 keep their keyboard focus; a map-opened mission console owns its own debug menu.
 
-Click the homebase marker or the **Mission dashboard** button on `/` to open the console over the existing map. Full map or Escape closes it without recreating the map or changing its simulation. `/mission` opens the overview directly, `/mission/experiments` opens the NASA experiment log, and `/mission/reports` opens saved simulation reports. There is no entry screen, mission creation, replay control or fault injection in this dashboard.
+Click the **Mission dashboard** button on `/` to open the console over the existing map. The homebase marker and label do not open it. Full map or Escape closes it without recreating the map or changing its simulation. `/mission` opens the overview directly, `/mission/experiments` opens the NASA experiment log, and `/mission/reports` opens saved simulation reports. There is no entry screen, mission creation, replay control or fault injection in this dashboard.
 
 **Simulation reports** reads immutable browser-local copies saved when a run completes or is ended. It retains the latest 20 reports independently of the six-hour mission session and subsequent plans. It does not recompute simulations, require a live session, or query NASA observations. Search by date, outcome or report ID; open the shared read-only report viewer to inspect and print. Storage/fetch failures are explicit, with retry. These reports are not synced to another browser or device and are removed when site data is cleared. The NASA experiment log remains separate and unchanged. Keyboard shortcuts 1/2/3 select Overview, Experiments and Reports outside form controls.
+
+**Remove report** deletes one saved browser copy after confirmation identifies its
+save time and report ID. Cancel leaves it intact. The list updates after the
+IndexedDB transaction completes; failures stay in the confirmation with retry.
+Removal does not change the server simulation or other reports. A small local
+removal marker prevents reloading the same finished mission from automatically
+saving that report again. The local-data reset clears those markers too.
+
+The hidden reset shortcut is **↑ ↑ ↓ ↓**, with no more than 1.5 seconds between keys.
+It opens a confirmation before deleting this browser's saved reports, training
+progress, wake-word preference, current-tab mission session and sidebar preference,
+then reloading. Wake-word listening returns to off.
+Cancel or Escape leaves data unchanged. Text entry, selection controls, open
+dialogs, held keys and modified keys do not activate it. Other tabs retain their
+mission sessions. Server missions, NASA data, unrelated storage and downloaded
+speech models are not deleted.
 
 ## Data connection
 
@@ -45,8 +61,11 @@ remain linked. Images do not become terrain statistics or base weather. Outside
 the acquired Arcadia bounds, or on image failure, show an unavailable message
 instead of relocating imagery. The main map camera, mission sidebar, verdict
 strip, routing, dust, sites and LARA remain independent. The dashboard shortcut
-sits above the map's lower-left attribution, clear of the top verdict strip and
-lower-right LARA launcher.
+sits beside the top-left sidebar toggle;
+the map's **Vitals and mission details** panel sits below it. That panel owns
+the simulated resource readouts and the explicitly labeled 20× simulation control.
+It retains the archived Gale radiation proxy warning; none of those readings moved
+into the read-only dashboard.
 
 Overview and Experiments are separate pages, with 1/2 shortcuts outside form controls. The experiments page lists all 23 runs through explicit pagination rather than a scrollbar. Available height determines the number of complete rows; resize and 200% zoom recompute the page size. Selecting a run shows derived output, rate, duration, energy and source notes. A short-screen results/notes switch and a handheld list/detail switch avoid clipping. Observation Zoom opens a full-screen inspector with chart zoom and separately paginated values/source views. Escape closes the inspector before closing the map dialog.
 

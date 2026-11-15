@@ -26,11 +26,13 @@
     "max_deg": 22.6
   },
   "percent_of_cells": {
+    "ge_1_deg": 8.69,
+    "ge_2_deg": 2.73,
+    "ge_5_deg": 0.4,
     "ge_10_deg": 0.04,
-    "ge_15_deg": 0.01,
     "ge_20_deg": 0
   },
-  "class_breaks_deg": [10, 15, 20],
+  "class_breaks_deg": [1, 2, 5, 10, 20],
   "caveats": [
     "200 m cells average out short steep slopes (crater walls, scarps, ridges narrower than a few hundred metres): use for drive-leg routing only, never for the final approach or the walking leg (use the 1 m HiRISE slope there).",
     "Real local slopes are steeper than this layer shows; treat a 200 m slope near the limit as a likely hazard.",

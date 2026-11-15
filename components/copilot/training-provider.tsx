@@ -19,7 +19,7 @@ import {
   type TrainingState,
 } from "@/lib/copilot/training";
 
-const STORAGE_KEY = "lara.training";
+import { TRAINING_STORAGE_KEY as STORAGE_KEY } from "@/lib/browser-data";
 /** `?training=reset` starts the checklist over, for example before a demo run. */
 const RESET_PARAM = "training";
 

@@ -10,7 +10,12 @@
     "verdict": "GO",
     "limiting_factor": null,
     "reasons": ["SAMPLE: all legs within flight rules."],
-    "margin": { "resource": "rover_battery", "value": 41, "limit": 20, "unit": "% at return" },
+    "margin": {
+      "resource": "rover_battery",
+      "value": 41,
+      "limit": 20,
+      "unit": "% after the hardest sol"
+    },
     "time_to_shelter_min": 39,
     "simulated": true,
     "source": "SAMPLE — hand-made for UI work, not a computed route"

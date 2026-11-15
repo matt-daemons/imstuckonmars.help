@@ -8,7 +8,7 @@ import hashlib
 import json
 import mimetypes
 import os
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 import subprocess
 import time
 import threading
@@ -23,6 +23,14 @@ root = Path(config["directory"])
 account = config["accountId"]
 bucket = config["bucket"]
 version = config["version"]
+replace_prefix = os.environ.get("MAP_REPLACE_PREFIX")
+if replace_prefix and (
+    not replace_prefix.endswith("/")
+    or PurePosixPath(replace_prefix).is_absolute()
+    or ".." in PurePosixPath(replace_prefix).parts
+    or replace_prefix == "/"
+):
+    raise SystemExit("Replacement prefix must be a relative directory ending in /.")
 token = os.environ.get("CLOUDFLARE_API_TOKEN")
 local_uploader = os.environ.get("R2_LOCAL_UPLOADER")
 if local_uploader and local_uploader != "http://127.0.0.1:5294":
@@ -135,7 +143,7 @@ def record_receipt(entry):
             receipt_file.write(json.dumps({"path": entry["path"], "sha256": entry["sha256"]}) + "\n")
 
 
-# A release prefix is write-once. Re-running is allowed only with identical bytes.
+# Write-once by default; explicit maintenance replacement is limited to one directory.
 release_path = root / "release.json"
 release = {
     "version": version,
@@ -144,20 +152,70 @@ release = {
     "objects": manifest,
 }
 inventory_path = root / "upload-inventory.json"
-if inventory_path.exists() and json.loads(inventory_path.read_text()) != release:
+if (
+    not replace_prefix
+    and inventory_path.exists()
+    and json.loads(inventory_path.read_text()) != release
+):
     raise SystemExit("Upload inventory changed. Choose a new version before publishing.")
-inventory_path.write_text(json.dumps(release, indent=2) + "\n")
+if not replace_prefix:
+    inventory_path.write_text(json.dumps(release, indent=2) + "\n")
 existing_url = config["publicOrigin"] + "/" + version + "/release.json"
+existing = None
 try:
     request = urllib.request.Request(existing_url, headers={"User-Agent": "ARES map publisher"})
     with urllib.request.urlopen(request, timeout=20) as response:
         existing = json.load(response)
-    if existing != release:
-        raise SystemExit("Release already exists with different bytes. Choose a new version.")
-    print("Identical release already published; no objects overwritten.")
 except urllib.error.HTTPError as error:
     if error.code != 404:
         raise
+
+if replace_prefix:
+    if existing is None:
+        raise SystemExit("Prefix replacement requires an existing published release.")
+    before = {entry["path"]: entry for entry in existing["objects"]}
+    after = {entry["path"]: entry for entry in manifest}
+    outside_before = {
+        key: value for key, value in before.items() if not key.startswith(replace_prefix)
+    }
+    outside_after = {
+        key: value for key, value in after.items() if not key.startswith(replace_prefix)
+    }
+    if outside_before != outside_after:
+        raise SystemExit("Refusing replacement: objects outside the selected prefix changed.")
+    if any(key.startswith(replace_prefix) and key not in after for key in before):
+        raise SystemExit("Prefix replacement cannot remove objects; publish a new version instead.")
+    selected = [entry for entry in manifest if entry["path"].startswith(replace_prefix)]
+    if not selected:
+        raise SystemExit("Replacement prefix contains no publishable objects.")
+    # The existing release validates unchanged objects. Force only the authorized prefix to upload.
+    receipts = {
+        key: value for key, value in receipts.items()
+        if not key.startswith(replace_prefix) and key != "release.json"
+    }
+    print(f"Replacing {len(selected)} objects under {version}/{replace_prefix}", flush=True)
+    with concurrent.futures.ThreadPoolExecutor(
+        max_workers=config.get("uploadWorkers", 8) if local_uploader else 8
+    ) as executor:
+        for completed, _ in enumerate(executor.map(publish, selected), start=1):
+            if completed % 100 == 0:
+                print(f"Uploaded {completed}/{len(selected)} replacement objects", flush=True)
+    release_path.write_text(json.dumps(release, indent=2) + "\n")
+    data = release_path.read_bytes()
+    publish({
+        "path": "release.json", "bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+    })
+    inventory_path.write_text(json.dumps(release, indent=2) + "\n")
+    print(
+        f"Replaced {len(selected)} objects and updated release.json; "
+        "purge the selected prefix and release.json."
+    )
+elif existing is not None:
+    if existing != release:
+        raise SystemExit("Release already exists with different bytes. Choose a new version.")
+    print("Identical release already published; no objects overwritten.")
+else:
     completed = 0
     with concurrent.futures.ThreadPoolExecutor(
         max_workers=config.get("uploadWorkers", 8) if local_uploader else 8

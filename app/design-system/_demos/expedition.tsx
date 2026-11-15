@@ -4,7 +4,8 @@ import { CircleXIcon, SquareIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ExpeditionGauge } from "@/components/expedition/expedition-hud";
 import { ReportChart } from "@/components/expedition/report-dialog";
-import { SavedReportCard } from "@/components/homebase/simulation-reports";
+import { SavedReportCard, RemoveReportDialog } from "@/components/homebase/simulation-reports";
+import { useState } from "react";
 import { MissionManifest } from "@/components/expedition/mission-manifest";
 import { CameraViewMenu } from "@/components/map/mission-view";
 import { CompletionBanner } from "@/components/expedition/completion-notice";
@@ -16,6 +17,7 @@ import { buildExpeditionConfig } from "@/lib/mission/expedition";
 import type { MissionReport } from "@/lib/mission/client";
 import { Section } from "../_components/section";
 import "@/components/expedition/expedition.css";
+import { LaraDemos } from "./lara";
 
 const config = buildExpeditionConfig(
   {
@@ -88,6 +90,7 @@ const report: MissionReport = {
 };
 
 export function ExpeditionComponents() {
+  const [removeOpen, setRemoveOpen] = useState(false);
   return (
     <>
       <Section id="mission-manifest" title="Mission manifest" className="flex-col">
@@ -145,13 +148,25 @@ export function ExpeditionComponents() {
       </Section>
       <Section id="saved-simulation-report" title="Saved simulation report" className="flex-col">
         <p>
-          Read-only browser history, separate from NASA experiments. Synthetic specimen; not saved
-          to the report archive.
+          Browser history, separate from NASA experiments. Synthetic specimen; preview controls do
+          not read or change the report archive.
         </p>
         <div className="homebase-dashboard hb-component-demo w-full">
           <SavedReportCard
             saved={{ id: "fixture:0", saved_at_ms: Date.UTC(2026, 10, 15, 12), report }}
             onOpen={() => {}}
+            onRemove={() => setRemoveOpen(true)}
+          />
+          <RemoveReportDialog
+            saved={
+              removeOpen
+                ? { id: "fixture:0", saved_at_ms: Date.UTC(2026, 10, 15, 12), report }
+                : null
+            }
+            busy={false}
+            error={null}
+            onCancel={() => setRemoveOpen(false)}
+            onRemove={() => setRemoveOpen(false)}
           />
         </div>
       </Section>
@@ -225,6 +240,7 @@ export function ExpeditionComponents() {
         </p>
         <ReportChart report={report} />
       </Section>
+      <LaraDemos />
     </>
   );
 }

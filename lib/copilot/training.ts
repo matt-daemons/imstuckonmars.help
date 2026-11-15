@@ -36,8 +36,8 @@ export const TRAINING_ITEMS: TrainingItem[] = [
   },
   {
     id: "browse_destinations",
-    title: "Browse the water-ice sites",
-    hint: "open step 2 to see the water-ice sites. You can also ask me to show the destinations.",
+    title: "Browse the destinations",
+    hint: "open step 2 to see where you can go: the water-ice sites by rover, or any point on foot. You can also ask me to show the destinations.",
     required: true,
   },
   {

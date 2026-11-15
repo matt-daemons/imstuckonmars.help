@@ -27,9 +27,9 @@ import type { ExpeditionPlan } from "@/lib/mission/expedition";
 import type { ReplanOption } from "@/lib/mission/types";
 import { usePathname } from "next/navigation";
 import { reportKey, simulationFinished } from "@/lib/mission/completion";
-import { saveReport } from "@/lib/mission/report-history";
+import { REPORT_REMOVED, saveReport } from "@/lib/mission/report-history";
 
-const STORAGE_KEY = "imstuckonmars.expedition";
+import { MISSION_STORAGE_KEY as STORAGE_KEY } from "@/lib/browser-data";
 const PLAYING_POLL_MS = 1000;
 const IDLE_POLL_MS = 10_000;
 const OUTLOOK_PLAYING_MS = 4000;
@@ -79,7 +79,9 @@ function useExpeditionState() {
     setReportOpen(open);
   }, []);
   const [completedReport, setCompletedReport] = useState<MissionReport | null>(null);
-  const [reportSave, setReportSave] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const [reportSave, setReportSave] = useState<"idle" | "saving" | "saved" | "removed" | "error">(
+    "idle",
+  );
   const [reportSaveError, setReportSaveError] = useState<string | null>(null);
   const reportJob = useRef<{ key: string; promise: Promise<void> } | null>(null);
   const savedKey = useRef<string | null>(null);
@@ -121,9 +123,9 @@ function useExpeditionState() {
         if (reportKey(report) !== key)
           throw new Error("The run changed before its report could be saved");
         setCompletedReport(report);
-        await saveReport(report);
+        const saved = await saveReport(report);
         savedKey.current = key;
-        setReportSave("saved");
+        setReportSave(saved ? "saved" : "removed");
       } catch (error) {
         setReportSave("error");
         const message = error instanceof Error ? error.message : "Report storage unavailable";
@@ -137,6 +139,15 @@ function useExpeditionState() {
     })();
     reportJob.current = { key, promise };
     return promise;
+  }, []);
+
+  useEffect(() => {
+    const removed = (event: Event) => {
+      if (event instanceof CustomEvent && event.detail === savedKey.current)
+        setReportSave("removed");
+    };
+    window.addEventListener(REPORT_REMOVED, removed);
+    return () => window.removeEventListener(REPORT_REMOVED, removed);
   }, []);
 
   const completionKey = finished && snapshot ? reportKey(snapshot) : null;
