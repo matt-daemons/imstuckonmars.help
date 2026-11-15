@@ -63,11 +63,10 @@ export function failureMessages(maxSlopeDeg: number, outsideGrid: string): Recor
   };
 }
 
-/** What the status slot says when the terrain fails to load, when a leg fails, and under a verdict. */
+/** What the status slot says when the terrain fails to load and when a leg fails. */
 export interface StatusCopy {
   loadFailed: string;
   failures: Record<Failure, string>;
-  notChecked: string;
 }
 
 const WALK_COPY: StatusCopy = {
@@ -76,23 +75,25 @@ const WALK_COPY: StatusCopy = {
     MAX_SLOPE_DEG,
     "Start or end is outside the elevation grid around the habitat. Pick a point inside it.",
   ),
-  notChecked: "Not checked: radiation, dust, daylight.",
 };
 
 /** The walk's verdict, why no route was found, or the loading line. */
 export function WalkStatus({
   plan,
   check,
+  notChecked,
   loadFailed,
 }: {
   plan: Plan | null;
   check: EvaVerdict | null;
+  notChecked: string;
   loadFailed: boolean;
 }) {
   return (
     <StatusLine
       plan={plan}
       check={check}
+      notChecked={notChecked}
       loadFailed={loadFailed}
       pending="Loading elevation…"
       copy={WALK_COPY}
@@ -104,12 +105,14 @@ export function WalkStatus({
 export function StatusLine({
   plan,
   check,
+  notChecked,
   loadFailed,
   pending,
   copy,
 }: {
   plan: { outbound: PlannedPath; back: PlannedPath } | null;
   check: EvaVerdict<string> | null;
+  notChecked: string;
   loadFailed: boolean;
   pending: string;
   copy: StatusCopy;
@@ -130,10 +133,10 @@ export function StatusLine({
       />
     );
   }
-  return <VerdictAlert check={check} notChecked={copy.notChecked} />;
+  return <VerdictAlert check={check} notChecked={notChecked} />;
 }
 
-/** The verdict with its reasons, for inside a status slot. */
+/** The verdict with its reasons and the rules left unchecked ("" for none), for inside a status slot. */
 export function VerdictAlert({
   check,
   notChecked,
@@ -151,7 +154,7 @@ export function VerdictAlert({
         {check.reasons.map((reason) => (
           <p key={reason}>{reason}</p>
         ))}
-        <p>{notChecked}</p>
+        {notChecked && <p>{notChecked}</p>}
       </AlertDescription>
     </Alert>
   );
@@ -179,7 +182,10 @@ export function searchLine(
 export function WalkAssumptions({ plan }: { plan: Plan | null }) {
   return (
     <>
-      <p>Checks slope, walk-back distance and suit time only. The start point counts as base.</p>
+      <p>
+        Checks slope, walk-back distance and suit time, plus the solar alert, radiation, dust and
+        daylight when they are known. The start point counts as base.
+      </p>
       <p>Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.</p>
       <p>
         Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit, assumed

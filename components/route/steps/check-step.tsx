@@ -18,6 +18,8 @@ import {
   type ReadoutItem,
 } from "@/components/map/route-result";
 import { fitPoints } from "@/components/route/camera";
+import { notCheckedText, tripWithStorms, walkWithStorms } from "@/components/route/conditions";
+import { useConditions } from "@/components/route/conditions-provider";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import {
   Accordion,
@@ -25,10 +27,10 @@ import {
   AccordionPanel,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import { evaluateRoute } from "@/lib/flight-rules/evaluate";
 
 import { splitHeadline } from "./headline";
 import { ReturnCheck } from "./return-check";
+import { StormDrill } from "./storm-drill";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
 const WALK_HEADLINE = ["slope", "time", "distance"];
@@ -37,21 +39,39 @@ const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 /** Step ③: the verdict and its reasons, three headline numbers, then the rest one click down. */
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey, destination } = useRoutePlan();
+  const { conditions } = useConditions();
   if (inputs.mission === "walking") {
     const summary = walk.plan?.summary ?? null;
-    const check = summary && evaluateRoute(summary);
+    const check = summary && walkWithStorms(summary, conditions);
+    const notChecked = check ? notCheckedText(check.not_checked, conditions) : "";
     return (
       <CheckLayout
-        status={<WalkStatus plan={walk.plan} check={check} loadFailed={walk.loadFailed} />}
+        status={
+          <WalkStatus
+            plan={walk.plan}
+            check={check}
+            notChecked={notChecked}
+            loadFailed={walk.loadFailed}
+          />
+        }
         readouts={summary && check ? walkReadouts(summary, check) : []}
         headline={WALK_HEADLINE}
         assumptions={<WalkAssumptions plan={walk.plan} />}
       />
     );
   }
+  const trip = journey.plan && tripWithStorms(journey.plan, conditions);
+  const notChecked = trip ? notCheckedText(trip.not_checked, conditions) : "";
   return (
     <CheckLayout
-      status={<DriveWalkStatus journey={journey} destination={destination} />}
+      status={
+        <DriveWalkStatus
+          journey={journey}
+          destination={destination}
+          check={trip}
+          notChecked={notChecked}
+        />
+      }
       readouts={driveWalkReadouts(journey.plan)}
       headline={DRIVE_WALK_HEADLINE}
       fit={<FitButtons journey={journey} onFit={(points) => fitPoints(map, points)} />}
@@ -101,6 +121,7 @@ function CheckLayout({
           <AccordionTrigger>Assumptions and data</AccordionTrigger>
           <AccordionPanel className="flex flex-col gap-1 text-xs">{assumptions}</AccordionPanel>
         </AccordionItem>
+        <StormDrill />
       </Accordion>
     </div>
   );

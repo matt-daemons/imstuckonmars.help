@@ -1,4 +1,6 @@
-import type { EvaPlan } from "@/lib/flight-rules/evaluate";
+import type { EvaPlan, KnownConditions } from "@/lib/flight-rules/evaluate";
+import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
+import type { SolarAlertLevel } from "@/lib/flight-rules/solar-alert";
 import { walkMargins, type Margin } from "@/lib/mars/drive-walk";
 import type { RouteSummary } from "@/lib/mars/types";
 
@@ -40,17 +42,56 @@ const RESOURCES: Partial<Record<string, Resource>> = {
   rover_reserve: { label: "Drive-back reserve", unit: " km", digits: 0, floor: true },
   rover_range: { label: "Rover range", unit: " km", digits: 0 },
   trip_length: { label: "Trip length", unit: " sols", digits: 0 },
+  dose_rate: { label: "Dose rate", unit: " µGy/h", digits: 1 },
+  dust: { label: "Dust opacity", unit: "", digits: 2 },
+  // Minutes until sunset must stay above the walk's minutes with margin.
+  daylight: { label: "Until sunset", unit: " min", digits: 0, floor: true },
 };
+
+/** What the strip measures: a margin, or the solar alert's level, which has no number. */
+export type Limit = RouteSummary["margin"] | SolarAlertLevel;
+
+/**
+ * The limit to show when a storm rule limits the verdict, or null when a route or rover rule does,
+ * whose margin is measured as before.
+ */
+export function stormLimit(
+  factor: string | null,
+  conditions: KnownConditions,
+  route: EvaPlan["route"],
+): Limit | null {
+  const { solar_alert_level, radiation_dose_rate, dust_opacity, minutes_until_sunset } = conditions;
+  const { dose_rate, dust, suit_supply } = FLIGHT_RULES;
+  if (factor === "radiation") return solar_alert_level;
+  if (factor === "dose_rate" && radiation_dose_rate !== null) {
+    const limit = dose_rate.no_go_at_micrograys_per_hour;
+    return { resource: "dose_rate", value: radiation_dose_rate, limit, unit: "µGy/h" };
+  }
+  if (factor === "dust" && dust_opacity !== null) {
+    return { resource: "dust", value: dust_opacity, limit: dust.no_go_at_opacity, unit: "" };
+  }
+  if (factor === "daylight" && minutes_until_sunset !== null) {
+    // As the daylight rule counts it: the walk with its terrain margin must end before sunset.
+    const walkMinutes = route.est_time_min * suit_supply.time_margin;
+    return { resource: "daylight", value: minutes_until_sunset, limit: walkMinutes, unit: "min" };
+  }
+  return null;
+}
 
 /**
  * The limiting constraint, its margin to the no-go limit (negative once past it), and time to
  * shelter, or back to the start when a walk starts away from the habitat.
  */
 export function stripFields(
-  margin: RouteSummary["margin"],
+  margin: Limit,
   shelterMin: number,
   shelterLabel: "Shelter" | "Back to start" = "Shelter",
 ): StripField[] {
+  const shelter = { label: shelterLabel, value: `${Math.round(shelterMin)} min` };
+  if (typeof margin === "string") {
+    const level = `${margin[0].toUpperCase()}${margin.slice(1)}`;
+    return [{ label: "Solar alert", value: level }, shelter];
+  }
   // A resource added to the planner later still shows, under its id and unit.
   const { label, unit, digits, floor } = RESOURCES[margin.resource] ?? {
     label: margin.resource,
@@ -59,11 +100,7 @@ export function stripFields(
   };
   const spare = floor ? margin.value - margin.limit : margin.limit - margin.value;
   const show = (value: number) => `${value.toFixed(digits).replace("-", "−")}${unit}`;
-  return [
-    { label, value: show(margin.value) },
-    { label: "Margin", value: show(spare) },
-    { label: shelterLabel, value: `${Math.round(shelterMin)} min` },
-  ];
+  return [{ label, value: show(margin.value) }, { label: "Margin", value: show(spare) }, shelter];
 }
 
 /** What the strip says without a verdict: the terrain failed, a plan is on its way, or no route. */

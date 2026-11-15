@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { Map } from "maplibre-gl";
+import { useConditions } from "@/components/route/conditions-provider";
+import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -14,6 +16,7 @@ import {
 import {
   DUST_FIELDS,
   DUST_RELEASE,
+  dustValue,
   loadDustSimulation,
   nextDustFrame,
   type DustField,
@@ -44,6 +47,8 @@ export function DustPlayback({ map }: { map: Map }) {
   const [interval, setIntervalMs] = useState(1000);
   const simulation = load.kind === "ready" ? load.simulation : null;
   const count = simulation?.manifest.time.elapsedSols.length ?? 0;
+  const { base } = useRoutePlan();
+  const { setSimulatedDust } = useConditions();
 
   useEffect(() => {
     if (attempt === 0) return;
@@ -81,6 +86,14 @@ export function DustPlayback({ map }: { map: Map }) {
     else hideDustSimulation(map);
   }, [map, simulation, visible, frame, field]);
   useEffect(() => () => hideDustSimulation(map), [map]);
+  // The route check reads the opacity at the habitat only while the dust is shown, so no old frame lingers.
+  useEffect(() => {
+    if (!simulation || !visible) return;
+    const opacity = dustValue(simulation, frame, "tau_current", base[0], base[1]);
+    // Rounded to the stored 0.001 step, so the verdict's reason prints no floating-point tail.
+    setSimulatedDust(opacity === null ? null : Number(opacity.toFixed(3)));
+    return () => setSimulatedDust(null);
+  }, [simulation, visible, frame, base, setSimulatedDust]);
   useEffect(() => {
     const pause = () => {
       if (document.hidden) setPlaying(false);
