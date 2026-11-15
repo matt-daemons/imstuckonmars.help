@@ -181,7 +181,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
 - **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
 - **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
-- **NASA DONKI** space-weather API: https://kauai.ccmc.gsfc.nasa.gov/DONKI/ (via api.nasa.gov).
+- **NASA DONKI** space-weather API: https://kauai.ccmc.gsfc.nasa.gov/DONKI/ — the app calls CCMC's DONKI API directly (`https://ccmc.gsfc.nasa.gov/DONKI-API/get/{FLR,SEP,WSAEnlilSimulations}`, no key; `/api/space-weather`, cached 15 min), because api.nasa.gov's flare proxy returned 404 on Sun Nov 15.
 - **Mars Climate Database** (if used): LMD/CNES/ESA — Forget et al. 1999.
 
 ### Papers
