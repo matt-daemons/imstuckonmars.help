@@ -283,6 +283,19 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         layerIds: ["stops", "route"],
       },
       {
+        id: "fake-sensors",
+        title: "Fake data mode (future sensors)",
+        kind: "simulated",
+        credit: "Invented by the LARA team",
+        detail: "580 fictional stations over 7 sols. Off by default, under Debug",
+        use: "Shows what a future surface sensor network could add to the map.",
+        caveats: [
+          "Invented, bounded equations. Not calibrated Mars models and not NASA observations.",
+          "Never enters NASA datasets, the mission database, route masks or route planning.",
+          "Storm intensity is an illustrative index, not dust opacity. Radiation is not crew dose.",
+        ],
+      },
+      {
         id: "habitat",
         title: "Habitat and vehicles",
         kind: "illustration",

@@ -21,7 +21,7 @@ export interface RadiationSeries {
 }
 
 export const RADIATION_PROXY =
-  "Curiosity RAD at Gale crater, about 3,800 km from Jezero. Not measured at Jezero or the hypothetical base.";
+  "Curiosity RAD at Gale crater, about 3,900 km from the hypothetical Arcadia Planitia base. Not measured at the base.";
 export const RADIATION_LIMITATIONS = [
   "Absorbed dose rate in the detector material (silicon or tissue-equivalent plastic), not dose equivalent or crew exposure",
   "Historical archive observations aligned by UTC, not live space weather",
