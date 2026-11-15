@@ -15,7 +15,8 @@
   ],
   "vars": {
     "TELEMETRY_RELEASE": "nasa-v1",
-    "DIAGNOSTICS_MODEL": "",
+    "DIAGNOSTICS_PROVIDER": "openrouter",
+    "DIAGNOSTICS_MODEL": "openai/gpt-4.1-mini",
   },
   "observability": { "enabled": true },
   "assets": {

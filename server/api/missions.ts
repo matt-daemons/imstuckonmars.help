@@ -106,6 +106,7 @@ missions.post("/:id/diagnostics", async (c) => {
   const explanation = await aiExplanation({
     key: c.env.DIAGNOSTICS_API_KEY,
     model: c.env.DIAGNOSTICS_MODEL,
+    provider: c.env.DIAGNOSTICS_PROVIDER,
     question: text(body.question, "question", 2000),
     read: diagnosticTools(db, result),
   });

@@ -1,5 +1,11 @@
 # Create a local .dev.vars with your own randomly generated creation/diagnostic access key.
 # Never expose this key to a public browser client. Session capabilities are returned at creation.
 MISSION_WRITE_KEY=
-# Optional server-side OpenAI key. Set DIAGNOSTICS_MODEL in Wrangler vars to enable AI mode.
+# Optional server-side key for DIAGNOSTICS_PROVIDER (openrouter or openai).
+# Set DIAGNOSTICS_MODEL in Wrangler vars or .dev.vars to enable AI mode.
 DIAGNOSTICS_API_KEY=
+# Optional overrides for the defaults in wrangler.jsonc.
+DIAGNOSTICS_PROVIDER=openrouter
+DIAGNOSTICS_MODEL=openai/gpt-4.1-mini
+# Public browser token. Also set this in .env.local for client builds.
+NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN=

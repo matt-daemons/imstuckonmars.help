@@ -139,6 +139,7 @@ interface Message {
 export async function aiExplanation(options: {
   key?: string;
   model?: string;
+  provider?: string;
   question: string;
   read: (name: DiagnosticTool) => Promise<unknown>;
   fetcher?: typeof fetch;
@@ -149,6 +150,17 @@ export async function aiExplanation(options: {
       "AI explanations require server DIAGNOSTICS_API_KEY and DIAGNOSTICS_MODEL; deterministic diagnostics remain available",
       503,
     );
+  const provider = options.provider ?? "openai";
+  if (provider !== "openai" && provider !== "openrouter")
+    throw new MissionError(
+      "ai_not_configured",
+      "Set DIAGNOSTICS_PROVIDER to openai or openrouter; deterministic diagnostics remain available",
+      503,
+    );
+  const endpoint =
+    provider === "openrouter"
+      ? "https://openrouter.ai/api/v1/chat/completions"
+      : "https://api.openai.com/v1/chat/completions";
   const messages: Message[] = [
     {
       role: "system",
@@ -171,22 +183,20 @@ export async function aiExplanation(options: {
   const signal = AbortSignal.timeout(45000);
   try {
     for (let round = 0; round < 3; round++) {
-      const response = await (options.fetcher ?? fetch)(
-        "https://api.openai.com/v1/chat/completions",
-        {
-          method: "POST",
-          signal,
-          headers: { Authorization: `Bearer ${options.key}`, "Content-Type": "application/json" },
-          body: JSON.stringify({
-            model: options.model,
-            messages,
-            tools,
-            parallel_tool_calls: false,
-            tool_choice: round === 0 ? "required" : round === 2 ? "none" : "auto",
-            max_completion_tokens: 1200,
-          }),
-        },
-      );
+      const response = await (options.fetcher ?? fetch)(endpoint, {
+        method: "POST",
+        redirect: "error",
+        signal,
+        headers: { Authorization: `Bearer ${options.key}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          model: options.model,
+          messages,
+          tools,
+          parallel_tool_calls: false,
+          tool_choice: round === 0 ? "required" : round === 2 ? "none" : "auto",
+          ...(provider === "openrouter" ? { max_tokens: 1200 } : { max_completion_tokens: 1200 }),
+        }),
+      });
       if (!response.ok) throw new Error("provider_request_failed");
       const body = await response.text();
       if (body.length > 65536) throw new Error("provider_response_too_large");
