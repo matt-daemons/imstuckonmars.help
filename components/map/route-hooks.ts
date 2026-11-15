@@ -53,6 +53,8 @@ export interface DriveWalkInputs {
   power: PowerSource;
   samplingMin: number;
   zones: NoGoZone[];
+  /** Also plan the shortest trip, for step ③'s comparison. */
+  compare: boolean;
 }
 
 export type DriveWalk = ReturnType<typeof useDriveWalk>;
@@ -61,10 +63,11 @@ export type DriveWalk = ReturnType<typeof useDriveWalk>;
  * Loads the rover strip and the destination's walk grid, then plans the drive + walk in a deferred
  * render: the panel first shows that it is planning, then A* runs over the rover strip (in Chrome,
  * about 0.3 s for the nearest site and 3.7 s for the farthest) and over the site. The plan is null
- * until both terrains are in and while a new plan is being made.
+ * until both terrains are in and while a new plan is being made. The shortest trip is planned the
+ * same way, only while compare is on, so it never slows planning elsewhere.
  */
 export function useDriveWalk(inputs: DriveWalkInputs, enabled: boolean) {
-  const { start, destination, power, samplingMin, zones } = inputs;
+  const { start, destination, power, samplingMin, zones, compare } = inputs;
   const drive = useLoadedGrid(loadDriveGrid, enabled);
   const site = useMemo(
     () =>
@@ -118,13 +121,36 @@ export function useDriveWalk(inputs: DriveWalkInputs, enabled: boolean) {
       ),
     [request, slope, walls],
   );
+  // Deferred like the request, so turning the comparison on keeps the current plan on screen.
+  const comparing = useDeferredValue(compare);
+  const shortest = useMemo(
+    () =>
+      comparing && request && slope && walls
+        ? planDriveWalk(
+            request.driveGrid,
+            slope,
+            walls,
+            withZones(request.siteGrid, request.zones),
+            request.site,
+            request.start,
+            request.power,
+            request.samplingMin,
+            "shortest",
+          )
+        : null,
+    [comparing, request, slope, walls],
+  );
+  const current = request === latest;
   return {
     driveGrid: drive.grid,
     driveFailed: drive.failed,
+    /** Slope of the rover strip, for the drive's profile; null until a trip is planned. */
+    driveSlope: slope,
     siteGrid: siteGrid.grid,
     siteFailed: siteGrid.failed,
     // While a new trip is being planned the old one is stale, so neither the panel nor the map shows it.
-    plan: request === latest ? plan : null,
+    plan: current ? plan : null,
+    shortest: current && comparing === compare ? shortest : null,
   };
 }
 

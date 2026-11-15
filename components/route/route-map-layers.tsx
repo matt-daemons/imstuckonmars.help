@@ -1,7 +1,7 @@
 "use client";
 
 import type { Map as MapLibreMap } from "maplibre-gl";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 import {
   boulderFeatures,
@@ -23,7 +23,7 @@ import { useRoutePlan } from "./route-plan-provider";
  */
 export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey } = useRoutePlan();
-  const { mission, start, end, zones } = inputs;
+  const { mission, start, end, zones, showShortest } = inputs;
 
   useEffect(() => {
     if (!map) return;
@@ -53,6 +53,14 @@ export function RouteMapLayers({ map }: { map: MapLibreMap | null }) {
     () => setData(map, "boulders", boulders ? boulderFeatures(boulders) : []),
     [map, boulders],
   );
+  // The shortest route's lines, only while the operator compares it on the map.
+  const shortest = useMemo(() => {
+    if (!showShortest) return [];
+    if (mission === "walking") return walk.shortest ? routeFeatures(walk.shortest) : [];
+    const lines = journey.shortest?.collection?.features ?? [];
+    return lines.filter((feature) => feature.geometry.type === "LineString");
+  }, [showShortest, mission, walk.shortest, journey.shortest]);
+  useEffect(() => setData(map, "shortest-route", shortest), [map, shortest]);
   useEffect(() => setData(map, "no-go-zones", zones.map(zoneFeature)), [map, zones]);
   useEffect(() => setData(map, "route-ends", endFeatures(start, end)), [map, start, end]);
 

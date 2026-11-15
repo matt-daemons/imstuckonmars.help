@@ -3,7 +3,14 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 /** The key to the route on the map. Swatches use the same tokens as the map layers; the words carry the meaning. */
-export function RouteLegend({ mode }: { mode: "walking" | "drive-walk" }) {
+export function RouteLegend({
+  mode,
+  shortest,
+}: {
+  mode: "walking" | "drive-walk";
+  /** The shortest route is drawn too, for comparison. */
+  shortest: boolean;
+}) {
   return (
     <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
       {mode === "walking" ? (
@@ -23,6 +30,11 @@ export function RouteLegend({ mode }: { mode: "walking" | "drive-walk" }) {
             Boulder (unverified)
           </LegendItem>
         </>
+      )}
+      {shortest && (
+        <LegendItem swatch="w-4 border-t border-dashed border-muted-foreground">
+          Shortest route (thin, grey)
+        </LegendItem>
       )}
       <LegendItem swatch="size-3 bg-destructive">No-go zone</LegendItem>
     </div>

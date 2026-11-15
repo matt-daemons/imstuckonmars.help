@@ -4,15 +4,24 @@ import { nearestFirst } from "@/components/map/drive-controls";
 import { useDriveWalk, useLoadedGrid, type DriveWalk } from "@/components/map/route-hooks";
 import type { Plan } from "@/components/map/route-layers";
 import type { SitePoi } from "@/components/map/scene-panel";
+import { gentleWalkCost } from "@/lib/mars/drive-walk";
 import { loadBaseGrid } from "@/lib/mars/load-route-grid";
+import type { RouteGrid } from "@/lib/mars/route-grid";
 import { planWalk, slopeDegrees, wallMask } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 import type { RoutePlanInputs } from "./route-plan";
 
 export interface RoutePlanResult {
-  /** The walk from start to end and back, null until the elevation grid is in. */
-  walk: { plan: Plan | null; loadFailed: boolean };
+  walk: {
+    /** The walk from start to end and back on gentle ground, null until the elevation grid is in. */
+    plan: Plan | null;
+    /** The shortest walk within the same walls, planned only while routes are compared. */
+    shortest: Plan | null;
+    /** The grid both walks were planned on, for their profiles. */
+    terrain: { grid: RouteGrid; slope: Float32Array } | null;
+    loadFailed: boolean;
+  };
   /** The drive + walk; it loads and plans only while that mission is chosen. */
   journey: DriveWalk;
   /** The sites, nearest to the base first. */
@@ -30,22 +39,36 @@ export function useRoutePlanResult(
   base: LngLat,
   sites: SitePoi[],
 ): RoutePlanResult {
-  const { mission, start, end, power, samplingMin, zones } = inputs;
+  const { mission, start, end, power, samplingMin, zones, step, showShortest } = inputs;
   const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
   const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
   const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
+  // The shortest route is only for comparing, so it is planned only while step ③ or the map shows it.
+  const compare = step === "check" || showShortest;
 
   const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
   const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);
   const plan = useMemo(
-    () => grid && slope && walls && planWalk(grid, slope, walls, start, end),
+    () => grid && slope && walls && planWalk(grid, slope, walls, start, end, gentleWalkCost(slope)),
     [grid, slope, walls, start, end],
   );
+  const walkCompared = compare && mission === "walking";
+  const shortest = useMemo(
+    () =>
+      walkCompared && grid && slope && walls ? planWalk(grid, slope, walls, start, end) : null,
+    [walkCompared, grid, slope, walls, start, end],
+  );
+  const terrain = useMemo(() => (grid && slope ? { grid, slope } : null), [grid, slope]);
   const journey = useDriveWalk(
-    { start, destination, power, samplingMin, zones },
+    { start, destination, power, samplingMin, zones, compare },
     mission === "drive-walk",
   );
-  return { walk: { plan, loadFailed }, journey, destinations, destination };
+  return {
+    walk: { plan, shortest, terrain, loadFailed },
+    journey,
+    destinations,
+    destination,
+  };
 }
 
 export function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {

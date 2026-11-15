@@ -59,8 +59,9 @@ export function planDrive(
   base: LngLat,
   target: LngLat,
   power: PowerSource,
+  cost: StepCostModel = DRIVING_COST, // DISTANCE_COST plans the shortest drive, for comparison
 ): { outbound: PlannedPath; back: PlannedPath; summary: DriveSummary | null } {
-  const options = { maxSlopeDeg: ROVER_RULES.slope.no_go_above_degrees, cost: DRIVING_COST };
+  const options = { maxSlopeDeg: ROVER_RULES.slope.no_go_above_degrees, cost };
   const outbound = findPath(grid, slope, walls, base, target, options);
   const back = findPath(grid, slope, walls, target, base, options);
   if (outbound.status !== "ok" || back.status !== "ok") return { outbound, back, summary: null };
