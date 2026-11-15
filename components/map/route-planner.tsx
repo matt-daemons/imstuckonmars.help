@@ -125,6 +125,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     for (const id of SOURCES) map.addSource(id, { type: "geojson", data: collection([]) });
     for (const layer of LAYERS) map.addLayer(layer);
     return () => {
+      if (!map.getStyle()) return; // the parent already called map.remove()
       for (const layer of LAYERS) if (map.getLayer(layer.id)) map.removeLayer(layer.id);
       for (const id of SOURCES) if (map.getSource(id)) map.removeSource(id);
     };
@@ -156,10 +157,16 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     };
   }, [map, mode]);
 
+  // A draft with fewer than 3 corners is dropped without adding a zone.
   function finishZone() {
-    zonesDrawn.current += 1;
-    const n = zonesDrawn.current;
-    setZones((current) => [...current, { id: `zone-${n}`, name: `No-go zone ${n}`, ring: draft }]);
+    if (draft.length >= 3) {
+      zonesDrawn.current += 1;
+      const n = zonesDrawn.current;
+      setZones((current) => [
+        ...current,
+        { id: `zone-${n}`, name: `No-go zone ${n}`, ring: draft },
+      ]);
+    }
     setDraft([]);
     setMode(null);
   }
@@ -186,7 +193,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
         {modeButton("start", "Set start")}
         {modeButton("end", "Set end")}
         {modeButton("zone", "Draw no-go zone")}
-        <Button size="xs" variant="outline" disabled={draft.length < 3} onClick={finishZone}>
+        <Button size="xs" variant="outline" onClick={finishZone}>
           Finish zone
         </Button>
         <Button size="xs" variant="outline" onClick={clearZones}>
