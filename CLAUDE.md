@@ -271,7 +271,10 @@ Atkinson Hyperlegible Next · IBM Plex Sans Condensed · JetBrains Mono (all SIL
   **Role B ASSUMPTIONS** kept in the pipelines (adding keys to `config.yaml` would break `config.test.ts`). **No published NASA limit exists** for
   suited walking over rocks or roughness (xEVA ConOps only gives 20° slope, ~2 km/h, 2 km walk-back). Nearest sourced figures: Apollo LRV ground
   clearance ~35–36 cm (NASA NSSDC); MER: < 1 % of area covered by rocks > 0.5 m high; InSight: rock abundance < 10 %. Agree with the team (shared role A).
-- Roughness tiles not yet on R2; neither layer is in `sites:package`, the Scene panel or `manifest.json` yet (after MapLibre port).
+- ✅ Roughness is now in `sites:package` as **`sites-v2`** (overnight, `b714f13`): `data/map-assets/sites-v2/` = sites-v1 + `sites/<dtm>/roughness/` tiles
+  - `roughness/<HiRISE ID>_roughness.tif` COGs; **718 MB, 27,856 files**. Upload config `pipelines/sites-release-v2.json` (output limit raised to
+    850 MB). ⏳ **Not uploaded** — M uploads (`MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload`) and then switches
+    `SITE_DATA_ROOT` to `…/sites-v2`. Not yet in the Scene panel or `manifest.json`.
 
 **Thermal inertia ✅ (Sun Nov 15):** `pnpm pipe:thermal-inertia` (`pipelines/stable/thermal-inertia.ts`, ~4 min) reads THEMIS quantitative TI
 (100 m) over HTTP for 170–196°E, 43–48°N. Outputs: `data/processed/thermal-inertia/thermal-inertia.tif` (Int16 TI, nodata −9999, **lon 0..360 °E**
@@ -286,17 +289,34 @@ JSON also carries `caveats[]` (incomplete coverage, ±20 %, top few cm only, 100
 Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/suits); firmest ground is farthest away.
 Not yet wired into the map (MapLibre port has landed, so this is unblocked) or into C's cost surface.
 
-**Next step for Role B:** confirm roughness/rock categories with the team → add roughness to `sites:package` + R2 → **SWIM** (still down, HTTP 523) → wire TI + roughness into
-map after M's port (show coverage + caveats) → geology.
+**Overnight data run (Sun Nov 15, Claude, local commits on `main`, not pushed)** — report: `docs/agent-briefs/overnight-data-REPORT.md` (uncommitted).
+
+- ✅ **References** (`c47627a`): all §10 "(verify)" items checked; Golombek et al. 2012 DOI doesn't resolve (use the journal URL). Hassler 2014 page still open.
+- ✅ **Regional slope, drive leg** (`8023434`): `pnpm pipe:regional-slope` (~30 s) → MOLA/HRSC 200 m → local metre grid (eqc, lat_ts 45.5°) →
+  `gdaldem slope`. COG `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, nodata −9999, **lon 0..360 °E**, 172.07–194.35 °E,
+  44.05–46.41 °N, 6602 × 698), tiles `public/data/regional-slope/` z5–10 (both gitignored, ~2 MB + 156 KB), summary
+  `public/data/processed/regional-slope.json`. **Mean 0.45°; ≥ 10° 0.04 %, ≥ 15° 0.01 %, ≥ 20° 0 %** — the 200 m plains are flat; hazards are
+  shorter than 200 m (caveat: drive-leg routing only). Not on R2 yet.
+- ✅ **sites-v2 package with roughness** (`b714f13`) — see the roughness bullet above.
+- ✅ **Geology** (`30a6c19`): `pnpm pipe:geology` → USGS SIM 3292 (Tanaka et al. 2014, 1:20M; already lon/lat on the Mars sphere) clipped to the
+  corridor → `public/data/processed/geology.geojson` (7 polygons, 60 KB, not simplified) + `geology-sites.json`. Habitat + ESP_033225/034082/037352
+  sit on **Av (Amazonian volcanic unit)**; ESP_054060 on **lHl (Late Hesperian lowland unit)**. Contacts are km-scale; the ice-rich mantle seen in HiRISE
+  isn't mapped at 1:20M. Raw zip (809 MB) in `data/raw/geology/`.
+- ✅ **Staging points, DRAFT** (`db2b843`): `pnpm pipe:staging [dtm]` (~8 s) → `public/data/processed/staging-points.geojson` (top 3 per site).
+  Rover parking = slope < 15° and roughness < 0.25 m (**Role B ASSUMPTIONS**, Apollo LRV sources), ≥ 20 × 20 m, 100 m–2 km from the POI.
+  Ground is flat almost everywhere, so every #1 spot is ~110 m from the POI (the 100 m standoff decides). **ESP_034082:** every short walk crosses
+  > 20° bowl walls (max 32–37°, 7–10 % of the walk) — sample from the rim or detour. No walk leaves a DTM footprint.
+
+**Next step for Role B:** team agrees rover parking limits + roughness/rock categories (shared role A) → M uploads sites-v2 (+ regional slope
+tiles) → wire TI, roughness, regional slope, geology, staging points into the map (show coverage + caveats) → **SWIM** (still down, HTTP 523).
 
 **Delegation candidates (Sun Nov 15) — for the free team member, or to take load off Role C (now owns 2-leg routing):**
 
 - **Rover energy model** (C → delegate): table of labelled-assumption figures (Wh/km vs slope and soft ground, speed, battery size, reserve)
   as a small TS function `energyWh(segment)`. Self-contained; C just calls it.
-- **Staging-point finder** (C → delegate, or Role B): candidate rover parking spots near each POI = flat (slope < rover limit), smooth, within
-  walk-back ≤ 2 km of the POI. Pure raster work on slope.tif + roughness.tif → GeoJSON points.
+- ~~**Staging-point finder**~~ ✅ draft done (overnight, `pnpm pipe:staging`) — needs agreed rover limits.
 - **Walk-leg time/consumables** (C → delegate): suit time = walk distance / Mars walking pace (labelled assumption) + sampling time + 30 min reserve.
-- **Regional slope for the drive leg** (Role B or delegate): MOLA/HRSC 200 m slope over base → sites corridor (same recipe as `slope.ts`).
+- ~~**Regional slope for the drive leg**~~ ✅ done (overnight, `pnpm pipe:regional-slope`).
 - **Mission summary / sources panel** (M → delegate): one screen listing every layer with its NASA credit + caveats (Validity criterion);
   data is already in `manifest.json`, `*-sites.json` `caveats[]`, §10.
 - ~~**References check**~~ ✅ (Sun Nov 15 night): all §10 citations verified; open: page of the Hassler 2014 dose-rate figure.
@@ -313,7 +333,8 @@ map after M's port (show coverage + caveats) → geology.
 **Key files (Role B)**
 
 - Pipelines: `pipelines/stable/hirise-sites.ts`, `pipelines/stable/slope.ts`, `pipelines/lib/xyz.ts`, `pipelines/package-sites-release.ts`,
-  `pipelines/sites-release.json`.
+  `pipelines/sites-release.json` (v1) + `pipelines/sites-release-v2.json`, `pipelines/stable/{thermal-inertia,roughness,boulders,regional-slope,geology,staging-points}.ts`.
+  Pipelines that write committed JSON print it unformatted → run `pnpm fmt` after re-running them.
 - Map: `components/map/scene.ts` (`addSites`, `setSlopeVisible`, terrain switching), `components/map/scene-panel.tsx` (site list, slope switch),
   `components/map/mars-map.tsx` (sites.geojson, labels, click-to-fly, attribution control), `lib/mars/terrain.ts` (`terrainSourceForView` + sites),
   `lib/mars/map-data.ts` (`SITE_DATA_ROOT`).
@@ -467,7 +488,7 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 - **SWIM ice consistency** (Step 4a, queued; swim.psi.edu down 523 on Sun Nov 15) — regional ~3 km/px evidence for buried ice.
 - **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost). **Higher priority now:** soft ground drains rover battery.
 - **Dust-raising potential / dust cover** — e.g. TES dust cover index + thermal inertia + wind; feeds the dust-storm verdicts and suit/visor wear.
-- **Geology** — USGS geologic map units around the sites (Role B scope).
+- ~~**Geology**~~ ✅ SIM 3292 units along the corridor (overnight). A finer regional map doesn't exist for Arcadia (only SIM 2888, 1:15M, older).
 - **Illumination / shadows** — sun position (teammates' Mars clock) + DTM horizon → shadowed terrain and timing of EVAs.
 - **CRISM** where covered (hydrated/ice-related minerals); **line-of-sight to habitat** (one-sentence comms story or simple viewshed).
 - **Upgrades:** imagery to z18 (0.22 m, ~4× tiles); tinted HiRISE RED.
