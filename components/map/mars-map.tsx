@@ -71,6 +71,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
       setSites(
         pois.map((f) => ({
           id: f.properties.id,
+          hiriseId: f.properties.hirise_id,
           title: f.properties.title,
           confirmed: f.properties.confirmed,
           center: f.geometry.coordinates as LngLat,

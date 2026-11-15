@@ -1,7 +1,15 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+  NumberFieldScrubArea,
+} from "@/components/ui/number-field";
 import {
   Select,
   SelectItem,
@@ -11,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import type { PowerSource } from "@/lib/mars/driving";
 import { marsDistanceM } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
@@ -27,13 +36,15 @@ function siteLabel(site: SitePoi): string {
   return site.confirmed ? site.title : `${site.title} (unconfirmed)`;
 }
 
-/** The destination and power choices of a driving mission. */
+/** The destination, power and sampling-time choices of a drive + walk mission. */
 export function DriveControls({
   sites,
   destination,
   onDestination,
   power,
   onPower,
+  samplingMin,
+  onSamplingMin,
 }: {
   sites: SitePoi[];
   /** The site the end is on, or null when the end was set on the map. */
@@ -41,8 +52,12 @@ export function DriveControls({
   onDestination: (site: SitePoi) => void;
   power: PowerSource;
   onPower: (power: PowerSource) => void;
+  samplingMin: number;
+  onSamplingMin: (minutes: number) => void;
 }) {
   const powerLabel = useId();
+  // What the field shows while typing; the planner only sees committed values.
+  const [sampling, setSampling] = useState<number | null>(samplingMin);
   const items = sites.map((site) => ({ value: site.id, label: siteLabel(site) }));
   return (
     <div className="flex flex-col gap-3">
@@ -83,6 +98,26 @@ export function DriveControls({
           <ToggleGroupItem value="solar">Solar</ToggleGroupItem>
         </ToggleGroup>
       </div>
+      {/* Replans on commit (blur, Enter, step), not on every keystroke: a long drive takes seconds.
+          Sampling can't outlast the suit's main supply. An emptied field commits as 0 min. */}
+      <NumberField
+        size="sm"
+        value={sampling}
+        onValueChange={setSampling}
+        min={0}
+        max={FLIGHT_RULES.suit_supply.primary_minutes}
+        onValueCommitted={(minutes) => {
+          setSampling(minutes ?? 0);
+          onSamplingMin(minutes ?? 0);
+        }}
+      >
+        <NumberFieldScrubArea label="Sampling time (min)" />
+        <NumberFieldGroup>
+          <NumberFieldDecrement />
+          <NumberFieldInput className="text-right" />
+          <NumberFieldIncrement />
+        </NumberFieldGroup>
+      </NumberField>
     </div>
   );
 }
