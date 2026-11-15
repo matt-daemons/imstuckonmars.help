@@ -3,6 +3,8 @@ import * as zod from "zod";
 import type { FocusTarget, LaraAction } from "../../components/copilot/lara-bridge";
 import {
   MAX_DESTINATIONS,
+  POWER_QUESTION,
+  powerSourceSchema,
   ROUTE_CHECK_SENTENCE,
   routeChoiceSchema,
   type LaraContext,
@@ -28,6 +30,7 @@ const argSchemas = {
     .object({ number: zod.number().int().min(1).max(MAX_DESTINATIONS) })
     .strict(),
   choose_route: zod.object({ route: routeChoiceSchema }).strict(),
+  set_power: zod.object({ power: powerSourceSchema }).strict(),
   focus_map: zod.object({ target: zod.enum(FOCUS_TARGETS) }).strict(),
   start_simulation: noArgs,
   pause_simulation: noArgs,
@@ -69,9 +72,20 @@ export const UI_ACTION_DEFINITIONS = [
     },
   },
   {
+    name: "set_power",
+    description:
+      "Sets the rover's power source for the drive: solar or fission. The app plans the route again with it.",
+    parameters: {
+      type: "object",
+      properties: { power: { type: "string", enum: powerSourceSchema.options } },
+      required: ["power"],
+      additionalProperties: false,
+    },
+  },
+  {
     name: "focus_map",
     description:
-      "Moves the map to show one thing: the base, the destination, the full route, the staging point where the rover parks, the walk, or the rover during the simulation.",
+      "Moves the map to show one thing: the base, the destination, the full route, the staging point where the rover parks, the walk, or the crew during the expedition (the map then follows the crew).",
     parameters: {
       type: "object",
       properties: { target: { type: "string", enum: [...FOCUS_TARGETS] } },
@@ -119,6 +133,10 @@ export function uiActionRecorder(context: LaraContext) {
       return { done: false, note: `Only ${MAX_ACTIONS} actions are allowed in one answer.` };
     const action = toAction(name, rawArgs);
     if (action.type === "select_destination") return recordDestination(action);
+    if (action.type === "start_simulation") {
+      const missing = missingForTrip(context);
+      if (missing) return { done: false, note: missing };
+    }
     actions.push(action);
     return { done: true, note: "The app carries out this action after your reply." };
   };
@@ -134,9 +152,13 @@ export function uiActionRecorder(context: LaraContext) {
         note: `There is no destination ${action.number}. The plan has ${plan.destinations.length} destinations, numbered from 1.`,
       };
     actions.push(action);
+    const note =
+      plan?.power === null
+        ? `The app selects the destination. The rover power is not chosen, so the route calculation cannot start. Reply with one short sentence that names the destination, then ask: "${POWER_QUESTION}"`
+        : `The app selects the destination and says "${ROUTE_CHECK_SENTENCE}" Your reply only names the destination. The new route plan is not ready during this reply.`;
     return {
       done: true,
-      note: `The app selects the destination and says "${ROUTE_CHECK_SENTENCE}" Your reply only names the destination. The new route plan is not ready during this reply.`,
+      note,
       ...(destination && {
         destination: {
           number: destination.number,
@@ -150,12 +172,31 @@ export function uiActionRecorder(context: LaraContext) {
   return { record, actions };
 }
 
+/**
+ * Why the expedition cannot start yet, from the route plan the browser sent; null when it can, or
+ * when no plan was sent. A plan still being calculated can start: the app waits for it.
+ */
+function missingForTrip(context: LaraContext): string | null {
+  if (context.route_plan.status !== "present") return null;
+  const plan = context.route_plan.value;
+  const notStarted = "The simulation does not start.";
+  if (!plan.mission) return `${notStarted} Ask the crew to choose a mission type.`;
+  if (plan.mission === "drive-walk" && !plan.power)
+    return `${notStarted} The rover power is not chosen. Ask: "${POWER_QUESTION}"`;
+  if (plan.destination_number === null && plan.status === "no_destination")
+    return `${notStarted} Ask the crew to choose a destination.`;
+  if (plan.status === "ok" || plan.status === "planning") return null;
+  return `${notStarted} The route plan has status "${plan.status}". Tell the crew that the trip cannot be planned with these choices.`;
+}
+
 function toAction(name: UiActionTool, rawArgs: unknown): LaraAction {
   switch (name) {
     case "select_destination":
       return { type: name, ...argSchemas.select_destination.parse(rawArgs) };
     case "choose_route":
       return { type: name, ...argSchemas.choose_route.parse(rawArgs) };
+    case "set_power":
+      return { type: name, ...argSchemas.set_power.parse(rawArgs) };
     case "focus_map":
       return { type: name, ...argSchemas.focus_map.parse(rawArgs) };
     case "show_destinations":

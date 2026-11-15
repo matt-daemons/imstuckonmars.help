@@ -53,7 +53,8 @@ export interface DriveWalkInputs {
   start: LngLat;
   /** The site to walk at, or null when the end was set on the map. */
   destination: SitePoi | null;
-  power: PowerSource;
+  /** Null until the operator picks one; nothing is planned until then. */
+  power: PowerSource | null;
   samplingMin: number;
   zones: NoGoZone[];
   /** Also plan the shortest trip, for step ③'s comparison. */
@@ -82,7 +83,7 @@ export function useDriveWalk(inputs: DriveWalkInputs, enabled: boolean) {
   const siteGrid = useSiteGrid(site);
   const latest = useMemo(
     () =>
-      drive.grid && site && siteGrid.grid
+      drive.grid && site && siteGrid.grid && power
         ? { driveGrid: drive.grid, site, siteGrid: siteGrid.grid, start, power, samplingMin, zones }
         : null,
     [drive.grid, site, siteGrid.grid, start, power, samplingMin, zones],

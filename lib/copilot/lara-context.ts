@@ -1,5 +1,7 @@
 import * as zod from "zod";
 
+import { trainingContextSchema, type TrainingContext } from "./training";
+
 /**
  * What the browser tells LARA about the route plan and the simulated expedition with each question.
  * It is untrusted client data: the server checks it against these schemas, and LARA reads it as data.
@@ -14,12 +16,15 @@ export const MAX_ASSUMPTIONS = 16;
 
 /** What the app says itself when a destination is selected, before the model's answer. */
 export const ROUTE_CHECK_SENTENCE = "Starting route calculation and safety analysis.";
+/** What LARA asks when a rover trip has a destination but no power source yet. */
+export const POWER_QUESTION = "Which power source should the rover use, solar or fission?";
 
 const text = zod.string().max(MAX_TEXT);
 const amount = zod.number().finite();
 const verdict = zod.enum(["GO", "CAUTION", "NO_GO"]);
 
 export const routeChoiceSchema = zod.enum(["safest", "shortest"]);
+export const powerSourceSchema = zod.enum(["solar", "fission"]);
 
 const destinationSchema = zod
   .object({
@@ -42,7 +47,7 @@ const driveFactsSchema = zod
     battery_left_percent: amount,
     reserve_km: amount,
     max_slope_deg: amount,
-    power: zod.enum(["solar", "fission"]),
+    power: powerSourceSchema,
     loose_dust_km: amount,
     no_ground_data_km: amount,
   })
@@ -77,14 +82,20 @@ const routeFactsSchema = zod
 
 export const routePlanContextSchema = zod
   .object({
-    mission: zod.enum(["walking", "drive-walk"]),
-    step: zod.enum(["mission", "where", "check", "go"]),
-    route_choice: routeChoiceSchema,
+    /** Null until the operator picks a mission type. */
+    mission: zod.enum(["walking", "drive-walk"]).nullable(),
+    step: zod.enum(["mission", "where", "check", "run"]),
+    /** Null until the operator or LARA picks the route the expedition follows. */
+    route_choice: routeChoiceSchema.nullable(),
+    /** The rover's power source; null until the operator or LARA picks one. */
+    power: powerSourceSchema.nullable(),
     shortest_on_map: zod.boolean(),
     destinations: zod.array(destinationSchema).max(MAX_DESTINATIONS),
     /** The destination's number, or null when the end is a point set on the map. */
     destination_number: zod.number().int().min(1).max(MAX_DESTINATIONS).nullable(),
     status: zod.enum([
+      "no_mission",
+      "no_power",
       "planning",
       "ok",
       "no_destination",
@@ -110,30 +121,15 @@ export type RoutePlanContext = zod.infer<typeof routePlanContextSchema>;
 export type RouteFacts = zod.infer<typeof routeFactsSchema>;
 export type DestinationFacts = zod.infer<typeof destinationSchema>;
 
-const resourceSchema = zod
-  .object({ remaining: amount, reserve: amount, capacity: amount })
-  .strict();
-
-export const simulationSummarySchema = zod
-  .object({
-    state: zod.enum(["idle", "playing", "paused", "done"]),
-    phase: zod.enum(["drive_out", "walk_out", "sampling", "walk_back", "drive_back", "done"]),
-    elapsed_min: amount,
-    total_min: amount,
-    distance_done_km: amount,
-    distance_total_km: amount,
-    rover_battery_wh: resourceSchema.nullable(),
-    suit_oxygen_min: zod.object({ remaining: amount, reserve: amount }).strict().nullable(),
-    labels: zod.array(text).max(MAX_ASSUMPTIONS),
-  })
-  .strict();
-
 /**
  * Only the size is checked here, so one malformed key does not cost LARA the other: each key is
  * checked on its own by readLaraContext.
  */
 export const laraContextSchema = zod
-  .object({ route_plan: zod.unknown().optional(), simulation: zod.unknown().optional() })
+  .object({
+    route_plan: zod.unknown().optional(),
+    training: zod.unknown().optional(),
+  })
   .strict()
   .refine((context) => JSON.stringify(context).length <= MAX_CONTEXT_CHARS, {
     message: `The context may be no longer than ${MAX_CONTEXT_CHARS} characters of JSON`,
@@ -147,13 +143,13 @@ export type ContextEntry<T> =
 
 export interface LaraContext {
   route_plan: ContextEntry<RoutePlanContext>;
-  simulation: ContextEntry<zod.infer<typeof simulationSummarySchema>>;
+  training: ContextEntry<TrainingContext>;
 }
 
 export function readLaraContext(raw: zod.infer<typeof laraContextSchema> | undefined): LaraContext {
   return {
     route_plan: readEntry(routePlanContextSchema, raw?.route_plan),
-    simulation: readEntry(simulationSummarySchema, raw?.simulation),
+    training: readEntry(trainingContextSchema, raw?.training),
   };
 }
 

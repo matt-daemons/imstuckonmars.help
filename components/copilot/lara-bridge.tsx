@@ -3,6 +3,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 import type { RouteChoice } from "@/lib/mars/drive-walk";
+import type { PowerSource } from "@/lib/mars/driving";
 
 /** What the map can be fitted to when LARA is asked to show something. */
 export type FocusTarget = "base" | "destination" | "route" | "staging" | "walk" | "rover";
@@ -13,6 +14,7 @@ export type LaraAction =
   /** 1-based, in the order the Where step lists the destinations (nearest to the base first). */
   | { type: "select_destination"; number: number }
   | { type: "choose_route"; route: RouteChoice }
+  | { type: "set_power"; power: PowerSource }
   | { type: "focus_map"; target: FocusTarget }
   | { type: "start_simulation" }
   | { type: "pause_simulation" }
@@ -22,21 +24,7 @@ export type LaraActionType = LaraAction["type"];
 type ActionOf<T extends LaraActionType> = Extract<LaraAction, { type: T }>;
 
 /** Context keys read before each question and sent to the server with it. */
-export type LaraContextKey = "route_plan" | "simulation";
-
-/** The simulated expedition, as the "simulation" context reports it. Every value is simulated. */
-export interface SimulationSummary {
-  state: "idle" | "playing" | "paused" | "done";
-  phase: "drive_out" | "walk_out" | "sampling" | "walk_back" | "drive_back" | "done";
-  elapsed_min: number;
-  total_min: number;
-  distance_done_km: number;
-  distance_total_km: number;
-  rover_battery_wh: { remaining: number; reserve: number; capacity: number } | null;
-  suit_oxygen_min: { remaining: number; reserve: number } | null;
-  /** Plain-language caveats, for example that the values are simulated. */
-  labels: string[];
-}
+export type LaraContextKey = "route_plan" | "training";
 
 export interface LaraBridge {
   /**

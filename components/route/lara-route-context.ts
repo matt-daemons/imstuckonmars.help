@@ -53,6 +53,7 @@ export function routePlanContext(plan: RoutePlanView, conditions: Conditions): R
     mission: inputs.mission,
     step: inputs.step,
     route_choice: inputs.route,
+    power: inputs.power,
     shortest_on_map: inputs.showShortest,
     destinations: numberedDestinations(plan),
     destination_number: number >= 1 && number <= MAX_DESTINATIONS ? number : null,
@@ -70,6 +71,9 @@ export function routePlanContext(plan: RoutePlanView, conditions: Conditions): R
 }
 
 function planStatus({ inputs, journey, walk, destination }: RoutePlanView) {
+  if (!inputs.mission) return "no_mission";
+  if (inputs.mission === "drive-walk" && !inputs.power) return "no_power";
+  if (!inputs.end) return "no_destination";
   if (inputs.mission === "walking") {
     if (walk.loadFailed) return "terrain_failed";
     if (!walk.plan) return "planning";
@@ -194,7 +198,9 @@ function assumptions(trip: DriveWalkPlan | null): string[] {
 export function focusView(target: FocusTarget, plan: RoutePlanView): FocusView | null {
   const { base, inputs } = plan;
   const end = plan.destination?.center ?? inputs.end;
-  const destinationView: FocusView = { kind: "center", point: end, zoom: DESTINATION_ZOOM };
+  const destinationView: FocusView | null = end
+    ? { kind: "center", point: end, zoom: DESTINATION_ZOOM }
+    : null;
   const collection = chosenTrip(plan)?.collection ?? null;
   const walked = walkingPath(plan);
   switch (target) {
@@ -208,7 +214,8 @@ export function focusView(target: FocusTarget, plan: RoutePlanView): FocusView |
     }
     case "route":
       if (collection) return { kind: "fit", points: tripPoints(collection) };
-      return { kind: "fit", points: walked.length > 0 ? walked : [base, end] };
+      if (walked.length > 0) return { kind: "fit", points: walked };
+      return end ? { kind: "fit", points: [base, end] } : null;
     case "walk":
       if (collection) return { kind: "fit", points: walkPoints(collection) };
       return walked.length > 0 ? { kind: "fit", points: walked } : destinationView;

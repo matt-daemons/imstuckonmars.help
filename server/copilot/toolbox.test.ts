@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   readLaraContext,
+  POWER_QUESTION,
   ROUTE_CHECK_SENTENCE,
   type RoutePlanContext,
 } from "../../lib/copilot/lara-context";
@@ -12,6 +13,7 @@ const routePlan: RoutePlanContext = {
   mission: "drive-walk",
   step: "where",
   route_choice: "safest",
+  power: "fission",
   shortest_on_map: false,
   destinations: [
     { number: 1, title: "Possible Terraced Crater", confirmed: false, straight_line_km: 92.5 },
@@ -23,18 +25,6 @@ const routePlan: RoutePlanContext = {
   staging_point: null,
   not_checked: "",
   assumptions: ["Rover energy is simulated."],
-};
-
-const simulation = {
-  state: "playing",
-  phase: "drive_out",
-  elapsed_min: 30,
-  total_min: 600,
-  distance_done_km: 4,
-  distance_total_km: 190,
-  rover_battery_wh: { remaining: 180_000, reserve: 40_000, capacity: 200_000 },
-  suit_oxygen_min: null,
-  labels: ["Simulated."],
 };
 
 function provider(replies: unknown[]) {
@@ -113,8 +103,48 @@ describe("LARA app actions", () => {
     const toolbox = laraToolbox(noMissionTool, readLaraContext(undefined));
     await expect(toolbox.run("focus_map", { target: "moon" })).rejects.toThrow();
     await expect(toolbox.run("choose_route", { route: "fastest" })).rejects.toThrow();
+    await expect(toolbox.run("set_power", { power: "nuclear" })).rejects.toThrow();
     await expect(toolbox.run("select_destination", { number: 0 })).rejects.toThrow();
     expect(toolbox.actions).toEqual([]);
+  });
+
+  it("asks for the rover power when a destination is picked before it", async () => {
+    const noPower = { ...routePlan, power: null };
+    const toolbox = laraToolbox(noMissionTool, readLaraContext({ route_plan: noPower }));
+    const receipt = (await toolbox.run("select_destination", { number: 1 })) as { note: string };
+    expect(toolbox.actions).toEqual([{ type: "select_destination", number: 1 }]);
+    expect(receipt.note).toContain(POWER_QUESTION);
+    expect(receipt.note).not.toContain(ROUTE_CHECK_SENTENCE);
+  });
+
+  it("refuses to start the expedition before the trip can be planned", async () => {
+    const cases: Array<[Partial<RoutePlanContext>, string]> = [
+      [{ power: null, status: "no_power" }, POWER_QUESTION],
+      [{ destination_number: null, status: "no_destination" }, "destination"],
+      [{ status: "no_staging" }, "no_staging"],
+    ];
+    for (const [change, expected] of cases) {
+      const plan = { ...routePlan, ...change };
+      const toolbox = laraToolbox(noMissionTool, readLaraContext({ route_plan: plan }));
+      const receipt = (await toolbox.run("start_simulation", {})) as {
+        done: boolean;
+        note: string;
+      };
+      expect(receipt.done).toBe(false);
+      expect(receipt.note).toContain(expected);
+      expect(toolbox.actions).toEqual([]);
+    }
+    const ready = laraToolbox(noMissionTool, readLaraContext({ route_plan: routePlan }));
+    await ready.run("start_simulation", {});
+    expect(ready.actions).toEqual([{ type: "start_simulation" }]);
+  });
+
+  it("sets the rover power", async () => {
+    const toolbox = laraToolbox(noMissionTool, readLaraContext({ route_plan: routePlan }));
+    await expect(toolbox.run("set_power", { power: "solar" })).resolves.toMatchObject({
+      done: true,
+    });
+    expect(toolbox.actions).toEqual([{ type: "set_power", power: "solar" }]);
   });
 
   it("caps the actions in one answer", async () => {
@@ -125,30 +155,20 @@ describe("LARA app actions", () => {
 });
 
 describe("LARA context tools", () => {
-  it("reads the route plan and the expedition the browser sent", async () => {
-    const toolbox = laraToolbox(
-      noMissionTool,
-      readLaraContext({ route_plan: routePlan, simulation }),
-    );
+  it("reads the route plan the browser sent", async () => {
+    const toolbox = laraToolbox(noMissionTool, readLaraContext({ route_plan: routePlan }));
     expect(await toolbox.run("get_route_plan", {})).toMatchObject({
       mission: "drive-walk",
       destinations: routePlan.destinations,
       source: expect.stringContaining("simulated"),
     });
-    expect(await toolbox.run("get_expedition_status", {})).toMatchObject({
-      state: "playing",
-      rover_battery_wh: simulation.rover_battery_wh,
-    });
   });
 
-  it("says when there is no simulation or the data is not valid", async () => {
+  it("says when the route plan is not valid", async () => {
     const toolbox = laraToolbox(
       noMissionTool,
       readLaraContext({ route_plan: { ...routePlan, destinations: "all" } }),
     );
-    expect(await toolbox.run("get_expedition_status", {})).toMatchObject({
-      status: "no simulation running",
-    });
     expect(await toolbox.run("get_route_plan", {})).toEqual({
       status: "unavailable",
       note: "The app sent a route plan that is not valid.",

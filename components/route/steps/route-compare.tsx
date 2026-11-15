@@ -73,7 +73,7 @@ export function RouteCompare() {
           aria-labelledby={choiceLabelId}
           variant="outline"
           size="sm"
-          value={[route]}
+          value={route ? [route] : []}
           // Safe cast: the only values are the two items below; [] (pressing the chosen one) keeps it.
           onValueChange={(value) => value[0] && chooseRoute(dispatch, value[0] as RouteChoice)}
         >

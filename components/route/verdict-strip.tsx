@@ -62,7 +62,7 @@ export function VerdictStrip() {
       ? walkVerdict(walk.plan, samePoint(inputs.start, base), conditions)
       : tripVerdict(journey, conditions);
   const drilling = isDrillSet(drill);
-  const noRoute = noRouteText(inputs.mission, walk, journey, destination !== null);
+  const noRoute = noRouteText(inputs, walk, journey, destination !== null);
   const route = expedition.snapshot?.config.route;
   // A stale clock would look current, so it gives way to the link state when the link drops.
   const linkDown = expedition.link === "stale" || expedition.link === "offline";

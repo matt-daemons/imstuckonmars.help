@@ -88,7 +88,7 @@ export function RouteSidebar({
           </SidebarHeader>
           <SidebarContent className="gap-4 p-4 text-sm">
             <TabsPanel value="mission">
-              <MissionStep map={map} base={base} target={target} />
+              <MissionStep map={map} base={base} />
             </TabsPanel>
             <TabsPanel value="where">
               <WhereStep map={map} base={base} target={target} placement={placement} />

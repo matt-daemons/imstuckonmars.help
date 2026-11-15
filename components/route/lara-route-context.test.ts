@@ -32,6 +32,18 @@ const conditions = realConditions({
   clock: { ltst: "12:00:00", minutes_until_sunset: 6 * EARTH_MINUTES_PER_MARS_HOUR },
   doseRate: 9,
   simulatedDust: 0.4,
+  spaceWeather: {
+    level: "none",
+    weather: {
+      strongest_flare_24h: "C2.8",
+      particle_event_above_10_mev: false,
+      particle_event_above_100_mev: false,
+      hours_until_storm_reaches_mars: null,
+    },
+    fetched_at: "2026-11-15T10:42:31.000Z",
+    source: "NASA DONKI",
+    measured_at: "Earth (GOES) / model arrival at Mars",
+  },
 });
 
 const drive: DriveSummary = {
@@ -94,7 +106,14 @@ function leg(mode: "drive" | "walk", coordinates: LngLat[], minutes: number) {
 }
 
 function view(overrides: Partial<RoutePlanView> = {}): RoutePlanView {
-  const inputs = { ...initialRoutePlan(base, near.center), step: "check" as const };
+  const inputs = {
+    ...initialRoutePlan(base),
+    mission: "drive-walk" as const,
+    end: near.center,
+    power: "fission" as const,
+    route: "safest" as const,
+    step: "check" as const,
+  };
   return {
     inputs,
     base,
@@ -149,6 +168,15 @@ describe("routePlanContext", () => {
       status: "no_destination",
       destination_number: null,
     });
+  });
+
+  it("reports what is not chosen yet, in a shape the server accepts", () => {
+    const empty = view({ inputs: initialRoutePlan(base), destination: null });
+    const context = routePlanContext(empty, conditions);
+    expect(context).toMatchObject({ mission: null, route_choice: null, status: "no_mission" });
+    expect(routePlanContextSchema.parse(context)).toEqual(context);
+    const noPower = view({ inputs: { ...view().inputs, power: null } });
+    expect(routePlanContext(noPower, conditions).status).toBe("no_power");
   });
 });
 

@@ -227,8 +227,10 @@ export function draftFeatures(draft: LngLat[]): Feature[] {
   return draft.length > 1 ? [...corners, line(draft)] : corners;
 }
 
-export function endFeatures(start: LngLat, end: LngLat): Feature[] {
-  return [point(start, { end: "start" }), point(end, { end: "end" })];
+export function endFeatures(start: LngLat, end: LngLat | null): Feature[] {
+  return end
+    ? [point(start, { end: "start" }), point(end, { end: "end" })]
+    : [point(start, { end: "start" })];
 }
 
 /** The legs and staging point of a drive + walk journey, for the "journey" source. */

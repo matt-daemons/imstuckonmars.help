@@ -2,13 +2,14 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
-  useEffect,
   useReducer,
   type Dispatch,
   type ReactNode,
 } from "react";
 
+import { useTrainingEmit } from "@/components/copilot/training-provider";
 import type { SitePoi } from "@/components/map/scene-panel";
 import type { LngLat } from "@/lib/mars/types";
 
@@ -32,23 +33,24 @@ const RoutePlanContext = createContext<RoutePlan | null>(null);
 /** Holds the route choices and plans them once, for every panel below it to read. */
 export function RoutePlanProvider({
   base,
-  target,
   sites,
   children,
 }: {
   base: LngLat;
-  target: LngLat;
   sites: SitePoi[];
   children: ReactNode;
 }) {
-  const [inputs, dispatch] = useReducer(routePlanReducer, initialRoutePlan(base, target));
+  const [inputs, planDispatch] = useReducer(routePlanReducer, base, initialRoutePlan);
+  // Every route change, by the operator or by LARA, can check off a training item.
+  const emitTraining = useTrainingEmit();
+  const dispatch = useCallback(
+    (action: RoutePlanAction) => {
+      planDispatch(action);
+      emitTraining({ type: "route_plan", action });
+    },
+    [emitTraining],
+  );
   const result = useRoutePlanResult(inputs, base, sites);
-  // The map fetches the sites after the plan starts, so the opening drive + walk ends at the
-  // nearest one only once they arrive.
-  const nearest = result.destinations[0]?.center;
-  useEffect(() => {
-    if (nearest) dispatch({ type: "sitesLoaded", nearest });
-  }, [nearest]);
   return (
     <RoutePlanContext value={{ ...result, inputs, dispatch, base }}>{children}</RoutePlanContext>
   );

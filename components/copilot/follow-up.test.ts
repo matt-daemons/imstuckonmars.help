@@ -2,13 +2,29 @@ import { describe, expect, it } from "vitest";
 
 import {
   answerWakeQuestion,
+  FOLLOW_UP_PAUSE_S,
   FOLLOW_UP_PROMPTS,
   isDecline,
   pickPhrase,
   SIGN_OFFS,
   stripWakePhrase,
+  withFollowUp,
   type WakeTurnSteps,
 } from "./follow-up";
+
+describe("withFollowUp", () => {
+  it("puts a pause between the answer and the prompt", () => {
+    expect(withFollowUp("The battery has 71 percent.", "Anything else?")).toBe(
+      `The battery has 71 percent. <break time="${FOLLOW_UP_PAUSE_S}s" /> Anything else?`,
+    );
+  });
+
+  it("adds no prompt when the answer asks the operator a question", () => {
+    const answer =
+      "The shortest route saves 9 kilometers. Do you want me to choose it? It uses more battery.";
+    expect(withFollowUp(answer, "Anything else?")).toBe(answer);
+  });
+});
 
 describe("isDecline", () => {
   it.each([
@@ -101,7 +117,7 @@ describe("answerWakeQuestion", () => {
         log.push("transcribe");
         return transcript;
       },
-      ask: async (question) => void log.push(`ask: ${question}`),
+      ask: async (question, followUp) => void log.push(`ask: ${question} | ${followUp}`),
       say: async (phrase) => void log.push(`say: ${phrase}`),
       choose: (phrases) => phrases[0],
     };
@@ -115,9 +131,8 @@ describe("answerWakeQuestion", () => {
     expect(log).toEqual([
       "wait",
       "transcribe",
-      "ask: what's the battery level?",
+      `ask: what's the battery level? | ${FOLLOW_UP_PROMPTS[0]}`,
       "wait",
-      `say: ${FOLLOW_UP_PROMPTS[0]}`,
     ]);
   });
 
@@ -130,7 +145,7 @@ describe("answerWakeQuestion", () => {
   it("asks a question that starts with no", async () => {
     const { log, steps } = recordingSteps("No, what's the battery level?");
     await expect(answerWakeQuestion(clip, steps)).resolves.toBe("follow-up");
-    expect(log).toContain("ask: No, what's the battery level?");
+    expect(log).toContain(`ask: No, what's the battery level? | ${FOLLOW_UP_PROMPTS[0]}`);
   });
 
   it("stops listening without a word when the transcript is empty", async () => {

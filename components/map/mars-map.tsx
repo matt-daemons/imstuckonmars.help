@@ -9,6 +9,7 @@ import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 
 import { LayerPanelBody } from "@/components/map/layer-panel";
 import { CrewLayer } from "@/components/expedition/crew-layer";
 import { ExpeditionHud } from "@/components/expedition/expedition-hud";
+import { LaraExpeditionBridge } from "@/components/expedition/lara-expedition-bridge";
 import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import {
   type SiteProps,
@@ -229,7 +230,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   return (
     <SidebarProvider style={SIDEBAR_STYLE}>
       {/* The route plan is shared by the sidebar and the map layers; it renders no DOM of its own. */}
-      <RoutePlanProvider base={HABITAT} target={SCIENCE_STOP} sites={sites}>
+      <RoutePlanProvider base={HABITAT} sites={sites}>
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
         <ConditionsProvider habitat={HABITAT}>
           <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
@@ -249,6 +250,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               <div ref={container} className="h-full w-full" />
               <RouteMapLayers map={loaded} />
               <LaraRouteBridge map={loaded} />
+              <LaraExpeditionBridge />
               <CrewLayer map={loaded} />
               <HomebaseMapEntry map={loaded} habitat={HABITAT} />
               <Tooltip>

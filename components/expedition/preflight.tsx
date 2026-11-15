@@ -45,7 +45,9 @@ export function Preflight({
   const { inputs, walk, journey, base, dispatch } = useRoutePlan();
   const expedition = useExpedition();
   const { access, snapshot, launch, lastCommand } = expedition;
-  const result = routeToPlan(inputs, base, walk.plan, journey.plan);
+  // The expedition follows the route the operator chose; the safest one until the shortest is planned.
+  const trip = inputs.route === "shortest" ? (journey.shortest ?? journey.plan) : journey.plan;
+  const result = routeToPlan(inputs, base, walk.plan, trip);
   const key = result.plan ? JSON.stringify(result.plan) : null;
   const [preview, setPreview] = useState<{ key: string; value: PlanPreview } | null>(null);
   const [error, setError] = useState<{ key: string; message: string } | null>(null);

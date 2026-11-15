@@ -7,15 +7,17 @@ import type { LngLat } from "@/lib/mars/types";
 export type MissionType = "walking" | "drive-walk";
 export type Step = "mission" | "where" | "check" | "run";
 
-/** The operator's route choices. The destination is not stored: it is the site the end is on. */
+/**
+ * The operator's route choices. Mission, end, power and route start empty: nothing is chosen for the
+ * operator. The destination is not stored: it is the site the end is on.
+ */
 export interface RoutePlanInputs {
-  mission: MissionType;
+  mission: MissionType | null;
   /** Map longitudes, −180..180. */
   start: LngLat;
-  end: LngLat;
-  /** The operator set the end, rather than taking the mission's default. */
-  endChosen: boolean;
-  power: PowerSource;
+  /** Null until the operator picks a destination or sets the end on the map. */
+  end: LngLat | null;
+  power: PowerSource | null;
   samplingMin: number;
   zones: NoGoZone[];
   /** How many zones the operator has drawn, so each new one gets the next number. */
@@ -23,17 +25,15 @@ export interface RoutePlanInputs {
   step: Step;
   /** Draw the shortest route under the planned one, to compare them on the map. */
   showShortest: boolean;
-  /** The route the expedition follows. */
-  route: RouteChoice;
+  /** The route the expedition follows, null until the operator or LARA picks one. */
+  route: RouteChoice | null;
 }
 
 export type RoutePlanAction =
-  // The caller passes the mission's start and end, since the end depends on the sites it shows.
-  | { type: "setMission"; mission: MissionType; start: LngLat; end: LngLat }
+  // A new mission starts at the caller's start and has no end until the operator picks one.
+  | { type: "setMission"; mission: MissionType; start: LngLat }
   | { type: "setStart"; point: LngLat }
   | { type: "setEnd"; point: LngLat }
-  // The sites load after the plan starts; nearest is the one closest to the base.
-  | { type: "sitesLoaded"; nearest: LngLat }
   | { type: "setPower"; power: PowerSource }
   | { type: "setSampling"; minutes: number }
   | { type: "addZone"; ring: LngLat[] }
@@ -45,45 +45,42 @@ export type RoutePlanAction =
 // Time at the site, a planning input like the walk-leg timing's, not a NASA value.
 const DEFAULT_SAMPLING_MIN = 60;
 
-/**
- * A drive + walk from the base, the team's confirmed mission, with no zones. It ends at the target
- * only until the sites load: see sitesLoaded.
- */
-export function initialRoutePlan(base: LngLat, target: LngLat): RoutePlanInputs {
+/** Nothing chosen yet: no mission, destination, power or route. Starts at the base, with no zones. */
+export function initialRoutePlan(base: LngLat): RoutePlanInputs {
   return {
-    mission: "drive-walk",
+    mission: null,
     start: base,
-    end: target,
-    endChosen: false,
-    power: "fission",
+    end: null,
+    power: null,
     samplingMin: DEFAULT_SAMPLING_MIN,
     zones: [],
     zonesDrawn: 0,
     step: "mission",
     showShortest: false,
-    route: "safest",
+    route: null,
   };
+}
+
+/** What the operator still has to choose before a route can be planned, or null when nothing is. */
+export function missingChoice(inputs: Pick<RoutePlanInputs, "mission" | "power" | "end">) {
+  if (!inputs.mission) return "Pick a mission type in step ① Mission.";
+  if (inputs.mission === "drive-walk" && !inputs.power)
+    return "Pick the rover's power in step ① Mission.";
+  if (!inputs.end) return "Pick a destination in step ② Where.";
+  return null;
 }
 
 export function routePlanReducer(state: RoutePlanInputs, action: RoutePlanAction): RoutePlanInputs {
   switch (action.type) {
     case "setMission":
-      return {
-        ...state,
-        mission: action.mission,
-        start: action.start,
-        end: action.end,
-        endChosen: false,
-      };
+      // The same mission keeps its end; another one drops it, since a walk's end and a drive's site
+      // are not interchangeable.
+      if (state.mission === action.mission) return { ...state, start: action.start };
+      return { ...state, mission: action.mission, start: action.start, end: null };
     case "setStart":
       return { ...state, start: action.point };
     case "setEnd":
-      return { ...state, end: action.point, endChosen: true };
-    case "sitesLoaded":
-      // A drive + walk ends at the nearest site, as choosing the mission does once the sites are
-      // in, unless the operator has set an end by then.
-      if (state.mission !== "drive-walk" || state.endChosen) return state;
-      return { ...state, end: action.nearest };
+      return { ...state, end: action.point };
     case "setPower":
       return { ...state, power: action.power };
     case "setSampling": {

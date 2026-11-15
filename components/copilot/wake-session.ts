@@ -8,7 +8,7 @@ const WAKE_WITH_QUESTION = /\b(hey|okay) lara \S/;
 
 export const COOLDOWN_MS = 2500;
 export const SPEECH_RMS = 0.02;
-export const END_SILENCE_MS = 1200;
+export const END_SILENCE_MS = 900;
 export const NO_SPEECH_MS = 5000;
 export const MAX_CAPTURE_MS = 15000;
 

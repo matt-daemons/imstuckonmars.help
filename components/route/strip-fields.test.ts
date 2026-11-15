@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { LngLat } from "@/lib/mars/types";
 import { noRouteText, stormLimit, stripFields, walkMargin } from "./strip-fields";
 
 describe("walkMargin", () => {
@@ -100,27 +101,42 @@ describe("stormLimit", () => {
 describe("noRouteText", () => {
   const walk = { plan: null, loadFailed: false };
   const journey = { plan: null, driveFailed: false, siteFailed: false };
+  const end: LngLat = [-176.33383, 44.41589];
+  const walking = { mission: "walking", power: null, end } as const;
+  const driveWalk = { mission: "drive-walk", power: "fission", end } as const;
+
+  it("says what is not chosen yet", () => {
+    expect(noRouteText({ mission: null, power: null, end: null }, walk, journey, false)).toBe(
+      "No mission selected",
+    );
+    expect(noRouteText({ ...driveWalk, power: null }, walk, journey, true)).toBe(
+      "No rover power selected",
+    );
+    expect(noRouteText({ ...walking, end: null }, walk, journey, false)).toBe(
+      "No destination selected",
+    );
+  });
 
   it("says the terrain is unavailable when it failed to load", () => {
-    expect(noRouteText("walking", { ...walk, loadFailed: true }, journey, false)).toBe(
+    expect(noRouteText(walking, { ...walk, loadFailed: true }, journey, false)).toBe(
       "Terrain unavailable",
     );
-    expect(noRouteText("drive-walk", walk, { ...journey, siteFailed: true }, true)).toBe(
+    expect(noRouteText(driveWalk, walk, { ...journey, siteFailed: true }, true)).toBe(
       "Terrain unavailable",
     );
   });
 
   it("says planning while a plan is on its way", () => {
-    expect(noRouteText("walking", walk, journey, false)).toBe("Planning…");
-    expect(noRouteText("drive-walk", walk, journey, true)).toBe("Planning…");
+    expect(noRouteText(walking, walk, journey, false)).toBe("Planning…");
+    expect(noRouteText(driveWalk, walk, journey, true)).toBe("Planning…");
   });
 
   it("says no route when planning ended without one, or no site is chosen", () => {
     const failedWalk = { plan: { summary: null }, loadFailed: false };
-    expect(noRouteText("walking", failedWalk, journey, false)).toBe("No route yet");
-    expect(noRouteText("drive-walk", walk, journey, false)).toBe("No route yet");
-    expect(
-      noRouteText("drive-walk", walk, { ...journey, plan: { status: "no_staging" } }, true),
-    ).toBe("No route yet");
+    expect(noRouteText(walking, failedWalk, journey, false)).toBe("No route yet");
+    expect(noRouteText(driveWalk, walk, journey, false)).toBe("No route yet");
+    expect(noRouteText(driveWalk, walk, { ...journey, plan: { status: "no_staging" } }, true)).toBe(
+      "No route yet",
+    );
   });
 });

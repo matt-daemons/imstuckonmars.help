@@ -5,6 +5,7 @@ import type { LngLat } from "@/lib/mars/types";
 
 import {
   initialRoutePlan,
+  missingChoice,
   routePlanReducer,
   type RoutePlanAction,
   type RoutePlanInputs,
@@ -15,30 +16,45 @@ const target: LngLat = [-175.95, 46.03];
 const site: LngLat = [-176.33383, 44.41589];
 const ring: LngLat[] = [base, target, site];
 const zone: NoGoZone = { id: "zone-1", name: "No-go zone 1", ring };
-const initial = initialRoutePlan(base, target);
+const initial = initialRoutePlan(base);
 
 describe("initialRoutePlan", () => {
-  it("drives and walks from the base, ending at the target until the sites load", () => {
+  it("starts at the base with no mission, destination, power or route chosen", () => {
     expect(initial).toEqual({
-      mission: "drive-walk",
+      mission: null,
       start: base,
-      end: target,
-      endChosen: false,
-      power: "fission",
+      end: null,
+      power: null,
       samplingMin: 60,
       zones: [],
       zonesDrawn: 0,
       step: "mission",
       showShortest: false,
-      route: "safest",
+      route: null,
     });
+  });
+});
+
+describe("missingChoice", () => {
+  it("names the first choice still to make, in step order", () => {
+    expect(missingChoice(initial)).toMatch(/mission type/);
+    expect(missingChoice({ mission: "drive-walk", power: null, end: site })).toMatch(/power/);
+    expect(missingChoice({ mission: "drive-walk", power: "solar", end: null })).toMatch(
+      /destination/,
+    );
+    expect(missingChoice({ mission: "walking", power: null, end: null })).toMatch(/destination/);
+  });
+
+  it("is null once a route can be planned", () => {
+    expect(missingChoice({ mission: "walking", power: null, end: target })).toBeNull();
+    expect(missingChoice({ mission: "drive-walk", power: "fission", end: site })).toBeNull();
   });
 });
 
 describe("routePlanReducer", () => {
   const cases: { action: RoutePlanAction; changed: Partial<RoutePlanInputs> }[] = [
     { action: { type: "setStart", point: site }, changed: { start: site } },
-    { action: { type: "setEnd", point: site }, changed: { end: site, endChosen: true } },
+    { action: { type: "setEnd", point: site }, changed: { end: site } },
     { action: { type: "setPower", power: "solar" }, changed: { power: "solar" } },
     { action: { type: "setSampling", minutes: 90 }, changed: { samplingMin: 90 } },
     { action: { type: "addZone", ring }, changed: { zones: [zone], zonesDrawn: 1 } },
@@ -51,42 +67,24 @@ describe("routePlanReducer", () => {
     expect(routePlanReducer(initial, action)).toEqual({ ...initial, ...changed });
   });
 
-  it("setMission sets the mission, start and end, and drops an end the operator set", () => {
+  it("setMission sets the mission and start, and a new mission drops the end", () => {
     const actions: RoutePlanAction[] = [
+      { type: "setMission", mission: "drive-walk", start: base },
       { type: "setStart", point: target },
       { type: "setEnd", point: site },
     ];
     const moved = actions.reduce(routePlanReducer, initial);
-    const next = routePlanReducer(moved, {
-      type: "setMission",
-      mission: "walking",
-      start: base,
-      end: target,
-    });
-    expect(next).toEqual({ ...initial, mission: "walking", start: base, end: target });
+    const next = routePlanReducer(moved, { type: "setMission", mission: "walking", start: base });
+    expect(next).toEqual({ ...initial, mission: "walking", start: base, end: null });
   });
 
-  describe("sitesLoaded", () => {
-    const loaded = { type: "sitesLoaded", nearest: site } as const;
-
-    it("moves a drive + walk to the nearest site", () => {
-      expect(routePlanReducer(initial, loaded)).toEqual({ ...initial, end: site });
-    });
-
-    it("keeps an end the operator set before the sites loaded", () => {
-      const placed = routePlanReducer(initial, { type: "setEnd", point: base });
-      expect(routePlanReducer(placed, loaded)).toBe(placed);
-    });
-
-    it("leaves a walk at its target", () => {
-      const walking = routePlanReducer(initial, {
-        type: "setMission",
-        mission: "walking",
-        start: base,
-        end: target,
-      });
-      expect(routePlanReducer(walking, loaded)).toBe(walking);
-    });
+  it("setMission keeps the end when the mission stays the same", () => {
+    const actions: RoutePlanAction[] = [
+      { type: "setMission", mission: "drive-walk", start: base },
+      { type: "setEnd", point: site },
+      { type: "setMission", mission: "drive-walk", start: base },
+    ];
+    expect(actions.reduce(routePlanReducer, initial).end).toEqual(site);
   });
 
   it("setSampling clamps to 0–480 min", () => {

@@ -59,6 +59,26 @@ describe("LARA tool loop", () => {
     expect(String(requests[1].messages.at(-1)?.content)).toContain("tool failed");
   });
 
+  it("sends a note after the system prompt, and none when there is no note", async () => {
+    const roles = async (note: string | null) => {
+      const { fetcher, requests } = provider([{ content: "Next, pick a mission type." }]);
+      await askCopilot({
+        key: "k",
+        model: "m",
+        prompt: "What should I try?",
+        history: [{ role: "user", content: "hi" }],
+        note,
+        fetcher,
+        run: async () => null,
+      });
+      return requests[0].messages;
+    };
+    const withNote = await roles("Training checklist. Next item: Pick a mission type.");
+    expect(withNote.map((m) => m.role)).toEqual(["system", "system", "user", "user"]);
+    expect(withNote[1].content).toContain("Next item");
+    expect((await roles(null)).map((m) => m.role)).toEqual(["system", "user", "user"]);
+  });
+
   it("reports a missing provider key as not configured", async () => {
     await expect(
       askCopilot({ prompt: "x", history: [], run: async () => null }),

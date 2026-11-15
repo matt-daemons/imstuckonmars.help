@@ -25,12 +25,9 @@ const STATUS_TEXT: Record<ReturnAssessment["status"], string> = {
 export function ReturnCheck() {
   const { inputs, walk, journey, base } = useRoutePlan();
   const lara = useLaraContext();
-  const planned = plannedReturn(
-    inputs.mission,
-    walk.plan,
-    journey.plan,
-    samePoint(inputs.start, base),
-  );
+  const planned =
+    inputs.mission &&
+    plannedReturn(inputs.mission, walk.plan, journey.plan, samePoint(inputs.start, base));
   // LARA's clock covers one EVA; a longer return would be rejected, so it is not sent.
   const tooLong = planned !== null && planned.duration_s > MAX_DURATION_S;
   const session = lara.snapshot;

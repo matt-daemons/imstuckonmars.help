@@ -28,10 +28,8 @@ export function LaraRouteBridge({ map }: { map: MapLibreMap | null }) {
   useLaraContextReader("route_plan", () => routePlanContext(plan, conditions));
 
   useLaraAction("show_destinations", () => {
-    if (inputs.mission !== "drive-walk") {
-      const end = destinations[0]?.center ?? inputs.end;
-      dispatch({ type: "setMission", mission: "drive-walk", start: base, end });
-    }
+    if (inputs.mission !== "drive-walk")
+      dispatch({ type: "setMission", mission: "drive-walk", start: base });
     dispatch({ type: "goTo", step: "where" });
     fitPoints(map, [base, ...destinations.map((site) => site.center)]);
   });
@@ -40,14 +38,22 @@ export function LaraRouteBridge({ map }: { map: MapLibreMap | null }) {
     const site = destinations[number - 1];
     if (!site) return;
     if (inputs.mission !== "drive-walk")
-      dispatch({ type: "setMission", mission: "drive-walk", start: base, end: site.center });
+      dispatch({ type: "setMission", mission: "drive-walk", start: base });
     dispatch({ type: "setEnd", point: site.center });
     dispatch({ type: "goTo", step: "check" });
     fitPoints(map, [base, site.center]);
-    bridge.say(ROUTE_CHECK_SENTENCE);
+    // Without a power source the route cannot be planned; LARA asks for one in her reply.
+    if (inputs.power) bridge.say(ROUTE_CHECK_SENTENCE);
   });
 
   useLaraAction("choose_route", ({ route }) => chooseRoute(dispatch, route));
+
+  useLaraAction("set_power", ({ power }) => {
+    if (inputs.mission !== "drive-walk")
+      dispatch({ type: "setMission", mission: "drive-walk", start: base });
+    dispatch({ type: "setPower", power });
+    if (inputs.end && power !== inputs.power) bridge.say(ROUTE_CHECK_SENTENCE);
+  });
 
   useLaraAction("focus_map", ({ target }) => {
     const view = focusView(target, plan);

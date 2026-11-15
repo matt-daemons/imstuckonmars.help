@@ -4,7 +4,7 @@ import type { SolarAlertLevel } from "@/lib/flight-rules/solar-alert";
 import { walkMargins, type Margin } from "@/lib/mars/drive-walk";
 import type { RouteSummary } from "@/lib/mars/types";
 
-import type { MissionType } from "./route-plan";
+import type { RoutePlanInputs } from "./route-plan";
 
 /** One field of the verdict strip. The value is a number with its unit, set in monospace. */
 export interface StripField {
@@ -105,12 +105,15 @@ export function stripFields(
 
 /** What the strip says without a verdict: the terrain failed, a plan is on its way, or no route. */
 export function noRouteText(
-  mission: MissionType,
+  inputs: Pick<RoutePlanInputs, "mission" | "power" | "end">,
   walk: { plan: object | null; loadFailed: boolean },
   journey: { plan: object | null; driveFailed: boolean; siteFailed: boolean },
   hasDestination: boolean,
 ): string {
-  if (mission === "walking") {
+  if (!inputs.mission) return "No mission selected";
+  if (inputs.mission === "drive-walk" && !inputs.power) return "No rover power selected";
+  if (!inputs.end) return "No destination selected";
+  if (inputs.mission === "walking") {
     if (walk.loadFailed) return "Terrain unavailable";
     return walk.plan ? "No route yet" : "Planning…";
   }

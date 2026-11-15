@@ -14,7 +14,7 @@ import type { RoutePlanInputs } from "./route-plan";
 
 export interface RoutePlanResult {
   walk: {
-    /** The walk from start to end and back on gentle ground, null until the elevation grid is in. */
+    /** The walk from start to end and back on gentle ground; null until there is an end and the elevation grid is in. */
     plan: Plan | null;
     /** The shortest walk within the same walls, planned only while routes are compared. */
     shortest: Plan | null;
@@ -42,20 +42,27 @@ export function useRoutePlanResult(
   const { mission, start, end, power, samplingMin, zones, step, showShortest, route } = inputs;
   const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
   const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
-  const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
+  const destination = end
+    ? (destinations.find((site) => samePoint(site.center, end)) ?? null)
+    : null;
   // The shortest route is planned only while step ③ or the map shows it, or step ④ plays it.
-  const compare = step === "check" || showShortest || (step === "go" && route === "shortest");
+  const compare = step === "check" || showShortest || (step === "run" && route === "shortest");
 
   const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
   const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);
   const path = useMemo(
-    () => grid && slope && walls && planWalk(grid, slope, walls, start, end, gentleWalkCost(slope)),
+    () =>
+      grid && slope && walls && end
+        ? planWalk(grid, slope, walls, start, end, gentleWalkCost(slope))
+        : null,
     [grid, slope, walls, start, end],
   );
   const walkCompared = compare && mission === "walking";
   const shortestPath = useMemo(
     () =>
-      walkCompared && grid && slope && walls ? planWalk(grid, slope, walls, start, end) : null,
+      walkCompared && grid && slope && walls && end
+        ? planWalk(grid, slope, walls, start, end)
+        : null,
     [walkCompared, grid, slope, walls, start, end],
   );
   const terrain = useMemo(() => (grid && slope ? { grid, slope } : null), [grid, slope]);

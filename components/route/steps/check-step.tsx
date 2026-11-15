@@ -22,6 +22,7 @@ import {
 import { fitPoints } from "@/components/route/camera";
 import { notCheckedText, tripWithStorms, walkWithStorms } from "@/components/route/conditions";
 import { useConditions } from "@/components/route/conditions-provider";
+import { missingChoice } from "@/components/route/route-plan";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
 import { Preflight } from "@/components/expedition/preflight";
 import {
@@ -45,6 +46,8 @@ const DRIVE_WALK_HEADLINE = ["sols", "battery", "suit-left"];
 export function CheckStep({ map }: { map: MapLibreMap | null }) {
   const { inputs, walk, journey, destination } = useRoutePlan();
   const { conditions } = useConditions();
+  const missing = missingChoice(inputs);
+  if (missing) return <p role="status">{missing}</p>;
   if (inputs.mission === "walking") {
     const summary = walk.plan?.summary ?? null;
     const check = summary && walkWithStorms(summary, conditions);
@@ -128,7 +131,7 @@ function CheckLayout({
             <p className="text-xs">
               No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
             </p>
-            <RouteLegend mode={mission} shortest={showShortest} />
+            {mission && <RouteLegend mode={mission} shortest={showShortest} />}
           </AccordionPanel>
         </AccordionItem>
         <AccordionItem value="assumptions">

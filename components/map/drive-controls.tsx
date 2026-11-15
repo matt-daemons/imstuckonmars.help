@@ -68,7 +68,8 @@ export function DriveControls({
   samplingMin,
   onSamplingMin,
 }: {
-  power: PowerSource;
+  /** Null until the operator picks one. */
+  power: PowerSource | null;
   onPower: (power: PowerSource) => void;
   samplingMin: number;
   onSamplingMin: (minutes: number) => void;
@@ -84,7 +85,7 @@ export function DriveControls({
           aria-labelledby={powerLabel}
           variant="outline"
           size="sm"
-          value={[power]}
+          value={power ? [power] : []}
           // Pressing the pressed item empties the value; keep the current source then.
           // Safe cast: the only values are the two items below.
           onValueChange={(value) => value[0] && onPower(value[0] as PowerSource)}

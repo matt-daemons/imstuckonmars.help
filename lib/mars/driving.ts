@@ -136,13 +136,6 @@ function legSteps(grid: DriveGrid, leg: PlannedPath) {
   return pathSteps(grid, cells).map((step, i) => ({ ...step, from: cells[i], to: cells[i + 1] }));
 }
 
-/** Battery energy (Wh) of each step of a leg, one per pair of neighbouring path points, before the path factor. */
-export function legStepEnergiesWh(grid: DriveGrid, leg: PlannedPath): number[] {
-  return legSteps(grid, leg).map(({ horizontalM, riseM, from, to }) =>
-    stepEnergyWh(horizontalM, riseM, stepRollingResistance(grid, from, to)),
-  );
-}
-
 /** Path km on each ground class; a step counts half for each of its two cells, as its energy does. */
 function groundKm(grid: DriveGrid, legs: PlannedPath[]): Record<Ground, number> {
   const km = { loose_dust: 0, sand_crust: 0, firm: 0, no_data: 0 };

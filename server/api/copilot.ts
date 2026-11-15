@@ -11,6 +11,7 @@ import {
   prepareDemoMission,
 } from "../copilot/demo-mission";
 import { laraContextSchema, readLaraContext } from "../../lib/copilot/lara-context";
+import { trainingNote } from "../../lib/copilot/training";
 import { askCopilot } from "../copilot/llm";
 import { laraToolbox } from "../copilot/toolbox";
 import { copilotTools } from "../copilot/tools";
@@ -32,8 +33,8 @@ export const VOICE = {
 };
 const ELEVENLABS = "https://api.elevenlabs.io/v1";
 export const MAX_AUDIO_BYTES = 2 * 1024 * 1024;
-/** As long as the longest answer that /ask returns. */
-const MAX_SPOKEN_CHARS = 1500;
+/** The longest answer that /ask returns, plus a follow-up prompt and its pause. */
+const MAX_SPOKEN_CHARS = 1600;
 
 const askSchema = zod
   .object({
@@ -116,7 +117,14 @@ copilot.post("/session", async (c) => {
     demoMissionConfig(JSON.parse(preset.config_json)),
   );
   await prepareDemoMission(db, result, DEMO_SCENARIOS[scenario]);
-  return c.json({ ...result, scenario, scenario_title: DEMO_SCENARIOS[scenario].title }, 201);
+  return c.json(
+    {
+      ...result,
+      scenario,
+      scenario_title: DEMO_SCENARIOS[scenario].title,
+    },
+    201,
+  );
 });
 
 copilot.post("/:id/ask", async (c) => {
@@ -124,7 +132,8 @@ copilot.post("/:id/ask", async (c) => {
   const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
   const body = parse(askSchema, await c.req.json<unknown>());
   const tools = await copilotTools(db, session, c.env.RADIATION_RELEASE);
-  const toolbox = laraToolbox(tools.run, readLaraContext(body.context));
+  const context = readLaraContext(body.context);
+  const toolbox = laraToolbox(tools.run, context);
   const prompt = body.alert
     ? `[Automatic alert from the mission monitor. This is not a question from the crew.] ${body.alert.code}${body.alert.detail ? `: ${body.alert.detail}` : ""}. Call the tools that apply to this alert. Then tell the crew about the alert in one or two sentences. Include the most important number.`
     : (body.question as string);
@@ -133,6 +142,7 @@ copilot.post("/:id/ask", async (c) => {
     model: c.env.DIAGNOSTICS_MODEL,
     prompt,
     history: body.history,
+    note: context.training.status === "present" ? trainingNote(context.training.value) : null,
     run: toolbox.run,
   });
   return c.json({

@@ -42,7 +42,7 @@ export function WhereStep({
     mission === "drive-walk"
       ? destinations.map((site) => ({ id: site.id, title: siteLabel(site), center: site.center }))
       : [{ id: "science-stop", title: "Science stop (placeholder)", center: target }];
-  const chosen = choices.find((choice) => samePoint(choice.center, end));
+  const chosen = end ? choices.find((choice) => samePoint(choice.center, end)) : undefined;
 
   function chooseEnd(id: string) {
     const choice = choices.find((candidate) => candidate.id === id);
@@ -70,7 +70,9 @@ export function WhereStep({
             </ChoiceCard>
           ))}
         </RadioGroup>
-        {!chosen && <p className="text-xs">The end is a point set on the map.</p>}
+        {!mission && <p className="text-xs">Pick a mission type in step ① Mission first.</p>}
+        {mission && !end && <p className="text-xs">No destination yet. Pick one above.</p>}
+        {end && !chosen && <p className="text-xs">The end is a point set on the map.</p>}
         {mission === "walking" && (
           <p className="text-xs text-muted-foreground">
             To end somewhere else, open Edit route and use Set end.

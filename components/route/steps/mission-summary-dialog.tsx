@@ -16,6 +16,7 @@ import {
   walkingCollection,
 } from "@/components/route/mission-summary";
 import { useRoutePlan } from "@/components/route/route-plan-provider";
+import type { MissionType } from "@/components/route/route-plan";
 import type { StripField } from "@/components/route/strip-fields";
 import { samePoint } from "@/components/route/use-route-plan-result";
 import { tripVerdict, walkVerdict } from "@/components/route/verdict-strip";
@@ -70,8 +71,9 @@ export function MissionSummary({
       </DialogTrigger>
       {/* data-mission-summary: the print stylesheet in globals.css prints this popup alone. */}
       <DialogPopup className="max-w-5xl" bottomStickOnMobile={false} data-mission-summary="">
-        {collection && (
+        {collection && inputs.mission && (
           <SummaryBody
+            mission={inputs.mission}
             collection={collection}
             fromHabitat={fromHabitat}
             status={status}
@@ -85,12 +87,14 @@ export function MissionSummary({
 }
 
 function SummaryBody({
+  mission,
   collection,
   fromHabitat,
   status,
   keyNumbers,
   assumptions,
 }: {
+  mission: MissionType;
   collection: RouteCollection;
   fromHabitat: boolean;
   status: ReactNode;
@@ -103,16 +107,16 @@ function SummaryBody({
   const [madeAt] = useState(() => new Date());
   // Named as step ② names it, so an unconfirmed site says so.
   const site =
-    inputs.mission === "drive-walk" && destination
+    mission === "drive-walk" && destination
       ? { ...destination, title: siteLabel(destination) }
       : null;
   const verdict =
-    inputs.mission === "walking"
+    mission === "walking"
       ? walkVerdict(walk.plan, fromHabitat, conditions)
       : tripVerdict(journey, conditions);
   const fileName = routeFileName(collection, madeAt);
   const header = titleRows({
-    mission: inputs.mission,
+    mission,
     site,
     power: inputs.power,
     samplingMin: inputs.samplingMin,
@@ -154,9 +158,7 @@ function SummaryBody({
           {status}
         </Section>
         <Section title="Objective">
-          <p className="text-sm">
-            {objectiveText(inputs.mission, site, inputs.samplingMin, fromHabitat)}
-          </p>
+          <p className="text-sm">{objectiveText(mission, site, inputs.samplingMin, fromHabitat)}</p>
         </Section>
         <Section title="Timeline">
           <p className="text-xs text-muted-foreground">

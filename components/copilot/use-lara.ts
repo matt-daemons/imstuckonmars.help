@@ -2,15 +2,18 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { parseTrainingCommand, trainingCommandLine, type AskVia } from "@/lib/copilot/training";
 import type { ReturnRoute } from "@/lib/mission/types";
 
+import { playHeardCue } from "./cue";
 import { useLaraBridge, type LaraAction } from "./lara-bridge";
+import { useOptionalTraining } from "./training-provider";
 import {
   answerWakeQuestion,
-  FOLLOW_UP_PROMPTS,
   pickPhrase,
   SIGN_OFFS,
   stripWakePhrase,
+  withFollowUp,
   type WakeTurnSteps,
 } from "./follow-up";
 import type { AfterUtterance } from "./wake-session";
@@ -88,6 +91,8 @@ export function useLara(shared?: { id: string; token: string } | null) {
   const audio = useRef<HTMLAudioElement | null>(null);
   const busy = useRef(false);
   const bridge = useLaraBridge();
+  const training = useOptionalTraining();
+  const emitTraining = training?.emit;
   // Each line waits for the one before it, so a line never cuts off another.
   const speechQueue = useRef<Promise<void>>(Promise.resolve());
   /** Lines LARA repeats (the wake reply, follow-up prompts, sign-offs, fixed lines), synthesized once. */
@@ -235,9 +240,27 @@ export function useLara(shared?: { id: string; token: string } | null) {
   );
 
   const ask = useCallback(
-    async (input: { question: string } | { alert: { code: string; detail?: string } }) => {
-      if (!mission || busy.current) return;
+    async (
+      input: { question: string } | { alert: { code: string; detail?: string } },
+      via: AskVia = "text",
+      /** Spoken after the answer, in the same recording, for a wake-word conversation. */
+      followUp?: string,
+    ) => {
+      if (busy.current) return;
+      // The training command is handled here, without the model or the mission session, so it
+      // works the same every time.
+      const command = "question" in input && training && parseTrainingCommand(input.question);
+      if (command) {
+        const before = training.state.status;
+        if (command === "activate") training.restart();
+        else training.dismiss();
+        setTurns((t) => [...t, { role: "user", content: input.question }]);
+        say(trainingCommandLine(command, before));
+        return;
+      }
+      if (!mission) return;
       busy.current = true;
+      if ("question" in input) emitTraining?.({ type: "lara_asked", via });
       setError(null);
       const userTurn: Turn =
         "question" in input
@@ -259,7 +282,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         );
         await runActions(answer.actions ?? []);
         setTurns((t) => [...t, { role: "assistant", content: answer.text, alert: userTurn.alert }]);
-        await speak(answer.text);
+        await speak(followUp ? withFollowUp(answer.text, followUp) : answer.text);
       } catch (e) {
         setError((e as Error).message);
       } finally {
@@ -267,7 +290,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         setStatus("idle");
       }
     },
-    [authed, bridge, mission, runActions, speak, turns],
+    [authed, bridge, emitTraining, mission, runActions, say, speak, training, turns],
   );
 
   // Poll the mission; announce any finding that was not present before.
@@ -354,7 +377,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
       if (!mission) return;
       try {
         const question = stripWakePhrase(await transcribe(clip));
-        if (question) await ask({ question });
+        if (question) await ask({ question }, "voice");
         else setStatus("idle");
       } catch (e) {
         setError((e as Error).message);
@@ -378,7 +401,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
         recorder.current = null;
         const clip = new Blob(chunks, { type: r.mimeType || "audio/webm" });
         if (clip.size === 0) setStatus("idle");
-        else void askFromAudio(clip);
+        else {
+          playHeardCue();
+          void askFromAudio(clip);
+        }
       };
       recorder.current = r;
       r.start();
@@ -391,8 +417,8 @@ export function useLara(shared?: { id: string; token: string } | null) {
 
   const stopListening = useCallback(() => recorder.current?.stop(), []);
 
-  const prefetchFollowUpPhrases = () => {
-    if (voice) [...FOLLOW_UP_PROMPTS, ...SIGN_OFFS].forEach(phraseClip);
+  const prefetchSignOffs = () => {
+    if (voice) SIGN_OFFS.forEach(phraseClip);
   };
   /** Plays a short phrase. Resolves once it has finished, or at once with the voice off. */
   const sayPhrase = async (text: string) => {
@@ -411,7 +437,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
       while (busy.current) await new Promise((r) => setTimeout(r, ASK_DONE_CHECK_MS));
     },
     transcribe,
-    ask: (question) => ask({ question }),
+    ask: (question, followUp) => ask({ question }, "wake_word", followUp),
     say: sayPhrase,
     choose: (phrases) => (lastPhrase.current = pickPhrase(phrases, lastPhrase.current)),
   };
@@ -426,9 +452,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
     onCapturing: () => {
       audio.current?.pause();
       setStatus("listening");
-      prefetchFollowUpPhrases();
+      prefetchSignOffs();
     },
     onUtterance: async (clip: Blob): Promise<AfterUtterance> => {
+      playHeardCue();
       try {
         const next = await answerWakeQuestion(clip, wakeTurnSteps);
         if (next === "end") setStatus("idle");

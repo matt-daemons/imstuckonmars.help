@@ -26,10 +26,10 @@ describe("createLaraBridge", () => {
   it("reads every registered context key", () => {
     const bridge = createLaraBridge();
     const remove = bridge.provide("route_plan", () => ({ destinations: 4 }));
-    bridge.provide("simulation", () => null);
-    expect(bridge.context()).toEqual({ route_plan: { destinations: 4 }, simulation: null });
+    bridge.provide("training", () => null);
+    expect(bridge.context()).toEqual({ route_plan: { destinations: 4 }, training: null });
     remove();
-    expect(bridge.context()).toEqual({ simulation: null });
+    expect(bridge.context()).toEqual({ training: null });
   });
 
   it("runs every handler of one type, so the route and the rover can share focus_map", () => {
@@ -48,8 +48,8 @@ describe("createLaraBridge", () => {
     bridge.provide("route_plan", () => {
       throw new Error("not ready");
     });
-    bridge.provide("simulation", () => null);
-    expect(bridge.context()).toEqual({ simulation: null });
+    bridge.provide("training", () => null);
+    expect(bridge.context()).toEqual({ training: null });
   });
 
   it("says a line through the registered speaker", () => {
