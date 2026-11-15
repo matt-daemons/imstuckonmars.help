@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 — mobility reopened: drive **and** walk (with Role C); MapLibre port landed (`1bbb6d0`) (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sun Nov 15, 2026 — **2-leg journeys confirmed (drive to a staging point, then walk/EVA)**; roughness + boulder bounds done for all 4 sites; MapLibre port landed (`1bbb6d0`); role A now shared by the team (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -35,7 +35,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 
 > **Naming note:** Roles **A–D and M** in this table are _human team members_. They are unrelated to the **Claude advisor personas** in §9. When a request says "Role 1/2/3" in the context of asking Claude for advice, it means the §9 personas; when it refers to team ownership of work, it means this table. Jess = team role **B** (stable data).
 > | Role | Owner | Scope | |---|---|---|
-> | **A — Flight rules, GO/NO-GO, integration** | TBD | Owns the flight rules/assumptions sheet; every GO/NO-GO cites it. Owns integration: common time base, file names, CRS, `config.yaml`, `schemas/`, `validate.ts`. The GO/NO-GO logic and flight rules are the critical decisions NASA would want from the data. |
+> | **A — Flight rules, GO/NO-GO, integration** | **Shared by the whole team** (Sun Nov 15) | No single owner any more: the team decides A items together, so everyone is on board with format/schema/threshold changes. Covers: the flight rules/assumptions sheet; every GO/NO-GO cites it. Owns integration: common time base, file names, CRS, `config.yaml`, `schemas/`, `validate.ts`. The GO/NO-GO logic and flight rules are the critical decisions NASA would want from the data. |
 > | **B — Stable data (geospatial/mapping)** | **Jess** | Terrain (DEM), slope, roughness, hazard masks, shadows (sun + terrain), geology. Reproject → clip → snap to common grid → clean → derive → export. |
 > | **C — Routing & mission planning** | TBD | Picks science stops (sample/data collection sites); cost surface → least-cost **rover** route base → site; drive time; **battery / return-to-base margin**. Builds on B and D. Rover energy figures are labelled assumptions (or simulated). |
 > | **D — Live data + forecast (space weather/radiation console)** | TBD | Replays archived live data as a "live" feed; same-day forecast as threshold rules with confidence; RAG explanation (stretch/might drop). |
@@ -90,8 +90,8 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
 | Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and rover battery. |
-| Mobility (traverse mode) | **Updated Sun Nov 15 (Jess + Role C): support BOTH driving and walking (EVA).** Still being confirmed: (a) 2-leg journeys (drive + walk) vs (b) one mode per journey, with walking/EVA allowed only for short distances. No new POI is being added — the 4 sites stay. _Superseded earlier decision:_ **Rover drives only — no walking portion** (team meeting, Sun Nov 15). Why: POIs are 93–468 km from the base. Rover + walk (2 legs) was too complex (different risks and datasets per leg). Walking-only would mean moving the base next to one POI (proof of concept only). Driving wins because (1) **battery running low on bad terrain** is a real risk, which gives the slope/terrain model its value; (2) we can use **all 4 sites**, not a POC; (3) battery data is easy to add or simulate (label it simulated). Pitch line for spacesuit mobility: crew stay in the pressurized rover; suited sampling at the stop is out of scope. |
-| Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. **⚠ With drive + walk, keep the suit/walk rules (20° suit slope, 8 h suit, walk-back 2 km) for EVA legs and ADD rover rules** (rover slope limit, range/battery + reserve, drive hours per sol) — owner A. |
+| Mobility (traverse mode) | **Confirmed Sun Nov 15 (Jess + Role C): 2-leg journeys — drive (rover) base → staging point, then walk (EVA) staging point → POI and back.** Drive leg uses rover rules + slope/thermal inertia; walk leg uses suit rules + slope + roughness. No new POI is being added — the 4 sites stay. _Superseded earlier decision:_ **Rover drives only — no walking portion** (team meeting, Sun Nov 15). Why: POIs are 93–468 km from the base. Rover + walk (2 legs) was too complex (different risks and datasets per leg). Walking-only would mean moving the base next to one POI (proof of concept only). Driving wins because (1) **battery running low on bad terrain** is a real risk, which gives the slope/terrain model its value; (2) we can use **all 4 sites**, not a POC; (3) battery data is easy to add or simulate (label it simulated). Pitch line for spacesuit mobility: crew stay in the pressurized rover; suited sampling at the stop is out of scope. |
+| Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. **⚠ With drive + walk, keep the suit/walk rules (20° suit slope, 8 h suit, walk-back 2 km) for EVA legs and ADD rover rules** (rover slope limit, range/battery + reserve, drive hours per sol) — team (shared role A). |
 
 ## 5. User story — "Plan a science mission and get home"
 
@@ -147,9 +147,9 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 2. **HiRISE DTM coverage in Arcadia Planitia:** check which DTMs exist, then pick an AOI that fits.
 3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
 4. **Fill in flight rules:** suit/walk rules stay (EVA legs) + **rover rules** (slope limit, range/battery reserve, drive hours per sol); radiation thresholds done.
-5. **Journey structure (Role C + team):** 2-leg drive+walk journeys, or one mode per journey with EVA only for short distances? Define "short" (walk-back ≤ 2 km rule is the candidate).
+5. ~~Journey structure~~ ✅ 2-leg (drive + walk). Still open: how the staging point is chosen (walk-back ≤ 2 km rule is the candidate cap on the walk leg).
 6. ✅ **MapLibre port (M)** landed (`1bbb6d0`, `docs/MAP_RENDERER.md`). ✅ Site layers re-checked on MapLibre 6.18.0 (Sun Nov 15 ~01:30, Step 3b). Original note: Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
-7. **Role A owner** and owners for C and D: confirm names.
+7. ~~Role A owner~~ ✅ **Role A is shared by the whole team** (Sun Nov 15): flight rules, thresholds, formats/schemas and integration are agreed together. Owners for C and D: confirm names.
 
 ## 8. Working agreements
 
@@ -172,7 +172,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 
 ### Datasets (NASA and partners)
 
-- **HiRISE imagery + DTMs** (4 water-ice sites): NASA/JPL/University of Arizona. DTMs DTEEC_033225_2250_033146_2250_A01, DTEEC_034082_2260_033014_2260_A01, DTEEC_037352_2245_037418_2245_A01, DTEEC_054060_2265_054126_2265_A01 + RED orthos. https://www.uahirise.org/dtm/ — found via PDS Geosciences Node ODE REST API (https://oderest.rsl.wustl.edu/). Download URLs: `data/raw/README.md`.
+- **HiRISE imagery + DTMs** (4 water-ice sites): NASA/JPL/University of Arizona. DTMs DTEEC_033225_2250_033146_2250_A01, DTEEC_034082_2260_033014_2260_A01, DTEEC_037352_2245_037418_2245_A01, DTEEC_054060_2265_054126_2265_A01 + RED orthos; sun geometry for rock shadows from each observation's PDS RDR label (e.g. https://hirise.lpl.arizona.edu/PDS/RDR/ESP/ORB_033200_033299/ESP_033225_2250/ESP_033225_2250_RED.LBL). https://www.uahirise.org/dtm/ — found via PDS Geosciences Node ODE REST API (https://oderest.rsl.wustl.edu/). Download URLs: `data/raw/README.md`.
 - **THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px**, tiles 30N120E + 30N180E: USGS Astrogeology / Arizona State University (NASA Mars Odyssey THEMIS). https://astrogeology.usgs.gov/search/map/themis_thermal_inertia_mosaic_quantitative_30n180e_100mpp (and …_30n120e_100mpp). Credit: NASA/JPL-Caltech/Arizona State University/USGS.
 - **MOLA** global elevation (Mars Global Surveyor): NASA/GSFC; and **MOLA/HRSC blended DEM 200 m** (NASA/ESA/DLR/FU Berlin, USGS Astrogeology). Used by teammates' terrain + MOLA pads around sites.
 - **Viking global colour mosaic** (teammates' basemap): USGS/NASA Ames colorized Viking MDIM 2.1. Credit: NASA/Viking; USGS; NASA Ames.
@@ -188,25 +188,33 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 
 - Allison, M. & McEwen, M. (2000). A post-Pathfinder evaluation of areocentric solar coordinates with improved timing recipes for Mars seasonal/diurnal climate studies. _Planetary and Space Science_ 48(2–3), 215–235. doi:10.1016/S0032-0633(99)00092-6 (Mars24 clock) ✓
 - Archinal, B. A. et al. (2018). Report of the IAU Working Group on Cartographic Coordinates and Rotational Elements: 2015. _Celestial Mechanics and Dynamical Astronomy_ 130(3), 22. doi:10.1007/s10569-017-9805-5 (Mars sphere R = 3,396,190 m — this is the IAU **equatorial** radius; the mean radius is 3,389.5 km. Say "equatorial", not "mean", on slides) ✓
-- Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
 - Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. _JGR_ 115(E7), E00F03. doi:10.1029/2010JE003633 (Spirit embedded at "Troy" — soft-ground pitch line) ✓
 - Bertrand, T., Wilson, R. J., Kahre, M. A. et al. (2020). Simulation of the 2018 Global Dust Storm on Mars Using the NASA Ames Mars GCM: A Multitracer Approach. _JGR: Planets_ 125(7), e2019JE006122. doi:10.1029/2019JE006122 (dust playback) ✓
 - Bramson, A. M. et al. (2015). Widespread excess ice in Arcadia Planitia, Mars. _Geophysical Research Letters_ 42, 6566–6574. (terraced craters → buried ice)
-- Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. _Earth and Space Science_ 11(7), e2024EA003555. doi:10.1029/2024EA003555 ✓
 - Christensen, P. R. et al. (2004). The Thermal Emission Imaging System (THEMIS) for the Mars 2001 Odyssey Mission. _Space Science Reviews_ 110, 85–130.
+- Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. _Earth and Space Science_ 11(7), e2024EA003555. doi:10.1029/2024EA003555 ✓
 - Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
 - Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. doi:10.1029/1999JE001025 (MCD; also cite the MCD version if used) ✓
+- Golombek, M. & Rapp, D. (1997). Size-frequency distributions of rocks on Mars and Earth analog sites: implications for future landed missions. _JGR_ 102(E2), 4117–4129. doi:10.1029/96JE03319 (rock-abundance model F(D) = k·exp(−q·D), q = 1.79 + 0.152/k) **(verify)**
+- Golombek, M. et al. (2017). Selection of the InSight landing site. _Space Science Reviews_ 211, 5–95. doi:10.1007/s11214-016-0321-9 (rock abundance < 10 % lander limit; HiRISE rock counts unreliable below ~1.5 m) **(verify)**
+- Golombek, M. P. et al. (2008). Size-frequency distributions of rocks on the northern plains of Mars with special reference to Phoenix landing surfaces. _JGR_ 113, E00A09. doi:10.1029/2007JE003065 (shadow-based rock counts on HiRISE, northern plains) **(verify)**
+- Golombek, M. P. et al. (2012). Detection and characterization of rocks and rock size-frequency distributions at the final four Mars Science Laboratory landing sites. _Mars_ 7, 1–22. doi:10.1555/mars.2012.0001 (automated vs manual counts) **(verify)**
 - Guo, J. et al. (2015). Modeling the variations of dose rate measured by RAD during the first MSL Martian year: 2012–2014. _ApJ_ 810(1), 24. doi:10.1088/0004-637X/810/1/24 (quiet rate varies with air pressure and solar cycle; it gives **no** average dose rate) ✓ title corrected
-- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; **check the page before quoting the number on a slide**)
+- Hanley, J. A. & Lippman-Hand, A. (1983). If nothing goes wrong, is everything all right? Interpreting zero numerators. _JAMA_ 249(13), 1743–1745. (rule of three — boulder review bound)
 - Hassler, D. M. et al. (2012). The Radiation Assessment Detector (RAD) Investigation. _Space Science Reviews_ 170(1–4), 503–558. doi:10.1007/s11214-012-9913-1 (RAD instrument) ✓
-- Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24.
+- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; **check the page before quoting the number on a slide**)
+- Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24. (DTM vertical precision → roughness noise floor)
 - Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
 - Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
+- Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412, 411–414. (ice-rich mantle with pitted texture — why the sites are rock-poor) **(verify)**
+- NASA NSSDC, "The Apollo Lunar Roving Vehicle", https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html (LRV ground clearance 36 cm loaded — rover obstacle analogue)
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
+- Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
 - Smith, D. E. et al. (2001). Mars Orbiter Laser Altimeter: experiment summary after the first year of global mapping of Mars. _JGR_ 106(E10), 23689–23722.
+- Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. _JASA_ 22(158), 209–212. (Wilson bound — boulder review)
 
-### Flight-rule sources (owned by team role A — full wording in `config.yaml`)
+### Flight-rule sources (agreed by the team, shared role A — full wording in `config.yaml`)
 
 NASA xEVA ConOps (NTRS 20200001071) · NASA EVA-EXP-0042 Rev B · ISS suit timeline (NTRS 20140009556) · NASA field test (NTRS 20080014286) · NASA radiation action levels (NTRS 20230004380) · NASA OCHMO-TB-020 · Posner et al. (NTRS 20250001542).
 
@@ -241,6 +249,28 @@ Atkinson Hyperlegible Next · IBM Plex Sans Condensed · JetBrains Mono (all SIL
 - **Mobility (Sun Nov 15, with Role C): driving AND walking** — see §4 "Mobility" (2-leg vs one-mode-per-journey still open). No new POI.
 - **Map library: M replaced Mapbox with MapLibre** (`1bbb6d0`, unexpected ruling). ✅ Site layers re-checked after the port (Step 3b): all 4 sites pass; steep-tilt terrain caveat under Gotchas.
 
+**Walking-scale ground: roughness + boulders ✅ (Sun Nov 15, Role B, for the walking EVA legs):**
+
+- `pnpm pipe:roughness <dtm>` (`pipelines/stable/roughness.ts`, ~15 s): RMS height deviation from the local 5 m trend, 5 m cells, from the 1 m DTM.
+  COG `data/processed/sites/<dtm>/roughness.tif` (Int16 cm, same grid as `slope.tif`), tiles `public/data/sites/<dtm>/roughness/` z11–16 (both
+  gitignored), summary `public/data/processed/roughness-sites.json`. **Finding:** p50 0.08–0.15 m, mostly DTM noise (precision ~tens of cm, Kirk
+  et al. 2008); only crater rims/ridge flanks stand out. ESP_034082's higher values look like a noisier DTM, not rougher ground. The DTM can't see
+  walker-size obstacles → boulders below.
+- `pnpm pipe:boulders [dtm]` (`pipelines/stable/boulders.ts`, ~10 s/site): rock-shadow candidates within 500 m of each POI on the 0.25 m ortho
+  (Golombek et al. 2008/2012 method; sun geometry from each PDS RDR label) + lit-face/pit filters → **seeded random gallery of 36 candidates**
+  (`data/interim/hirise/<dtm>/boulders-review.png`) → human review recorded in `pipelines/stable/boulders-review.json` → **upper bound** on rock
+  abundance k (rule of three / Wilson) → Golombek & Rapp (1997) model predicts rocks per 100 m² below HiRISE resolution.
+  **Finding:** the ground is polygonised, pitted ice-rich mantle; the automatic step flags pits and trough shading, and review found **0/36, 0/36, 0/36, 0/1** real rocks
+  (Claude's visual check, **confirmed by Jess**; ESP_034082 #21 was ambiguous → judged not a rock). Upper bounds: k ≤ 6.7 % · 10.7 % · 9.3 % · 4.0 %;
+  rocks ≥ 0.5 m ≤ 2.5 · 5.5 · 4.5 · 0.8 per 100 m² (033225 · 034082 · 037352 · 054060). Bounds are loose because only 36 were reviewed (review 100 →
+  precision ≤ 3 %). Re-running with changed thresholds marks the review stale. Analogue: InSight required rock abundance < 10 % (Golombek et al. 2017).
+  Pitch line: "no boulder fields near the stops; the walking hazards are polygon troughs and crater walls."
+- ⚠ **Categories/sizes NOT yet confirmed with the team:** roughness classes (0.25 / 0.5 / 1 m) and walker rock sizes (0.3 / 0.5 / 1 m) are
+  **Role B ASSUMPTIONS** kept in the pipelines (adding keys to `config.yaml` would break `config.test.ts`). **No published NASA limit exists** for
+  suited walking over rocks or roughness (xEVA ConOps only gives 20° slope, ~2 km/h, 2 km walk-back). Nearest sourced figures: Apollo LRV ground
+  clearance ~35–36 cm (NASA NSSDC); MER: < 1 % of area covered by rocks > 0.5 m high; InSight: rock abundance < 10 %. Agree with the team (shared role A).
+- Roughness tiles not yet on R2; neither layer is in `sites:package`, the Scene panel or `manifest.json` yet (after MapLibre port).
+
 **Thermal inertia ✅ (Sun Nov 15):** `pnpm pipe:thermal-inertia` (`pipelines/stable/thermal-inertia.ts`, ~4 min) reads THEMIS quantitative TI
 (100 m) over HTTP for 170–196°E, 43–48°N. Outputs: `data/processed/thermal-inertia/thermal-inertia.tif` (Int16 TI, nodata −9999, **lon 0..360 °E**
 because the AOI crosses ±180; ~57 % of the box has THEMIS data, gaps are mosaic holes), overlay tiles `public/data/thermal-inertia/` z5–11
@@ -254,7 +284,21 @@ JSON also carries `caveats[]` (incomplete coverage, ±20 %, top few cm only, 100
 Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/suits); firmest ground is farthest away.
 Not yet wired into the map (MapLibre port has landed, so this is unblocked) or into C's cost surface.
 
-**Next step for Role B:** **SWIM** (still down, HTTP 523) → wire TI into map (show coverage + caveats) → geology. Roughness / rock abundance: **another agent is on it** (see "Future data layers").
+**Next step for Role B:** confirm roughness/rock categories with the team → add roughness to `sites:package` + R2 → **SWIM** (still down, HTTP 523) → wire TI + roughness into
+map after M's port (show coverage + caveats) → geology.
+
+**Delegation candidates (Sun Nov 15) — for the free team member, or to take load off Role C (now owns 2-leg routing):**
+
+- **Rover energy model** (C → delegate): table of labelled-assumption figures (Wh/km vs slope and soft ground, speed, battery size, reserve)
+  as a small TS function `energyWh(segment)`. Self-contained; C just calls it.
+- **Staging-point finder** (C → delegate, or Role B): candidate rover parking spots near each POI = flat (slope < rover limit), smooth, within
+  walk-back ≤ 2 km of the POI. Pure raster work on slope.tif + roughness.tif → GeoJSON points.
+- **Walk-leg time/consumables** (C → delegate): suit time = walk distance / Mars walking pace (labelled assumption) + sampling time + 30 min reserve.
+- **Regional slope for the drive leg** (Role B or delegate): MOLA/HRSC 200 m slope over base → sites corridor (same recipe as `slope.ts`).
+- **Mission summary / sources panel** (M → delegate): one screen listing every layer with its NASA credit + caveats (Validity criterion);
+  data is already in `manifest.json`, `*-sites.json` `caveats[]`, §10.
+- **References check**: verify every "(verify)" citation in §10 (DOIs/pages) before slides.
+- **Demo-script dry run + test data**: route GeoJSON fixtures for both legs so M can build the UI before C's routes land.
 
 **How to run (from repo root, Node 24 via fnm, GDAL via brew)**
 
@@ -408,7 +452,7 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
   (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. Shared via R2 (`sites-v1`) or `pnpm pipe:slope`.
 - **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` — 1 m DTM, lon/lat Mars 2000, nodata −32768. MOLA 463 m around it.
 - **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — currently suit/walk values (slope ≤ 20°, suit 8 h, 30 min reserve,
-  walk-back ≤ 2 km) + radiation 18 / 90 µGy/h. **Rover rules pending from A** (rover-only decision).
+  walk-back ≤ 2 km) + radiation 18 / 90 µGy/h. **Rover rules pending from the team (shared role A)**.
 - **Conventions:** lon −180..180 east-positive in files (ESP_054060 is at +172.56, the rest negative — **AOI crosses ±180**); distances with
   Mars radius 3,396,190 m, never Mapbox/Turf defaults (Earth); don't read heights from display tiles (+10 km).
 - **Known limits:** DTMs cover ~6 × 6–13 km each; no rock abundance, roughness, soil strength or dust data yet; slope from 1 m DTM misses
@@ -422,7 +466,6 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 - **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost). **Higher priority now:** soft ground drains rover battery.
 - **Dust-raising potential / dust cover** — e.g. TES dust cover index + thermal inertia + wind; feeds the dust-storm verdicts and suit/visor wear.
 - **Geology** — USGS geologic map units around the sites (Role B scope).
-- **Surface roughness / rock abundance** — from the 1 m DTM (roughness) and HiRISE boulder counts; rover trafficability beyond slope.
 - **Illumination / shadows** — sun position (teammates' Mars clock) + DTM horizon → shadowed terrain and timing of EVAs.
 - **CRISM** where covered (hydrated/ice-related minerals); **line-of-sight to habitat** (one-sentence comms story or simple viewshed).
 - **Upgrades:** imagery to z18 (0.22 m, ~4× tiles); tinted HiRISE RED.
