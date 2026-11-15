@@ -2,8 +2,9 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 
 import type { LngLat } from "@/lib/mars/types";
 
-// MapLibre adds fit margins to the live sidebar/HUD padding by default.
-const FIT_PADDING_PX = { top: 96, right: 64, bottom: 64, left: 64 };
+// MapLibre adds fit margins to the live sidebar/HUD padding by default. The bottom one clears the
+// Mission dashboard button and the map credits under it (96 px tall together) with 16 px to spare.
+const FIT_PADDING_PX = { top: 96, right: 64, bottom: 112, left: 64 };
 
 export const prefersReducedMotion = () =>
   typeof matchMedia !== "undefined" && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -41,7 +42,7 @@ export function fitPoints(
     padding: {
       ...FIT_PADDING_PX,
       top: Math.min(96, height / 4),
-      bottom: Math.min(64, height / 4),
+      bottom: Math.min(FIT_PADDING_PX.bottom, height / 4),
       left: Math.min(64, width / 5),
       right: Math.min(64, width / 5),
     },
