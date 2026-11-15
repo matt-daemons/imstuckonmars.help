@@ -165,6 +165,14 @@ describe("A* route", () => {
     expect(astar.expanded).toBeLessThanOrEqual(dijkstra.expanded);
   });
 
+  it("costs the 3D path length by default", () => {
+    const grid = flatGrid(20, 20, 10);
+    grid.heights.forEach((_, cell) => (grid.heights[cell] = (cell % 20) * 2));
+    const result = route(grid, openWalls(grid), center(grid, 10, 1), center(grid, 10, 18));
+    expect(result.distance_m).toBeCloseTo(17 * Math.hypot(10, 2), 6);
+    expect(result.cost).toBeCloseTo(result.distance_m, 9);
+  });
+
   it("sums both legs", () => {
     const grid = flatGrid(11, 11, 100);
     const { outbound, back, summary } = planWalk(

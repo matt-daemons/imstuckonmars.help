@@ -21,7 +21,10 @@ export interface PlannedPath {
   status: RouteStatus;
   /** Exact start, interior cell centres, exact goal; [] unless ok. */
   path: LngLat[];
+  /** 3D length of the path. */
   distance_m: number;
+  /** The A* total in the cost model's unit: metres by default, Wh when driving. */
+  cost: number;
   /** Steepest cell slope among path cells. */
   max_slope_deg: number;
   /** Walking time by Tobler's off-path hiking function. */
@@ -103,6 +106,17 @@ const NEIGHBOURS = [
 
 type CellSizes = { dx: number; dy: number }[];
 
+/** What a step costs A*, and the least any step can cost per metre, which keeps the heuristic admissible. */
+export interface StepCostModel {
+  stepCost: (horizontalM: number, riseM: number) => number;
+  costPerMetreLowerBound: number;
+}
+
+const DISTANCE_COST: StepCostModel = {
+  stepCost: (horizontalM, riseM) => Math.hypot(horizontalM, riseM),
+  costPerMetreLowerBound: 1,
+};
+
 /** A* over the grid from the start cell to the goal cell. */
 export function findPath(
   grid: RouteGrid,
@@ -110,7 +124,11 @@ export function findPath(
   walls: Uint8Array,
   start: LngLat,
   goal: LngLat,
-  { maxSlopeDeg = MAX_SLOPE_DEG, heuristic = true } = {},
+  {
+    maxSlopeDeg = MAX_SLOPE_DEG,
+    heuristic = true,
+    cost = DISTANCE_COST,
+  }: { maxSlopeDeg?: number; heuristic?: boolean; cost?: StepCostModel } = {},
 ): PlannedPath {
   const startCell = cellAt(grid, start);
   const goalCell = cellAt(grid, goal);
@@ -119,7 +137,10 @@ export function findPath(
   if (walls[goalCell]) return failed("goal_blocked", 0);
 
   const sizes = Array.from({ length: grid.height }, (_, row) => cellSize(grid, row));
-  const h = heuristic ? distanceEstimate(grid, sizes, goalCell) : () => 0;
+  const distanceToGoal = distanceEstimate(grid, sizes, goalCell);
+  const h = heuristic
+    ? (cell: number) => cost.costPerMetreLowerBound * distanceToGoal(cell)
+    : () => 0;
   const gScore = new Float64Array(grid.width * grid.height).fill(Infinity);
   const cameFrom = new Int32Array(grid.width * grid.height).fill(-1);
   const closed = new Uint8Array(grid.width * grid.height);
@@ -135,10 +156,10 @@ export function findPath(
     expanded++;
     if (current === goalCell) {
       const cells = reconstructPath(cameFrom, current);
-      return finished(grid, slope, sizes, cells, start, goal, gScore[current], expanded);
+      return finished(grid, slope, cells, start, goal, gScore[current], expanded);
     }
-    for (const { cell: next, cost } of steps(grid, walls, sizes, current, maxSlopeDeg)) {
-      const tentativeG = gScore[current] + cost;
+    for (const { cell: next, stepCost } of steps(grid, walls, sizes, cost, current, maxSlopeDeg)) {
+      const tentativeG = gScore[current] + stepCost;
       if (tentativeG < gScore[next]) {
         cameFrom[next] = current;
         gScore[next] = tentativeG;
@@ -150,7 +171,7 @@ export function findPath(
 }
 
 function failed(status: RouteStatus, expanded: number): PlannedPath {
-  return { status, path: [], distance_m: 0, max_slope_deg: 0, time_min: 0, expanded };
+  return { status, path: [], distance_m: 0, cost: 0, max_slope_deg: 0, time_min: 0, expanded };
 }
 
 /** Straight-line distance with the grid's smallest spacings, so it never overestimates. */
@@ -166,14 +187,15 @@ function distanceEstimate(grid: RouteGrid, sizes: CellSizes, goalCell: number) {
     );
 }
 
-/** The open neighbours of a cell and the 3D cost of stepping to each. */
+/** The open neighbours of a cell and the cost of stepping to each. */
 function steps(
   grid: RouteGrid,
   walls: Uint8Array,
   sizes: CellSizes,
+  cost: StepCostModel,
   cell: number,
   maxSlopeDeg: number,
-): { cell: number; cost: number }[] {
+): { cell: number; stepCost: number }[] {
   const { width, height, heights } = grid;
   const row = Math.floor(cell / width);
   const col = cell % width;
@@ -188,7 +210,7 @@ function steps(
     const horizontal = horizontalM(sizes, row, dRow, dCol);
     const rise = heights[next] - heights[cell];
     if (Math.atan(Math.abs(rise) / horizontal) * RADIANS_TO_DEGREES > maxSlopeDeg) continue;
-    result.push({ cell: next, cost: Math.hypot(horizontal, rise) });
+    result.push({ cell: next, stepCost: cost.stepCost(horizontal, rise) });
   }
   return result;
 }
@@ -209,34 +231,48 @@ function reconstructPath(cameFrom: Int32Array, goalCell: number): number[] {
 function finished(
   grid: RouteGrid,
   slope: Float32Array,
-  sizes: CellSizes,
   cells: number[],
   start: LngLat,
   goal: LngLat,
-  distance_m: number,
+  cost: number,
   expanded: number,
 ): PlannedPath {
+  const legSteps = pathSteps(grid, cells);
   return {
     status: "ok",
     path: [start, ...cells.slice(1, -1).map((cell) => cellCenter(grid, cell)), goal],
-    distance_m,
+    distance_m: legSteps.reduce((sum, step) => sum + Math.hypot(step.horizontalM, step.riseM), 0),
+    cost,
     max_slope_deg: Math.max(...cells.map((cell) => slope[cell])),
-    time_min: walkingMinutes(grid, sizes, cells),
+    time_min: walkingMinutes(legSteps),
     expanded,
   };
 }
 
+/** One step between neighbouring cells, in metres. */
+export type PathStep = { horizontalM: number; riseM: number };
+
+/** Horizontal length and rise of each step along a path of cells. */
+export function pathSteps(grid: RouteGrid, cells: number[]): PathStep[] {
+  const sizes = Array.from({ length: grid.height }, (_, row) => cellSize(grid, row));
+  return cells.slice(1).map((cell, i) => {
+    const from = cells[i];
+    const row = Math.floor(from / grid.width);
+    const dRow = Math.floor(cell / grid.width) - row;
+    const dCol = (cell % grid.width) - (from % grid.width);
+    return {
+      horizontalM: horizontalM(sizes, row, dRow, dCol),
+      riseM: grid.heights[cell] - grid.heights[from],
+    };
+  });
+}
+
 // Tobler's off-path hiking function: km/h = 3.6 · e^(−3.5 · |grade + 0.05|), uphill grade positive.
-function walkingMinutes(grid: RouteGrid, sizes: CellSizes, cells: number[]): number {
+function walkingMinutes(legSteps: PathStep[]): number {
   let minutes = 0;
-  for (let i = 1; i < cells.length; i++) {
-    const row = Math.floor(cells[i - 1] / grid.width);
-    const dRow = Math.floor(cells[i] / grid.width) - row;
-    const dCol = (cells[i] % grid.width) - (cells[i - 1] % grid.width);
-    const horizontal = horizontalM(sizes, row, dRow, dCol);
-    const grade = (grid.heights[cells[i]] - grid.heights[cells[i - 1]]) / horizontal;
-    const speedKmH = 3.6 * Math.exp(-3.5 * Math.abs(grade + 0.05));
-    minutes += horizontal / ((speedKmH * 1000) / 60);
+  for (const { horizontalM, riseM } of legSteps) {
+    const speedKmH = 3.6 * Math.exp(-3.5 * Math.abs(riseM / horizontalM + 0.05));
+    minutes += horizontalM / ((speedKmH * 1000) / 60);
   }
   return minutes;
 }
@@ -265,10 +301,11 @@ export function planWalk(
   };
 }
 
-// Equirectangular approximation on the Mars sphere, fine over walking distances.
-function marsDistanceM([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
+// Equirectangular approximation on the Mars sphere, fine over walking and driving distances.
+export function marsDistanceM([lng1, lat1]: LngLat, [lng2, lat2]: LngLat): number {
   const meanLat = ((lat1 + lat2) / 2) * DEGREES_TO_RADIANS;
-  const east = (lng2 - lng1) * DEGREES_TO_RADIANS * Math.cos(meanLat);
+  const eastDeg = ((lng2 - lng1 + 540) % 360) - 180; // the short way across the ±180° line
+  const east = eastDeg * DEGREES_TO_RADIANS * Math.cos(meanLat);
   const north = (lat2 - lat1) * DEGREES_TO_RADIANS;
   return MARS_RADIUS_M * Math.hypot(east, north);
 }

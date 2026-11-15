@@ -10,7 +10,7 @@ const b: LngLat = [-175.99, 46.01];
 const c: LngLat = [-175.98, 46];
 
 function leg(status: PlannedPath["status"], path: LngLat[]): PlannedPath {
-  return { status, path, distance_m: 0, max_slope_deg: 0, time_min: 0, expanded: 0 };
+  return { status, path, distance_m: 0, cost: 0, max_slope_deg: 0, time_min: 0, expanded: 0 };
 }
 
 describe("zoneFeature", () => {
