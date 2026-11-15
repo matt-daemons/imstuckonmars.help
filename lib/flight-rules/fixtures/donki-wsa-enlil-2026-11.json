@@ -1,0 +1,38 @@
+[
+  {
+    "simulationID": "WSA-ENLIL/49560/1",
+    "modelCompletionTime": "2026-11-15T00:47Z",
+    "au": 2.0,
+    "cmeInputs": [],
+    "estimatedShockArrivalTime": null,
+    "isEarthGB": false,
+    "isEarthMinorImpact": false,
+    "rmin_re": null,
+    "kp_18": null,
+    "kp_90": null,
+    "kp_135": null,
+    "kp_180": null,
+    "estimatedDuration": null,
+    "impactList": [
+      {
+        "location": "Europa Clipper",
+        "arrivalTime": "2026-11-18T06:00Z",
+        "isGlancingBlow": true,
+        "isMinorImpact": false
+      },
+      {
+        "location": "OSIRIS-APEX",
+        "arrivalTime": "2026-11-17T20:00Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": true
+      },
+      {
+        "location": "Parker Solar Probe",
+        "arrivalTime": "2026-11-16T08:24Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/49560/-1"
+  }
+]

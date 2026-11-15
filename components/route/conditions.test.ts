@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { EvaPlan } from "@/lib/flight-rules/evaluate";
+import type { SpaceWeatherReport } from "@/lib/flight-rules/donki";
 import { EARTH_MINUTES_PER_MARS_HOUR } from "@/lib/mars-time/mars-clock";
 import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import type { DriveSummary } from "@/lib/mars/driving";
@@ -11,6 +12,7 @@ import {
   NO_DRILL,
   notCheckedText,
   realConditions,
+  spaceWeatherLine,
   tripWithStorms,
   walkWithStorms,
 } from "./conditions";
@@ -21,35 +23,66 @@ const route: EvaPlan["route"] = { est_time_min: 180, max_slope: 8, farthest_from
 // Midday at the habitat, sunset at 18:00 local solar time.
 const midday = { ltst: "12:00:00", minutes_until_sunset: 6 * EARTH_MINUTES_PER_MARS_HOUR };
 
-const real = realConditions({ clock: midday, doseRate: 9, simulatedDust: 0.4 });
+const quietSun: SpaceWeatherReport = {
+  level: "none",
+  weather: {
+    strongest_flare_24h: "C2.8",
+    particle_event_above_10_mev: false,
+    particle_event_above_100_mev: false,
+    hours_until_storm_reaches_mars: null,
+  },
+  fetched_at: "2026-11-15T10:42:31.000Z",
+  source: "NASA DONKI",
+  measured_at: "Earth (GOES) / model arrival at Mars",
+};
+const solarWatch: SpaceWeatherReport = { ...quietSun, level: "watch" };
+
+const real = realConditions({
+  clock: midday,
+  doseRate: 9,
+  simulatedDust: 0.4,
+  spaceWeather: quietSun,
+});
 const nothingReal = realConditions({
   clock: { ltst: "12:00:00", minutes_until_sunset: null },
   doseRate: "LARA unavailable",
   simulatedDust: null,
+  spaceWeather: "failed",
 });
 const noSunset = () => null;
 
 describe("realConditions", () => {
-  it("marks each known value with its source, and knows of no solar-alert feed", () => {
+  it("marks each known value with its source", () => {
     expect(real).toMatchObject({
-      solar_alert_level: null,
+      solar_alert_level: "none",
       radiation_dose_rate: 9,
       dust_opacity: 0.4,
       minutes_until_sunset: midday.minutes_until_sunset,
       start_time: "12:00",
-      sources: { dose_rate: "real", dust: "simulation", daylight: "real" },
-      reasons_unknown: { radiation: "no solar-alert feed" },
+      sources: { radiation: "real", dose_rate: "real", dust: "simulation", daylight: "real" },
+      reasons_unknown: {},
     });
   });
 
   it("gives the reason for each unknown value", () => {
     expect(nothingReal.reasons_unknown).toEqual({
-      radiation: "no solar-alert feed",
+      radiation: "DONKI unavailable",
       dose_rate: "LARA unavailable",
       dust: "load the dust simulation",
       daylight: "no sunrise or sunset this sol",
     });
     expect(nothingReal.sources).toEqual({});
+  });
+
+  it("leaves the solar alert unknown while NASA DONKI loads", () => {
+    const loading = realConditions({
+      clock: midday,
+      doseRate: 9,
+      simulatedDust: null,
+      spaceWeather: "loading",
+    });
+    expect(loading.solar_alert_level).toBeNull();
+    expect(loading.reasons_unknown.radiation).toBe("DONKI loading");
   });
 });
 
@@ -112,10 +145,41 @@ describe("walkWithStorms", () => {
   });
 
   it("names the simulation and the radiation proxy in their reasons", () => {
-    const stormy = realConditions({ clock: midday, doseRate: 20, simulatedDust: 1.5 });
+    const stormy = realConditions({
+      clock: midday,
+      doseRate: 20,
+      simulatedDust: 1.5,
+      spaceWeather: quietSun,
+    });
     const reasons = walkWithStorms(route, stormy).reasons.join(" ");
     expect(reasons).toContain("NASA Ames 2018 storm simulation");
     expect(reasons).toContain("Curiosity RAD at Gale, proxy for Arcadia");
+  });
+
+  it("says a real solar alert comes from NASA DONKI, measured at Earth", () => {
+    const watch = realConditions({
+      clock: midday,
+      doseRate: 9,
+      simulatedDust: 0.4,
+      spaceWeather: solarWatch,
+    });
+    const check = walkWithStorms(route, watch);
+    expect(check).toMatchObject({ verdict: "CAUTION", limiting_factor: "radiation" });
+    expect(check.reasons[0]).toContain("NASA DONKI (measured at Earth)");
+  });
+
+  it("lets a drill solar alert override NASA DONKI's, labelled as drill", () => {
+    const watch = realConditions({
+      clock: midday,
+      doseRate: 9,
+      simulatedDust: 0.4,
+      spaceWeather: solarWatch,
+    });
+    const merged = mergeConditions(watch, { ...NO_DRILL, solar_alert_level: "warning" }, noSunset);
+    const check = walkWithStorms(route, merged);
+    expect(check.verdict).toBe("NO_GO");
+    expect(check.reasons[0]).toContain("Drill, not real data");
+    expect(check.reasons[0]).not.toContain("DONKI");
   });
 
   it("names the local time the walk starts at in the daylight reason", () => {
@@ -123,6 +187,7 @@ describe("walkWithStorms", () => {
       clock: { ltst: "21:14:05", minutes_until_sunset: -200 },
       doseRate: 9,
       simulatedDust: null,
+      spaceWeather: quietSun,
     });
     const check = walkWithStorms(route, night);
     expect(check.limiting_factor).toBe("daylight");
@@ -134,13 +199,22 @@ describe("walkWithStorms", () => {
     expect(check.verdict).toBe("GO");
     expect(check.not_checked).toContain("dust");
     expect(notCheckedText(check.not_checked, nothingReal)).toBe(
-      "Not checked: solar alert (no solar-alert feed), radiation (LARA unavailable), dust (load the dust simulation), daylight (no sunrise or sunset this sol).",
+      "Not checked: solar alert (DONKI unavailable), radiation (LARA unavailable), dust (load the dust simulation), daylight (no sunrise or sunset this sol).",
     );
   });
 
   it("says nothing when every value is known", () => {
-    const merged = mergeConditions(real, { ...NO_DRILL, solar_alert_level: "none" }, noSunset);
-    expect(notCheckedText(walkWithStorms(route, merged).not_checked, merged)).toBe("");
+    expect(notCheckedText(walkWithStorms(route, real).not_checked, real)).toBe("");
+  });
+});
+
+describe("spaceWeatherLine", () => {
+  it.each([
+    { feed: quietSun, line: "Space weather: none · NASA DONKI, updated 10:42 UTC" },
+    { feed: "loading" as const, line: "Space weather: loading NASA DONKI…" },
+    { feed: "failed" as const, line: "Space weather: NASA DONKI unavailable" },
+  ])("reads $line", ({ feed, line }) => {
+    expect(spaceWeatherLine(feed)).toBe(line);
   });
 });
 

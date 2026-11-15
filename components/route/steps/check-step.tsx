@@ -29,8 +29,10 @@ import {
 } from "@/components/ui/accordion";
 
 import { splitHeadline } from "./headline";
+import { MissionSummary } from "./mission-summary-dialog";
 import { ReturnCheck } from "./return-check";
 import { RouteCompare } from "./route-compare";
+import { SpaceWeatherLine } from "./space-weather-line";
 import { StormDrill } from "./storm-drill";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
@@ -103,9 +105,13 @@ function CheckLayout({
     <div className="flex flex-col gap-3">
       {/* One live region that stays mounted, so screen readers announce every change in it. */}
       <div role="status">{status}</div>
+      <SpaceWeatherLine />
       <ReturnCheck />
       {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
-      {fit}
+      <div className="flex flex-wrap gap-2">
+        {fit}
+        <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />
+      </div>
       <RouteCompare />
       <Accordion multiple>
         <AccordionItem value="details">

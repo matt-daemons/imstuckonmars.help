@@ -29,7 +29,7 @@ const FLARE_LETTER_STRENGTH: Record<string, number> = {
 const FLARE_CLASS_PATTERN = /^([ABCMX])(\d+(\.\d+)?)$/;
 
 /** Turns a flare class into a single number, so that two flares can be compared. */
-function flareStrength(flareClass: string): number {
+export function flareStrength(flareClass: string): number {
   const match = FLARE_CLASS_PATTERN.exec(flareClass.trim().toUpperCase());
   if (!match) {
     throw new Error(`Cannot read flare class "${flareClass}". Expected a value like "M5.2".`);

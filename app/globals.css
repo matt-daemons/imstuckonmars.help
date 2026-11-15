@@ -530,3 +530,47 @@
   outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
+
+/*
+ * Printing while the mission summary is open prints the summary alone, black on white, so it
+ * reads on any printer. Outside @layer so it beats coss's fixed, scrolling popup classes.
+ */
+@media print {
+  html:has([data-mission-summary]),
+  html:has([data-mission-summary]) body {
+    background: #fff;
+  }
+  /* Everything that neither holds the summary nor sits inside it. */
+  body:has([data-mission-summary])
+    *:not(:has([data-mission-summary]), [data-mission-summary], [data-mission-summary] *) {
+    display: none !important;
+  }
+  /* The portal, viewport and popup flow onto the pages instead of a fixed box on the screen. */
+  body:has([data-mission-summary]) :has([data-mission-summary]),
+  [data-mission-summary] {
+    position: static !important;
+    display: block !important;
+    max-width: none !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: none !important;
+    backdrop-filter: none !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+  [data-mission-summary] * {
+    color: #000 !important;
+    background: none !important;
+    border-color: #000 !important;
+    box-shadow: none !important;
+  }
+  [data-mission-summary] button {
+    display: none !important;
+  }
+  [data-mission-summary] :is(section, tr) {
+    break-inside: avoid;
+  }
+}

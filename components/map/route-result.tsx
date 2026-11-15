@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { PARTICLE_EVENT_HOURS } from "@/lib/flight-rules/donki";
 import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
 import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
 import {
@@ -178,6 +179,18 @@ export function searchLine(
   return `Search: A*, ${cells.toLocaleString("en-US", { useGrouping: "min2" })} cells searched.`;
 }
 
+/** The "Assumptions and data" line on where the solar alert is measured. */
+export function SolarAlertAssumption() {
+  return (
+    <p>
+      Solar alert: NASA DONKI. Flares and particle events are measured near Earth, and Mars may be
+      on the far side of the Sun, so an alert at Earth may miss Mars and a storm at Mars may not
+      show. Storm arrival at Mars is a WSA-Enlil model estimate. A particle event counts as under
+      way for {PARTICLE_EVENT_HOURS} h after it starts (our assumption).
+    </p>
+  );
+}
+
 /** The walking lines under "Assumptions and data". */
 export function WalkAssumptions({ plan }: { plan: Plan | null }) {
   return (
@@ -186,6 +199,7 @@ export function WalkAssumptions({ plan }: { plan: Plan | null }) {
         Checks slope, walk-back distance and suit time, plus the solar alert, radiation, dust and
         daylight when they are known. The start point counts as base.
       </p>
+      <SolarAlertAssumption />
       <p>Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.</p>
       <p>
         Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit, assumed

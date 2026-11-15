@@ -1,0 +1,145 @@
+[
+  {
+    "simulationID": "WSA-ENLIL/30963/1",
+    "modelCompletionTime": "2024-05-17T13:08Z",
+    "au": 2.0,
+    "cmeInputs": [
+      {
+        "cmeStartTime": "2024-05-16T13:38Z",
+        "latitude": -2.0,
+        "longitude": 120.0,
+        "speed": 1452.0,
+        "halfAngle": 27.0,
+        "time21_5": "2024-05-16T16:02Z",
+        "featureCode": "null",
+        "isMostAccurate": true,
+        "levelOfData": 1,
+        "ipsList": [],
+        "CMEID": "2024-05-16T13:38:00-CME-001"
+      }
+    ],
+    "estimatedShockArrivalTime": null,
+    "isEarthGB": false,
+    "isEarthMinorImpact": false,
+    "rmin_re": null,
+    "kp_18": null,
+    "kp_90": null,
+    "kp_135": null,
+    "kp_180": null,
+    "estimatedDuration": null,
+    "impactList": [
+      {
+        "location": "Mars",
+        "arrivalTime": "2024-05-19T09:15Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "OSIRIS-APEX",
+        "arrivalTime": "2024-05-18T08:53Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "Parker Solar Probe",
+        "arrivalTime": "2024-05-17T22:19Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "Solar Orbiter",
+        "arrivalTime": "2024-05-18T07:30Z",
+        "isGlancingBlow": true,
+        "isMinorImpact": false
+      }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/30963/-1"
+  },
+  {
+    "simulationID": "WSA-ENLIL/30976/1",
+    "modelCompletionTime": "2024-05-17T16:30Z",
+    "au": 2.0,
+    "cmeInputs": [
+      {
+        "cmeStartTime": "2024-05-17T12:48Z",
+        "latitude": 3.0,
+        "longitude": 136.0,
+        "speed": 1134.0,
+        "halfAngle": 44.0,
+        "time21_5": "2024-05-17T15:46Z",
+        "featureCode": "LE",
+        "isMostAccurate": false,
+        "levelOfData": 0,
+        "ipsList": [],
+        "CMEID": "2024-05-17T12:48:00-CME-001"
+      }
+    ],
+    "estimatedShockArrivalTime": null,
+    "isEarthGB": false,
+    "isEarthMinorImpact": false,
+    "rmin_re": null,
+    "kp_18": null,
+    "kp_90": null,
+    "kp_135": null,
+    "kp_180": null,
+    "estimatedDuration": null,
+    "impactList": [
+      {
+        "location": "Mars",
+        "arrivalTime": "2024-05-20T09:35Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "OSIRIS-APEX",
+        "arrivalTime": "2024-05-19T10:17Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "Parker Solar Probe",
+        "arrivalTime": "2024-05-19T02:27Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      },
+      {
+        "location": "Solar Orbiter",
+        "arrivalTime": "2024-05-18T21:22Z",
+        "isGlancingBlow": false,
+        "isMinorImpact": false
+      }
+    ],
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/30976/-1"
+  },
+  {
+    "simulationID": "WSA-ENLIL/30985/1",
+    "modelCompletionTime": "2024-05-17T18:45Z",
+    "au": 2.0,
+    "cmeInputs": [
+      {
+        "cmeStartTime": "2024-05-17T13:25Z",
+        "latitude": 10.0,
+        "longitude": -45.0,
+        "speed": 465.0,
+        "halfAngle": 21.0,
+        "time21_5": "2024-05-17T20:46Z",
+        "featureCode": "null",
+        "isMostAccurate": true,
+        "levelOfData": 1,
+        "ipsList": [],
+        "CMEID": "2024-05-17T13:25:00-CME-001"
+      }
+    ],
+    "estimatedShockArrivalTime": null,
+    "isEarthGB": false,
+    "isEarthMinorImpact": false,
+    "rmin_re": null,
+    "kp_18": null,
+    "kp_90": null,
+    "kp_135": null,
+    "kp_180": null,
+    "estimatedDuration": null,
+    "impactList": null,
+    "link": "https://ccmc.gsfc.nasa.gov/DONKI/view/WSA-ENLIL/30985/-1"
+  }
+]
