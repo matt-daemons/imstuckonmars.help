@@ -53,10 +53,10 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
       <div className="absolute right-4 bottom-12">
         <ListeningEffect active={listening}>
           <Button
-            variant={open ? "default" : "outline"}
+            variant="outline"
             aria-expanded={open}
             aria-controls={chatId}
-            className="bg-background"
+            className="lara-launcher"
             aria-label={listening ? "Ask LARA, listening" : undefined}
             onClick={toggle}
           >

@@ -10,6 +10,17 @@
   isolation: isolate;
 }
 
+/* Keep map imagery out of the label's contrast, including coss dark/pressed states. */
+.lara-listening-control > .lara-launcher {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+.lara-listening-control > .lara-launcher:is(:hover, [aria-expanded="true"], [data-pressed]) {
+  background: var(--secondary);
+  color: var(--foreground);
+}
+
 /* The halo is clipped six pixels beyond the control. No light crosses the label. */
 .lara-listening-light {
   position: absolute;
