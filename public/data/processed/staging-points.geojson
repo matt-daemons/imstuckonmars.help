@@ -1,0 +1,351 @@
+{
+  "type": "FeatureCollection",
+  "name": "staging-points",
+  "status": "DRAFT — rover limits are Role B assumptions, not agreed flight rules",
+  "source": "Derived from HiRISE 1 m DTM slope and roughness (NASA/JPL/University of Arizona)",
+  "attribution": "NASA/JPL/University of Arizona",
+  "caveats": [
+    "Draft for the walking EVA leg: rover slope/roughness limits are not agreed by the team yet.",
+    "Straight-line walks; walk_km is ground distance on the Mars sphere, not path length over the relief.",
+    "Max slope on the walk includes isolated 1 m DTM spikes; check the slope overlay before trusting a single high value.",
+    "Not ground-truthed: no rover has operated in Arcadia Planitia."
+  ],
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_033225_2250_033146_2250_A01",
+        "hirise_id": "ESP_033225_2250",
+        "rank": 1,
+        "walk_km": 0.108,
+        "max_slope_on_walk_deg": 18.5,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 12426000,
+        "walk_time_min_one_way": 3,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-176.3361919, 44.4165648]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_033225_2250_033146_2250_A01",
+        "hirise_id": "ESP_033225_2250",
+        "rank": 2,
+        "walk_km": 0.143,
+        "max_slope_on_walk_deg": 19.5,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 12426000,
+        "walk_time_min_one_way": 4,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-176.3307596, 44.4148777]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_033225_2250_033146_2250_A01",
+        "hirise_id": "ESP_033225_2250",
+        "rank": 3,
+        "walk_km": 0.234,
+        "max_slope_on_walk_deg": 25.7,
+        "walk_share_under_suit_limit": 0.996,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 12426000,
+        "walk_time_min_one_way": 7,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-176.3319404, 44.4196015]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_034082_2260_033014_2260_A01",
+        "hirise_id": "ESP_034082_2260",
+        "rank": 1,
+        "walk_km": 0.124,
+        "max_slope_on_walk_deg": 32.5,
+        "walk_share_under_suit_limit": 0.928,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 1400,
+        "walk_time_min_one_way": 4,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.383154, 45.6503145]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_034082_2260_033014_2260_A01",
+        "hirise_id": "ESP_034082_2260",
+        "rank": 2,
+        "walk_km": 0.178,
+        "max_slope_on_walk_deg": 36.9,
+        "walk_share_under_suit_limit": 0.917,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 8262700,
+        "walk_time_min_one_way": 5,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.3858085, 45.6464342]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_034082_2260_033014_2260_A01",
+        "hirise_id": "ESP_034082_2260",
+        "rank": 3,
+        "walk_km": 0.17,
+        "max_slope_on_walk_deg": 35.7,
+        "walk_share_under_suit_limit": 0.895,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 8262700,
+        "walk_time_min_one_way": 5,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-171.3795341, 45.6462655]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_037352_2245_037418_2245_A01",
+        "hirise_id": "ESP_037352_2245",
+        "rank": 1,
+        "walk_km": 0.108,
+        "max_slope_on_walk_deg": 19.5,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 50600,
+        "walk_time_min_one_way": 3,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-166.1439243, 44.3886629]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_037352_2245_037418_2245_A01",
+        "hirise_id": "ESP_037352_2245",
+        "rank": 2,
+        "walk_km": 0.155,
+        "max_slope_on_walk_deg": 20.9,
+        "walk_share_under_suit_limit": 0.987,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 50600,
+        "walk_time_min_one_way": 5,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-166.1420356, 44.3928806]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_037352_2245_037418_2245_A01",
+        "hirise_id": "ESP_037352_2245",
+        "rank": 3,
+        "walk_km": 0.251,
+        "max_slope_on_walk_deg": 25.2,
+        "walk_share_under_suit_limit": 0.988,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 11788000,
+        "walk_time_min_one_way": 8,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [-166.1481741, 44.3923744]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_054060_2265_054126_2265_A01",
+        "hirise_id": "ESP_054060_2265",
+        "rank": 1,
+        "walk_km": 0.108,
+        "max_slope_on_walk_deg": 14.4,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 11840300,
+        "walk_time_min_one_way": 3,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [172.5629073, 46.0719071]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_054060_2265_054126_2265_A01",
+        "hirise_id": "ESP_054060_2265",
+        "rank": 2,
+        "walk_km": 0.144,
+        "max_slope_on_walk_deg": 15.6,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 11840300,
+        "walk_time_min_one_way": 4,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [172.5658253, 46.0681955]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "site_id": "DTEEC_054060_2265_054126_2265_A01",
+        "hirise_id": "ESP_054060_2265",
+        "rank": 3,
+        "walk_km": 0.208,
+        "max_slope_on_walk_deg": 18.3,
+        "walk_share_under_suit_limit": 1,
+        "walk_leaves_dtm": false,
+        "patch_area_m2": 11840300,
+        "walk_time_min_one_way": 6,
+        "status": "DRAFT",
+        "assumptions": [
+          "Rover parking slope < 15° (ASSUMPTION, Role B; Apollo 15 Mission Report §9.8.3: LRV roll instability approached on 15° slopes, parked rover slid downslope). Not agreed by the team.",
+          "Rover parking roughness < 0.25 m RMS on 5 m cells (ASSUMPTION, Role B; LRV ground clearance 36 cm, NASA NSSDC). Not agreed by the team. The 1 m DTM cannot see single rocks.",
+          "Each 10 m cell takes the worst (max) slope and roughness inside it; a spot needs a 2 × 2 block of parkable cells (≥ 20 × 20 m).",
+          "Walk-back ≤ 2 km straight-line ground distance on the Mars sphere (config.yaml walk_back_max_km); spots closer than 100 m to the POI are excluded (ASSUMPTION: keep the rover off the science target).",
+          "Walk path = straight line to the POI on the 1 m slope; the suit limit is 20° (config.yaml slope_max_deg). Real walks would detour around steep sections.",
+          "Rank by walk_km × (1 + 10 × share of the walk ≥ 20°); alternatives at least 250 m apart.",
+          "Slope and roughness come from the 1 m HiRISE DTM (vertical precision ~tens of cm); sub-metre rocks need the 0.25 m imagery."
+        ]
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [172.5597462, 46.0681955]
+      }
+    }
+  ]
+}
