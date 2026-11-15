@@ -23,7 +23,20 @@ The local configuration must select an imported, published release. The supplied
 
 The original console's proportions are restored: a three-column upper workspace with numbered, tinted title rails; a lower telemetry strip; and a two-line status region. Left: fixed archive clock, acquired window and source sites. Center: archived CTX image context for the hypothetical Arcadia base. Right: that day's archived MOXIE output, peak/active mean rate, active time and whole-run energy. The lower strip shows temperature, pressure, water vapor and radiation proxy readouts and charts simultaneously. There are no simulated resource gauges or fault controls.
 
-The surface pane reuses six small immutable CTX XYZ tiles from the map's published R2 release. `lib/homebase/context.ts` positions the base marker in that same tile geometry, without Earth-distance calculations. Attribution and the existing provenance manifest remain linked. Images do not become terrain statistics or base weather. Outside the acquired Arcadia bounds, or on image failure, show an unavailable message instead of relocating imagery. The MapLibre map, mission sidebar, verdict strip, routing, dust, sites and LARA remain intact. The dashboard shortcut sits above the map's lower-left attribution, clear of the top verdict strip and lower-right LARA launcher.
+The surface pane uses an independent MapLibre camera and the same immutable CTX
+XYZ imagery from the map's published R2 release. Pan and zoom stay within the
+acquired Arcadia bounds. The minimum zoom adapts to the pane dimensions so the
+view cannot reveal space beyond the footprint. Rotation and tilt are disabled;
+zoom buttons, keyboard navigation and Reset view are available. Pointer movement
+updates a labeled Cursor coordinate readout; leaving the map restores Map base.
+`lib/homebase/context.ts` owns the bounds and viewport calculation without
+Earth-distance calculations. Attribution and the existing provenance manifest
+remain linked. Images do not become terrain statistics or base weather. Outside
+the acquired Arcadia bounds, or on image failure, show an unavailable message
+instead of relocating imagery. The main map camera, mission sidebar, verdict
+strip, routing, dust, sites and LARA remain independent. The dashboard shortcut
+sits above the map's lower-left attribution, clear of the top verdict strip and
+lower-right LARA launcher.
 
 Overview and Experiments are separate pages, with 1/2 shortcuts outside form controls. The experiments page lists all 23 runs through explicit pagination rather than a scrollbar. Available height determines the number of complete rows; resize and 200% zoom recompute the page size. Selecting a run shows derived output, rate, duration, energy and source notes. A short-screen results/notes switch and a handheld list/detail switch avoid clipping. Observation Zoom opens a full-screen inspector with chart zoom and separately paginated values/source views. Escape closes the inspector before closing the map dialog.
 

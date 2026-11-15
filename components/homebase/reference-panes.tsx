@@ -1,13 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { ExternalLink, Home, Info } from "lucide-react";
+import { ExternalLink, Info } from "lucide-react";
 import type { HomebaseData } from "@/lib/homebase/types";
-import { HOMEBASE, orbitalContext } from "@/lib/homebase/context";
+import { HOMEBASE } from "@/lib/homebase/context";
 import { formatDuration, formatNumber } from "@/lib/mission/format";
 import { ConsolePane } from "./pane";
 import { clockLabel } from "./observation-plot";
 import { Readout } from "./readout";
+import { SurfaceMap } from "./surface-map";
 
 export function ReferencePanes({
   data,
@@ -22,8 +22,6 @@ export function ReferencePanes({
   onExperiments: () => void;
   section?: string;
 }) {
-  const [imageFailed, setImageFailed] = useState(false);
-  const imagery = orbitalContext(base.latitude_deg, base.longitude_deg);
   const today = data?.experiments.find((e) => e.sol === data.demo_today.sol);
   const number = (n: number | null | undefined, dp = 2) =>
     n == null ? "No data" : formatNumber(n, dp);
@@ -104,41 +102,7 @@ export function ReferencePanes({
           <span>Orbital image · north up</span>
           <span className="font-mono">Mars 2000</span>
         </div>
-        <figure
-          className="hb-orbital"
-          aria-label="Archived CTX orbital imagery around the hypothetical Arcadia base. Not weather imagery or a validated route."
-        >
-          {imagery.supported && !imageFailed ? (
-            <div
-              className="hb-orbital-image"
-              style={{ transform: `translate(-50%, -${imagery.marker.top})` }}
-            >
-              <div className="hb-orbital-tiles">
-                {imagery.tiles.map((src) => (
-                  <img key={src} src={src} alt="" onError={() => setImageFailed(true)} />
-                ))}
-              </div>
-              <div className="hb-base-crosshair" style={imagery.marker}>
-                <Home size={18} aria-hidden />
-                <span>Base · assumed</span>
-              </div>
-            </div>
-          ) : (
-            <p className="hb-image-unavailable">
-              Orbital imagery unavailable. Base coordinates remain below.
-            </p>
-          )}
-          <div className="hb-orbital-grid" aria-hidden />
-          <figcaption>CTX · NASA/JPL/MSSS/Caltech · Murray Lab/Esri</figcaption>
-        </figure>
-        <div className="hb-base-position">
-          <Home size={18} aria-hidden />
-          <span>Map base</span>
-          <span className="font-mono">
-            {formatNumber(base.latitude_deg, 4)}°N ·{" "}
-            {formatNumber((base.longitude_deg + 360) % 360, 4)}°E
-          </span>
-        </div>
+        <SurfaceMap base={base} />
         <p className="hb-surface-note">
           Jezero weather and Gale radiation are remote references, not measurements at this base.
           Routes and simulations stay on the map.
