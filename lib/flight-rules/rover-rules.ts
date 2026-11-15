@@ -36,6 +36,7 @@ export const ROVER_RULES = {
     caution_above_km: 100,
     no_go_above_km: 200,
     applies_to: "Mars crewed study",
+    no_go_applies_to: "assumption", // the 100 km zone is NASA's; the 200 km hard limit is ours
     source:
       "Exploration Zone radius about 100 km; a small pressurized rover reaches about 100 km in a straight line (Toups, Hoffman & Watts 2016, NTRS 20160002369, slide 10, E1 and E5, https://ntrs.nasa.gov/api/citations/20160002369/downloads/20160002369.pdf). No NASA concept goes beyond about 200 km: two SEVs reach over 125 mi (SEV fact sheet FS-2011-08-045-JSC, O3, https://www.nasa.gov/wp-content/uploads/2015/08/464826main_sev_factsheet_508.pdf), 4 fission units 225 km (Rucker 2015, E15). Using 200 km as a hard limit is our assumption.",
   },

@@ -6,8 +6,7 @@ import { ROVER_RULES, type RoverFactor } from "./rover-rules";
 type RoverFinding = Finding<RoverFactor>;
 
 /** Says where a rule's limit comes from, so every reason admits what is assumed. */
-function describeBasis(factor: RoverFactor): string {
-  const appliesTo = ROVER_RULES[factor].applies_to;
+function describeBasis(appliesTo: string): string {
   return appliesTo === "assumption"
     ? "our assumption"
     : `${appliesTo} limit, assumed for this rover`;
@@ -17,8 +16,9 @@ function makeFinding(
   factor: RoverFactor,
   verdict: RoverFinding["verdict"],
   explanation: string,
+  appliesTo: string = ROVER_RULES[factor].applies_to,
 ): RoverFinding {
-  return { factor, verdict, reason: `${explanation} (${describeBasis(factor)}).` };
+  return { factor, verdict, reason: `${explanation} (${describeBasis(appliesTo)}).` };
 }
 
 function checkSlope(trip: DriveSummary): RoverFinding | null {
@@ -89,6 +89,7 @@ function checkRange(trip: DriveSummary): RoverFinding | null {
       "range",
       "NO_GO",
       `The site is ${shownKm} km from base in a straight line, beyond the ${rule.no_go_above_km} km that any NASA plan reaches with two rovers`,
+      rule.no_go_applies_to,
     );
   }
   if (trip.straight_km > rule.caution_above_km) {

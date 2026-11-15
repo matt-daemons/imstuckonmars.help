@@ -71,9 +71,12 @@ describe("evaluateDrive", () => {
     expect(evaluateDrive(tripWith({ max_slope: 7.34 })).reasons).toEqual([
       "Steepest slope is 7.3° on coarse terrain, above 5° (our assumption).",
     ]);
-    expect(evaluateDrive(tripWith({ straight_km: 194.4 })).reasons[0]).toMatch(
-      /194 km .*two rovers/,
-    );
+    expect(evaluateDrive(tripWith({ straight_km: 194.4 })).reasons).toEqual([
+      "The site is 194 km from base in a straight line, beyond the 100 km zone NASA plans for two rovers (Mars crewed study limit, assumed for this rover).",
+    ]);
+    expect(evaluateDrive(tripWith({ straight_km: 424 })).reasons).toEqual([
+      "The site is 424 km from base in a straight line, beyond the 200 km that any NASA plan reaches with two rovers (our assumption).",
+    ]);
   });
 
   it("puts the worst rule first", () => {
