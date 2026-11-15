@@ -229,3 +229,127 @@ Panel (`RouteResult` in `route-planner.tsx`), shown only when `summary` is not n
 - [ ] **Step 2: Run** `corepack pnpm vitest run lib/flight-rules/evaluate.test.ts` — expect the new tests to FAIL (`evaluateRoute` is not exported).
 - [ ] **Step 3: Implement** `evaluateRoute` and the rounding in `evaluate.ts`, then the panel lines.
 - [ ] **Step 4: Run** the same command — expect PASS, including every existing `evaluateEva` test. Then `corepack pnpm typecheck && corepack pnpm lint && corepack pnpm vitest run && corepack pnpm fmt:check && corepack pnpm build`.
+
+---
+
+# Part 2: Route panel polish (Tasks 6–8)
+
+**Spec:** `docs/superpowers/specs/2026-11-14-route-panel-polish-design.md`. "Change N" below means the numbered change in that spec's "Changes, ranked" section; the "Text plan" table there is binding word for word.
+
+## Global Constraints for Tasks 6–8
+
+- `AGENTS.md` and `.agents/skills/operational-ui-standards/SKILL.md` are binding for all UI. Read both before writing UI code.
+- Use coss components from `components/ui/` unmodified (`ToggleGroup`, `Alert`, `AlertDialog`, `Collapsible`, `Kbd`, `Button`). No shadcn registry components, no new dependencies, no edits to files in `components/ui/`.
+- Colours come from theme tokens in `app/globals.css`; no new hex values.
+- Flight-rule limits and reason sentences come from `lib/flight-rules/` and `MAX_SLOPE_DEG`; never retype a limit.
+- Honesty: "(placeholder)" stays on the example zone; "Tobler off-path hiking (Earth), not a suited Mars walk" and "Not checked: radiation, dust, daylight." stay visible; the other caveats stay one click away.
+- Do not touch `layer-panel.tsx`, `scene-panel.tsx`, `scene.ts`, `components/copilot/*` or `mars-map.tsx`.
+- Everything in Part 1's Global Constraints still applies (Karpathy guidelines, readable code, Node 24 with `corepack pnpm`, commit style, no AI credit, never push).
+
+## Review Focus for Tasks 6–8
+
+1. Leaving draw mode by Esc, by pressing the pressed toggle again, or by choosing another mode: the draft disappears and a later map click adds nothing.
+2. Double-click while drawing: with 3 or more corners one zone is added (not two) and the map does not zoom; with fewer the draft is dropped and no zone is added.
+3. Keyboard only: a mode can be armed from the toggle group, Enter on the focused map places the point at the map centre, Esc cancels.
+4. An error result: the controls do not move, the message appears in the verdict's slot, and only that slot is a status region.
+5. Clear zones: Cancel keeps every zone; confirming removes them all, including the example zone; the button is disabled when there are none.
+
+---
+
+### Task 6: Split the panel files; interaction and accessibility
+
+**Files:**
+
+- Create: `components/map/route-layers.ts`, `components/map/route-result.tsx`
+- Modify: `components/map/route-planner.tsx`, `lib/mars/route-zones.ts`
+- Test: `lib/mars/route-zones.test.ts`, `components/map/route-layers.test.ts`
+
+**Interfaces:**
+
+- Produces:
+
+  ```ts
+  // lib/mars/route-zones.ts
+  /** Adds a corner to a draft zone, ignoring one identical to the last (the second click of a double-click). */
+  export function appendCorner(draft: LngLat[], corner: LngLat): LngLat[];
+
+  // components/map/route-layers.ts — map sources, layer specs and GeoJSON builders, no React
+  export type Plan = ReturnType<typeof planWalk>;
+  export type Feature = /* the panel's existing local GeoJSON feature type */;
+  export const SOURCES: readonly string[];
+  export const LAYERS: LayerSpecification[]; // Task 8 replaces this with routeLayers(token)
+  export function setData(map: MapboxMap | null, source: string, features: Feature[]): void;
+  export function routeFeatures(plan: Plan): Feature[];
+  export function zoneFeature(zone: NoGoZone): Feature;
+  export function draftFeatures(draft: LngLat[]): Feature[];
+  export function endFeatures(start: LngLat, end: LngLat): Feature[];
+
+  // components/map/route-result.tsx — verdict, readouts and error messages
+  export function RouteResult(props: { plan: Plan | null; loadFailed: boolean }): JSX.Element;
+  ```
+
+- [ ] **Step 1: Split, changing no behaviour.** Move the layer specs, feature type and GeoJSON builders to `route-layers.ts`, and `RouteResult` with `VERDICT_STYLES` and `STATUS_MESSAGES` to `route-result.tsx`. Run `corepack pnpm typecheck && corepack pnpm vitest run && corepack pnpm build`; expect PASS. Commit on its own: `route-ui(refactor): Split route panel into layers, result and planner files`.
+- [ ] **Step 2: Write the failing tests.**
+  - `route-zones.test.ts`: `appendCorner` adds a new corner; returns the same corners when the new one equals the last; keeps a corner that equals an earlier, not last, corner.
+  - `route-layers.test.ts`: `zoneFeature` closes the ring (first point repeated at the end) and carries the zone name; `routeFeatures` returns only the legs whose status is `"ok"`, tagged `leg: "outbound"` and `leg: "back"`; `draftFeatures` gives 1 point for 1 corner and 3 points plus 1 line for 3 corners.
+- [ ] **Step 3: Run** `corepack pnpm vitest run lib/mars/route-zones.test.ts components/map/route-layers.test.ts`; expect the `appendCorner` tests to FAIL (not exported).
+- [ ] **Step 4: Implement** changes 1, 2, 3, 5, 9 and 14 from the spec in `route-planner.tsx`, with these rules:
+  - `chooseMode(next)` is the only place the mode changes; leaving `"zone"` clears the draft.
+  - While a mode is active: `Escape` on `window` cancels it; `Enter` on `map.getCanvas()` places a point at `map.getCenter()` through the same handler a click uses; the map canvas cursor is `crosshair`, restored on cleanup.
+  - While the mode is `"zone"`: `map.doubleClickZoom.disable()`, re-enabled on cleanup; a `dblclick` finishes the zone. Clicks add corners through `appendCorner`.
+  - Map handlers are `useEffectEvent` functions, so they read the current mode and draft without re-registering.
+  - `finishZone` keeps its behaviour: 3 or more corners add a zone, fewer drop the draft, and the mode ends either way.
+  - "Finish zone" renders only in draw mode: `variant="default"`, `size="sm"`, disabled below 3 corners, labelled `Finish zone (n/3)` until 3 corners, then `Finish zone`.
+  - Mode hint, shown only while a mode is active, `aria-live="polite"`: "Click the map to set the start." / "Click the map to set the end." / "Click the map to add corners. Double-click to finish.", followed by `<Kbd>Enter</Kbd> map centre` and `<Kbd>Esc</Kbd> cancel`.
+  - "Clear zones" stays a plain button here (`size="sm"`); Task 7 adds its confirmation.
+- [ ] **Step 5: Run** the focused tests (expect PASS), then `corepack pnpm typecheck && corepack pnpm lint && corepack pnpm vitest run && corepack pnpm fmt:check && corepack pnpm build`. Commit: `route-ui(feat): Toggle-group modes, keyboard placement and safer zone drawing`.
+
+### Task 7: Verdict first, less text, better placement
+
+**Files:**
+
+- Modify: `components/map/route-result.tsx`, `components/map/route-planner.tsx`
+
+**Interfaces:**
+
+- Consumes: Task 6's `RouteResult`, `Plan`; `evaluateRoute` and `FLIGHT_RULES`; `MAX_SLOPE_DEG`.
+- Produces: no new exports.
+
+Implement changes 4, 6, 7, 8, 10, 12, 13 and 17 and the spec's "Text plan" table, plus:
+
+- **Title:** `Route`.
+- **Result order:** verdict or error `Alert` first, then the readouts `dl`, then the zone list, the legend, and the disclosure.
+- **Disclosure** "Assumptions and data" (closed by default), four lines in this order:
+  1. `Checks slope, walk-back distance and suit time only. The start point counts as base.`
+  2. `Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.`
+  3. `Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit, assumed for Mars).`
+  4. `Search: A*, {n} cells searched.` where n is outbound plus back `expanded`, formatted with `toLocaleString("en-US")`; `Search: A*.` when there is no route.
+- **Rejected route:** the error `Alert` gets `key={status}` and the app's existing toast-error shake class with `motion-reduce:animate-none` (find the class name in `app/globals.css`; if none exists, skip the shake and say so in the report).
+- **Readout marking:** only the readout named by `check.limiting_factor` is marked (`slope` → Steepest slope, `walk_back` → Farthest from start, `suit_supply` → Out-and-back time), in the destructive or warning foreground token with an up-arrow icon labelled "Above limit".
+
+No unit tests for rendering; the controller checks this task in the browser.
+
+- [ ] **Step 1: Implement** the above.
+- [ ] **Step 2: Run** `corepack pnpm typecheck && corepack pnpm lint && corepack pnpm vitest run && corepack pnpm fmt:check && corepack pnpm build`; expect PASS. Commit: `route-ui(feat): Verdict alert first, trimmed text and full-height placement`.
+
+### Task 8: Map colours from tokens
+
+**Files:**
+
+- Modify: `components/map/route-layers.ts`, `components/map/route-planner.tsx`, `app/design-system/_demos/operational.tsx`
+- Test: `components/map/route-layers.test.ts`
+
+**Interfaces:**
+
+- Produces:
+  ```ts
+  /** Layer specs for the route, zones, draft and end points, coloured from theme tokens. */
+  export function routeLayers(token: (name: string) => string): LayerSpecification[]; // replaces LAYERS
+  ```
+
+Implement changes 11, 15 and 16. For change 15: the start stays a filled dot; the end becomes a ring (fill `token("--background")`, the existing `#fde68a` as a 3 px stroke).
+
+- [ ] **Step 1: Write the failing test** in `route-layers.test.ts`: with `token = (name) => "T(" + name + ")"`, the outbound line colour is `T(--primary)`, the zone fill and outline are `T(--destructive)`, and `JSON.stringify(routeLayers(token))` contains no `#` colour other than `#7dd3fc` and `#fde68a`.
+- [ ] **Step 2: Run** `corepack pnpm vitest run components/map/route-layers.test.ts`; expect FAIL (`routeLayers` not exported).
+- [ ] **Step 3: Implement.** Read tokens once in the map effect with `getComputedStyle(document.documentElement)`. If `line-border-*` does not render on the globe projection, add one wider casing line layer under the route instead and say so in the report.
+- [ ] **Step 4: Run** the focused test (expect PASS), then the full check line from Task 7. Commit: `route-ui(feat): Colour route layers from theme tokens`.
