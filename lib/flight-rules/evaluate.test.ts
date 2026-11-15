@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { evaluateEva, type EvaPlan } from "./evaluate";
+import { evaluateEva, evaluateRoute, type EvaPlan } from "./evaluate";
 
 // A short, flat walk in clear weather with plenty of daylight.
 const safePlan: EvaPlan = {
@@ -140,5 +140,39 @@ describe("evaluateEva", () => {
     expect(result.verdict).toBe("NO_GO");
     expect(result.limiting_factor).toBe("dust");
     expect(result.reasons).toHaveLength(2);
+  });
+});
+
+describe("evaluateRoute", () => {
+  it("gives GO when the route meets every route rule", () => {
+    const route = { est_time_min: 180, max_slope: 8, farthest_from_base_km: 1.2 };
+    expect(evaluateRoute(route)).toEqual({ verdict: "GO", limiting_factor: null, reasons: [] });
+  });
+
+  it("gives NO_GO beyond the walk-back limit and prints the distance to 2 decimals", () => {
+    const result = evaluateRoute({ ...safePlan.route, farthest_from_base_km: 5.440856262495297 });
+    expect(result.verdict).toBe("NO_GO");
+    expect(result.limiting_factor).toBe("walk_back");
+    expect(result.reasons[0]).toContain("5.44 km");
+    expect(result.reasons[0]).not.toContain("5.4408");
+  });
+
+  // 300 min x 1.3 margin = 390 min: over the planned 360, under the 450 the suit allows.
+  it("gives CAUTION when the walk with margin is longer than planned", () => {
+    const result = evaluateRoute({ ...safePlan.route, est_time_min: 300 });
+    expect(result.verdict).toBe("CAUTION");
+    expect(result.limiting_factor).toBe("suit_supply");
+  });
+
+  it("prints the slope to 1 decimal", () => {
+    const result = evaluateRoute({ ...safePlan.route, max_slope: 20.4567 });
+    expect(result.verdict).toBe("NO_GO");
+    expect(result.limiting_factor).toBe("slope");
+    expect(result.reasons[0]).toContain("20.5°");
+  });
+
+  it("agrees with evaluateEva when the live readings are safe", () => {
+    const route = { ...safePlan.route, farthest_from_base_km: 5.440856262495297 };
+    expect(evaluateRoute(route)).toEqual(evaluateEva(planWith({ route })));
   });
 });

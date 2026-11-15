@@ -55,45 +55,46 @@ function makeFinding(factor: Factor, verdict: Finding["verdict"], explanation: s
   return { factor, verdict, reason: `${explanation} (${describeBasis(factor)}).` };
 }
 
-function checkSlope(plan: EvaPlan): Finding | null {
+function checkSlope(plan: Pick<EvaPlan, "route">): Finding | null {
   const rule = FLIGHT_RULES.slope;
   const slopeDegrees = plan.route.max_slope;
+  const shownDegrees = Math.round(slopeDegrees * 10) / 10;
   if (slopeDegrees > rule.no_go_above_degrees) {
     return makeFinding(
       "slope",
       "NO_GO",
-      `Steepest slope is ${slopeDegrees}°, above the ${rule.no_go_above_degrees}° limit`,
+      `Steepest slope is ${shownDegrees}°, above the ${rule.no_go_above_degrees}° limit`,
     );
   }
   if (slopeDegrees > rule.caution_above_degrees) {
     return makeFinding(
       "slope",
       "CAUTION",
-      `Steepest slope is ${slopeDegrees}°, above ${rule.caution_above_degrees}°`,
+      `Steepest slope is ${shownDegrees}°, above ${rule.caution_above_degrees}°`,
     );
   }
   return null;
 }
 
-function checkWalkBack(plan: EvaPlan): Finding | null {
+function checkWalkBack(plan: Pick<EvaPlan, "route">): Finding | null {
   const rule = FLIGHT_RULES.walk_back;
   const distanceKm = plan.route.farthest_from_base_km;
   if (distanceKm > rule.max_distance_km) {
     return makeFinding(
       "walk_back",
       "NO_GO",
-      `The route goes ${distanceKm} km from base, beyond the ${rule.max_distance_km} km walk-back limit`,
+      `The route goes ${Math.round(distanceKm * 100) / 100} km from base, beyond the ${rule.max_distance_km} km walk-back limit`,
     );
   }
   return null;
 }
 
 /** Planned walk time in minutes, lengthened by the margin for real terrain. */
-function minutesWithMargin(plan: EvaPlan): number {
+function minutesWithMargin(plan: Pick<EvaPlan, "route">): number {
   return plan.route.est_time_min * FLIGHT_RULES.suit_supply.time_margin;
 }
 
-function checkSuitSupply(plan: EvaPlan): Finding | null {
+function checkSuitSupply(plan: Pick<EvaPlan, "route">): Finding | null {
   const rule = FLIGHT_RULES.suit_supply;
   const minutesNeeded = minutesWithMargin(plan);
   const usableMinutes = rule.primary_minutes - rule.reserve_minutes;
@@ -189,19 +190,23 @@ function checkDaylight(plan: EvaPlan): Finding | null {
   return null;
 }
 
-const CHECKS = [
-  checkSlope,
-  checkWalkBack,
-  checkSuitSupply,
-  checkRadiation,
-  checkDoseRate,
-  checkDust,
-  checkDaylight,
-];
+const ROUTE_CHECKS = [checkSlope, checkWalkBack, checkSuitSupply];
+
+const CHECKS = [...ROUTE_CHECKS, checkRadiation, checkDoseRate, checkDust, checkDaylight];
 
 /** Checks a planned walk against every flight rule and returns the worst result. */
 export function evaluateEva(plan: EvaPlan): EvaVerdict {
-  const findings = CHECKS.map((check) => check(plan)).filter((finding) => finding !== null);
+  return toVerdict(CHECKS.map((check) => check(plan)));
+}
+
+/** Checks only the rules that depend on the route itself: slope, walk-back distance and suit time. */
+export function evaluateRoute(route: EvaPlan["route"]): EvaVerdict {
+  return toVerdict(ROUTE_CHECKS.map((check) => check({ route })));
+}
+
+/** Turns check results into a verdict, worst finding first. */
+function toVerdict(results: (Finding | null)[]): EvaVerdict {
+  const findings = results.filter((finding) => finding !== null);
   const noGoFindings = findings.filter((finding) => finding.verdict === "NO_GO");
   const cautionFindings = findings.filter((finding) => finding.verdict === "CAUTION");
   const worstFirst = [...noGoFindings, ...cautionFindings];

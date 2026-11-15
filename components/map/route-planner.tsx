@@ -4,6 +4,7 @@ import type { GeoJSONSource, LayerSpecification, Map as MapboxMap, MapMouseEvent
 import { useEffect, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { evaluateRoute } from "@/lib/flight-rules/evaluate";
 import { loadBaseGrid } from "@/lib/mars/load-route-grid";
 import type { RouteGrid } from "@/lib/mars/route-grid";
 import { EXAMPLE_ZONE } from "@/lib/mars/route-zones";
@@ -14,7 +15,7 @@ import {
   type NoGoZone,
   type RouteStatus,
 } from "@/lib/mars/routing";
-import type { LngLat } from "@/lib/mars/types";
+import type { LngLat, Verdict } from "@/lib/mars/types";
 
 type Mode = "start" | "end" | "zone" | null;
 type Plan = ReturnType<typeof planWalk>;
@@ -24,6 +25,12 @@ type Geometry =
   | { type: "LineString"; coordinates: LngLat[] }
   | { type: "Polygon"; coordinates: LngLat[][] };
 type Feature = { type: "Feature"; properties: Record<string, string>; geometry: Geometry };
+
+const VERDICT_STYLES: Record<Verdict, { label: string; className: string }> = {
+  GO: { label: "GO", className: "text-success" },
+  CAUTION: { label: "CAUTION", className: "text-warning" },
+  NO_GO: { label: "NO-GO", className: "text-destructive" },
+};
 
 const STATUS_MESSAGES: Record<Exclude<RouteStatus, "ok">, string> = {
   outside_grid: "Point is outside the elevation grid",
@@ -216,6 +223,8 @@ function RouteResult({ plan, loadFailed }: { plan: Plan | null; loadFailed: bool
     const failed = outbound.status !== "ok" ? outbound.status : back.status;
     return <p role="status">{STATUS_MESSAGES[failed as Exclude<RouteStatus, "ok">]}</p>;
   }
+  const check = evaluateRoute(summary);
+  const verdictStyle = VERDICT_STYLES[check.verdict];
   return (
     <div role="status" className="space-y-1">
       <p>Distance one way: {summary.distance_km.toFixed(2)} km</p>
@@ -225,6 +234,15 @@ function RouteResult({ plan, loadFailed }: { plan: Plan | null; loadFailed: bool
       </p>
       <p>Steepest slope: {summary.max_slope.toFixed(1)}°</p>
       <p>Cells searched: {outbound.expanded + back.expanded}</p>
+      <p>Farthest from base: {summary.farthest_from_base_km.toFixed(2)} km</p>
+      <p className={verdictStyle.className}>Route check: {verdictStyle.label}</p>
+      {check.reasons.map((reason) => (
+        <p key={reason}>{reason}</p>
+      ))}
+      <p className="text-xs text-muted-foreground">
+        Route rules only: slope, walk-back and suit time. Radiation, dust and daylight are not
+        checked here.
+      </p>
     </div>
   );
 }
