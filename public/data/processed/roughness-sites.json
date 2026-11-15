@@ -1,0 +1,141 @@
+{
+  "note": "Class breaks are a Role B ASSUMPTION (no NASA walking-roughness limit). Bumps narrower than ~2 m are not resolved. Source: HiRISE DTMs, NASA/JPL/University of Arizona.",
+  "sites": {
+    "DTEEC_033225_2250_033146_2250_A01": {
+      "metric": "RMS height deviation from local trend, 5 m cells, 1 m HiRISE DTM",
+      "cells": 1125274,
+      "mean_m": 0.093,
+      "p50_m": 0.084,
+      "p90_m": 0.151,
+      "p99_m": 0.238,
+      "classes": [
+        {
+          "label": "smooth (below DTM noise)",
+          "min_m": 0,
+          "max_m": 0.25,
+          "percent": 99.268
+        },
+        {
+          "label": "uneven — walk with care",
+          "min_m": 0.25,
+          "max_m": 0.5,
+          "percent": 0.727
+        },
+        {
+          "label": "rough — walking caution",
+          "min_m": 0.5,
+          "max_m": 1,
+          "percent": 0.004
+        },
+        {
+          "label": "very rough — avoid on foot",
+          "min_m": 1,
+          "max_m": null,
+          "percent": 0.001
+        }
+      ]
+    },
+    "DTEEC_034082_2260_033014_2260_A01": {
+      "metric": "RMS height deviation from local trend, 5 m cells, 1 m HiRISE DTM",
+      "cells": 1252963,
+      "mean_m": 0.168,
+      "p50_m": 0.153,
+      "p90_m": 0.267,
+      "p99_m": 0.414,
+      "classes": [
+        {
+          "label": "smooth (below DTM noise)",
+          "min_m": 0,
+          "max_m": 0.25,
+          "percent": 87.037
+        },
+        {
+          "label": "uneven — walk with care",
+          "min_m": 0.25,
+          "max_m": 0.5,
+          "percent": 12.707
+        },
+        {
+          "label": "rough — walking caution",
+          "min_m": 0.5,
+          "max_m": 1,
+          "percent": 0.256
+        },
+        {
+          "label": "very rough — avoid on foot",
+          "min_m": 1,
+          "max_m": null,
+          "percent": 0
+        }
+      ]
+    },
+    "DTEEC_037352_2245_037418_2245_A01": {
+      "metric": "RMS height deviation from local trend, 5 m cells, 1 m HiRISE DTM",
+      "cells": 1138822,
+      "mean_m": 0.091,
+      "p50_m": 0.08,
+      "p90_m": 0.148,
+      "p99_m": 0.269,
+      "classes": [
+        {
+          "label": "smooth (below DTM noise)",
+          "min_m": 0,
+          "max_m": 0.25,
+          "percent": 98.626
+        },
+        {
+          "label": "uneven — walk with care",
+          "min_m": 0.25,
+          "max_m": 0.5,
+          "percent": 1.361
+        },
+        {
+          "label": "rough — walking caution",
+          "min_m": 0.5,
+          "max_m": 1,
+          "percent": 0.013
+        },
+        {
+          "label": "very rough — avoid on foot",
+          "min_m": 1,
+          "max_m": null,
+          "percent": 0
+        }
+      ]
+    },
+    "DTEEC_054060_2265_054126_2265_A01": {
+      "metric": "RMS height deviation from local trend, 5 m cells, 1 m HiRISE DTM",
+      "cells": 2616384,
+      "mean_m": 0.108,
+      "p50_m": 0.094,
+      "p90_m": 0.182,
+      "p99_m": 0.319,
+      "classes": [
+        {
+          "label": "smooth (below DTM noise)",
+          "min_m": 0,
+          "max_m": 0.25,
+          "percent": 97.168
+        },
+        {
+          "label": "uneven — walk with care",
+          "min_m": 0.25,
+          "max_m": 0.5,
+          "percent": 2.661
+        },
+        {
+          "label": "rough — walking caution",
+          "min_m": 0.5,
+          "max_m": 1,
+          "percent": 0.135
+        },
+        {
+          "label": "very rough — avoid on foot",
+          "min_m": 1,
+          "max_m": null,
+          "percent": 0.036
+        }
+      ]
+    }
+  }
+}
