@@ -99,7 +99,7 @@ export function ObservationPlot({
             preserveAspectRatio="none"
             role="img"
             tabIndex={0}
-            aria-describedby={cursor === null ? undefined : `${clipId}-tooltip`}
+            aria-describedby={selected?.value == null ? undefined : `${clipId}-tooltip`}
             aria-label={`${metric.title} history in ${metric.unit}, ${clockLabel(start)} to ${clockLabel(to)} approximate UTC. ${valid.length} available observations. Gaps are not interpolated. Arrow keys inspect samples; Escape clears inspection.`}
             onKeyDown={(event) => {
               if (event.key === "Escape") {
@@ -210,7 +210,7 @@ export function ObservationPlot({
               style={{ left: `${x(selected.utc_ms) / 10}%`, top: `${y(selected.value) / 2}%` }}
             />
           )}
-          {cursor !== null && (
+          {selected?.value != null && (
             <div
               id={`${clipId}-tooltip`}
               role="tooltip"
