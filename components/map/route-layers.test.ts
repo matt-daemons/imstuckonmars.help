@@ -25,6 +25,30 @@ function leg(status: PlannedPath["status"], path: LngLat[]): PlannedPath {
 }
 
 describe("zoneFeature", () => {
+  it("closes a seam-crossing ring around the short local area", () => {
+    const feature = zoneFeature({
+      id: "seam",
+      name: "Seam",
+      ring: [
+        [179, 45],
+        [-179, 45],
+        [-179, 46],
+        [179, 46],
+      ],
+    });
+    expect(feature.geometry).toEqual({
+      type: "Polygon",
+      coordinates: [
+        [
+          [179, 45],
+          [181, 45],
+          [181, 46],
+          [179, 46],
+          [179, 45],
+        ],
+      ],
+    });
+  });
   it("closes the ring and carries the zone name", () => {
     const feature = zoneFeature({ id: "z", name: "Crater rim", ring: [a, b, c] });
     expect(feature.geometry).toEqual({ type: "Polygon", coordinates: [[a, b, c, a]] });
@@ -48,6 +72,19 @@ describe("routeFeatures", () => {
 });
 
 describe("draftFeatures", () => {
+  it("joins corners across the seam by the shortest longitude span", () => {
+    const features = draftFeatures([
+      [179, 45],
+      [-179, 46],
+    ]);
+    expect(features.at(-1)?.geometry).toEqual({
+      type: "LineString",
+      coordinates: [
+        [179, 45],
+        [181, 46],
+      ],
+    });
+  });
   it("gives one point for one corner", () => {
     expect(draftFeatures([a]).map((feature) => feature.geometry.type)).toEqual(["Point"]);
   });

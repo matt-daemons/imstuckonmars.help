@@ -9,6 +9,7 @@ import type {
 import type { NoGoZone, PlannedPath, planWalk } from "@/lib/mars/routing";
 import type { Boulder } from "@/lib/mars/site-grid";
 import type { LngLat, RouteCollection } from "@/lib/mars/types";
+import { unwrapZoneRing } from "@/lib/mars/route-zones";
 
 export type Plan = ReturnType<typeof planWalk>;
 // Just the GeoJSON this panel draws (@types/geojson is not a direct dependency).
@@ -214,7 +215,8 @@ export function routeFeatures({
 
 // MapLibre needs closed polygon rings; NoGoZone rings are stored open.
 export function zoneFeature(zone: NoGoZone): Feature {
-  const ring = [...zone.ring, zone.ring[0]];
+  const open = unwrapZoneRing(zone.ring);
+  const ring = [...open, open[0]];
   return {
     type: "Feature",
     properties: { name: zone.name },
@@ -224,7 +226,7 @@ export function zoneFeature(zone: NoGoZone): Feature {
 
 export function draftFeatures(draft: LngLat[]): Feature[] {
   const corners = draft.map((corner) => point(corner));
-  return draft.length > 1 ? [...corners, line(draft)] : corners;
+  return draft.length > 1 ? [...corners, line(unwrapZoneRing(draft))] : corners;
 }
 
 export function endFeatures(start: LngLat, end: LngLat | null): Feature[] {

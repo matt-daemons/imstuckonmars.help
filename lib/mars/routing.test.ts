@@ -46,6 +46,50 @@ function cellsOf(grid: RouteGrid, path: LngLat[]): number[] {
 }
 
 describe("A* route", () => {
+  it("masks the local seam-crossing zone in either longitude domain", () => {
+    const ring: LngLat[] = [
+      [179, -1],
+      [-179, -1],
+      [-179, 1],
+      [179, 1],
+    ];
+    const grid: RouteGrid = {
+      width: 4,
+      height: 1,
+      west: 178,
+      east: 182,
+      rowEdges: new Float64Array([0.5, -0.5]),
+      heights: new Float32Array(4),
+    };
+    const zone = { id: "seam", name: "Seam", ring };
+    expect([...wallMask(grid, new Float32Array(4), [zone])]).toEqual([0, 1, 1, 0]);
+    const opposite = { ...grid, west: -2, east: 2 };
+    expect([...wallMask(opposite, new Float32Array(4), [zone])]).toEqual([0, 0, 0, 0]);
+    const shifted = { ...grid, west: -182, east: -178 };
+    expect([...wallMask(shifted, new Float32Array(4), [zone])]).toEqual([0, 1, 1, 0]);
+  });
+
+  it("routes around a small seam-crossing zone instead of blocking its world-sized complement", () => {
+    const grid = flatGrid(20, 20, 10);
+    const span = grid.east - grid.west;
+    grid.west = 180 - span / 2;
+    grid.east = 180 + span / 2;
+    const ring = [
+      [8, 8],
+      [8, 12],
+      [12, 12],
+      [12, 8],
+    ].map(([row, col]): LngLat => {
+      const [lng, lat] = gridPoint(grid, row, col);
+      return [lng > 180 ? lng - 360 : lng, lat];
+    });
+    const walls = wallMask(grid, slopeDegrees(grid), [{ id: "seam", name: "Seam", ring }]);
+    const result = route(grid, walls, center(grid, 10, 2), center(grid, 10, 17));
+    expect(result.status).toBe("ok");
+    expect(result.distance_m).toBeGreaterThan(150);
+    expect(result.distance_m).toBeLessThan(200);
+    for (const cell of cellsOf(grid, result.path)) expect(walls[cell]).toBe(0);
+  });
   it("goes straight across open flat ground", () => {
     const grid = flatGrid(20, 20, 10);
     const result = route(grid, openWalls(grid), center(grid, 10, 1), center(grid, 10, 18));

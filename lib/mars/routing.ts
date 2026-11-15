@@ -2,6 +2,7 @@ import { FLIGHT_RULES } from "../flight-rules/rules";
 import { cellAt, cellCenter, cellSize, type RouteGrid } from "./route-grid";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat } from "./types";
+import { unwrapZoneRing } from "./route-zones";
 
 const DEGREES_TO_RADIANS = Math.PI / 180;
 const RADIANS_TO_DEGREES = 180 / Math.PI;
@@ -72,16 +73,20 @@ export function wallMask(
   maxSlopeDeg = MAX_SLOPE_DEG,
 ): Uint8Array {
   const walls = new Uint8Array(slope.length);
+  const rings = zones.map((zone) => unwrapZoneRing(zone.ring));
   for (let cell = 0; cell < slope.length; cell++) {
     const steep = Number.isNaN(slope[cell]) || slope[cell] > maxSlopeDeg;
     const centre = cellCenter(grid, cell);
-    walls[cell] = steep || zones.some((zone) => insideRing(centre, zone.ring)) ? 1 : 0;
+    walls[cell] = steep || rings.some((ring) => insideRing(centre, ring)) ? 1 : 0;
   }
   return walls;
 }
 
 // Ray casting in plain longitude/latitude, which is accurate enough at walking scale.
 function insideRing([lng, lat]: LngLat, ring: LngLat[]): boolean {
+  if (!ring.length) return false;
+  // Match the point to the polygon's world copy, not the grid's longitude domain.
+  lng += 360 * Math.round((ring[0][0] - lng) / 360);
   let inside = false;
   for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
     const [lngI, latI] = ring[i];
