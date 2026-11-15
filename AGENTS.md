@@ -201,12 +201,14 @@ variant instead. The tape goes on borders only, never behind text (K-5).
 Every other skill rule applies as written, including T-4 (mixed case) and K-5 (6:1 text
 contrast).
 
-Acronym glossary (T-4): AI (artificial intelligence), API, CTX (Context Camera), EVA,
-HRSC (High Resolution Stereo Camera), LARA (the read-only evidence assistant),
+Acronym glossary (T-4): AI (artificial intelligence), API, CTX (Context Camera),
+DONKI (NASA Space Weather Database Of Notifications, Knowledge, Information), DTM (digital terrain model), EVA,
+HRSC (High Resolution Stereo Camera), JPL (Jet Propulsion Laboratory), LARA (the product and its evidence assistant),
 MEDA (Mars Environmental Dynamics Analyzer), MOXIE (Mars Oxygen In-Situ Resource Utilization Experiment),
-NASA (National Aeronautics and Space Administration), RAD (Radiation Assessment Detector),
+NASA (National Aeronautics and Space Administration), PDS (Planetary Data System), RAD (Radiation Assessment Detector),
 MAV (Mars Ascent Vehicle),
-MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP, UTC (Coordinated Universal Time),
+MOLA (Mars Orbiter Laser Altimeter), MTC (Mars Coordinated Time), OTP,
+THEMIS (Thermal Emission Imaging System), USGS (U.S. Geological Survey), UTC (Coordinated Universal Time),
 and UI. Add an acronym here before using it in the UI.
 Fake-data views also use SOL (one Martian solar day) and FS (fictional sensor).
 Synthetic environmental field colors are continuous data scales, not alert levels:

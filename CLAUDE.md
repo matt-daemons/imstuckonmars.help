@@ -163,7 +163,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 ### Team decisions (shared role A)
 
 1. **Regional slope 200 m** — waiting on the routing teammate; router input (would mean re-setting the halved MOLA slope limits) or display-only?
-2. ~~Manifest format change~~ — M OK'd (§4). Jess/Role A to add `sceneControl` + `caveats` to `StableLayer`.
+2. ~~Manifest format change~~ — M OK'd (§4); `sceneControl` + `caveats` are on `StableLayer` (`lib/mars/types.ts`).
 3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Exact UI wording still to write (D / M).
 4. Confirm owner names for roles C and D.
 
@@ -172,7 +172,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
 2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
 3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
-4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (AOI name now fixed in `config.yaml`) with real routes so nothing fake ships.
+4. Before freeze: make sure no placeholder route ships. `stops.geojson` now holds only the real habitat point; no `route.geojson` remains (routes come from the router).
 5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
 
 ### Jess (role B)
