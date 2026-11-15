@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 ~08:30 — overnight runs reconciled with teammates' morning work (see "▶ Team items to agree"); **2-leg journeys confirmed (drive to a staging point, then walk/EVA)**; roughness + boulder bounds done for all 4 sites; MapLibre port landed (`1bbb6d0`); role A now shared by the team (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sun Nov 15, 2026 — **staging point decided (25 m, ≤ 5°, 40 × 40 m; §7 item 5)**, 2 rovers per mission, driving-range limit open (§7 item 8); earlier ~08:30: overnight runs reconciled with teammates' morning work (see "▶ Team items to agree"); **2-leg journeys confirmed (drive to a staging point, then walk/EVA)**; roughness + boulder bounds done for all 4 sites; MapLibre port landed (`1bbb6d0`); role A now shared by the team (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -91,6 +91,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
 | Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and rover battery. |
 | Mobility (traverse mode) | **Confirmed Sun Nov 15 (Jess + Role C): 2-leg journeys — drive (rover) base → staging point, then walk (EVA) staging point → POI and back.** Drive leg uses rover rules + slope/thermal inertia; walk leg uses suit rules + slope + roughness. No new POI is being added — the 4 sites stay. _Superseded earlier decision:_ **Rover drives only — no walking portion** (team meeting, Sun Nov 15). Why: POIs are 93–468 km from the base. Rover + walk (2 legs) was too complex (different risks and datasets per leg). Walking-only would mean moving the base next to one POI (proof of concept only). Driving wins because (1) **battery running low on bad terrain** is a real risk, which gives the slope/terrain model its value; (2) we can use **all 4 sites**, not a POC; (3) battery data is easy to add or simulate (label it simulated). Pitch line for spacesuit mobility: crew stay in the pressurized rover; suited sampling at the stop is out of scope. |
+| Staging point (rover parking before the walk) | **Decided by Jess, Sun Nov 15:** park at the nearest **40 × 40 m** square **≥ 25 m** from the POI, **no 1 m slope > 5°** in it (10° fallback, flagged CAUTION), **roughness < 0.25 m**, no boulders, within 2 km. In code (`findStagingPoint`). Chosen to be conservative and precise: a shorter walk saves suit oxygen and keeps the rover (safe haven) close. 25 m follows Apollo practice (Apollo 17 Station 7, ~25 m). NASA sets only a **maximum** (stay within a 1-hour walk back to the rover, EVA-EXP-0042 §9.6), no minimum. Full reasoning + caveats: §7 item 5. **2 rovers go out per mission** (mutual rescue); driving-range limit not decided (§7 item 8). |
 | Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. **⚠ With drive + walk, keep the suit/walk rules (20° suit slope, 8 h suit, walk-back 2 km) for EVA legs and ADD rover rules** (rover slope limit, range/battery + reserve, drive hours per sol) — team (shared role A). |
 
 ## 5. User story — "Plan a science mission and get home"
@@ -149,11 +150,37 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 4. **Fill in flight rules:** suit/walk rules stay (EVA legs); radiation thresholds done. **Rover rules are PROPOSED** in `lib/flight-rules/rover-rules.ts`
    (`8a2f06df`): slope 5° caution / 10° no-go on the 463 m MOLA grid (halved because MOLA reads slopes low), battery 30 / 20 %, reserve 20 / 10 km,
    range 100 / 200 km, rover breakdown walk-back 15 km. ⏳ Team sign-off. Note: suit walk-back 2 km (`config.yaml`) ≠ rover walk-back 15 km — name them apart on slides.
-5. ~~Journey structure~~ ✅ 2-leg (drive + walk). **Staging point: two competing definitions** — the app's `findStagingPoint` (`lib/mars/site-grid.ts`:
-   500–1000 m from the POI facing the base, 50 × 50 m, mean slope ≤ 5°, no crater walls) vs Role B's draft `pnpm pipe:staging` (≥ 100 m, 20 × 20 m,
-   max slope < 15°, roughness < 0.25 m). The app uses its own. Proposal (Jess): keep the app's finder, add the roughness check, drop the draft. ⏳ Team.
+5. ~~Journey structure~~ ✅ 2-leg (drive + walk). ✅ **Staging point standard — decided by Jess (Sun Nov 15)**, replacing two competing
+   definitions (the app's `findStagingPoint` in `lib/mars/site-grid.ts`: 500–1000 m from the POI facing the base, 50 × 50 m, mean slope ≤ 5°, no
+   crater walls; Role B's draft `pnpm pipe:staging`: ≥ 100 m, 20 × 20 m, max slope < 15°, roughness < 0.25 m):
+   - **Rover parks at the nearest qualifying 40 × 40 m square at least 25 m from the POI** (not 500 m or 100 m; not 50 or 20 m), within the
+     2 km walk-back · **no 1 m slope > 5° anywhere in the square** (not 15°, not a mean) · **roughness < 0.25 m** (decided) · no boulders.
+   - **10° fallback (Jess):** if no square within 2 km meets 5°, park where none exceeds 10° and flag the trip with a CAUTION reason. Needed
+     because the 1 m DTM's noise + polygon troughs add metre-scale slope: **no 40 m square within 2 km of ESP_034082 meets 5°**.
+   - **Why:** every value is the more conservative, more precise choice. A shorter walk means less suit oxygen and fewer consumables spent getting
+     to and from the site, and a quicker way back to the rover (safe haven) if something goes wrong. The 25 m comes from Apollo practice: at
+     Apollo 17 Station 7 the LRV was parked ~25 m from the boulder; at Apollo 15 Central Station it was 26 m from the panorama spot (ALSJ). One
+     report on Desert RATS 2011 also says EVA crews stayed within 25 m of the pressurized rover (primary paper not checked).
+   - **NASA gives only a maximum, never a minimum:** "EVA crewmembers will stay within a one hour walk back to their rover" (EVA-EXP-0042 Rev B §9.6;
+     8 h suit consumables + 1 h contingency; a rescuer must get an incapacitated crewmember to a safe haven within 60 min). At the assumed
+     ~2 km/h that's ~2 km (§4.2.1.3.1). Getting back safely is the constraint that matters, so NASA caps the walk rather than requiring a standoff.
+     NASA's Sim Series 2 test parked on crater rims and picked each spot for comm relay, task lighting, camera view and solar charging, with no
+     fixed distance. The only fixed standoff found (500 m) is rover ↔ **lander** (engine debris), not rover ↔ sample site.
+   - ✅ **In code:** `findStagingPoint` (`lib/mars/site-grid.ts`; returns `{ point, slopeLimitDeg, fallback, roughnessChecked }`, constants
+     `STAGING_MIN_M`, `PARKING_*`, shared wording `STAGING_RULE`); the fallback adds a CAUTION line to the route `reasons` and the assumptions panel
+     (the verdict itself is unchanged). The habitat-facing preference is gone (nearest wins). **Roughness is only checked once `ROUGHNESS_DATA_ROOT`
+     is set** (sites-v2 on R2, not uploaded yet); until then the panel says "roughness not checked". `pnpm pipe:staging` uses the same rule
+     (10 m cells max-pooled, 4 × 4 block). Its results (straight-line walks; the app's pathfinder may detour): ESP_033225 0.17 km · ESP_034082 0.19 km
+     **(10° fallback)** · ESP_037352 0.37 km · ESP_054060 0.06 km. Crater sites park on the flat outside the bowl, so "25 m" is a minimum: the nearest
+     flat square is 60–370 m out. Most straight walks still cross > 20° crater walls (ESP_034082 9–13 % of the walk).
 6. ✅ **MapLibre port (M)** landed (`1bbb6d0`, `docs/MAP_RENDERER.md`). ✅ Site layers re-checked on MapLibre 6.18.0 (Sun Nov 15 ~01:30, Step 3b). Original note: Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
 7. ~~Role A owner~~ ✅ **Role A is shared by the whole team** (Sun Nov 15): flight rules, thresholds, formats/schemas and integration are agreed together. Owners for C and D: confirm names.
+8. **Driving distance limits — NOT decided, note for later.** Our missions send **2 rovers out at a time** for safety (one can rescue the other's crew).
+   For when we decide whether we can drive to the farther sites (ESP_037352 424 km, ESP_054060 468 km): NASA's lunar ConOps (EVA-EXP-0042 Rev B
+   §4.2.1.3.1, §7.3.2) says **two pressurized rovers give a "mobile safe haven" that could extend the range to 100 km or more**. The rescue rover must
+   stay **within an 8-hour drive** of the EV crew, and rovers "notionally never travel farther than **100 km** from the ascent vehicle". Note: that
+   100 km is Artemis-era **Moon** planning, not Apollo (Apollo's walkback limit was 7.6 km; LRV designed for ~8 km). Compare with the proposed
+   rover rules (§7 item 4: range 100 / 200 km, breakdown walk-back 15 km).
 
 ## 8. Working agreements
 
@@ -214,6 +241,15 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
 - Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412(6845), 411–414. doi:10.1038/35086515 (ice-rich mantle with pitted texture — why the sites are rock-poor) ✓
 - NASA NSSDC, "The Apollo Lunar Roving Vehicle", https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html (LRV ground clearance 36 cm loaded — rover obstacle analogue)
+
+### Staging-point and rover-range sources (§7 items 5 and 8)
+
+- NASA (2020). _Exploration EVA System Concept of Operations_, EVA-EXP-0042 Rev B. https://www.nasa.gov/wp-content/uploads/2017/02/eva-exp-0042_xeva_system_con_ops_rev_b_final_dtd_10192020_ref_doc.pdf — §4.2.1.3.1 (walk-back ranges: ~2 km/h, 2 km on foot, 10 km unpressurized rover, 12 km single pressurized rover, 100 km+ with two pressurized rovers; rescue rover within an 8-hour drive), §7.3.2 (rovers within 100 km of the ascent vehicle; 8 h + 1 h contingency consumables ≈ 1 h walk from the rover), §9.6 ("stay within a one hour walk back to their rover"), §9.2 (rescue to safe haven within 60 min). Lunar values; Mars ranges are "forward work".
+- Apollo Lunar Surface Journal (NASA History). Apollo 17 Station 7: LRV parked ~25 m ENE of the boulder (https://www.nasa.gov/wp-content/uploads/static/history/alsj/a17/images17.html); Apollo 15: rover 26 m from the D-16 pan spot near Central Station; Final LRV parking places (https://www.nasa.gov/wp-content/uploads/static/history/alsj/alsj-LRVFinalParking.html); Apollo 15 Station 9, TV-coverage parking remark (https://nasa.gov/wp-content/uploads/static/history/alsj/a15/a15.sta9.html).
+- NASA (2023). _Sim Series 2: Rover Teleoperations to Support EVA_ (incl. D-RATS 22 findings). NTRS 20230016699. https://ntrs.nasa.gov/api/citations/20230016699/downloads/Sim_Series_2_Rover_Teleops_to_Support_EVA_Rev.pdf (parking chosen per spot for comm relay, lighting, camera, solar; proximity vs distance trade-off; rover 500 m from the lander for engine debris)
+- NASA OCHMO-TB-023, _Extraterrestrial Surface Transport Vehicles (Rovers)_. https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-023-extraterrestrial-surface-transport-vehicles-rovers.pdf (Apollo 7.6 km "Walkback Limit")
+- Desert RATS 2011: Human and robotic exploration of near-Earth asteroids (Abercromby et al.). https://www.researchgate.net/publication/256935260 — **(verify)** source of the "EVA within 25 m of the SEV" figure; only seen in a search summary.
+- Abercromby, A. F. J. et al. (2012). _Desert Research and Technology Studies (DRATS) 2009_. NASA/TP-2012-217360 (suit-port pressurized rover field test). https://www.lpi.usra.edu/lunar/analogs/blackpoint/pdf/AbercrombyEtAl_DRATS2009_TP-2012-217360.pdf
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
 - Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
 - Smith, D. E. et al. (2001). Mars Orbiter Laser Altimeter: experiment summary after the first year of global mapping of Mars. _JGR_ 106(E10), 23689–23722.
@@ -316,6 +352,7 @@ Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/su
   isn't mapped at 1:20M. Raw zip (809 MB) in `data/raw/geology/`. Not on the map yet.
 - ✅ **Staging points, DRAFT** (`cc8b6fcd`) — ⚠ **not used by the app** (it has its own finder, see §7 item 5): `pnpm pipe:staging [dtm]` (~8 s) → `public/data/processed/staging-points.geojson` (top 3 per site).
   Rover parking = slope < 15° and roughness < 0.25 m (**Role B ASSUMPTIONS**, Apollo LRV sources), ≥ 20 × 20 m, 100 m–2 km from the POI.
+  ⚠ **Superseded:** the pipeline now uses the team staging-point rule (≥ 25 m, max 5° / 10° fallback, roughness < 0.25 m, 40 × 40 m — §7 item 5) and was re-run.
   Ground is flat almost everywhere, so every #1 spot is ~110 m from the POI (the 100 m standoff decides). **ESP_034082:** every short walk crosses
   > 20° bowl walls (max 32–37°, 7–10 % of the walk) — sample from the rim or detour. No walk leaves a DTM footprint. The app's walk planner
   > (`planSiteWalk`) is a pathfinder and may already detour → check in the app before raising it.
@@ -323,7 +360,7 @@ Pitch: nearest site = softest, dustiest ground (battery drain, dust on panels/su
 **▶ Team items to agree (shared role A) — as of Sun Nov 15 ~08:30:**
 
 1. Sign off the **proposed rover rules** (§7 item 4).
-2. **Staging point definition** — app finder vs Role B draft (§7 item 5).
+2. ~~Staging point definition~~ ✅ decided by Jess and in code: ≥ 25 m, max 5° (10° fallback), roughness < 0.25 m, 40 × 40 m (§7 item 5). Tell the team.
 3. **Roughness classes (0.25 / 0.5 / 1 m) + walker rock sizes (0.3 / 0.5 / 1 m)** — Role B assumptions, legend says "not team-agreed".
 4. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`); layer
    panel shows "Scene panel" instead of a switch for those; TI drawn above imagery at 0.7 opacity.
