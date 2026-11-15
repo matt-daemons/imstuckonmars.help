@@ -13,6 +13,12 @@ terrain. The browser hides results for older inputs, aborts superseded requests
 and offers Retry route calculation after errors. Aborting a request does not
 guarantee that a synchronous server calculation has stopped.
 
+The map status strip and Check panel show “Calculating route…” with an
+indeterminate indicator while a valid request is pending, including the input
+debounce and retries. Old results stay hidden. Completion replaces the indicator
+with the result; errors show the existing retry action. No percent or estimated
+completion time is inferred. Reduced motion keeps the indicator static.
+
 ## Cache
 
 Completed deterministic results, including no-path/no-staging results, are
@@ -55,6 +61,10 @@ R2 COGs for site windows and a bounded native-stream PNG decoder for base
 Terrarium tiles. Vite development alone uses its localhost static-file server
 because its ASSETS binding does not expose public files. No database migration,
 R2 write access or second mission-state service is needed.
+
+The Vite RSC environment excludes `geotiff` from dependency prebundling so lazy
+codec imports resolve from the package instead of stale hashed optimizer chunks.
+Restart the development server after changing this configuration.
 
 ## Verification
 
