@@ -2,9 +2,9 @@
  * Only final results are trusted: partial hypotheses briefly match "lara" on unrelated speech,
  * while the final result for the same audio is "[unk]".
  */
-const WAKE_PHRASE = /\b(hey|okay) lara\b/;
+const WAKE_PHRASE = /\b(?:(?:hey|okay) )?lara\b/;
 /** Words after the wake phrase mean the question was asked in the same breath. */
-const WAKE_WITH_QUESTION = /\b(hey|okay) lara \S/;
+const WAKE_WITH_QUESTION = /\b(?:(?:hey|okay) )?lara \S/;
 
 export const COOLDOWN_MS = 2500;
 export const SPEECH_RMS = 0.02;
@@ -19,7 +19,9 @@ export interface WakeHandlers {
   /** Called when the wake phrase is heard alone; resolve once the reply has finished playing. */
   onAcknowledge: () => Promise<void>;
   /** Called when the question is being captured. */
-  onCapturing: () => void;
+  onCapturing: (preroll?: Float32Array[]) => void;
+  /** Provisional on-device words for display only; final server transcription owns submission. */
+  onTranscript?: (text: string) => void;
   /**
    * The captured question as WAV, including any wake phrase spoken in the same breath. Resolve
    * once LARA has finished replying: "follow-up" captures the next question without the wake
@@ -69,6 +71,14 @@ export class WakeSession {
     this.now = options.now ?? Date.now;
   }
 
+  get isCapturing(): boolean {
+    return this.capture !== null;
+  }
+
+  finish(): void {
+    if (this.capture) void this.finishCapture(this.capture);
+  }
+
   /** Takes one microphone frame. Returns true when the frame should go to the wake recognizer. */
   hearFrame(frame: Float32Array): boolean {
     if (this.capture) {
@@ -110,7 +120,7 @@ export class WakeSession {
 
   private startCapture(chunks: Float32Array[], spokeAt: number | null) {
     this.capture = { chunks, started: this.now(), spokeAt };
-    this.options.current().onCapturing();
+    this.options.current().onCapturing(chunks);
   }
 
   private recordFrame(capture: Capture, frame: Float32Array) {

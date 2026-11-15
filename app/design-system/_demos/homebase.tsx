@@ -9,6 +9,7 @@ import { ConsolePane } from "@/components/homebase/pane";
 import type { HomebaseMetric } from "@/lib/homebase/types";
 import { Section } from "../_components/section";
 import { DebugMenu } from "@/components/debug/debug-menu";
+import { ListeningEffect } from "@/components/copilot/listening-effect";
 
 const fixture: HomebaseMetric = {
   id: "temperature",
@@ -34,8 +35,23 @@ const fixture: HomebaseMetric = {
 
 export function HomebaseComponents() {
   const [generation, setGeneration] = useState(1);
+  const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="listening-effect" title="LARA listening indicator">
+        <Button
+          variant="outline"
+          aria-pressed={listeningPreview}
+          onClick={() => setListeningPreview((value) => !value)}
+        >
+          {listeningPreview ? "Stop listening preview" : "Preview listening indicator"}
+        </Button>
+        <ListeningEffect active={listeningPreview} />
+        <p>
+          Visual fixture only. Does not activate the microphone. Reduced motion uses a static
+          border.
+        </p>
+      </Section>
       <Section id="debug-menu" title="Debug menu">
         <DebugMenu
           page="Design system fixture"

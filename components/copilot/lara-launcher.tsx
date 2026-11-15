@@ -1,7 +1,8 @@
 "use client";
 
-import { MessageSquareIcon } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { MessageSquareIcon, Mic } from "lucide-react";
+import { useEffect, useId, useState, type ReactNode } from "react";
+import { ListeningEffect } from "./listening-effect";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,6 +31,10 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
   const statusBadge = STATUS_BADGE[status];
   const hiddenError = open ? null : error;
   const chatId = useId();
+  const listening = status === "listening";
+  useEffect(() => {
+    if (listening) setOpen(true);
+  }, [listening]);
 
   function toggle() {
     setSeen(alerts.length);
@@ -44,6 +49,7 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
 
   return (
     <>
+      <ListeningEffect active={listening} />
       {/* Before the chat, so Tab moves from the button into the chat it opens. */}
       <Button
         variant={open ? "default" : "outline"}
@@ -52,8 +58,9 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
         className={open ? "absolute right-4 bottom-12" : "absolute right-4 bottom-12 bg-background"}
         onClick={toggle}
       >
-        <MessageSquareIcon aria-hidden />
-        Ask LARA {statusBadge && <Badge variant="info">{statusBadge}</Badge>}{" "}
+        {listening ? <Mic aria-hidden /> : <MessageSquareIcon aria-hidden />}
+        {listening ? "LARA is listening" : "Ask LARA"}{" "}
+        {statusBadge && !listening && <Badge variant="info">{statusBadge}</Badge>}{" "}
         {unseen && <Badge variant="warning">New alert</Badge>}{" "}
         {hiddenError && <Badge variant="error">Error</Badge>}
       </Button>

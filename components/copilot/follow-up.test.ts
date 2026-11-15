@@ -13,6 +13,9 @@ import {
 } from "./follow-up";
 
 describe("withFollowUp", () => {
+  it("strips a standalone LARA prefix from the recognized question", () => {
+    expect(stripWakePhrase("LARA, how much oxygen?")).toBe("how much oxygen?");
+  });
   it("puts a pause between the answer and the prompt", () => {
     expect(withFollowUp("The battery has 71 percent.", "Anything else?")).toBe(
       `The battery has 71 percent. <break time="${FOLLOW_UP_PAUSE_S}s" /> Anything else?`,

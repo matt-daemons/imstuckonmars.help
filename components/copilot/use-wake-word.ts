@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { Model } from "vosk-browser";
+import type { KaldiRecognizer, Model } from "vosk-browser";
+import { LiveTranscript } from "./live-transcript";
 
 import { MAX_CAPTURE_MS, WakeSession, type WakeHandlers } from "./wake-session";
 
@@ -13,7 +14,7 @@ const MODEL_URL =
   "https://ccoreilly.github.io/vosk-browser/models/vosk-model-small-en-us-0.15.tar.gz";
 
 /** Restricting the grammar to the wake phrase keeps recognition cheap and false triggers rare. */
-const GRAMMAR = JSON.stringify(["hey lara", "okay lara", "[unk]"]);
+const GRAMMAR = JSON.stringify(["hey lara", "okay lara", "lara", "[unk]"]);
 
 const FRAME_SAMPLES = 4096;
 const OUTPUT_RATE = 16000;
@@ -22,7 +23,7 @@ const OUTPUT_RATE = 16000;
 export type WakeState = "off" | "loading" | "listening" | "paused" | "follow-up" | "error";
 
 let modelPromise: Promise<Model> | null = null;
-function loadModel() {
+function loadSpeechModel() {
   modelPromise ??= import("vosk-browser").then(({ createModel }) => createModel(MODEL_URL, -1));
   modelPromise.catch(() => (modelPromise = null));
   return modelPromise;
@@ -73,6 +74,7 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
   const [state, setState] = useState<WakeState>("off");
   const [conversing, setConversing] = useState(false);
   const latest = useRef(options);
+  const capture = useRef<WakeSession | null>(null);
   latest.current = options;
 
   useEffect(() => {
@@ -82,16 +84,20 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
     }
     let stopped = false;
     let cleanup = () => {};
+    let microphone: MediaStream | undefined;
     setState("loading");
 
     (async () => {
       try {
-        const [model, stream] = await Promise.all([
-          loadModel(),
-          navigator.mediaDevices.getUserMedia({
-            audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
-          }),
-        ]);
+        const stream = await navigator.mediaDevices.getUserMedia({
+          audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
+        });
+        microphone = stream;
+        if (stopped) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+        const model = await loadSpeechModel();
         if (stopped) {
           stream.getTracks().forEach((t) => t.stop());
           return;
@@ -99,12 +105,42 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
         const context = new AudioContext();
         const rate = context.sampleRate;
         const recognizer = new model.KaldiRecognizer(rate, GRAMMAR);
+        let transcriptRecognizer: KaldiRecognizer | null = null;
+        const startTranscript = () => {
+          transcriptRecognizer?.remove();
+          const transcript = new LiveTranscript();
+          const next = new model.KaldiRecognizer(rate);
+          transcriptRecognizer = next;
+          next.on("partialresult", (message) => {
+            if (
+              next !== transcriptRecognizer ||
+              !session.isCapturing ||
+              message.event !== "partialresult"
+            )
+              return;
+            latest.current.onTranscript?.(transcript.partial(message.result.partial));
+          });
+          next.on("result", (message) => {
+            if (next !== transcriptRecognizer || !session.isCapturing || message.event !== "result")
+              return;
+            latest.current.onTranscript?.(transcript.final(message.result.text));
+          });
+        };
         const session = new WakeSession({
-          current: () => latest.current,
+          current: () => ({
+            ...latest.current,
+            onCapturing: (preroll) => {
+              startTranscript();
+              latest.current.onCapturing();
+              for (const frame of preroll ?? [])
+                transcriptRecognizer?.acceptWaveformFloat(frame, rate);
+            },
+          }),
           encode: (chunks) => encodeWav(chunks, rate),
           maxRecentChunks: Math.ceil((MAX_CAPTURE_MS / 1000) * (rate / FRAME_SAMPLES)),
           onConversationChange: setConversing,
         });
+        capture.current = session;
 
         recognizer.on("result", (m) => {
           if (m.event === "result") session.hearResult(m.result.text);
@@ -116,19 +152,26 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
         processor.onaudioprocess = (event) => {
           const frame = new Float32Array(event.inputBuffer.getChannelData(0));
           if (session.hearFrame(frame)) recognizer.acceptWaveform(event.inputBuffer);
+          else if (session.isCapturing) transcriptRecognizer?.acceptWaveform(event.inputBuffer);
         };
         source.connect(processor);
         processor.connect(context.destination);
         setState("listening");
         cleanup = () => {
+          const wasCapturing = session.isCapturing;
           session.stop();
+          if (wasCapturing) latest.current.onNoSpeech();
+          capture.current = null;
           processor.disconnect();
           source.disconnect();
           recognizer.remove();
+          transcriptRecognizer?.remove();
+          transcriptRecognizer = null;
           stream.getTracks().forEach((t) => t.stop());
           void context.close();
         };
       } catch {
+        microphone?.getTracks().forEach((track) => track.stop());
         if (!stopped) setState("error");
       }
     })();
@@ -136,10 +179,11 @@ export function useWakeWord(options: { enabled: boolean; paused: boolean } & Wak
     return () => {
       stopped = true;
       cleanup();
+      microphone?.getTracks().forEach((track) => track.stop());
     };
   }, [options.enabled]);
 
-  if (state !== "listening") return state;
-  if (conversing) return "follow-up";
-  return options.paused ? "paused" : state;
+  const displayedState =
+    state !== "listening" ? state : conversing ? "follow-up" : options.paused ? "paused" : state;
+  return { state: displayedState, finish: () => capture.current?.finish() };
 }

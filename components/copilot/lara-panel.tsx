@@ -22,7 +22,7 @@ const STATUS_TEXT = {
 const WAKE_TEXT: Record<WakeState, string> = {
   off: "Wake word is off",
   loading: "Loading wake word model (about 41 MB)…",
-  listening: "Say “Hey LARA”",
+  listening: "Say “Hey LARA” or “LARA”",
   paused: "Wake word is paused while LARA is busy",
   "follow-up": "Ask another question, or say “no thanks” to finish",
   error: "Wake word is not available. The microphone or the model did not load.",
@@ -52,6 +52,7 @@ export function LaraPanel() {
   const lara = useLaraContext();
   const [draft, setDraft] = useState("");
   const log = useRef<HTMLOListElement>(null);
+  const input = useRef<HTMLInputElement>(null);
   const s = lara.snapshot;
   const listening = lara.status === "listening";
   const busy = !lara.ready || (lara.status !== "idle" && !listening);
@@ -61,6 +62,13 @@ export function LaraPanel() {
     paused: lara.status !== "idle",
     ...lara.wakeHandlers,
   });
+  const finishListening = () => {
+    if (wakeOn) wake.finish();
+    lara.stopListening();
+  };
+  useEffect(() => {
+    if (listening && input.current) input.current.scrollLeft = input.current.scrollWidth;
+  }, [listening, lara.transcript]);
 
   useEffect(() => {
     log.current?.lastElementChild?.scrollIntoView({ block: "end" });
@@ -106,6 +114,7 @@ export function LaraPanel() {
 
   function submit(e: FormEvent) {
     e.preventDefault();
+    if (listening || busy) return;
     const question = draft.trim();
     if (!question) return;
     setDraft("");
@@ -128,9 +137,11 @@ export function LaraPanel() {
           <p className="text-xs text-muted-foreground" aria-live="polite">
             {STATUS_TEXT[lara.status]}
           </p>
-          <p className="text-[11px] text-muted-foreground" aria-live="polite">
-            {WAKE_TEXT[wake]}
-          </p>
+          {!listening && (
+            <p className="text-[11px] text-muted-foreground" aria-live="polite">
+              {WAKE_TEXT[wake.state]}
+            </p>
+          )}
         </div>
         <div className="flex gap-1">
           <Button
@@ -153,7 +164,9 @@ export function LaraPanel() {
             size="xs"
             variant={wakeOn ? "default" : "ghost"}
             aria-pressed={wakeOn}
-            aria-label={wakeOn ? "Stop listening for Hey LARA" : "Listen for Hey LARA"}
+            aria-label={
+              wakeOn ? "Stop listening for Hey LARA or LARA" : "Listen for Hey LARA or LARA"
+            }
             onClick={() => setWakeOn(!wakeOn)}
           >
             {wakeOn ? <Ear aria-hidden /> : <EarOff aria-hidden />}
@@ -226,14 +239,23 @@ export function LaraPanel() {
           Ask LARA
         </label>
         <input
+          ref={input}
           id="lara-input"
-          value={draft}
+          value={listening || lara.status === "transcribing" ? lara.transcript : draft}
+          readOnly={listening || lara.status === "transcribing"}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ask about oxygen, battery, or radiation"
+          placeholder={
+            listening ? "Listening… speak your question" : "Ask about oxygen, battery, or radiation"
+          }
           disabled={!lara.ready}
           className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-sm"
         />
-        <Button size="sm" type="submit" disabled={busy || !draft.trim()} aria-label="Send">
+        <Button
+          size="sm"
+          type="submit"
+          disabled={busy || listening || !draft.trim()}
+          aria-label="Send"
+        >
           <Send aria-hidden />
         </Button>
         <Button
@@ -247,7 +269,7 @@ export function LaraPanel() {
               ? "Stop recording and send the question"
               : "Talk to LARA. You can also hold the space bar."
           }
-          onClick={() => (listening ? lara.stopListening() : void lara.startListening())}
+          onClick={() => (listening ? finishListening() : void lara.startListening())}
         >
           {listening ? <Square aria-hidden /> : <Mic aria-hidden />}
         </Button>

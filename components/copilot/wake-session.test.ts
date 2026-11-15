@@ -92,6 +92,25 @@ describe("WakeSession", () => {
     expect(h.handlers.onUtterance).toHaveBeenCalledOnce();
   });
 
+  it("accepts LARA alone and preserves same-breath frames for live transcription", () => {
+    h.hear(speech, 1000);
+    h.session.hearResult("lara what is the battery");
+    expect(h.session.isCapturing).toBe(true);
+    expect(h.handlers.onCapturing.mock.calls[0][0]).toHaveLength(10);
+    h.session.finish();
+    expect(h.handlers.onUtterance).toHaveBeenCalledOnce();
+    expect(h.session.isCapturing).toBe(false);
+  });
+
+  it("acknowledges a standalone LARA without capturing its reply", async () => {
+    h.session.hearResult("lara");
+    expect(h.handlers.onAcknowledge).toHaveBeenCalledOnce();
+    expect(h.session.isCapturing).toBe(false);
+    h.acknowledgement.settle();
+    await flush();
+    expect(h.session.isCapturing).toBe(true);
+  });
+
   it("keeps capturing questions without the wake word while replies ask for a follow-up", async () => {
     h.session.hearResult("hey lara how much oxygen");
     h.askQuestion();

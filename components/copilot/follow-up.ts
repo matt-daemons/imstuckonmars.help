@@ -24,7 +24,7 @@ export function withFollowUp(answer: string, prompt: string): string {
 /** What LARA says when the operator declines a follow-up, before going back to the wake word. */
 export const SIGN_OFFS = ["Okay.", "Standing by."] as const;
 
-const LEADING_WAKE_PHRASE = /^\s*(hey|okay|ok)[\s,]+(lara|laura|lora)\b[\s,.!?]*/i;
+const LEADING_WAKE_PHRASE = /^\s*(?:(hey|okay|ok)[\s,]+)?(lara|laura|lora)\b[\s,.!?]*/i;
 
 /** Words that only decline when the rest of the utterance is made of declining words too. */
 const DECLINING_WORDS = [

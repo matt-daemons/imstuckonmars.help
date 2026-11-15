@@ -36,6 +36,22 @@ queries already include exaggeration in MapLibre, so no second multiplier is
 applied to the queried ground height. The inherited display elevation offset
 and Mars model scaling are unchanged.
 
+## LARA listening indicator
+
+With wake listening enabled, final on-device recognition of “Hey LARA” or
+“LARA” starts the existing voice flow. During question capture, the chat opens,
+the launcher says LARA is listening, and a narrow cyan WebGL edge effect marks
+the viewport. It does not intercept pointer input. Reduced motion and forced
+colors use a static border. The effect stops outside actual capture.
+
+A separate unrestricted on-device recognizer streams provisional words into
+the question field using the same microphone stream, including buffered audio
+from a same-breath question. Partial hypotheses never trigger the wake word or
+submit questions. The existing server transcription still supplies the final
+question. The typed draft is preserved while voice text is displayed. Wake
+listening remains opt-in; microphone and model failures use the existing error
+state. The design system has a microphone-free indicator preview.
+
 ## Space-to-sky transition
 
 The canvas background fades from dark space at zoom 3 to the Mars sky color

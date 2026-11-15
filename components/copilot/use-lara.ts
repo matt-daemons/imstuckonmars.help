@@ -88,6 +88,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
   // When the last poll succeeded (ms since epoch), so readers can tell a stale snapshot.
   const [polledAt, setPolledAt] = useState<number | null>(null);
   const [voice, setVoice] = useState(true);
+  const [transcript, setTranscript] = useState("");
   const seenReasons = useRef<Set<string> | null>(null);
   const recorder = useRef<MediaRecorder | null>(null);
   // Push-to-talk can be released while the microphone is still opening.
@@ -372,6 +373,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
           body: clip,
         }),
       );
+      setTranscript(stripWakePhrase(text));
       return text;
     },
     [authed, mission],
@@ -398,6 +400,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
     wantsMic.current = true;
     micOpening.current = true;
     setError(null);
+    setTranscript("");
     audio.current?.pause();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -472,9 +475,11 @@ export function useLara(shared?: { id: string; token: string } | null) {
     },
     onCapturing: () => {
       audio.current?.pause();
+      setTranscript("");
       setStatus("listening");
       prefetchSignOffs();
     },
+    onTranscript: setTranscript,
     onUtterance: async (clip: Blob): Promise<AfterUtterance> => {
       playHeardCue();
       try {
@@ -496,6 +501,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
     polledAt,
     turns,
     status,
+    transcript,
     error,
     voice,
     setVoice,
