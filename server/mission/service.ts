@@ -2,7 +2,7 @@ import { and, count, eq, gt, inArray, lt, lte, sql } from "drizzle-orm";
 import type { Database } from "../db";
 import { dataReleases, missionCommands, missionSessions } from "../db/schema";
 import { timingSafeEqual } from "node:crypto";
-import { anchorClock, clockPosition, type MissionClock } from "../../lib/mission/clock";
+import { anchorClock, resolveMissionClock, type MissionClock } from "../../lib/mission/clock";
 import { evaluateMission, assessReturn } from "../../lib/mission/engine";
 import { buildExpeditionConfig, parsePlan } from "../../lib/mission/expedition";
 import { missionOutlook, replanConfig } from "../../lib/mission/outlook";
@@ -253,7 +253,8 @@ export async function snapshot(
   companions: Companions = {},
 ) {
   const input = await inputs(db, session);
-  const target = atS ?? clockPosition(input.clock, now, input.config.duration_s);
+  const clock = resolveMissionClock(input.clock, now, input.config);
+  const target = atS ?? clock.position_s;
   const state = evaluateMission(input.config, input.samples, input.events, target);
   const currentSample =
     input.samples[Math.min(Math.floor(state.elapsed_s), input.samples.length - 1)] ?? null;
@@ -268,15 +269,15 @@ export async function snapshot(
     server_time_ms: now,
     expires_ms: session.expires_ms,
     clock: {
-      ...input.clock,
+      ...clock,
       anchor_ms: now,
       position_s: state.elapsed_s,
       mode:
-        input.clock.mode === "ended" && atS === undefined
+        clock.mode === "ended" && atS === undefined
           ? "ended"
           : atS !== undefined || state.status !== "ok" || state.elapsed_s >= input.config.duration_s
             ? "paused"
-            : input.clock.mode,
+            : clock.mode,
       basis: "request-driven server wall-clock anchor; no persistent timer",
     },
     config: input.config,
@@ -386,14 +387,10 @@ export async function command(
     );
   let config = input.config;
   let events = input.events;
-  const evaluated = evaluateMission(
-    config,
-    input.samples,
-    events,
-    clockPosition(input.clock, now, config.duration_s),
-  );
+  const currentClock = resolveMissionClock(input.clock, now, config);
+  const evaluated = evaluateMission(config, input.samples, events, currentClock.position_s);
   requireUnfinishedFor(body.type, evaluated.elapsed_s, config.duration_s);
-  let clock = anchorClock(input.clock, evaluated.elapsed_s, now);
+  let clock = anchorClock(currentClock, evaluated.elapsed_s, now);
   switch (body.type) {
     case "play":
       if (evaluated.status !== "ok" || evaluated.elapsed_s >= config.duration_s)
@@ -616,7 +613,7 @@ export async function outlook(db: Database, session: Session, now = Date.now()) 
   const input = await inputs(db, session);
   if (!input.config.route)
     throw new MissionError("no_route", "Launch an expedition before requesting its outlook", 409);
-  const at = clockPosition(input.clock, now, input.config.duration_s);
+  const at = resolveMissionClock(input.clock, now, input.config).position_s;
   return {
     mission_id: session.id,
     revision: session.revision,
@@ -650,7 +647,7 @@ export const REPORT_POINTS = 480;
 /** The mission so far, sampled for the report: one deterministic pass over the clock. */
 export async function report(db: Database, session: Session, now = Date.now()) {
   const input = await inputs(db, session);
-  const end = clockPosition(input.clock, now, input.config.duration_s);
+  const end = resolveMissionClock(input.clock, now, input.config).position_s;
   const step = Math.max(15, Math.ceil(end / REPORT_POINTS));
   const times = [
     ...new Set([

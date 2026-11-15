@@ -5,6 +5,7 @@ import {
   parseShownCompletion,
   reportKey,
   shownCompletion,
+  shelterRecoveryPending,
   simulationFinished,
 } from "./completion";
 
@@ -19,6 +20,26 @@ function snapshot(mode: "playing" | "paused" | "ended", time: number, route = tr
 }
 
 describe("simulation completion", () => {
+  it("retains controls at shelter until the configured recovery is played", () => {
+    const sheltered = {
+      ...snapshot("paused", 2700),
+      config: {
+        duration_s: 3600,
+        route: { id: "route", legs: [{ activity: "return", end_s: 2700 }] },
+      },
+      state: { elapsed_s: 2700, status: "ok" },
+    } as Snapshot;
+    expect(shelterRecoveryPending(sheltered)).toBe(true);
+    expect(simulationFinished(sheltered)).toBe(false);
+    expect(
+      shelterRecoveryPending({ ...sheltered, clock: { ...sheltered.clock, mode: "playing" } }),
+    ).toBe(false);
+    expect(
+      shelterRecoveryPending({ ...sheltered, state: { ...sheltered.state, elapsed_s: 3600 } }),
+    ).toBe(false);
+    expect(shelterRecoveryPending(snapshot("ended", 2700))).toBe(false);
+    expect(shelterRecoveryPending(null)).toBe(false);
+  });
   it("does not hide the controls for idle, paused or source-interrupted runs", () => {
     expect(simulationFinished(null)).toBe(false);
     expect(simulationFinished(snapshot("paused", 0, false))).toBe(false);

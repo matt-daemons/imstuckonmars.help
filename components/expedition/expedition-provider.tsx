@@ -24,6 +24,7 @@ import {
   type Snapshot,
 } from "@/lib/mission/client";
 import type { ExpeditionPlan } from "@/lib/mission/expedition";
+import { resolveMissionClock } from "@/lib/mission/clock";
 import type { ReplanOption } from "@/lib/mission/types";
 import { usePathname } from "next/navigation";
 import {
@@ -411,9 +412,12 @@ function useExpeditionState() {
       if (!s) return 0;
       if (s.clock.mode !== "playing") return s.clock.position_s;
       // Stop visual extrapolation after two missed polls; do not invent progress during an outage.
-      const elapsed =
-        (Math.min(Math.max(0, ms - receivedAt), STALE_AFTER_MS) * s.clock.speed) / 1000;
-      return Math.min(s.config.duration_s, s.clock.position_s + Math.max(0, elapsed));
+      const elapsedMs = Math.min(Math.max(0, ms - receivedAt), STALE_AFTER_MS);
+      return resolveMissionClock(
+        { ...s.clock, anchor_ms: receivedAt },
+        receivedAt + elapsedMs,
+        s.config,
+      ).position_s;
     },
     [receivedAt],
   );

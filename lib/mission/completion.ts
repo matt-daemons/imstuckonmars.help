@@ -1,4 +1,16 @@
 import type { Snapshot } from "./client";
+import { shelterArrivalS } from "./clock";
+
+/** A paused return is not completion: the configured recovery still needs operator playback. */
+export function shelterRecoveryPending(snapshot: Snapshot | null): boolean {
+  if (!snapshot || snapshot.clock.mode !== "paused" || snapshot.state.status !== "ok") return false;
+  const arrival = shelterArrivalS(snapshot.config);
+  return (
+    arrival !== null &&
+    snapshot.state.elapsed_s >= arrival &&
+    snapshot.state.elapsed_s < snapshot.config.duration_s - 1e-6
+  );
+}
 
 /** A return still has its configured shelter recovery period; pause/source gaps are not completion. */
 export function simulationFinished(snapshot: Snapshot | null): boolean {

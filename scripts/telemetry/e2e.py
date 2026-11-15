@@ -94,6 +94,26 @@ def expedition():
         assert replanned["config"]["route"]["decisions"][0]["option"] == "turn_back"
         assert replanned["config"]["duration_s"] < planned["config"]["duration_s"]
         assert any(event["id"] == "future-generator" for event in replanned["events"])
+        arrival = next(leg["end_s"] for leg in reversed(replanned["config"]["route"]["legs"])
+                       if leg["activity"] == "return")
+        assert math.isclose(replanned["config"]["duration_s"] - arrival, 900)
+        command("seek", at_s=arrival - 1)
+        command("play")
+        time.sleep(0.1)
+        arrived = request(path, token=token)
+        assert arrived["clock"]["mode"] == "paused"
+        assert math.isclose(arrived["state"]["elapsed_s"], arrival)
+        assert arrived["state"]["position"]["phase"] == "shelter"
+        assert math.isclose(request(path + "/outlook", token=token)["at_s"], arrival)
+        assert not request(path + "/report", token=token)["ended_by_operator"]
+        time.sleep(0.1)
+        assert request(path, token=token)["state"] == arrived["state"]
+        resume_body, recovery = command("play")
+        assert recovery["clock"]["mode"] == "playing"
+        assert recovery["config"] == replanned["config"]
+        assert request(path + "/commands", resume_body, token)["idempotent_replay"]
+        time.sleep(0.1)
+        assert request(path, token=token)["state"]["elapsed_s"] > arrival
         command("seek", at_s=replanned["config"]["duration_s"])
         report = request(path + "/report", token=token)
         assert report["final"]["position"]["phase"] == "shelter"
@@ -129,7 +149,7 @@ def expedition():
         command("end")
         _, new_plan = command("plan", plan=plan)
         assert new_plan["clock"]["mode"] == "paused"
-        print(json.dumps({"expedition": "passed", "checks": "admission, preview, position/resources/clock, leak, alternatives, stale revision, replan, report, persistent end, idempotent end, blocked changes, restart/new plan"}))
+        print(json.dumps({"expedition": "passed", "checks": "admission, preview, position/resources/clock, leak, alternatives, stale revision, replan, shelter-arrival pause, explicit recovery resume, report, persistent end, idempotent end, blocked changes, restart/new plan"}))
     finally:
         request(path, token=token, method="DELETE")
 
