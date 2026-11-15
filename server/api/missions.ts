@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { asc, eq } from "drizzle-orm";
+import { missionSessions, scenarioPresets } from "../db/schema";
 import {
   command,
   createSession,
@@ -15,8 +17,11 @@ import { aiExplanation, diagnosticTools, explain } from "../mission/diagnostics"
 export const missions = new Hono<{ Bindings: ApiBindings }>();
 
 missions.get("/presets", async (c) => {
-  const { results } = await database(c.env)
-    .prepare("SELECT * FROM scenario_presets ORDER BY id LIMIT 20")
+  const results = await database(c.env)
+    .select()
+    .from(scenarioPresets)
+    .orderBy(asc(scenarioPresets.id))
+    .limit(20)
     .all();
   return c.json({
     presets: results.map((row) => ({
@@ -89,7 +94,7 @@ missions.post("/:id/assess-return", async (c) => {
 missions.delete("/:id", async (c) => {
   const db = database(c.env);
   const session = await sessionFor(db, c.req.param("id"), c.req.header("Authorization"));
-  await db.prepare("DELETE FROM mission_sessions WHERE id=?").bind(session.id).run();
+  await db.delete(missionSessions).where(eq(missionSessions.id, session.id)).run();
   return c.json({ deleted: session.id });
 });
 

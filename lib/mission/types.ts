@@ -59,7 +59,8 @@ export interface MoxieSample {
   utc_ms: number | null;
   oxygen_rate_g_h: number | null;
   total_power_w: number | null;
-  [field: string]: number | null;
+  fault_count?: number | null;
+  [field: string]: unknown;
 }
 
 export interface OxygenState {

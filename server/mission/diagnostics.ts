@@ -1,4 +1,7 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import { and, asc, eq, gte, lte } from "drizzle-orm";
+import type { Database } from "../db";
+import { moxieSamples } from "../db/schema";
+import { experimentComparison, sourceQuality } from "../telemetry/repository";
 import { MissionError } from "../../lib/mission/types";
 import { snapshot } from "./service";
 
@@ -59,7 +62,7 @@ export function explain(result: Snapshot) {
 }
 
 /** All tools are read-only, bounded and pinned to one authorized mission snapshot. */
-export function diagnosticTools(db: D1Database, result: Snapshot) {
+export function diagnosticTools(db: Database, result: Snapshot) {
   return async (name: DiagnosticTool): Promise<unknown> => {
     switch (name) {
       case "mission_snapshot":
@@ -72,47 +75,51 @@ export function diagnosticTools(db: D1Database, result: Snapshot) {
       case "recent_moxie": {
         const row = result.observed.moxie?.source_row ?? result.config.source_start_row;
         const samples = await db
-          .prepare(
-            "SELECT source_row,segment_id,elapsed_ms,oxygen_rate_g_h,total_power_w,top_temperature_k,bottom_temperature_k,inlet_pressure_pa,cathode_pressure_pa,mode,fault_count,last_fault_code FROM moxie_samples WHERE run_id=? AND source_row>=? AND source_row<=? ORDER BY source_row LIMIT 120",
+          .select({
+            source_row: moxieSamples.source_row,
+            segment_id: moxieSamples.segment_id,
+            elapsed_ms: moxieSamples.elapsed_ms,
+            oxygen_rate_g_h: moxieSamples.oxygen_rate_g_h,
+            total_power_w: moxieSamples.total_power_w,
+            top_temperature_k: moxieSamples.top_temperature_k,
+            bottom_temperature_k: moxieSamples.bottom_temperature_k,
+            inlet_pressure_pa: moxieSamples.inlet_pressure_pa,
+            cathode_pressure_pa: moxieSamples.cathode_pressure_pa,
+            mode: moxieSamples.mode,
+            fault_count: moxieSamples.fault_count,
+            last_fault_code: moxieSamples.last_fault_code,
+          })
+          .from(moxieSamples)
+          .where(
+            and(
+              eq(moxieSamples.run_id, result.observed.run_id),
+              gte(moxieSamples.source_row, Math.max(1, row - 119)),
+              lte(moxieSamples.source_row, row),
+            ),
           )
-          .bind(result.observed.run_id, Math.max(1, row - 119), row)
+          .orderBy(asc(moxieSamples.source_row))
+          .limit(120)
           .all();
         return {
           run_id: result.observed.run_id,
-          samples: samples.results,
+          samples,
           citation: `/api/telemetry/moxie/runs/${result.observed.run_id}/samples?after_row=${Math.max(0, row - 120)}&limit=120`,
           note: "Archived readings, not simulated inventory; fault_count is cumulative; pressure Pa, temperature K, power W, oxygen g/h",
         };
       }
       case "source_quality": {
-        const ids = [result.observed.calibrated_product_id, result.observed.derived_product_id];
-        const [products, fields, issues] = await db.batch([
-          db.prepare("SELECT * FROM source_products WHERE id IN (?,?)").bind(...ids),
-          db
-            .prepare(
-              "SELECT * FROM field_definitions WHERE product_id IN (?,?) ORDER BY product_id,field LIMIT 100",
-            )
-            .bind(...ids),
-          db
-            .prepare(
-              "SELECT * FROM quality_issues WHERE product_id IN (?,?) ORDER BY start_row,field LIMIT 100",
-            )
-            .bind(...ids),
-        ]);
+        const ids = [
+          result.observed.calibrated_product_id,
+          ...(result.observed.derived_product_id ? [result.observed.derived_product_id] : []),
+        ];
+        const quality = await sourceQuality(db, ids);
         return {
-          products: products.results,
-          fields: fields.results,
-          issues: issues.results,
+          ...quality,
           citations: ids.filter(Boolean).map((id) => `/api/telemetry/products/${id}/quality`),
         };
       }
       case "experiment_comparison": {
-        const { results } = await db
-          .prepare(
-            "SELECT m.directory_sol,m.time_quality,m.warnings_json,s.* FROM experiment_summaries s JOIN moxie_runs m ON m.id=s.run_id WHERE m.release_id=? ORDER BY m.directory_sol LIMIT 23",
-          )
-          .bind(result.release_id)
-          .all();
+        const results = await experimentComparison(db, result.release_id, 23);
         return {
           experiments: results,
           citation: "/api/telemetry/moxie/comparison",

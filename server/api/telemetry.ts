@@ -1,7 +1,24 @@
 import { Hono } from "hono";
+import { and, asc, desc, eq, getTableColumns, gt, gte, inArray, lt, lte } from "drizzle-orm";
+import type { AnySQLiteColumn } from "drizzle-orm/sqlite-core";
 import { MissionError } from "../../lib/mission/types";
 import { integer, number } from "../../lib/mission/validation";
-import { getProduct, getRun, MEDA_TABLES, requireRelease } from "../telemetry/repository";
+import {
+  experimentComparison,
+  getProduct,
+  getRun,
+  MEDA_TABLES,
+  requireRelease,
+} from "../telemetry/repository";
+import {
+  dataReleases,
+  fieldDefinitions,
+  metricRollups,
+  moxieRuns,
+  moxieSamples,
+  qualityIssues,
+  sourceProducts,
+} from "../db/schema";
 import { database, type ApiBindings } from "./bindings";
 
 export const telemetry = new Hono<{ Bindings: ApiBindings }>();
@@ -16,27 +33,35 @@ function queryInteger(
 }
 
 telemetry.get("/releases", async (c) => {
-  const { results } = await database(c.env)
-    .prepare(
-      "SELECT * FROM data_releases WHERE status='published' ORDER BY created_at DESC LIMIT 20",
-    )
+  const releases = await database(c.env)
+    .select()
+    .from(dataReleases)
+    .where(eq(dataReleases.status, "published"))
+    .orderBy(desc(dataReleases.created_at))
+    .limit(20)
     .all();
-  return c.json({ releases: results, selected_release: c.env.TELEMETRY_RELEASE });
+  return c.json({ releases, selected_release: c.env.TELEMETRY_RELEASE });
 });
 
 telemetry.get("/products", async (c) => {
   const db = database(c.env);
   const release = c.env.TELEMETRY_RELEASE ?? "nasa-v1";
   await requireRelease(db, release);
-  const { results } = await db
-    .prepare(
-      "SELECT * FROM source_products WHERE release_id=? ORDER BY instrument,sol,sensor,processing_level LIMIT 200",
+  const products = await db
+    .select()
+    .from(sourceProducts)
+    .where(eq(sourceProducts.release_id, release))
+    .orderBy(
+      asc(sourceProducts.instrument),
+      asc(sourceProducts.sol),
+      asc(sourceProducts.sensor),
+      asc(sourceProducts.processing_level),
     )
-    .bind(release)
+    .limit(200)
     .all();
   return c.json({
     release_id: release,
-    products: results,
+    products,
     availability: {
       weather: "historical sol 816 only",
       wind: "not_acquired",
@@ -52,19 +77,22 @@ telemetry.get("/products/:id/quality", async (c) => {
   const afterRow = queryInteger(c.req.query("after_row"), "after_row", 0);
   const [fields, issues] = await db.batch([
     db
-      .prepare("SELECT * FROM field_definitions WHERE product_id=? ORDER BY field")
-      .bind(product.id),
+      .select()
+      .from(fieldDefinitions)
+      .where(eq(fieldDefinitions.product_id, product.id))
+      .orderBy(asc(fieldDefinitions.field)),
     db
-      .prepare(
-        "SELECT * FROM quality_issues WHERE product_id=? AND end_row>=? ORDER BY start_row,field LIMIT 500",
-      )
-      .bind(product.id, afterRow),
+      .select()
+      .from(qualityIssues)
+      .where(and(eq(qualityIssues.product_id, product.id), gte(qualityIssues.end_row, afterRow)))
+      .orderBy(asc(qualityIssues.start_row), asc(qualityIssues.field))
+      .limit(500),
   ]);
   return c.json({
     product,
-    fields: fields.results,
-    issues: issues.results,
-    issues_truncated: issues.results.length === 500,
+    fields,
+    issues,
+    issues_truncated: issues.length === 500,
     note: "Missing flags are unknown; finite values and zero issue counts do not establish scientific validity",
   });
 });
@@ -79,11 +107,20 @@ telemetry.get("/environment", async (c) => {
       throw new MissionError("invalid_sensor", "Unknown MEDA sensor", 400);
     const level = ["ps", "rhs", "ancillary"].includes(sensor) ? "derived" : "calibrated";
     const product = await db
-      .prepare(
-        "SELECT p.id FROM source_products p JOIN data_releases r ON r.id=p.release_id WHERE p.release_id=? AND p.sensor=? AND p.instrument='meda' AND p.sol=816 AND p.processing_level=? AND r.status='published'",
+      .select({ id: sourceProducts.id })
+      .from(sourceProducts)
+      .innerJoin(dataReleases, eq(dataReleases.id, sourceProducts.release_id))
+      .where(
+        and(
+          eq(sourceProducts.release_id, release),
+          eq(sourceProducts.sensor, sensor),
+          eq(sourceProducts.instrument, "meda"),
+          eq(sourceProducts.sol, 816),
+          eq(sourceProducts.processing_level, level),
+          eq(dataReleases.status, "published"),
+        ),
       )
-      .bind(release, sensor, level)
-      .first<{ id: string }>();
+      .get();
     if (!product)
       throw new MissionError(
         "source_unavailable",
@@ -93,29 +130,30 @@ telemetry.get("/environment", async (c) => {
     productId = product.id;
   }
   const product = await getProduct(db, release, productId);
-  if (product.instrument !== "meda" || !Object.hasOwn(MEDA_TABLES, product.sensor))
+  if (product.instrument !== "meda" || !Object.hasOwn(MEDA_TABLES, product.sensor)) {
     throw new MissionError("invalid_product", "Select a MEDA environmental product", 400);
+  }
   const table = MEDA_TABLES[product.sensor as keyof typeof MEDA_TABLES];
-  const { results: definitions } = await db
-    .prepare(
-      "SELECT field,unit,description,provenance,rules_json FROM field_definitions WHERE product_id=? ORDER BY field",
-    )
-    .bind(product.id)
-    .all<{
-      field: string;
-      unit: string | null;
-      description: string;
-      provenance: string;
-      rules_json: string;
-    }>();
+  const columns: Record<string, AnySQLiteColumn> = getTableColumns(table);
+  const definitions = await db
+    .select({
+      field: fieldDefinitions.field,
+      unit: fieldDefinitions.unit,
+      description: fieldDefinitions.description,
+      provenance: fieldDefinitions.provenance,
+      rules_json: fieldDefinitions.rules_json,
+    })
+    .from(fieldDefinitions)
+    .where(eq(fieldDefinitions.product_id, product.id))
+    .orderBy(asc(fieldDefinitions.field))
+    .all();
   const requested =
     c.req.query("fields")?.split(",") ?? definitions.slice(0, 8).map((field) => field.field);
   if (
     requested.length === 0 ||
     requested.length > 8 ||
     requested.some(
-      (name) =>
-        !/^[a-z][a-z0-9_]*$/.test(name) || !definitions.some((field) => field.field === name),
+      (name) => !Object.hasOwn(columns, name) || !definitions.some((field) => field.field === name),
     )
   ) {
     throw new MissionError("invalid_fields", "Select one to eight known fields", 400);
@@ -126,43 +164,76 @@ telemetry.get("/environment", async (c) => {
   const limit = queryInteger(c.req.query("limit"), "limit", 1000, 5000);
   if (limit === 0) throw new MissionError("invalid_limit", "Limit must be positive", 400);
   const after = queryInteger(c.req.query("after_row"), "after_row", 0);
+  const fields = definitions.filter((field) => requested.includes(field.field));
   if (c.req.query("resolution") === "60s") {
     if (requested.length !== 1)
       throw new MissionError("invalid_fields", "Rollups require exactly one field", 400);
-    const { results } = await db
-      .prepare(
-        "SELECT * FROM metric_rollups WHERE product_id=? AND field=? AND bucket_sclk_ms>=? AND bucket_sclk_ms<? ORDER BY bucket_sclk_ms LIMIT ?",
+    const samples = await db
+      .select()
+      .from(metricRollups)
+      .where(
+        and(
+          eq(metricRollups.product_id, product.id),
+          eq(metricRollups.field, requested[0]),
+          gte(metricRollups.bucket_sclk_ms, from),
+          lt(metricRollups.bucket_sclk_ms, to),
+        ),
       )
-      .bind(product.id, requested[0], from, to, limit)
+      .orderBy(asc(metricRollups.bucket_sclk_ms))
+      .limit(limit)
       .all();
     return c.json({
       product,
-      fields: definitions.filter((field) => requested.includes(field.field)),
+      fields,
       resolution: "60s",
-      samples: results,
+      samples,
       note: "Counts describe acquired usable samples; never integrate chart averages across gaps",
     });
   }
-  const { results } = await db
-    .prepare(
-      `SELECT source_row,sclk_ms,utc_ms,lmst,ltst,${requested.join(",")} FROM ${table} WHERE product_id=? AND sclk_ms>=? AND sclk_ms<? AND source_row>? ORDER BY sclk_ms,source_row LIMIT ?`,
+  // Only schema-owned columns can enter a projection. Client strings never become SQL identifiers.
+  const selectedMetrics = Object.fromEntries(requested.map((name) => [name, columns[name]]));
+  const samples = await db
+    .select({
+      source_row: table.source_row,
+      sclk_ms: table.sclk_ms,
+      utc_ms: table.utc_ms,
+      lmst: table.lmst,
+      ltst: table.ltst,
+      ...selectedMetrics,
+    })
+    .from(table)
+    .where(
+      and(
+        eq(table.product_id, product.id),
+        gte(table.sclk_ms, from),
+        lt(table.sclk_ms, to),
+        gt(table.source_row, after),
+      ),
     )
-    .bind(product.id, from, to, after, limit)
-    .all<Record<string, number | string | null>>();
-  const first = results[0]?.source_row ?? after;
-  const last = results[results.length - 1]?.source_row ?? after;
-  const { results: issues } = await db
-    .prepare(
-      "SELECT * FROM quality_issues WHERE product_id=? AND start_row<=? AND end_row>=? ORDER BY start_row,field LIMIT 500",
+    .orderBy(asc(table.sclk_ms), asc(table.source_row))
+    .limit(limit)
+    .all();
+  const first = samples[0]?.source_row ?? after;
+  const last = samples[samples.length - 1]?.source_row ?? after;
+  const issues = await db
+    .select()
+    .from(qualityIssues)
+    .where(
+      and(
+        eq(qualityIssues.product_id, product.id),
+        lte(qualityIssues.start_row, last),
+        gte(qualityIssues.end_row, first),
+      ),
     )
-    .bind(product.id, last, first)
+    .orderBy(asc(qualityIssues.start_row), asc(qualityIssues.field))
+    .limit(500)
     .all();
   return c.json({
     product,
-    fields: definitions.filter((field) => requested.includes(field.field)),
-    samples: results,
+    fields,
+    samples,
     quality_issues: issues,
-    next_after_row: results.length === limit ? last : null,
+    next_after_row: samples.length === limit ? last : null,
     clock:
       "SCLK milliseconds; UTC is an approximate label-anchor derivative, not a new measurement",
     geometry:
@@ -176,26 +247,24 @@ telemetry.get("/moxie/runs", async (c) => {
   const db = database(c.env);
   const release = c.env.TELEMETRY_RELEASE ?? "nasa-v1";
   await requireRelease(db, release);
-  const { results } = await db
-    .prepare("SELECT * FROM moxie_runs WHERE release_id=? ORDER BY directory_sol LIMIT 100")
-    .bind(release)
+  const runs = await db
+    .select()
+    .from(moxieRuns)
+    .where(eq(moxieRuns.release_id, release))
+    .orderBy(asc(moxieRuns.directory_sol))
+    .limit(100)
     .all();
-  return c.json({ release_id: release, runs: results });
+  return c.json({ release_id: release, runs });
 });
 
 telemetry.get("/moxie/comparison", async (c) => {
   const db = database(c.env);
   const release = c.env.TELEMETRY_RELEASE ?? "nasa-v1";
   await requireRelease(db, release);
-  const { results } = await db
-    .prepare(
-      "SELECT m.directory_sol,m.time_quality,m.warnings_json,s.* FROM experiment_summaries s JOIN moxie_runs m ON m.id=s.run_id WHERE m.release_id=? ORDER BY m.directory_sol LIMIT 100",
-    )
-    .bind(release)
-    .all();
+  const experiments = await experimentComparison(db, release);
   return c.json({
     release_id: release,
-    experiments: results,
+    experiments,
     provenance: "ARES mathematical summaries of NASA archived telemetry",
     warnings: [
       "Whole-run energy includes warmup and diagnostics",
@@ -211,20 +280,27 @@ telemetry.get("/moxie/runs/:id/samples", async (c) => {
   const after = queryInteger(c.req.query("after_row"), "after_row", 0);
   const limit = queryInteger(c.req.query("limit"), "limit", 1000, 5000);
   if (limit === 0) throw new MissionError("invalid_limit", "Limit must be positive", 400);
-  const { results } = await db
-    .prepare(
-      "SELECT * FROM moxie_samples WHERE run_id=? AND source_row>? ORDER BY source_row LIMIT ?",
-    )
-    .bind(run.id, after, limit)
-    .all<{ source_row: number }>();
-  const { results: fields } = await db
-    .prepare("SELECT * FROM field_definitions WHERE product_id IN (?,?) ORDER BY product_id,field")
-    .bind(run.calibrated_product_id, run.derived_product_id)
+  const samples = await db
+    .select()
+    .from(moxieSamples)
+    .where(and(eq(moxieSamples.run_id, run.id), gt(moxieSamples.source_row, after)))
+    .orderBy(asc(moxieSamples.source_row))
+    .limit(limit)
+    .all();
+  const ids = [
+    run.calibrated_product_id,
+    ...(run.derived_product_id ? [run.derived_product_id] : []),
+  ];
+  const fields = await db
+    .select()
+    .from(fieldDefinitions)
+    .where(inArray(fieldDefinitions.product_id, ids))
+    .orderBy(asc(fieldDefinitions.product_id), asc(fieldDefinitions.field))
     .all();
   return c.json({
     run,
     fields,
-    samples: results,
-    next_after_row: results.length === limit ? results[results.length - 1].source_row : null,
+    samples,
+    next_after_row: samples.length === limit ? samples[samples.length - 1].source_row : null,
   });
 });

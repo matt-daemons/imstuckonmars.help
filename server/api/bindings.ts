@@ -1,4 +1,5 @@
 import type { D1Database } from "@cloudflare/workers-types";
+import { createDatabase } from "../db";
 
 export type ApiBindings = Omit<
   Partial<Cloudflare.Env>,
@@ -14,5 +15,5 @@ export type ApiBindings = Omit<
 
 export function database(bindings: ApiBindings) {
   if (!bindings.DB) throw new Error("D1_BINDING_UNAVAILABLE");
-  return bindings.DB;
+  return createDatabase(bindings.DB);
 }

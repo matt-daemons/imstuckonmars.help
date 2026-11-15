@@ -1,4 +1,6 @@
-import type { D1Database } from "@cloudflare/workers-types";
+import { and, count, eq, gt, lt, sql } from "drizzle-orm";
+import type { Database } from "../db";
+import { dataReleases, missionCommands, missionSessions } from "../db/schema";
 import { timingSafeEqual } from "node:crypto";
 import { anchorClock, clockPosition, type MissionClock } from "../../lib/mission/clock";
 import { evaluateMission, assessReturn } from "../../lib/mission/engine";
@@ -52,7 +54,7 @@ export async function requireWriteKey(provided: string | undefined, expected: st
 }
 
 export async function sessionFor(
-  db: D1Database,
+  db: Database,
   id: string,
   authorization: string | undefined,
   now = Date.now(),
@@ -60,11 +62,25 @@ export async function sessionFor(
   const token = authorization?.match(/^Bearer ([a-f0-9]{64})$/)?.[1];
   if (!token) throw new MissionError("unauthorized", "A mission capability is required", 401);
   const session = await db
-    .prepare(
-      "SELECT id,release_id,revision,config_json,events_json,clock_json,created_ms,expires_ms FROM mission_sessions WHERE id=? AND token_hash=? AND expires_ms>?",
+    .select({
+      id: missionSessions.id,
+      release_id: missionSessions.release_id,
+      revision: missionSessions.revision,
+      config_json: missionSessions.config_json,
+      events_json: missionSessions.events_json,
+      clock_json: missionSessions.clock_json,
+      created_ms: missionSessions.created_ms,
+      expires_ms: missionSessions.expires_ms,
+    })
+    .from(missionSessions)
+    .where(
+      and(
+        eq(missionSessions.id, id),
+        eq(missionSessions.token_hash, await hash(token)),
+        gt(missionSessions.expires_ms, now),
+      ),
     )
-    .bind(id, await hash(token), now)
-    .first<Session>();
+    .get();
   if (!session)
     throw new MissionError("mission_not_found", "Mission not found, expired or inaccessible", 404);
   return session;
@@ -89,7 +105,7 @@ function readEvents(session: Session, config: MissionConfig): ScenarioEvent[] {
   return values.map((value) => parseEvent(value, config.duration_s));
 }
 
-async function inputs(db: D1Database, session: Session) {
+async function inputs(db: Database, session: Session) {
   const config = parseConfig(JSON.parse(session.config_json));
   const run = await getRun(db, session.release_id, config.run_id);
   const trace = await loadTrace(db, session.release_id, config.run_id);
@@ -107,7 +123,7 @@ async function inputs(db: D1Database, session: Session) {
 }
 
 export async function createSession(
-  db: D1Database,
+  db: Database,
   release: string,
   value: unknown,
   now = Date.now(),
@@ -128,22 +144,40 @@ export async function createSession(
     byte.toString(16).padStart(2, "0"),
   ).join("");
   const clock: MissionClock = { mode: "paused", position_s: 0, speed: 1, anchor_ms: now };
+  const activeSessions = db
+    .select({ n: count() })
+    .from(missionSessions)
+    .where(gt(missionSessions.expires_ms, now));
+  // Keep the admission limit in the INSERT statement, not a racy preflight count.
   const response = await db
-    .prepare(
-      "INSERT INTO mission_sessions (id,token_hash,release_id,revision,config_json,events_json,clock_json,created_ms,expires_ms) SELECT ?,?,?,0,?,'[]',?,?,? WHERE (SELECT count(*) FROM mission_sessions WHERE expires_ms>?)<100",
+    .insert(missionSessions)
+    .select(
+      db
+        .select({
+          id: sql<string>`${id}`.as("id"),
+          token_hash: sql<string>`${await hash(token)}`.as("token_hash"),
+          release_id: sql<string>`${release}`.as("release_id"),
+          revision: sql<number>`0`.as("revision"),
+          config_json: sql<string>`${JSON.stringify(config)}`.as("config_json"),
+          events_json: sql<string>`'[]'`.as("events_json"),
+          clock_json: sql<string>`${JSON.stringify(clock)}`.as("clock_json"),
+          created_ms: sql<number>`${now}`.as("created_ms"),
+          expires_ms: sql<number>`${now + 86400000}`.as("expires_ms"),
+          last_command_id: sql<string | null>`null`.as("last_command_id"),
+          last_command_hash: sql<string | null>`null`.as("last_command_hash"),
+        })
+        .from(dataReleases)
+        .where(
+          and(
+            eq(dataReleases.id, release),
+            eq(dataReleases.status, "published"),
+            lt(sql`(${activeSessions})`, 100),
+          ),
+        ),
     )
-    .bind(
-      id,
-      await hash(token),
-      release,
-      JSON.stringify(config),
-      JSON.stringify(clock),
-      now,
-      now + 86400000,
-      now,
-    )
-    .run();
-  if (response.meta.changes !== 1)
+    .returning({ id: missionSessions.id })
+    .all();
+  if (response.length !== 1)
     throw new MissionError("session_limit", "Active mission limit reached", 429);
   return {
     id,
@@ -156,7 +190,7 @@ export async function createSession(
   };
 }
 
-export async function snapshot(db: D1Database, session: Session, now = Date.now(), atS?: number) {
+export async function snapshot(db: Database, session: Session, now = Date.now(), atS?: number) {
   const input = await inputs(db, session);
   const target = atS ?? clockPosition(input.clock, now, input.config.duration_s);
   const state = evaluateMission(input.config, input.samples, input.events, target);
@@ -217,17 +251,21 @@ function canonical(value: unknown, depth = 0): unknown {
   return value;
 }
 
-export async function command(db: D1Database, session: Session, raw: unknown, now = Date.now()) {
+export async function command(db: Database, session: Session, raw: unknown, now = Date.now()) {
   const body = object(raw);
   const commandId = text(body.command_id, "command_id");
   const expectedRevision = integer(body.expected_revision, "expected_revision");
   const fingerprint = await hash(JSON.stringify(canonical(body)));
   const receipt = await db
-    .prepare(
-      "SELECT request_hash,applied_revision FROM mission_commands WHERE session_id=? AND command_id=?",
+    .select({
+      request_hash: missionCommands.request_hash,
+      applied_revision: missionCommands.applied_revision,
+    })
+    .from(missionCommands)
+    .where(
+      and(eq(missionCommands.session_id, session.id), eq(missionCommands.command_id, commandId)),
     )
-    .bind(session.id, commandId)
-    .first<{ request_hash: string; applied_revision: number }>();
+    .get();
   if (receipt) {
     if (receipt.request_hash !== fingerprint)
       throw new MissionError(
@@ -247,11 +285,12 @@ export async function command(db: D1Database, session: Session, raw: unknown, no
       `Expected current mission revision ${session.revision}`,
       409,
     );
-  const count = await db
-    .prepare("SELECT count(*) AS n FROM mission_commands WHERE session_id=?")
-    .bind(session.id)
-    .first<{ n: number }>();
-  if ((count?.n ?? 0) >= 500)
+  const receiptCount = await db
+    .select({ n: count() })
+    .from(missionCommands)
+    .where(eq(missionCommands.session_id, session.id))
+    .get();
+  if ((receiptCount?.n ?? 0) >= 500)
     throw new MissionError("command_limit", "Create a new mission after 500 commands", 429);
   const input = await inputs(db, session);
   let config = input.config;
@@ -343,26 +382,45 @@ export async function command(db: D1Database, session: Session, raw: unknown, no
   };
   const results = await db.batch([
     db
-      .prepare(
-        "UPDATE mission_sessions SET revision=revision+1,config_json=?,events_json=?,clock_json=?,last_command_id=?,last_command_hash=? WHERE id=? AND revision=? AND expires_ms>?",
+      .update(missionSessions)
+      .set({
+        revision: sql`${missionSessions.revision} + 1`,
+        config_json: updated.config_json,
+        events_json: updated.events_json,
+        clock_json: updated.clock_json,
+        last_command_id: commandId,
+        last_command_hash: fingerprint,
+      })
+      .where(
+        and(
+          eq(missionSessions.id, session.id),
+          eq(missionSessions.revision, expectedRevision),
+          gt(missionSessions.expires_ms, now),
+        ),
       )
-      .bind(
-        updated.config_json,
-        updated.events_json,
-        updated.clock_json,
-        commandId,
-        fingerprint,
-        session.id,
-        expectedRevision,
-        now,
-      ),
+      .returning({ revision: missionSessions.revision }),
     db
-      .prepare(
-        "INSERT OR IGNORE INTO mission_commands SELECT id,?,?,revision FROM mission_sessions WHERE id=? AND last_command_id=? AND last_command_hash=?",
+      .insert(missionCommands)
+      .select(
+        db
+          .select({
+            session_id: missionSessions.id,
+            command_id: sql<string>`${commandId}`.as("command_id"),
+            request_hash: sql<string>`${fingerprint}`.as("request_hash"),
+            applied_revision: missionSessions.revision,
+          })
+          .from(missionSessions)
+          .where(
+            and(
+              eq(missionSessions.id, session.id),
+              eq(missionSessions.last_command_id, commandId),
+              eq(missionSessions.last_command_hash, fingerprint),
+            ),
+          ),
       )
-      .bind(commandId, fingerprint, session.id, commandId, fingerprint),
+      .onConflictDoNothing(),
   ]);
-  if (results[0].meta.changes !== 1)
+  if (results[0].length !== 1)
     throw new MissionError(
       "stale_revision",
       "Mission changed concurrently; reload its current revision",
@@ -376,7 +434,7 @@ export async function command(db: D1Database, session: Session, raw: unknown, no
 }
 
 export async function returnAssessment(
-  db: D1Database,
+  db: Database,
   session: Session,
   route: ReturnRoute,
   atS?: number,
