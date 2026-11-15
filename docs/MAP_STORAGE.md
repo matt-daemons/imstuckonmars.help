@@ -11,6 +11,11 @@ No additional imagery downloads or external assets are used.
 
 ## Full-screen map and overlays
 
+The Layers button beside the north compass opens map layers, synthetic-data
+controls and Scene and dust. Closing the panel preserves their mounted state,
+including selected layers and playback. Escape closes it and restores button
+focus without closing a dialog on top of it.
+
 The map canvas fills the viewport behind the route sidebar and expedition HUD.
 Overlay controls keep their existing positions in the unobstructed area.
 `components/map/map-overlay-viewport.tsx` measures that area and updates camera

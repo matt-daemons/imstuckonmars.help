@@ -19,6 +19,7 @@ import { SpaceBackdrop } from "./space-backdrop";
 import { useFakeSensorMode } from "./use-fake-sensor-mode";
 import { FakeDataToggle, FakeSensorControls, FakeSensorLegend } from "./fake-sensor-controls";
 import { FakeSensorLayers } from "./fake-sensor-layers";
+import { LayersPanel } from "./layers-panel";
 import "./map-overlays.css";
 import { MapViewControls, MissionViewProvider } from "./mission-view";
 import { focusTarget } from "@/components/route/camera";
@@ -270,34 +271,35 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
         <ConditionsProvider habitat={HABITAT}>
           <MissionViewProvider map={loaded} base={HABITAT} error={error}>
-            <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP}>
-              <SidebarSections
-                layers={
-                  <>
-                    {manifest && (
-                      <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
-                    )}
-                    <FakeSensorControls mode={fakeSensors} map={loaded} />
-                  </>
-                }
-                scene={
-                  <ScenePanelBody
-                    map={loaded}
-                    habitat={HABITAT}
-                    sites={sites}
-                    spaceEnabled={spaceEnabled}
-                    onSpaceEnabledChange={setSpaceEnabled}
-                  />
-                }
-              />
-            </RouteSidebar>
+            <RouteSidebar map={loaded} base={HABITAT} target={SCIENCE_STOP} />
             {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
             <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
               <MapOverlayViewport map={loaded}>
+                <LayersPanel fakeData={fakeSensors.state.enabled}>
+                  <SidebarSections
+                    layers={
+                      <>
+                        {manifest && (
+                          <LayerPanelBody manifest={manifest} visible={visible} onToggle={toggle} />
+                        )}
+                        <FakeSensorControls mode={fakeSensors} map={loaded} />
+                      </>
+                    }
+                    scene={
+                      <ScenePanelBody
+                        map={loaded}
+                        habitat={HABITAT}
+                        sites={sites}
+                        spaceEnabled={spaceEnabled}
+                        onSpaceEnabledChange={setSpaceEnabled}
+                      />
+                    }
+                  />
+                </LayersPanel>
+                <FakeSensorLayers map={loaded} mode={fakeSensors} />
+                <FakeSensorLegend mode={fakeSensors} />
                 <div className="mission-map-chrome contents">
                   <RouteMapLayers map={loaded} />
-                  <FakeSensorLayers map={loaded} mode={fakeSensors} />
-                  <FakeSensorLegend mode={fakeSensors} />
                   <RouteFocus map={loaded} />
                   <LaraRouteBridge map={loaded} />
                   <LaraExpeditionBridge />

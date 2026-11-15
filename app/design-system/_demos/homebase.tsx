@@ -19,6 +19,7 @@ import {
   FakeSensorLegend,
 } from "@/components/map/fake-sensor-controls";
 import { useFakeSensorMode } from "@/components/map/use-fake-sensor-mode";
+import { LayersPanel } from "@/components/map/layers-panel";
 import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
@@ -49,6 +50,13 @@ export function HomebaseComponents() {
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="map-layers-panel" title="Map layers panel">
+        <div className="mars-map-shell relative h-72 w-full border">
+          <LayersPanel>
+            <p>Layer controls remain mounted while this panel is closed.</p>
+          </LayersPanel>
+        </div>
+      </Section>
       <Section id="fake-sensor-mode" title="Fake sensor mode">
         <div className="w-full max-w-md">
           <FakeDataToggle mode={fakeSensors} />

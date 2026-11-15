@@ -12,6 +12,7 @@ export const sectionGroups: SectionGroup[] = [
       { id: "map-overlay-surfaces", title: "Map overlay surfaces" },
       { id: "space-backdrop", title: "Illustrative space backdrop" },
       { id: "fake-sensor-mode", title: "Fake sensor mode" },
+      { id: "map-layers-panel", title: "Map layers panel" },
       { id: "map-compass", title: "Map compass" },
       { id: "homebase-readout", title: "Archive readout" },
       { id: "homebase-history", title: "Observation history" },

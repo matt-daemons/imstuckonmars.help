@@ -44,7 +44,7 @@ export function RouteSidebar({
   map: MapLibreMap | null;
   base: LngLat;
   target: LngLat;
-  children: ReactNode;
+  children?: ReactNode;
 }) {
   const { inputs, dispatch } = useRoutePlan();
   const { isMobile, openMobile, toggleSidebar } = useSidebar();

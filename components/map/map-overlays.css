@@ -32,6 +32,8 @@
 
 .mars-map-shell [data-slot="sidebar-inner"],
 .mars-map-shell .map-panel,
+.mars-map-shell .map-layers-panel,
+.mars-map-shell .map-layers-trigger,
 .mars-map-shell .fake-sensor-legend,
 .mars-map-shell .map-verdict-strip,
 .mars-map-shell .expedition-hud,
@@ -43,6 +45,38 @@
   background: var(--map-panel-surface);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+
+.map-layers-control {
+  position: absolute;
+  inset-block-start: 1rem;
+  inset-inline-end: 5.5rem;
+  z-index: 20;
+}
+.map-layers-panel {
+  position: absolute;
+  inset-block-start: 4rem;
+  inset-inline-end: -4.5rem;
+  width: min(23rem, calc(100vw - 2rem));
+  max-height: calc(100svh - 13rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+.map-overlay-viewport:has(.map-layers-control[data-open]) > .fake-sensor-legend {
+  right: 25rem;
+}
+@media (max-width: 900px) {
+  .map-overlay-viewport:has(.map-layers-control[data-open]) > .fake-sensor-legend {
+    top: auto;
+    bottom: 6rem;
+    left: 1rem;
+    right: auto;
+    width: 12rem;
+    max-height: 24svh;
+    z-index: 21;
+  }
 }
 
 .mars-map-shell [data-slot="sidebar-header"] {
