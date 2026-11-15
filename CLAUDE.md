@@ -168,7 +168,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 ## 10. References (cite every external source — required for submission)
 
 > Keep this list in sync whenever a dataset, paper or rule source is added. Each map layer also shows its credit in the UI.
-> ✓ The six former **(verify)** citations were checked against Crossref on Sun Nov 15 (✓ = verified; DOIs added). One open item: the Hassler 2014 dose-rate figure.
+> ✓ All former **(verify)** citations were checked against Crossref / publisher pages on Sun Nov 15 (✓ = verified; DOIs added). One open item: the page of the Hassler 2014 dose-rate figure.
 
 ### Datasets (NASA and partners)
 
@@ -195,19 +195,19 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Dickson, J. L., Ehlmann, B. L., Kerber, L. & Fassett, C. I. (2024). The Global Context Camera (CTX) Mosaic of Mars: A Product of Information-Preserving Image Data Processing. _Earth and Space Science_ 11(7), e2024EA003555. doi:10.1029/2024EA003555 ✓
 - Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. _JGR_ 111, E12004. doi:10.1029/2006JE002735
 - Forget, F. et al. (1999). Improved general circulation models of the Martian atmosphere from the surface to above 80 km. _JGR_ 104(E10), 24155–24175. doi:10.1029/1999JE001025 (MCD; also cite the MCD version if used) ✓
-- Golombek, M. & Rapp, D. (1997). Size-frequency distributions of rocks on Mars and Earth analog sites: implications for future landed missions. _JGR_ 102(E2), 4117–4129. doi:10.1029/96JE03319 (rock-abundance model F(D) = k·exp(−q·D), q = 1.79 + 0.152/k) **(verify)**
-- Golombek, M. et al. (2017). Selection of the InSight landing site. _Space Science Reviews_ 211, 5–95. doi:10.1007/s11214-016-0321-9 (rock abundance < 10 % lander limit; HiRISE rock counts unreliable below ~1.5 m) **(verify)**
-- Golombek, M. P. et al. (2008). Size-frequency distributions of rocks on the northern plains of Mars with special reference to Phoenix landing surfaces. _JGR_ 113, E00A09. doi:10.1029/2007JE003065 (shadow-based rock counts on HiRISE, northern plains) **(verify)**
-- Golombek, M. P. et al. (2012). Detection and characterization of rocks and rock size-frequency distributions at the final four Mars Science Laboratory landing sites. _Mars_ 7, 1–22. doi:10.1555/mars.2012.0001 (automated vs manual counts) **(verify)**
+- Golombek, M. & Rapp, D. (1997). Size-frequency distributions of rocks on Mars and Earth analog sites: implications for future landed missions. _JGR: Planets_ 102(E2), 4117–4129. doi:10.1029/96JE03319 (rock-abundance model F(D) = k·exp(−q·D), q = 1.79 + 0.152/k) ✓ (bibliography via Crossref; the paper itself is paywalled — the q formula is confirmed as quoted from it in Golombek et al. 2012, eq. 1–2)
+- Golombek, M., Kipp, D., Warner, N. et al. (2017). Selection of the InSight landing site. _Space Science Reviews_ 211(1–4), 5–95. doi:10.1007/s11214-016-0321-9 (online Dec 2016; 35 authors) (rock abundance < 10 % lander limit; HiRISE rock counts unreliable below ~1.5 m) ✓ bibliography (the < 10 % figure was not re-read in the paywalled text; the ~1.5 m limit is confirmed in Golombek et al. 2012)
+- Golombek, M. P., Huertas, A., Marlow, J. et al. (2008). Size-frequency distributions of rocks on the northern plains of Mars with special reference to Phoenix landing surfaces. _JGR: Planets_ 113(E3), E00A09. doi:10.1029/2007JE003065 (shadow-based rock counts on HiRISE, northern plains) ✓
+- Golombek, M., Huertas, A., Kipp, D. & Calef, F. (2012). Detection and characterization of rocks and rock size-frequency distributions at the final four Mars Science Laboratory landing sites. _Mars_ 7, 1–22. doi:10.1555/mars.2012.0001 (automated vs manual counts; open access, http://marsjournal.org/contents/2012/0001/) ✓ against the PDF. Note: this DOI is printed on the paper but **does not resolve** at doi.org and is not in Crossref — link the journal URL on slides. The journal's web page drops "final four" from the title and lists a fifth author (C. Molfese); the PDF (cited here) has four.
 - Guo, J. et al. (2015). Modeling the variations of dose rate measured by RAD during the first MSL Martian year: 2012–2014. _ApJ_ 810(1), 24. doi:10.1088/0004-637X/810/1/24 (quiet rate varies with air pressure and solar cycle; it gives **no** average dose rate) ✓ title corrected
 - Hanley, J. A. & Lippman-Hand, A. (1983). If nothing goes wrong, is everything all right? Interpreting zero numerators. _JAMA_ 249(13), 1743–1745. (rule of three — boulder review bound)
 - Hassler, D. M. et al. (2012). The Radiation Assessment Detector (RAD) Investigation. _Space Science Reviews_ 170(1–4), 503–558. doi:10.1007/s11214-012-9913-1 (RAD instrument) ✓
-- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; **check the page before quoting the number on a slide**)
+- Hassler, D. M. et al. (2014). Mars' surface radiation environment measured with the Mars Science Laboratory's Curiosity rover. _Science_ 343(6169), 1244797. doi:10.1126/science.1244797 (quiet-time baseline ≈ 0.21 ± 0.04 mGy/day ≈ 9 µGy/h — figure is in the paper body, not the abstract; secondary summaries agree on 0.210 ± 0.040 mGy/day averaged over ~300 sols near solar maximum (range ~0.18–0.225), but the full text is paywalled and the page/section was **not** pinned (Sun Nov 15 night) — **check the page before quoting the number on a slide**)
 - Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. _JGR_ 113, E00A24. (DTM vertical precision → roughness noise floor)
 - Lemmon, M. T. et al. (2022). Dust, sand, and winds within an active Martian storm in Jezero crater. _GRL_ 49(17), e2022GL100126. doi:10.1029/2022GL100126 (one regional storm, 5–11 Jan 2022: peak optical depth ≈ 2. The paper sets no thresholds — our dust cut-offs are team choices informed by it) ✓
 - McEwen, A. S. et al. (2007). Mars Reconnaissance Orbiter's High Resolution Imaging Science Experiment (HiRISE). _JGR_ 112, E05S02.
 - Morgan, G. A. et al. (2021). Availability of subsurface water-ice resources in the northern mid-latitudes of Mars. _Nature Astronomy_ 5, 230–236. (SWIM)
-- Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412, 411–414. (ice-rich mantle with pitted texture — why the sites are rock-poor) **(verify)**
+- Mustard, J. F., Cooper, C. D. & Rifkin, M. K. (2001). Evidence for recent climate change on Mars from the identification of youthful near-surface ground ice. _Nature_ 412(6845), 411–414. doi:10.1038/35086515 (ice-rich mantle with pitted texture — why the sites are rock-poor) ✓
 - NASA NSSDC, "The Apollo Lunar Roving Vehicle", https://nssdc.gsfc.nasa.gov/planetary/lunar/apollo_lrv.html (LRV ground clearance 36 cm loaded — rover obstacle analogue)
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
 - Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
@@ -297,7 +297,7 @@ map after M's port (show coverage + caveats) → geology.
 - **Regional slope for the drive leg** (Role B or delegate): MOLA/HRSC 200 m slope over base → sites corridor (same recipe as `slope.ts`).
 - **Mission summary / sources panel** (M → delegate): one screen listing every layer with its NASA credit + caveats (Validity criterion);
   data is already in `manifest.json`, `*-sites.json` `caveats[]`, §10.
-- **References check**: verify every "(verify)" citation in §10 (DOIs/pages) before slides.
+- ~~**References check**~~ ✅ (Sun Nov 15 night): all §10 citations verified; open: page of the Hassler 2014 dose-rate figure.
 - **Demo-script dry run + test data**: route GeoJSON fixtures for both legs so M can build the UI before C's routes land.
 
 **How to run (from repo root, Node 24 via fnm, GDAL via brew)**
