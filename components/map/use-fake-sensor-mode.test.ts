@@ -3,6 +3,15 @@ import { fakeSensorReducer } from "./use-fake-sensor-mode";
 import { FAKE_LAST_FRAME } from "@/lib/mars/fake-sensors";
 
 describe("fake data mode isolation", () => {
+  it("keeps shaded fields mutually exclusive without hiding vector or station overlays", () => {
+    let state = fakeSensorReducer({ enabled: false }, { type: "enable", enabled: true });
+    state = fakeSensorReducer(state, { type: "layer", layer: "wind", visible: true });
+    state = fakeSensorReducer(state, { type: "layer", layer: "ground", visible: true });
+    state = fakeSensorReducer(state, { type: "layer", layer: "pressure", visible: true });
+    expect(state).toMatchObject({
+      visible: { sensors: true, wind: true, ground: false, pressure: true },
+    });
+  });
   it("keeps the advertised 60× speed despite ten-second quantization", () => {
     let state = fakeSensorReducer({ enabled: false }, { type: "enable", enabled: true });
     state = fakeSensorReducer(state, { type: "speed", speed: 60 });

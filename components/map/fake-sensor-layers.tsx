@@ -2,24 +2,58 @@
 
 import { useEffect } from "react";
 import type { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
-import { FAKE_LAYERS, fakeFrame, type FakeScalar } from "@/lib/mars/fake-sensors";
+import { fakeFrame } from "@/lib/mars/fake-sensors";
+import { FAKE_FIELD_PALETTES, type FakeShadedField } from "@/lib/mars/fake-fields";
 import type { FakeSensorMode } from "./use-fake-sensor-mode";
+import { removeFakeField, showFakeField } from "./fake-shaded-field";
+import { unwrapZoneRing } from "@/lib/mars/route-zones";
 
 export const FAKE_SOURCE = "fake-future-sensors";
-export const FAKE_LAYER_IDS = [
-  "fake-storm",
-  "fake-wind",
-  ...FAKE_LAYERS.filter((layer) => layer.id !== "wind").map((layer) => `fake-${layer.id}`),
-];
-export const FAKE_COLORS = ["#648bff", "#dbe6ef", "#db945d"];
-const offsets: Record<FakeScalar, [number, number]> = {
-  ground: [-12, -18],
-  air: [12, -18],
-  hardness: [22, 0],
-  pressure: [12, 18],
-  radiation: [-12, 18],
-  humidity: [-22, 0],
-};
+export const FAKE_LAYER_IDS = ["fake-wind", "fake-sensors", "fake-humidity"];
+
+/** Great-circle vector endpoints, with arrowheads and shortest seam crossings. */
+export function fakeWindFeatures(frame: number) {
+  const destination = (
+    lng: number,
+    lat: number,
+    bearing: number,
+    arc: number,
+  ): [number, number] => {
+    const r = Math.PI / 180,
+      phi = lat * r,
+      lambda = lng * r,
+      theta = bearing * r,
+      delta = arc * r;
+    const nextLat = Math.asin(
+      Math.sin(phi) * Math.cos(delta) + Math.cos(phi) * Math.sin(delta) * Math.cos(theta),
+    );
+    const nextLng =
+      lambda +
+      Math.atan2(
+        Math.sin(theta) * Math.sin(delta) * Math.cos(phi),
+        Math.cos(delta) - Math.sin(phi) * Math.sin(nextLat),
+      );
+    return [nextLng / r, nextLat / r];
+  };
+  return {
+    type: "FeatureCollection" as const,
+    features: fakeFrame(frame).map((reading) => {
+      const [lng, lat] = reading.sensor.position;
+      const arc = 0.6 + (reading.windSpeed / 35) * 2.2;
+      const tip = destination(lng, lat, reading.windBearing, arc);
+      const left = destination(...tip, reading.windBearing + 150, arc * 0.3);
+      const right = destination(...tip, reading.windBearing - 150, arc * 0.3);
+      return {
+        type: "Feature" as const,
+        properties: { id: reading.sensor.id, storm: reading.storm },
+        geometry: {
+          type: "MultiLineString" as const,
+          coordinates: [unwrapZoneRing([[lng, lat], tip]), unwrapZoneRing([left, tip, right])],
+        },
+      };
+    }),
+  };
+}
 
 export function fakeSensorFeatures(frame: number) {
   return {
@@ -29,11 +63,13 @@ export function fakeSensorFeatures(frame: number) {
       geometry: { type: "Point" as const, coordinates: reading.sensor.position },
       properties: {
         id: reading.sensor.id,
-        ...Object.fromEntries(
-          FAKE_LAYERS.filter((layer) => layer.id !== "sensors" && layer.id !== "wind").map(
-            (layer) => [layer.id, reading[layer.id]],
-          ),
-        ),
+        ground: reading.ground,
+        air: reading.air,
+        hardness: reading.hardness,
+        pressure: reading.pressure,
+        radiation: reading.radiation,
+        humidity: reading.humidity,
+        humidityLabel: `${Math.round(reading.humidity)}%`,
         windBearing: reading.windBearing,
         windSpeed: reading.windSpeed,
         storm: reading.storm,
@@ -42,102 +78,76 @@ export function fakeSensorFeatures(frame: number) {
   };
 }
 
-/** Entirely separate sources: never feed these values into observed or mission-state layers. */
+/** Raster fields stay below sparse vectors, labels and independently toggled station markers. */
 export function FakeSensorLayers({ map, mode }: { map: MapLibreMap | null; mode: FakeSensorMode }) {
   const { state, dispatch } = mode;
   const enabled = state.enabled;
   useEffect(() => {
     if (!map || !enabled) return;
     map.addSource(FAKE_SOURCE, { type: "geojson", data: fakeSensorFeatures(0) });
-    const canvas = document.createElement("canvas");
-    canvas.width = canvas.height = 32;
-    const context = canvas.getContext("2d");
-    if (context) {
-      context.fillStyle = "#dbe6ef";
-      context.strokeStyle = "#010405";
-      context.lineWidth = 2;
-      context.beginPath();
-      context.moveTo(16, 2);
-      context.lineTo(26, 24);
-      context.lineTo(16, 20);
-      context.lineTo(6, 24);
-      context.closePath();
-      context.fill();
-      context.stroke();
-      map.addImage("fake-wind-arrow", context.getImageData(0, 0, 32, 32));
-    }
+    map.addSource("fake-wind-vectors", { type: "geojson", data: fakeWindFeatures(0) });
     const before = map.getLayer("stops-label") ? "stops-label" : undefined;
     map.addLayer(
       {
-        id: "fake-storm",
-        type: "circle",
-        source: FAKE_SOURCE,
-        layout: { visibility: "none" },
+        id: "fake-wind",
+        type: "line",
+        source: "fake-wind-vectors",
+        layout: { visibility: "none", "line-cap": "round", "line-join": "round" },
         paint: {
-          "circle-radius": ["interpolate", ["linear"], ["get", "storm"], 0, 4, 1, 24],
-          "circle-color": FAKE_COLORS[2],
-          "circle-opacity": ["*", ["get", "storm"], 0.45],
-          "circle-blur": 0.5,
+          "line-color": ["interpolate", ["linear"], ["get", "storm"], 0, "#eff6ff", 1, "#db945d"],
+          "line-width": 1.6,
+          "line-opacity": 0.9,
         },
       },
       before,
     );
-    if (context)
-      map.addLayer(
-        {
-          id: "fake-wind",
-          type: "symbol",
-          source: FAKE_SOURCE,
-          layout: {
-            visibility: "none",
-            "icon-image": "fake-wind-arrow",
-            "icon-size": ["interpolate", ["linear"], ["get", "windSpeed"], 0, 0.4, 35, 0.85],
-            "icon-rotate": ["get", "windBearing"],
-            "icon-rotation-alignment": "map",
-            "icon-allow-overlap": true,
-            "icon-ignore-placement": true,
-          },
+    map.addLayer(
+      {
+        id: "fake-sensors",
+        type: "circle",
+        source: FAKE_SOURCE,
+        layout: { visibility: "visible" },
+        paint: {
+          "circle-radius": 2.5,
+          "circle-color": "#dbe6ef",
+          "circle-stroke-color": "#010405",
+          "circle-stroke-width": 1,
         },
-        before,
-      );
-    for (const layer of FAKE_LAYERS) {
-      if (layer.id === "wind") continue;
-      const sensor = layer.id === "sensors";
-      map.addLayer(
-        {
-          id: `fake-${layer.id}`,
-          type: "circle",
-          source: FAKE_SOURCE,
-          layout: { visibility: sensor ? "visible" : "none" },
-          paint: {
-            "circle-radius": sensor ? 3.5 : 6,
-            "circle-color": sensor
-              ? "#dbe6ef"
-              : [
-                  "interpolate",
-                  ["linear"],
-                  ["get", layer.id],
-                  layer.low,
-                  FAKE_COLORS[0],
-                  (layer.low + layer.high) / 2,
-                  FAKE_COLORS[1],
-                  layer.high,
-                  FAKE_COLORS[2],
-                ],
-            "circle-opacity": 0.95,
-            "circle-stroke-color": "#010405",
-            "circle-stroke-width": 1.5,
-            ...(!sensor
-              ? {
-                  "circle-translate": offsets[layer.id],
-                  "circle-translate-anchor": "viewport" as const,
-                }
-              : {}),
-          },
-        },
-        before,
-      );
+      },
+      before,
+    );
+    // Image labels avoid depending on a remote glyph endpoint.
+    for (let percent = 0; percent <= 100; percent++) {
+      const label = document.createElement("canvas");
+      label.width = 72;
+      label.height = 32;
+      const ctx = label.getContext("2d");
+      if (!ctx) continue;
+      ctx.font = "600 24px monospace";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "#010405";
+      ctx.strokeText(`${percent}%`, 36, 16);
+      ctx.fillStyle = "#e6f3f3";
+      ctx.fillText(`${percent}%`, 36, 16);
+      map.addImage(`fake-humidity-${percent}`, ctx.getImageData(0, 0, 72, 32), { pixelRatio: 2 });
     }
+    map.addLayer(
+      {
+        id: "fake-humidity",
+        type: "symbol",
+        source: FAKE_SOURCE,
+        layout: {
+          visibility: "none",
+          "icon-image": ["concat", "fake-humidity-", ["to-string", ["round", ["get", "humidity"]]]],
+          "icon-padding": 10,
+          "icon-offset": [0, 10],
+          "icon-allow-overlap": false,
+        },
+      },
+      before,
+    );
     const select = (event: MapMouseEvent) => {
       if (map.getCanvas().dataset.placing) return;
       const hit = map.queryRenderedFeatures(event.point, {
@@ -150,22 +160,35 @@ export function FakeSensorLayers({ map, mode }: { map: MapLibreMap | null; mode:
     return () => {
       map.off("click", select);
       if (!map.getStyle()) return;
+      removeFakeField(map);
       for (const id of FAKE_LAYER_IDS) if (map.getLayer(id)) map.removeLayer(id);
       if (map.getSource(FAKE_SOURCE)) map.removeSource(FAKE_SOURCE);
-      if (map.hasImage("fake-wind-arrow")) map.removeImage("fake-wind-arrow");
+      if (map.getSource("fake-wind-vectors")) map.removeSource("fake-wind-vectors");
+      for (let percent = 0; percent <= 100; percent++)
+        if (map.hasImage(`fake-humidity-${percent}`)) map.removeImage(`fake-humidity-${percent}`);
     };
   }, [map, enabled, dispatch]);
 
+  const frame = state.enabled ? state.frame : 0;
+  const field = state.enabled
+    ? ((Object.keys(FAKE_FIELD_PALETTES) as FakeShadedField[]).find((key) => state.visible[key]) ??
+      null)
+    : null;
+  useEffect(() => {
+    if (!map || !enabled) return;
+    map.getSource<GeoJSONSource>(FAKE_SOURCE)?.setData(fakeSensorFeatures(frame));
+    map.getSource<GeoJSONSource>("fake-wind-vectors")?.setData(fakeWindFeatures(frame));
+    showFakeField(map, field, frame);
+  }, [map, enabled, frame, field]);
   useEffect(() => {
     if (!map || !state.enabled) return;
-    map.getSource<GeoJSONSource>(FAKE_SOURCE)?.setData(fakeSensorFeatures(state.frame));
-    for (const layer of FAKE_LAYERS) {
-      const id = `fake-${layer.id}`;
-      if (map.getLayer(id))
-        map.setLayoutProperty(id, "visibility", state.visible[layer.id] ? "visible" : "none");
-    }
-    if (map.getLayer("fake-storm"))
-      map.setLayoutProperty("fake-storm", "visibility", state.visible.wind ? "visible" : "none");
+    for (const kind of ["wind", "sensors", "humidity"] as const)
+      if (map.getLayer(`fake-${kind}`))
+        map.setLayoutProperty(
+          `fake-${kind}`,
+          "visibility",
+          state.visible[kind] ? "visible" : "none",
+        );
   }, [map, state]);
   return null;
 }

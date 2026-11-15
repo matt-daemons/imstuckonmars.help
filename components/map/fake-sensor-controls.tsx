@@ -15,7 +15,7 @@ import {
 } from "@/lib/mars/fake-sensors";
 import { formatNumber } from "@/lib/mission/format";
 import type { FakeSensorMode } from "./use-fake-sensor-mode";
-import { FAKE_COLORS } from "./fake-sensor-layers";
+import { FAKE_FIELD_PALETTES } from "@/lib/mars/fake-fields";
 
 export function FakeDataToggle({ mode }: { mode: FakeSensorMode }) {
   return (
@@ -122,6 +122,9 @@ export function FakeSensorControls({
           </li>
         ))}
       </ul>
+      <p className="text-xs text-muted-foreground">
+        One shaded field at a time. Wind, humidity and sensor locations can overlay it.
+      </p>
       <label className="block space-y-1 text-sm">
         <span>Inspect fake sensor</span>
         <select
@@ -189,14 +192,20 @@ export function FakeSensorLegend({ mode }: { mode: FakeSensorMode }) {
               <p className="text-xs text-muted-foreground">White center dots · select to inspect</p>
             ) : layer.id === "wind" ? (
               <p className="text-xs text-muted-foreground">
-                Arrow points toward travel · size: 0–35 m/s · orange halo: storm index 0–1
+                Vectors point toward travel · length: 0–35 m/s · white to orange: storm index 0–1
+              </p>
+            ) : layer.id === "humidity" ? (
+              <p className="text-xs text-muted-foreground">
+                Percentage labels at stations · 0–100%
               </p>
             ) : (
               <>
                 <div
                   aria-hidden
                   className="mt-1 h-1.5"
-                  style={{ background: `linear-gradient(to right, ${FAKE_COLORS.join(",")})` }}
+                  style={{
+                    background: `linear-gradient(to right, ${FAKE_FIELD_PALETTES[layer.id].join(",")})`,
+                  }}
                 />
                 <p className="flex justify-between font-mono text-xs">
                   <span>
@@ -215,9 +224,8 @@ export function FakeSensorLegend({ mode }: { mode: FakeSensorMode }) {
         <p className="mt-2">All fake layers hidden.</p>
       )}
       <p className="mt-2 text-xs text-muted-foreground">
-        Dot positions around a station: ground upper left, air upper right, hardness right, pressure
-        lower right, radiation lower left, humidity left. These are point samples, not a continuous
-        global field.
+        Shaded bands evaluate the invented sensor model between stations. Not observed data or
+        forecast probabilities. Raster fields stop at 85° latitude.
       </p>
     </aside>
   );
