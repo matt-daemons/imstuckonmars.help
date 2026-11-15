@@ -72,16 +72,39 @@ describe("routeLayers", () => {
     expect(ends["circle-stroke-width"].at(-1)).toBe(3);
   });
 
-  // Mapbox draws the border inside line-width, so the visible core is width minus both borders.
+  const order = (id: string) => layers.findIndex((layer) => layer.id === id);
+
   it.each([
-    ["planned-route", 3],
-    ["planned-route-back", 2],
-    ["no-go-zones-outline", 2],
-    ["zone-draft-line", 2],
-  ])("%s keeps a %i px core inside a background border", (id, core) => {
-    const line = paint(id) as Record<string, number | string>;
-    expect(line["line-border-color"]).toBe("T(--background)");
-    expect(Number(line["line-width"]) - 2 * Number(line["line-border-width"])).toBe(core);
+    ["planned-route", 3, 1.5],
+    ["planned-route-back", 2, 1],
+    ["no-go-zones-outline", 2, 1],
+    ["zone-draft-line", 2, 1],
+  ])("%s keeps a %i px core over a background casing %d px wider each side", (id, core, border) => {
+    const line = layers[order(id)];
+    const casing = layers[order(`${id}-casing`)];
+    expect(line.paint).toMatchObject({ "line-width": core });
+    // Same type, source and filter as the line, solid, in the background colour.
+    expect(casing).toEqual({
+      ...line,
+      id: `${id}-casing`,
+      paint: { "line-color": "T(--background)", "line-width": core + 2 * border },
+    });
+  });
+
+  it("draws a zone line directly over its casing", () => {
+    expect(order("no-go-zones-outline")).toBe(order("no-go-zones-outline-casing") + 1);
+    expect(order("zone-draft-line")).toBe(order("zone-draft-line-casing") + 1);
+  });
+
+  // The legs often share a path, and the return leg's casing would hide the outbound line.
+  it("draws both route casings under both route legs", () => {
+    const start = order("planned-route-casing");
+    expect(layers.slice(start, start + 4).map((layer) => layer.id)).toEqual([
+      "planned-route-casing",
+      "planned-route-back-casing",
+      "planned-route",
+      "planned-route-back",
+    ]);
   });
 
   it("uses no hex colour except the two end-point colours", () => {

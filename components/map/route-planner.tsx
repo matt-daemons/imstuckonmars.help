@@ -1,7 +1,7 @@
 "use client";
 
 import { ChevronDownIcon } from "lucide-react";
-import type { LngLat as MapboxLngLat, Map as MapboxMap, MapMouseEvent } from "mapbox-gl";
+import type { LngLat as MapLibreLngLat, Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -41,7 +41,7 @@ const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
 };
 
 interface RoutePlannerProps {
-  map: MapboxMap | null;
+  map: MapLibreMap | null;
   base: LngLat;
   target: LngLat;
   sites: SitePoi[];
@@ -111,7 +111,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
   }
 
   // Effect events: the map listeners below read the current mode and draft without re-registering.
-  const placePoint = useEffectEvent((lngLat: MapboxLngLat) => {
+  const placePoint = useEffectEvent((lngLat: MapLibreLngLat) => {
     // unproject does not wrap, so a click on a world copy can read lng ≈ 184 instead of −176.
     const { lng, lat } = lngLat.wrap();
     const point: LngLat = [lng, lat];

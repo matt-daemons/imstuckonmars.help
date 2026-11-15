@@ -1,4 +1,9 @@
-import type { GeoJSONSource, LayerSpecification, Map as MapboxMap } from "mapbox-gl";
+import type {
+  GeoJSONSource,
+  LayerSpecification,
+  LineLayerSpecification,
+  Map as MapLibreMap,
+} from "maplibre-gl";
 
 import type { NoGoZone, PlannedPath, planWalk } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
@@ -16,9 +21,41 @@ export const SOURCES = ["planned-route", "no-go-zones", "zone-draft", "route-end
 /** Layer specs for the route, zones, draft and end points, coloured from theme tokens. */
 export function routeLayers(token: (name: string) => string): LayerSpecification[] {
   const danger = token("--destructive");
-  // Background-coloured borders keep lines readable over bright terrain. Mapbox draws a border
-  // inside line-width, so each width is the visible core plus two borders.
   const background = token("--background");
+  // A wider background-coloured line under a coloured line keeps it readable over bright
+  // terrain. The casing is solid, so a dashed line reads as dark-edged dashes on a dark track.
+  const casing = (line: LineLayerSpecification, width: number): LineLayerSpecification => ({
+    ...line,
+    id: `${line.id}-casing`,
+    paint: { "line-color": background, "line-width": width },
+  });
+  const zoneOutline: LineLayerSpecification = {
+    id: "no-go-zones-outline",
+    type: "line",
+    source: "no-go-zones",
+    paint: { "line-color": danger, "line-width": 2 },
+  };
+  const draftLine: LineLayerSpecification = {
+    id: "zone-draft-line",
+    type: "line",
+    source: "zone-draft",
+    filter: ["==", ["geometry-type"], "LineString"],
+    paint: { "line-color": danger, "line-width": 2, "line-dasharray": [1, 1] },
+  };
+  const outbound: LineLayerSpecification = {
+    id: "planned-route",
+    type: "line",
+    source: "planned-route",
+    filter: ["==", ["get", "leg"], "outbound"],
+    paint: { "line-color": token("--primary"), "line-width": 3 },
+  };
+  const back: LineLayerSpecification = {
+    id: "planned-route-back",
+    type: "line",
+    source: "planned-route",
+    filter: ["==", ["get", "leg"], "back"],
+    paint: { "line-color": token("--foreground"), "line-width": 2, "line-dasharray": [2, 2] },
+  };
   return [
     {
       id: "no-go-zones",
@@ -26,30 +63,10 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
       source: "no-go-zones",
       paint: { "fill-color": danger, "fill-opacity": 0.35 },
     },
-    {
-      id: "no-go-zones-outline",
-      type: "line",
-      source: "no-go-zones",
-      paint: {
-        "line-color": danger,
-        "line-width": 4,
-        "line-border-width": 1,
-        "line-border-color": background,
-      },
-    },
-    {
-      id: "zone-draft-line",
-      type: "line",
-      source: "zone-draft",
-      filter: ["==", ["geometry-type"], "LineString"],
-      paint: {
-        "line-color": danger,
-        "line-width": 4,
-        "line-dasharray": [0.5, 0.5],
-        "line-border-width": 1,
-        "line-border-color": background,
-      },
-    },
+    casing(zoneOutline, 4),
+    zoneOutline,
+    casing(draftLine, 4),
+    draftLine,
     {
       id: "zone-draft",
       type: "circle",
@@ -62,31 +79,12 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
         "circle-stroke-color": background,
       },
     },
-    {
-      id: "planned-route",
-      type: "line",
-      source: "planned-route",
-      filter: ["==", ["get", "leg"], "outbound"],
-      paint: {
-        "line-color": token("--primary"),
-        "line-width": 6,
-        "line-border-width": 1.5,
-        "line-border-color": background,
-      },
-    },
-    {
-      id: "planned-route-back",
-      type: "line",
-      source: "planned-route",
-      filter: ["==", ["get", "leg"], "back"],
-      paint: {
-        "line-color": token("--foreground"),
-        "line-width": 4,
-        "line-dasharray": [1, 1],
-        "line-border-width": 1,
-        "line-border-color": background,
-      },
-    },
+    // The two legs often share a path, so both casings go under both legs; otherwise the
+    // return leg's casing would hide the outbound line.
+    casing(outbound, 6),
+    casing(back, 4),
+    outbound,
+    back,
     {
       id: "route-ends",
       type: "circle",
@@ -103,7 +101,7 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
   ];
 }
 
-export function setData(map: MapboxMap | null, source: string, features: Feature[]) {
+export function setData(map: MapLibreMap | null, source: string, features: Feature[]) {
   map?.getSource<GeoJSONSource>(source)?.setData(collection(features));
 }
 
@@ -133,7 +131,7 @@ export function routeFeatures({
   return features;
 }
 
-// Mapbox needs closed polygon rings; NoGoZone rings are stored open.
+// MapLibre needs closed polygon rings; NoGoZone rings are stored open.
 export function zoneFeature(zone: NoGoZone): Feature {
   const ring = [...zone.ring, zone.ring[0]];
   return {

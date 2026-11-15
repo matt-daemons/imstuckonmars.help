@@ -522,7 +522,7 @@
 }
 
 /* The map canvas fills the viewport, so its focus ring is drawn inside the edge. */
-.mapboxgl-canvas:focus-visible {
+.maplibregl-canvas:focus-visible {
   outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
