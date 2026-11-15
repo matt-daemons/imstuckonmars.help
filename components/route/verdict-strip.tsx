@@ -106,11 +106,9 @@ export function VerdictStrip() {
 
   return (
     // While a drill runs, a dashed frame and the DRILL tag keep it from passing for real data.
-    // Below md it spans the map right of the sidebar trigger and wraps, so the margin and the time
-    // to shelter are never cut off; with no expedition running, the mission half gives way there.
     <div
       className={cn(
-        "map-verdict-strip group absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md transition-colors duration-150 ease-out hover:border-primary motion-reduce:transition-none max-md:right-4 max-md:left-16 max-md:max-w-none max-md:translate-x-0 max-md:whitespace-normal",
+        "map-verdict-strip group absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md transition-colors duration-150 ease-out hover:border-primary motion-reduce:transition-none",
         drilling && "border-2 border-dashed border-info",
       )}
     >
@@ -136,13 +134,11 @@ export function VerdictStrip() {
               <verdict.status.Icon aria-hidden />
               {verdict.status.label}
             </Badge>{" "}
-            <span className="md:truncate">
+            <span className="truncate">
               {verdict.fields.map(({ label, value }, index) => (
                 <span key={label}>
-                  {/* When the strip wraps on a phone, the no-break space keeps the dot off the
-                      start of a line, and nowrap keeps each value with its unit. */}
-                  {index > 0 && "\u00a0· "}
-                  {label} <span className="font-mono whitespace-nowrap">{value}</span>
+                  {index > 0 && " · "}
+                  {label} <span className="font-mono">{value}</span>
                 </span>
               ))}
             </span>
@@ -154,7 +150,7 @@ export function VerdictStrip() {
       <p
         className={cn(
           "flex min-w-0 items-center gap-1.5 border-l pl-3",
-          clock ? "max-sm:border-l-0 max-sm:pl-0" : "max-md:hidden",
+          clock && "max-sm:border-l-0 max-sm:pl-0",
         )}
       >
         {clock ? (
