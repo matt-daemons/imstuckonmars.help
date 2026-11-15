@@ -102,8 +102,19 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
     setMission(next);
     setStart(base);
     setEnd(nextEnd);
-    if (next === "driving") map?.fitBounds(bounds(base, nextEnd), { padding: panelPadding() });
+    if (next === "driving") frameDrive(base, nextEnd);
     else map?.flyTo({ center: base, zoom: 12 });
+  }
+
+  function chooseDestination(site: SitePoi) {
+    setEnd(site.center);
+    frameDrive(start, site.center);
+  }
+
+  // Fits the start and destination between the panels. Called only from the operator's own
+  // choices, so it never fights their panning.
+  function frameDrive(from: LngLat, to: LngLat) {
+    map?.fitBounds(bounds(from, to), { padding: panelPadding() });
   }
 
   function chooseMode(next: Mode) {
@@ -212,7 +223,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         <DriveControls
           sites={destinations}
           destination={destination}
-          onDestination={(site) => setEnd(site.center)}
+          onDestination={chooseDestination}
           power={power}
           onPower={setPower}
         />
@@ -304,11 +315,13 @@ function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
   return lngA === lngB && latA === latB;
 }
 
-/** South-west and north-east corners around two points. */
+/** South-west and north-east corners around two points, the short way round across ±180°. */
 function bounds([lngA, latA]: LngLat, [lngB, latB]: LngLat): [LngLat, LngLat] {
+  // Shift B by whole turns to within 180° of A; MapLibre accepts longitudes past ±180.
+  const nearLngB = lngB + 360 * Math.round((lngA - lngB) / 360);
   return [
-    [Math.min(lngA, lngB), Math.min(latA, latB)],
-    [Math.max(lngA, lngB), Math.max(latA, latB)],
+    [Math.min(lngA, nearLngB), Math.min(latA, latB)],
+    [Math.max(lngA, nearLngB), Math.max(latA, latB)],
   ];
 }
 
