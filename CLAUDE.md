@@ -275,6 +275,7 @@ Atkinson Hyperlegible Next · IBM Plex Sans Condensed · JetBrains Mono (all SIL
   **Role B ASSUMPTIONS** kept in the pipelines (adding keys to `config.yaml` would break `config.test.ts`). **No published NASA limit exists** for
   suited walking over rocks or roughness (xEVA ConOps only gives 20° slope, ~2 km/h, 2 km walk-back). Nearest sourced figures: Apollo LRV ground
   clearance ~35–36 cm (NASA NSSDC); MER: < 1 % of area covered by rocks > 0.5 m high; InSight: rock abundance < 10 %. Agree with the team (shared role A).
+  Why roughness (0.25) and rock size (0.3) differ, as slide notes: `docs/PITCH_NOTES.md`.
 - ✅ Roughness is now in `sites:package` as **`sites-v2`** (overnight, `34a4626a`): `data/map-assets/sites-v2/` = sites-v1 + `sites/<dtm>/roughness/` tiles
   - `roughness/<HiRISE ID>_roughness.tif` COGs; **718 MB, 27,856 files**. Upload config `pipelines/sites-release-v2.json` (output limit raised to
     850 MB). ⏳ **Not uploaded** — M uploads (`MAP_RELEASE_CONFIG=pipelines/sites-release-v2.json pnpm maps:upload`) and then switches
