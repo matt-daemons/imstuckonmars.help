@@ -10,6 +10,7 @@ import {
   MARS_TO_MAP,
   REGIONAL_TERRAIN_SOURCE,
   type SiteTerrain,
+  TERRAIN_MIN_ZOOM,
   terrainSourceForView,
 } from "@/lib/mars/terrain";
 
@@ -178,13 +179,15 @@ export function setDustStorm(m: MapboxMap, intensity: number, windFromDeg: numbe
   m.setFog({
     color: mix(CLEAR.horizon, STORM.horizon, t),
     "high-color": mix(CLEAR.sky, STORM.sky, t),
+    // Space must turn into sky by the time terrain switches on: with high exaggeration the
+    // camera reaches the horizon at zoom 5–7, where a darker space color showed as a brown sky.
     "space-color": [
       "interpolate",
       ["linear"],
       ["zoom"],
-      4,
+      TERRAIN_MIN_ZOOM - 2,
       "#010405",
-      7,
+      TERRAIN_MIN_ZOOM,
       mix(CLEAR.sky, STORM.sky, t),
     ],
     "horizon-blend": 0.1 + 0.3 * t,
