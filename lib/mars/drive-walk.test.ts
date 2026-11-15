@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 
 import { walkLegTiming } from "../flight-rules/walk-leg";
-import { planDriveWalk, SOL_MINUTES } from "./drive-walk";
+import { gentleWalkCost, planDriveWalk, SOL_MINUTES } from "./drive-walk";
 import type { PowerSource } from "./driving";
 import { cellAt, cellCenter, type RouteGrid } from "./route-grid";
-import { slopeDegrees } from "./routing";
+import { findPath, slopeDegrees } from "./routing";
 import type { SiteGrid, SiteInfo } from "./site-grid";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat, RouteLegProperties, Verdict } from "./types";
@@ -131,5 +131,27 @@ describe("planDriveWalk", () => {
     const noWalk = setup();
     noWalk.site.walls[cellAt(noWalk.site.grid, noWalk.siteInfo.poi)!] = 1;
     expect(noWalk.plan()).toMatchObject({ status: "walk_failed", collection: null });
+  });
+});
+
+describe("gentleWalkCost", () => {
+  // 41 × 21 cells of 10 m: an 18° band across the middle, open only along the top three rows.
+  const grid = equatorGrid(41, 21, 10);
+  const slope = new Float32Array(41 * 21).map((_, cell) => {
+    const row = Math.floor(cell / 41);
+    const col = cell % 41;
+    return row >= 3 && col >= 15 && col <= 25 ? 18 : 0;
+  });
+  const walls = new Uint8Array(41 * 21);
+  const start = cellCenter(grid, 10 * 41 + 2);
+  const goal = cellCenter(grid, 10 * 41 + 38);
+
+  it("walks a slightly longer flat detour instead of crossing 18° ground", () => {
+    const direct = findPath(grid, slope, walls, start, goal);
+    const gentle = findPath(grid, slope, walls, start, goal, { cost: gentleWalkCost(slope) });
+    expect(direct.max_slope_deg).toBe(18);
+    expect(gentle.max_slope_deg).toBe(0);
+    expect(gentle.distance_m).toBeGreaterThan(direct.distance_m);
+    expect(gentle.distance_m).toBeLessThan(1.25 * direct.distance_m);
   });
 });

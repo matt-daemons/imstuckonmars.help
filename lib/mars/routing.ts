@@ -108,7 +108,8 @@ type CellSizes = { dx: number; dy: number }[];
 
 /** What a step costs A*, and the least any step can cost per metre, which keeps the heuristic admissible. */
 export interface StepCostModel {
-  stepCost: (horizontalM: number, riseM: number) => number;
+  /** fromCell and toCell let a model weigh the ground itself, e.g. by slope. */
+  stepCost: (horizontalM: number, riseM: number, fromCell: number, toCell: number) => number;
   costPerMetreLowerBound: number;
 }
 
@@ -210,7 +211,7 @@ function steps(
     const horizontal = horizontalM(sizes, row, dRow, dCol);
     const rise = heights[next] - heights[cell];
     if (Math.atan(Math.abs(rise) / horizontal) * RADIANS_TO_DEGREES > maxSlopeDeg) continue;
-    result.push({ cell: next, stepCost: cost.stepCost(horizontal, rise) });
+    result.push({ cell: next, stepCost: cost.stepCost(horizontal, rise, cell, next) });
   }
   return result;
 }

@@ -5,7 +5,7 @@ import { FLIGHT_RULES, type Factor } from "../flight-rules/rules";
 import { walkLegTiming, type WalkLegTiming } from "../flight-rules/walk-leg";
 import { planDrive, type DriveSummary, type PowerSource } from "./driving";
 import { toGridLng, type RouteGrid } from "./route-grid";
-import { findPath, marsDistanceM, type PlannedPath } from "./routing";
+import { findPath, marsDistanceM, type PlannedPath, type StepCostModel } from "./routing";
 import { findStagingPoint, type SiteGrid, type SiteInfo } from "./site-grid";
 import type {
   LngLat,
@@ -114,10 +114,11 @@ export function planDriveWalk(
   };
 }
 
-/** Walks out and back on the site grid (distance cost) and checks the walk against the suit rules. */
+/** Walks out and back on the site grid, preferring gentle ground, and checks the walk against the suit rules. */
 function planSiteWalk(site: SiteGrid, staging: LngLat, poi: LngLat, samplingMin: number): WalkPlan {
-  const outbound = findPath(site.grid, site.slope, site.walls, staging, poi);
-  const back = findPath(site.grid, site.slope, site.walls, poi, staging);
+  const options = { cost: gentleWalkCost(site.slope) };
+  const outbound = findPath(site.grid, site.slope, site.walls, staging, poi, options);
+  const back = findPath(site.grid, site.slope, site.walls, poi, staging, options);
   if (outbound.status !== "ok" || back.status !== "ok") {
     return { outbound, back, timing: null, route: null, verdict: null };
   }
@@ -133,6 +134,18 @@ function planSiteWalk(site: SiteGrid, staging: LngLat, poi: LngLat, samplingMin:
     farthest_from_base_km: Math.max(...walked.map((point) => marsDistanceM(staging, point))) / 1000,
   };
   return { outbound, back, timing, route, verdict: evaluateRoute(route) };
+}
+
+/** Step length × (1 + (slope / caution slope)²), slope being the steeper of the step's two cells. */
+export function gentleWalkCost(slope: Float32Array): StepCostModel {
+  const cautionDeg = FLIGHT_RULES.slope.caution_above_degrees;
+  return {
+    // The weighting is our assumption: no NASA rule says how much a suited walker should avoid slope.
+    stepCost: (horizontalM, riseM, fromCell, toCell) =>
+      Math.hypot(horizontalM, riseM) *
+      (1 + (Math.max(slope[fromCell], slope[toCell]) / cautionDeg) ** 2),
+    costPerMetreLowerBound: 1, // the weight is never below 1, so plain distance stays admissible
+  };
 }
 
 type LegFeature = Extract<RouteCollection["features"][number], { properties: RouteLegProperties }>;
