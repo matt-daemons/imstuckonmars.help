@@ -3,7 +3,7 @@
 //   Map overlay tiles:          public/data/sites/<dtm>/slope/{z}/{x}/{y}.webp, z11–16
 // Slope is computed on a local equirectangular metre grid centred on the site (Mars 2000 sphere),
 // so x and y metres are both true; then warped back to lon/lat for tiling.
-// The hazard threshold is config.yaml thresholds.slope_max_deg (a PLACEHOLDER until team role A sets it).
+// The hazard threshold is config.yaml thresholds.slope_max_deg (team role A: NASA lunar suit limit, assumed for Mars).
 // Usage: pnpm pipe:slope <dtm-id>
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -122,7 +122,7 @@ const over = buckets.reduce(
 );
 console.log(
   `${dtm}: slope mean ${band.mean.toFixed(1)}°, max ${band.maximum.toFixed(1)}°, ` +
-    `${((100 * over) / total).toFixed(1)}% ≥ ${maxSlope}° (PLACEHOLDER threshold)`,
+    `${((100 * over) / total).toFixed(1)}% ≥ ${maxSlope}° (slope_max_deg)`,
 );
 
 function bounds(c: Record<string, number[]>): [number, number, number, number] {

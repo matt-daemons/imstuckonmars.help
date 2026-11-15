@@ -3,27 +3,44 @@
 import type { Map as MapboxMap } from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 
-import { MARS_TO_MAP, TERRAIN_SOURCE, setDustStorm, updateTerrain } from "@/components/map/scene";
+import {
+  MARS_TO_MAP,
+  SITE_ATTRIBUTION,
+  TERRAIN_SOURCE,
+  setDustStorm,
+  setSlopeVisible,
+  updateTerrain,
+} from "@/components/map/scene";
 import { GLOBAL_TERRAIN_SOURCE, LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
 import type { LngLat } from "@/lib/mars/types";
 
 // coss Slider reports number | number[]; these sliders are single-thumb.
 const single = (set: (v: number) => void) => (v: number | readonly number[]) =>
   set(typeof v === "number" ? v : v[0]);
 
+export interface SitePoi {
+  id: string;
+  title: string;
+  confirmed: boolean;
+  center: LngLat;
+}
+
 interface ScenePanelProps {
   map: MapboxMap | null;
   habitat: LngLat;
+  sites: SitePoi[];
 }
 
 /** Camera, terrain-scale, and dust-storm controls. The storm will be driven by the live feed later. */
-export function ScenePanel({ map, habitat }: ScenePanelProps) {
+export function ScenePanel({ map, habitat, sites }: ScenePanelProps) {
   const [exaggeration, setExaggeration] = useState(MARS_TO_MAP);
   const [intensity, setIntensity] = useState(0);
   const [windFromDeg, setWindFromDeg] = useState(270);
   const [terrainSource, setTerrainSource] = useState<string | null>(null);
+  const [slopeOn, setSlopeOn] = useState(false);
   const current = useRef(intensity);
   current.current = intensity;
 
@@ -36,6 +53,10 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
       map.off("moveend", update);
     };
   }, [map, exaggeration]);
+
+  useEffect(() => {
+    if (map) setSlopeVisible(map, sites, slopeOn);
+  }, [map, sites, slopeOn]);
 
   useEffect(() => {
     if (map) setDustStorm(map, intensity, windFromDeg);
@@ -65,13 +86,15 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
           Planet image: NASA/Viking, USGS, and NASA Ames.
         </p>
         <p className="mt-1 font-mono text-sm" role="status">
-          {terrainSource === LOCAL_TERRAIN_SOURCE
-            ? "Active elevation grid: 200 m. The image shows more detail than the elevation data."
-            : terrainSource === GLOBAL_TERRAIN_SOURCE
-              ? "Active elevation grid: 3.7 km. Use it for regional context. It does not show local hazards."
-              : terrainSource
-                ? "Active elevation grid: 463 m. The image shows more detail than the elevation data."
-                : "Global image only. Zoom in to see elevation data."}
+          {terrainSource?.startsWith("site-dem-")
+            ? `Active elevation grid: 1 m HiRISE DTM (${SITE_ATTRIBUTION}).`
+            : terrainSource === LOCAL_TERRAIN_SOURCE
+              ? "Active elevation grid: 200 m. The image shows more detail than the elevation data."
+              : terrainSource === GLOBAL_TERRAIN_SOURCE
+                ? "Active elevation grid: 3.7 km. Use it for regional context. It does not show local hazards."
+                : terrainSource
+                  ? "Active elevation grid: 463 m. The image shows more detail than the elevation data."
+                  : "Global image only. Zoom in to see elevation data."}
         </p>
       </div>
 
@@ -82,6 +105,44 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
         <Button size="xs" variant="outline" onClick={() => fly(1.5, 0, 0)}>
           View planet
         </Button>
+      </div>
+
+      <div className="space-y-1">
+        <p className="text-xs font-medium">
+          Water-ice sites · HiRISE ~0.45 m/px ({SITE_ATTRIBUTION})
+        </p>
+        <ul>
+          {sites.map((s) => (
+            <li key={s.id}>
+              <Button
+                size="xs"
+                variant="ghost"
+                className="h-auto w-full justify-start py-1 text-left whitespace-normal"
+                onClick={() =>
+                  map?.flyTo({
+                    center: s.center,
+                    zoom: 15,
+                    pitch: 65,
+                    bearing: -20,
+                    duration: 3500,
+                  })
+                }
+              >
+                {s.title}
+                {!s.confirmed && " (unconfirmed)"}
+              </Button>
+            </li>
+          ))}
+        </ul>
+        <label className="flex items-center justify-between gap-3 pt-1">
+          <span>
+            Slope hazard
+            <span className="block text-xs text-muted-foreground">
+              Red ≥ 20° · NASA lunar suit limit, assumed for Mars
+            </span>
+          </span>
+          <Switch checked={slopeOn} onCheckedChange={setSlopeOn} aria-label="Toggle slope hazard" />
+        </label>
       </div>
 
       <div className="space-y-2">

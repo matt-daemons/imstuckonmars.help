@@ -8,10 +8,15 @@
         "hirise_id": "ESP_033225_2250",
         "title": "Possible Terraced Crater in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_033225_2250",
         "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -176.40806156220302, 44.33764082060427, -176.2331304645478, 44.48077082810194
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
       "geometry": {
@@ -36,16 +41,21 @@
         "hirise_id": "ESP_033225_2250",
         "title": "Possible Terraced Crater in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_033225_2250",
         "bbox": [-176.388061562203, 44.357640820604274, -176.2531304645478, 44.460770828101936],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -176.40806156220302, 44.33764082060427, -176.2331304645478, 44.48077082810194
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
-        "position_note": "DTM centre; crater centre approximate"
+        "position_note": "Picked by Claude from the orthoimage (most prominent crater, ~130 m, 12 m deep); refined on DTM. Confirm."
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [-176.3205960133754, 44.40920582435311]
+        "coordinates": [-176.33383, 44.41589]
       }
     },
     {
@@ -55,10 +65,15 @@
         "hirise_id": "ESP_034082_2260",
         "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_034082_2260",
         "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -171.46872904500665, 45.56368667055399, -171.2820053945556, 45.71094997624189
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
       "geometry": {
@@ -83,16 +98,21 @@
         "hirise_id": "ESP_034082_2260",
         "title": "Possible Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_034082_2260",
         "bbox": [-171.44872904500664, 45.583686670553995, -171.3020053945556, 45.69094997624189],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -171.46872904500665, 45.56368667055399, -171.2820053945556, 45.71094997624189
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
-        "position_note": "DTM centre; crater centre approximate"
+        "position_note": "Circled by Jess on the HiRISE browse image; refined on DTM (bowl ~28 m deep)."
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [-171.37536721978114, 45.63731832339794]
+        "coordinates": [-171.38243, 45.64829]
       }
     },
     {
@@ -102,10 +122,15 @@
         "hirise_id": "ESP_037352_2245",
         "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": true,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_037352_2245",
         "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -166.21195741457362, 44.29719021258878, -166.06145495275294, 44.47142961544481
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
       "geometry": {
@@ -130,16 +155,21 @@
         "hirise_id": "ESP_037352_2245",
         "title": "Terraced Bullseye-Like Crater in Arcadia Planitia",
         "confirmed": true,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "crater",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_037352_2245",
         "bbox": [-166.1919574145736, 44.317190212588784, -166.08145495275295, 44.45142961544481],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          -166.21195741457362, 44.29719021258878, -166.06145495275294, 44.47142961544481
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
-        "position_note": "DTM centre; crater centre approximate"
+        "position_note": "Circled by Jess on the HiRISE browse image; refined on DTM (bowl ~41 m deep)."
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [-166.13670618366328, 44.3843099140168]
+        "coordinates": [-166.14298, 44.39035]
       }
     },
     {
@@ -149,10 +179,15 @@
         "hirise_id": "ESP_054060_2265",
         "title": "Ridges in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "ridges",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_054060_2265",
         "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          172.46197438257687, 45.9426954171394, 172.66614223845122, 46.19772814666094
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "footprint"
       },
       "geometry": {
@@ -177,16 +212,21 @@
         "hirise_id": "ESP_054060_2265",
         "title": "Ridges in Arcadia Planitia",
         "confirmed": false,
-        "objective": "Water ice (ISRU): terraced craters indicate buried ice layers",
+        "site_kind": "ridges",
+        "objective": "Water-ice procurement (ISRU): terraced craters and ridges indicate buried ice",
         "url": "https://www.uahirise.org/ESP_054060_2265",
         "bbox": [172.48197438257688, 45.9626954171394, 172.6461422384512, 46.17772814666094],
-        "source": "MRO HiRISE DTM + RED orthoimage (Univ. of Arizona / NASA PDS)",
+        "terrain_bbox": [
+          172.46197438257687, 45.9426954171394, 172.66614223845122, 46.19772814666094
+        ],
+        "source": "MRO HiRISE DTM + RED orthoimage — NASA/JPL/University of Arizona",
+        "attribution": "NASA/JPL/University of Arizona",
         "kind": "poi",
-        "position_note": "DTM centre; crater centre approximate"
+        "position_note": "Not a crater: ridges worth exploring for ice. POI at the DTM centre."
       },
       "geometry": {
         "type": "Point",
-        "coordinates": [172.56405831051404, 46.07021178190017]
+        "coordinates": [172.56388, 46.07022]
       }
     }
   ]

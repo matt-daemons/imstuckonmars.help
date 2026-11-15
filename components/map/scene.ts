@@ -4,11 +4,13 @@ import * as THREE from "three";
 
 import type { LngLat } from "@/lib/mars/types";
 import { GLOBAL_COLOR_SOURCE, mapAsset } from "@/lib/mars/map-data";
+import { SITE_TILESETS } from "@/lib/mars/site-tilesets";
 import {
   LOCAL_TERRAIN_BOUNDS,
   LOCAL_TERRAIN_SOURCE,
   MARS_TO_MAP,
   REGIONAL_TERRAIN_SOURCE,
+  type SiteTerrain,
   terrainSourceForView,
 } from "@/lib/mars/terrain";
 
@@ -23,12 +25,17 @@ export { MARS_TO_MAP } from "@/lib/mars/terrain";
 export const TERRAIN_SOURCE =
   "MOLA global and regional grids, and a MOLA/HRSC 200 m grid near the habitat";
 
+// HiRISE site terrain sources registered by addSites, consulted by updateTerrain.
+let siteTerrains: SiteTerrain[] = [];
+export const SITE_ATTRIBUTION = "NASA/JPL/University of Arizona";
+
 export function updateTerrain(m: MapboxMap, exaggeration: number) {
   const bounds = m.getBounds();
   if (!bounds) return;
   const source = terrainSourceForView(
     [bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()],
     m.getZoom(),
+    siteTerrains,
   );
   const current = m.getTerrain();
   if (source === null) {
@@ -75,6 +82,88 @@ export function addTerrain(m: MapboxMap, beforeId?: string) {
     attribution: "NASA/MOLA; ESA/DLR/FU Berlin/HRSC; USGS",
   });
   updateTerrain(m, MARS_TO_MAP);
+}
+
+/** A HiRISE water-ice site from sites.geojson (pipelines/stable/hirise-sites.ts). */
+export interface SiteProps {
+  id: string;
+  hirise_id: string;
+  title: string;
+  confirmed: boolean;
+  site_kind: "crater" | "ridges";
+  kind: "poi" | "footprint";
+  url: string;
+  bbox: [number, number, number, number];
+  terrain_bbox: [number, number, number, number];
+  position_note?: string;
+}
+
+// Site tiles are generated locally (gitignored) until they are hosted; see CLAUDE.md Step 2f.
+const siteTiles = (id: string, layer: string, ext: string) => [
+  `${location.origin}/data/sites/${id}/${layer}/{z}/{x}/{y}.${ext}`,
+];
+
+/** Per site: 1 m terrain (display-shifted like the other sources), 0.45 m imagery, slope classes. */
+export function addSites(m: MapboxMap, sites: SiteProps[], beforeId?: string) {
+  siteTerrains = [];
+  for (const site of sites) {
+    const dem = `site-dem-${site.id}`;
+    m.addSource(dem, {
+      type: "raster-dem",
+      tiles: siteTiles(site.id, "terrain", "png"),
+      encoding: "terrarium",
+      tileSize: 256,
+      minzoom: 9,
+      maxzoom: 15,
+      bounds: site.terrain_bbox,
+      attribution: SITE_ATTRIBUTION,
+    });
+    siteTerrains.push({ source: dem, bounds: site.terrain_bbox });
+    const tileset = SITE_TILESETS[site.id];
+    m.addSource(`site-${site.id}`, {
+      type: "raster",
+      // Mapbox-hosted imagery once M uploads it; local tiles until then.
+      ...(tileset
+        ? { url: `mapbox://${tileset}` }
+        : { tiles: siteTiles(site.id, "imagery", "webp") }),
+      tileSize: 256,
+      minzoom: 11,
+      maxzoom: 17,
+      bounds: site.bbox,
+      attribution: SITE_ATTRIBUTION,
+    });
+    m.addLayer(
+      { id: `site-${site.id}`, type: "raster", source: `site-${site.id}`, minzoom: 10 },
+      beforeId,
+    );
+    // Slope classes (pipelines/stable/slope.ts): yellow 10–15°, orange 15°–limit, red ≥ limit (config.yaml slope_max_deg, 20°).
+    m.addSource(`slope-${site.id}`, {
+      type: "raster",
+      tiles: siteTiles(site.id, "slope", "webp"),
+      tileSize: 256,
+      minzoom: 11,
+      maxzoom: 16,
+      bounds: site.bbox,
+    });
+    m.addLayer(
+      {
+        id: `slope-${site.id}`,
+        type: "raster",
+        source: `slope-${site.id}`,
+        minzoom: 10,
+        layout: { visibility: "none" },
+        paint: { "raster-opacity": 0.75 },
+      },
+      beforeId,
+    );
+  }
+}
+
+export function setSlopeVisible(m: MapboxMap, sites: { id: string }[], on: boolean) {
+  for (const s of sites) {
+    const id = `slope-${s.id}`;
+    if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  }
 }
 
 const CLEAR = { sky: [176, 132, 104], horizon: [214, 172, 132] };
