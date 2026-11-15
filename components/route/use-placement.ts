@@ -1,5 +1,5 @@
 import type { LngLat as MapLibreLngLat, Map as MapLibreMap, MapMouseEvent } from "maplibre-gl";
-import { useEffect, useEffectEvent, useState } from "react";
+import { useEffect, useEffectEvent, useRef, useState } from "react";
 
 import { draftFeatures, setData } from "@/components/map/route-layers";
 import { appendCorner } from "@/lib/mars/route-zones";
@@ -21,12 +21,25 @@ export function usePlacement(map: MapLibreMap | null) {
   const [mode, setMode] = useState<PlaceMode | null>(null);
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [step, setStep] = useState(inputs.step);
+  // The control that armed the placement, so Esc can hand focus back to it.
+  const armedBy = useRef<HTMLElement | null>(null);
 
   useEffect(() => setData(map, "zone-draft", draftFeatures(draft)), [map, draft]);
 
   function choose(next: PlaceMode | null) {
     if (next !== "zone") setDraft([]); // a half-drawn zone never outlives drawing mode
     setMode(next);
+  }
+
+  /** Arms a placement from a control: focus moves to the map, where Enter places at its centre. */
+  function arm(next: PlaceMode | null) {
+    const canvas = map?.getCanvas();
+    if (next && canvas && document.activeElement !== canvas) {
+      armedBy.current =
+        document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      canvas.focus();
+    }
+    choose(next);
   }
 
   // Placing belongs to step ②, so any change of step cancels it: the sidebar's tabs, Back / Next,
@@ -49,7 +62,12 @@ export function usePlacement(map: MapLibreMap | null) {
     if (mode === "end") dispatch({ type: "setEnd", point });
     choose(null);
   });
-  const cancel = useEffectEvent(() => choose(null));
+  const cancel = useEffectEvent(() => {
+    choose(null);
+    // Back to the toggle that armed it; below md that sits in the closed sheet, so focus stays put.
+    if (armedBy.current?.isConnected) armedBy.current.focus();
+    armedBy.current = null;
+  });
   const finishDrawing = useEffectEvent(() => finishZone());
 
   const armed = mode !== null;
@@ -107,5 +125,5 @@ export function usePlacement(map: MapLibreMap | null) {
     setDraft([]);
   }
 
-  return { mode, draft, choose, finishZone, clearZones };
+  return { mode, draft, choose, arm, finishZone, clearZones };
 }

@@ -417,6 +417,20 @@
   [data-slot="alert"][data-level="emergency"] > * {
     animation: none !important;
   }
+
+  /* The sidebar's slide (H) and the accordion and collapsible heights move content and resize the
+     map every frame, so they snap. coss sets these transitions in its own files, hence here. */
+  [data-slot="sidebar-container"],
+  [data-slot="sidebar-gap"],
+  [data-slot="accordion-panel"],
+  [data-slot="collapsible-panel"] {
+    transition-duration: 0s !important;
+  }
+
+  /* The phone sheet keeps its fade but drops its slide. */
+  [data-slot="sheet-popup"] {
+    transition-property: opacity !important;
+  }
 }
 
 /*

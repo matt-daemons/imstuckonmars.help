@@ -5,6 +5,7 @@ import { useId, useState, type ReactNode } from "react";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 import { useLaraContext, type Lara } from "./lara-context";
 
@@ -44,12 +45,18 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
 
   return (
     <>
-      {/* Before the chat, so Tab moves from the button into the chat it opens. */}
+      {/* Before the chat, so Tab moves from the button into the chat it opens. Closed, it is opaque
+          like Mission dashboard, since outline's tint lets bright terrain wash out the label and
+          the Error badge; bottom-14 keeps it above the map credits when they wrap to two lines. */}
       <Button
         variant={open ? "default" : "outline"}
         aria-expanded={open}
         aria-controls={chatId}
-        className="absolute right-4 bottom-12"
+        className={cn(
+          "absolute right-4 bottom-14",
+          // Hover steps to --muted, where the Error badge still measures 6.6:1 (--secondary: 5.9:1).
+          !open && "dark:bg-background dark:hover:bg-muted",
+        )}
         onClick={toggle}
       >
         <MessageSquareIcon aria-hidden />
