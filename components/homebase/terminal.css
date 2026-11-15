@@ -61,7 +61,7 @@
   font: 16px var(--font-mono);
   white-space: nowrap;
 }
-.hb-brand > svg {
+.hb-brand > img {
   width: 20px;
   height: 20px;
 }

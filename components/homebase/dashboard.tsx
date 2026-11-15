@@ -2,15 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  ArrowUpRight,
-  Check,
-  Database,
-  Info,
-  RefreshCw,
-  Terminal,
-  TriangleAlert,
-} from "lucide-react";
+import { ArrowUpRight, Check, Database, Info, RefreshCw, TriangleAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import type { HomebaseData, HomebaseMetric, MetricId } from "@/lib/homebase/types";
 import { formatNumber } from "@/lib/mission/format";
@@ -21,6 +13,7 @@ import { ReferencePanes } from "./reference-panes";
 import { ObservationInspector } from "./observation-inspector";
 import { ReferenceInspector } from "./reference-inspector";
 import "./terminal.css";
+import faviconUrl from "@/app/icon.svg?url";
 
 export type DashboardPage = "overview" | "experiments";
 const PLACEHOLDERS = [
@@ -160,7 +153,7 @@ export function HomebaseDashboard({
       </a>
       <header className="hb-header">
         <div className="hb-brand">
-          <Terminal aria-hidden />
+          <img src={faviconUrl} alt="" width={20} height={20} />
           <span>
             imstuckonmars.help
             <span className="hb-wordmark-cursor" aria-hidden>
