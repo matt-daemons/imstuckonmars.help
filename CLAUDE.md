@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 — handoff written (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
+_Last updated: Sun Nov 15, 2026 — mobility reopened: drive **and** walk (with Role C); M porting Mapbox → MapLibre (hackathon day 2). Team of 5. Hackathon runs Nov 14–15, 2026._
 
 ## 1. The challenge (summary)
 
@@ -37,7 +37,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 > | Role | Owner | Scope | |---|---|---|
 > | **A — Flight rules, GO/NO-GO, integration** | TBD | Owns the flight rules/assumptions sheet; every GO/NO-GO cites it. Owns integration: common time base, file names, CRS, `config.yaml`, `schemas/`, `validate.ts`. The GO/NO-GO logic and flight rules are the critical decisions NASA would want from the data. |
 > | **B — Stable data (geospatial/mapping)** | **Jess** | Terrain (DEM), slope, roughness, hazard masks, shadows (sun + terrain), geology. Reproject → clip → snap to common grid → clean → derive → export. |
-> | **C — Routing & mission planning** | TBD | Picks science stops (sample/data collection sites); cost surface → least-cost route; walk time; **walk-back margin**. Builds on B and D. Uses Apollo lunar walking data with labeled assumptions. |
+> | **C — Routing & mission planning** | TBD | Picks science stops (sample/data collection sites); cost surface → least-cost **rover** route base → site; drive time; **battery / return-to-base margin**. Builds on B and D. Rover energy figures are labelled assumptions (or simulated). |
 > | **D — Live data + forecast (space weather/radiation console)** | TBD | Replays archived live data as a "live" feed; same-day forecast as threshold rules with confidence; RAG explanation (stretch/might drop). |
 > | ⭐ **M — UI + story/pitch** | **M** | Map UI, layer panel, timeline, verdict banner, demo script, video, slides. |
 
@@ -45,8 +45,8 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 
 - Split mirrors real NASA functions: ground data systems (A), geospatial team (B), traverse planning (C), space weather/radiation console — SRAG at JSC (D), crew displays (M).
 - **Verdict banner should read like a flight rule:** status · limiting constraint · margin · time to shelter.
-- **Walk-back margin = remaining suit consumables (O₂, CO₂ scrubbing, power, cooling) − return time at a degraded pace** — not just distance. Apollo planned walk-back assuming rover failure.
-- **Apollo walking data is lunar (1/6 g, different suit). Mars gravity is ~0.38 g**, so metabolic cost and pace differ — label as an assumption.
+- **Return margin = remaining rover battery (and crew consumables) − energy/time to drive home at a degraded pace** — not just distance. Apollo limited rover range by walk-back distance assuming rover failure; at 93–468 km that's impossible, so state the rover-failure assumption (pressurized rover / rescue) explicitly.
+- _(Superseded by the rover-only decision, kept for context:)_ Apollo walking data is lunar (1/6 g, different suit); Mars gravity is ~0.38 g, so any walking/driving figures from the Moon are assumptions.
 - Mars crews operate autonomously (4–24 min one-way light delay). Line-of-sight/comm = one pitch sentence or a simple viewshed back to habitat, not a full category.
 - Data caveats: Curiosity's RAD (radiation) + REMS (weather) are co-located at **Gale crater**. REMS does **not** measure dust opacity directly (that comes from imaging). NASA DONKI space-weather alerts are Earth-centric — must reason about Mars's position relative to each event.
 
@@ -59,7 +59,7 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Landing & base location | **Arcadia Planitia** (plains) — **final**. Chosen because it's a much more favorable base location (smooth terrain, good access to subsurface water ice, sunlight for power), **despite sparse surface data** (no rover has operated there). Landing and base in the same general area, with distance between them for landing safety.                                                                                                                         |
 | Live data for Arcadia   | Use Gale (Curiosity: REMS weather, RAD radiation) and/or Jezero (Perseverance: MEDA) data as a **clearly labeled proxy feed**, optionally adjusted with Mars Climate Database values for Arcadia. Orbital imagery (HiRISE/CTX) replaces rover imagery.                                                                                                                                                                                                         |
 | Product name            | **LARA** (only name — the assessment engine is part of LARA, not a separate "ARES")                                                                                                                                                                                                                                                                                                                                                                            |
-| Map library             | **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre.                                                                                                                                   |
+| Map library             | **⚠ Switching to MapLibre GL JS (M is porting, Sun Nov 15, due to an unexpected ruling).** Previously **Mapbox GL JS v3** (decided by Jess, Sat 16:45, after a side-by-side spike vs MapLibre). Why: 3D terrain + built-in fog/particle effects (dust storm) + native 3D model layer for the base. Costs: needs a public `pk.` token (free tier, billed per map load), proprietary licence. Same Earth-radius caveats as MapLibre.                                                                                                                                   |
 | Toolchain               | No jj; Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI; Mapbox GL v3. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                         |
 | Data home               | Telemetry in **D1** (teammate's backend). Static map rasters/tiles in `public/data/`. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                       |
 | Mapbox account          | Owned by **M**; public token in `NEXT_PUBLIC_MAPBOX_TOKEN`. (team, Sat Nov 14)                                                                                                                                                                                                                                                                                                                                                                                 |
@@ -89,26 +89,27 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | RAD     | Radiation absorbed-dose rate          | µGy/h                                         |
 
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
-| Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and suit resources. |
-| Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. |
+| Science problem | **Water-ice procurement (ISRU)** — decided by Jess, Sat ~20:00. POIs = terraced craters (evidence of thick buried ice in Arcadia, Bramson et al. 2015, GRL) that we route to for mission planning, weighing terrain, weather and rover battery. |
+| Mobility (traverse mode) | **Updated Sun Nov 15 (Jess + Role C): support BOTH driving and walking (EVA).** Still being confirmed: (a) 2-leg journeys (drive + walk) vs (b) one mode per journey, with walking/EVA allowed only for short distances. No new POI is being added — the 4 sites stay. _Superseded earlier decision:_ **Rover drives only — no walking portion** (team meeting, Sun Nov 15). Why: POIs are 93–468 km from the base. Rover + walk (2 legs) was too complex (different risks and datasets per leg). Walking-only would mean moving the base next to one POI (proof of concept only). Driving wins because (1) **battery running low on bad terrain** is a real risk, which gives the slope/terrain model its value; (2) we can use **all 4 sites**, not a POC; (3) battery data is easy to add or simulate (label it simulated). Pitch line for spacesuit mobility: crew stay in the pressurized rover; suited sampling at the stop is out of scope. |
+| Flight rules / assumptions | **Sourced values by team role A** (`config.yaml` ↔ `lib/flight-rules/rules.ts`, kept in sync by `lib/flight-rules/config.test.ts`): slope 20° (NASA lunar suit limit), suit 8 h + 30 min reserve, radiation 18 / 90 µGy/h (ASSUMPTION from Curiosity RAD quiet rate), walk-back ≤ 2 km. NASA has no published Mars limits — Moon/ISS values are labelled assumptions. **⚠ With drive + walk, keep the suit/walk rules (20° suit slope, 8 h suit, walk-back 2 km) for EVA legs and ADD rover rules** (rover slope limit, range/battery + reserve, drive hours per sol) — owner A. |
 
 ## 5. User story — "Plan a science mission and get home"
 
-You open LARA and select a hypothetical habitat in Arcadia Planitia as your base. Your goal is to explore an interesting geological site and return within your simulated EVA budget.
+You open LARA and select a hypothetical habitat in Arcadia Planitia as your base. Your goal is to explore an interesting geological site by rover and return within your simulated battery budget.
 
 1. **Inspect the terrain** — click the Mars map to see elevation, slope, imagery, and data sources. Overlays highlight steep terrain and areas without reliable coverage.
 2. **Discover meaningful destinations** — browse science targets with geological context, relevant orbital imagery (HiRISE/CTX), and what you could investigate there.
 3. **Compare routes** — shortest allowed route vs. terrain-aware alternative: distance, elevation profile, ascent, difficult segments.
-4. **Check the whole mission** — set simulated oxygen, battery, walking speed, science-stop duration, reserve requirements. LARA assesses outbound + return and shows your **limiting resource**.
-5. **Play through the EVA** — simulated position moves along the route; dashboard updates elapsed time, remaining resources, modeled return reserves. Pause or change assumptions for "what if?"
+4. **Check the whole mission** — set simulated rover battery, drive speed, crew consumables, science-stop duration, reserve requirements. LARA assesses outbound + return and shows your **limiting resource**.
+5. **Play through the traverse** — simulated rover position moves along the route; dashboard updates elapsed time, remaining resources, modeled return reserves. Pause or change assumptions for "what if?"
 
 - **Understand the recommendation** — why a route/destination fits your constraints, the evidence, what remains uncertain. Finish with a mission summary (route, objectives, assumptions, sources).
 - **Stretch:** AI copilot explains comparisons; draw a hypothetical blocked zone and reroute; thermal-material context.
-- All astronaut resources and movement are **clearly labeled simulated**. NASA terrain and observations are evidence, not a guarantee of real-world safety.
+- All astronaut/rover resources and movement are **clearly labeled simulated**. NASA terrain and observations are evidence, not a guarantee of real-world safety.
 
 ### Target demo moment
 
-Plan a nominal walk → mid-sol, the replayed feed shows a solar particle event (SEP) alert → verdict flips to CAUTION → return path and time-to-shelter appear.
+Plan a nominal rover traverse → mid-sol, the replayed feed shows a solar particle event (SEP) alert → verdict flips to CAUTION → return path and time-to-shelter appear (pressurized rover = immediate shelter; base is X h away).
 
 ## 6. Data architecture (agreed approach)
 
@@ -145,7 +146,9 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 1. ~~**Science objective**~~ ✅ water-ice procurement (ISRU) — see §4.
 2. **HiRISE DTM coverage in Arcadia Planitia:** check which DTMs exist, then pick an AOI that fits.
 3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
-4. **Fill in flight rules:** suit supply budget, radiation thresholds, walk-back rule.
+4. **Fill in flight rules:** suit/walk rules stay (EVA legs) + **rover rules** (slope limit, range/battery reserve, drive hours per sol); radiation thresholds done.
+6. **Journey structure (Role C + team):** 2-leg drive+walk journeys, or one mode per journey with EVA only for short distances? Define "short" (walk-back ≤ 2 km rule is the candidate).
+7. **MapLibre port (M):** Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
 5. **Role A owner** and owners for C and D: confirm names.
 
 ## 8. Working agreements
@@ -174,9 +177,10 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Local `main` is ahead of GitHub (sites work) — push it.** CI's `scripts/models/models.test.mjs` fails on `origin/main` too (teammates' model
   byte-compare), not from our changes.
 - **Hosting:** M uploads `data/map-assets/sites-v1/` (from `pnpm sites:package`) to R2 and **sets `SITE_DATA_ROOT`** in
-  `lib/mars/map-data.ts` himself. Until then the site layers exist only on machines that ran the pipelines. Check with M that it's live.
+  `lib/mars/map-data.ts` himself. ✅ **Done (Sun Nov 15):** M uploaded `sites-v1` to R2 and set `SITE_DATA_ROOT`.
 - **Role C** has the brief (below) and agreed a **slope-only cost surface first**; slope COGs are in `sites-v1/slope/` (Int16, value/10 = °).
-- **Team decision pending:** sites are **93–468 km** from the habitat but walk-back ≤ 2 km — rover traverse / forward camp / landing per site? (A + C + M.)
+- **Mobility (Sun Nov 15, with Role C): driving AND walking** — see §4 "Mobility" (2-leg vs one-mode-per-journey still open). No new POI.
+- **Map library: M is replacing Mapbox with MapLibre** (unexpected ruling). Re-check site layers (imagery/terrain/slope, attribution, terrain switching) after the port.
 
 **Next step for Role B:** Step 4a data layers — **SWIM** ice consistency (swim.psi.edu was down, HTTP 523; NASA PIA26045 PNG is slide-only),
 then **THEMIS thermal inertia**, then geology / roughness / dust (see "Future data layers").
@@ -225,8 +229,7 @@ then **THEMIS thermal inertia**, then geology / roughness / dust (see "Future da
 - Local `main` is ahead of GitHub (sites integration, upload-file naming, Q75 compression) — **not pushed yet**.
 - **CI:** `scripts/models/models.test.mjs` (teammates' 3D model byte-compare) **fails on clean `origin/main` too** — not from the sites work.
 - **Habitat vs sites distance (⚠ open):** habitat (−176.05°E, 45.97°N) → ESP_033225 **93 km**, ESP_034082 **194 km**, ESP_037352 **424 km**,
-  ESP_054060 **468 km** (great-circle, Mars 2000 sphere). Flight rules cap walk-back at **2 km**, so **no site is reachable on foot from the base**.
-  Needs a team decision — see "Next steps".
+  ESP_054060 **468 km** (great-circle, Mars 2000 sphere). No site is reachable on foot → **team decided rover drives only** (§4 "Mobility").
 - **Gotchas:**
   - vinext dev server crashes ("Maximum call stack size exceeded", `als-registry.js`) when thousands of files change under `public/` (e.g. while
     `pnpm pipe:sites` / `pipe:slope` run, or during a broken rebase) → restart `pnpm dev`. The vite watch-ignore for `public/data/sites` doesn't prevent it.
@@ -299,7 +302,7 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 ### Data quality & processing decisions (HiRISE sites)
 
 - **Slope results** (1 m DTM, metre grid, edges trimmed; limit 20°): ESP_033225 mean 4.3°, **0.1 %** ≥ 20° · ESP_034082 mean 7.3°,
-  **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All very walkable; hazards are crater walls/ridge flanks.
+  **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All gentle terrain; hazards are crater walls/ridge flanks.
 - **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~430 MB total**; slope COGs **277 MB** as Int16 tenths (990 MB as Float32); Mapbox upload GeoTIFFs **274 MB total**
   (JPEG Q75 + mask; RGBA deflate was 1.55 GB, Q85 355 MB; single-band grey saves nothing).
 
@@ -328,22 +331,22 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
   (value / 10 = degrees; scale metadata 0.1), lon/lat Mars 2000 sphere, ~1 m grid, nodata −9999
   (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. Shared via R2 (`sites-v1`) or `pnpm pipe:slope`.
 - **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` — 1 m DTM, lon/lat Mars 2000, nodata −32768. MOLA 463 m around it.
-- **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — slope ≤ 20°, suit 8 h (walks planned 6 h), 30 min reserve,
-  walk-back ≤ 2 km, radiation 18 / 90 µGy/h.
+- **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — currently suit/walk values (slope ≤ 20°, suit 8 h, 30 min reserve,
+  walk-back ≤ 2 km) + radiation 18 / 90 µGy/h. **Rover rules pending from A** (rover-only decision).
 - **Conventions:** lon −180..180 east-positive in files (ESP_054060 is at +172.56, the rest negative — **AOI crosses ±180**); distances with
   Mars radius 3,396,190 m, never Mapbox/Turf defaults (Earth); don't read heights from display tiles (+10 km).
 - **Known limits:** DTMs cover ~6 × 6–13 km each; no rock abundance, roughness, soil strength or dust data yet; slope from 1 m DTM misses
   sub-metre rocks (visible only in the 0.25 m imagery).
-- **Open question for C + A:** sites are 93–468 km from the habitat (above) — rover traverse + local EVA, a forward camp, or EVAs from a landing
-  point inside each DTM?
+- ~~Open question for C + A~~ **Decided: rover drives only.** Routing = regional base → site (MOLA/HRSC) + final approach on the 1 m slope COGs;
+  cost = slope → battery energy (rover-only decision).
 
 ### Future data layers (horizon, not built yet)
 
 - **SWIM ice consistency** (Step 4a, queued; swim.psi.edu down 523 on Sun Nov 15) — regional ~3 km/px evidence for buried ice.
-- **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost).
+- **THEMIS thermal inertia** — loose dust/sand vs firm/rocky ground (trafficability, route cost). **Higher priority now:** soft ground drains rover battery.
 - **Dust-raising potential / dust cover** — e.g. TES dust cover index + thermal inertia + wind; feeds the dust-storm verdicts and suit/visor wear.
 - **Geology** — USGS geologic map units around the sites (Role B scope).
-- **Surface roughness / rock abundance** — from the 1 m DTM (roughness) and HiRISE boulder counts; walkability beyond slope.
+- **Surface roughness / rock abundance** — from the 1 m DTM (roughness) and HiRISE boulder counts; rover trafficability beyond slope.
 - **Illumination / shadows** — sun position (teammates' Mars clock) + DTM horizon → shadowed terrain and timing of EVAs.
 - **CRISM** where covered (hydrated/ice-related minerals); **line-of-sight to habitat** (one-sentence comms story or simple viewshed).
 - **Upgrades:** imagery to z18 (0.22 m, ~4× tiles); tinted HiRISE RED.
@@ -354,7 +357,8 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 2. **M hosts site data on R2 instead of Mapbox** — send/upload `data/map-assets/sites-v1/`; ask M to confirm the public URL
    (`https://tiles.imstuckonmars.help/sites-v1/...`) → set `SITE_DATA_ROOT`. The `_mapbox.tif` files he received can be ignored.
 3. ~~Ask the R2 owner~~ → M (same person, item 2).
-4. **Raise the habitat↔site distance** with A + C (and M for the story): it decides whether routing is base→site or local EVAs within a site.
+4. ~~Raise the habitat↔site distance~~ ✅ **Decided: rover drives only** (§4 "Mobility"). Role B follow-up: regional slope (MOLA/HRSC) for base → site
+   routing, and THEMIS thermal inertia moves up (soft ground = battery drain).
 5. ~~Brief C~~ ✅ sent. **Agreed: slope-only cost surface first**; add hazard mask / roughness / thermal inertia later.
 6. **SWIM** (4a): swim.psi.edu still down. NASA's "SWIM map shows subsurface water ice on Mars" (PIA26045) is a **PNG illustration**,
    not georeferenced data (and its ammos.nasa.gov/marswatermaps link 404s) → story/slide use only, not a map layer. Then THEMIS thermal inertia.
