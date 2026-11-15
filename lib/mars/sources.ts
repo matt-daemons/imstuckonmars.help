@@ -358,7 +358,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         id: "copilot",
         title: "LARA voice copilot",
         kind: "ai",
-        credit: "Language model via OpenRouter · voice by ElevenLabs · wake word by Vosk",
+        credit: "openai/gpt-4.1-mini via OpenRouter · voice by ElevenLabs · wake word by Vosk",
         use: "Answers crew questions about the mission state.",
         caveats: [
           "LARA's voice is AI-generated speech (ElevenLabs).",
