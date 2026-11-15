@@ -12,6 +12,7 @@ import {
   type Boulder,
 } from "@/lib/mars/site-grid";
 import type { LngLat, RouteCollection } from "@/lib/mars/types";
+import { MAX_DURATION_S } from "@/lib/mission/types";
 
 import { DriveAssumptions } from "./drive-result";
 import { JourneyStatus, journeyReadouts } from "./journey-result";
@@ -155,6 +156,11 @@ export function DriveWalkAssumptions({
       {plan?.walk?.timing?.assumptions.map((line) => (
         <p key={line}>{line}</p>
       ))}
+      <p>
+        LARA&apos;s resource check gets only the walk back to the rover, which is the shelter: its
+        mission clock covers one EVA of up to {MAX_DURATION_S / 3600} h, so a drive of whole sols is
+        not sent.
+      </p>
     </>
   );
 }

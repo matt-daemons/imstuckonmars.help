@@ -28,6 +28,7 @@ import {
 import { evaluateRoute } from "@/lib/flight-rules/evaluate";
 
 import { splitHeadline } from "./headline";
+import { ReturnCheck } from "./return-check";
 
 // Each mission's headline readouts. The last one gives way to the verdict's own readout.
 const WALK_HEADLINE = ["slope", "time", "distance"];
@@ -81,6 +82,7 @@ function CheckLayout({
     <div className="flex flex-col gap-3">
       {/* One live region that stays mounted, so screen readers announce every change in it. */}
       <div role="status">{status}</div>
+      <ReturnCheck />
       {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
       {fit}
       <Accordion multiple>

@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { ReturnRoute } from "@/lib/mission/types";
+
 export interface Turn {
   role: "user" | "assistant";
   content: string;
@@ -13,6 +15,7 @@ interface MissionSnapshot {
   revision: number;
   clock: { mode: "paused" | "playing"; position_s: number; speed: number };
   config: {
+    base: { id: string };
     duration_s: number;
     oxygen: Record<"base" | "eva", { reserve_g: number }>;
     battery: Record<"base" | "eva", { reserve_wh: number }>;
@@ -26,6 +29,12 @@ interface MissionSnapshot {
   observed: {
     radiation: { status: string; observation?: { dose_rate_e_ugy_day: number | null } | null };
   };
+}
+
+/** The subset of POST /api/missions/:id/assess-return the route check reads. */
+export interface ReturnAssessment {
+  status: "modeled_resource_feasible" | "modeled_constraint_violation" | "unknown";
+  reasons: string[];
 }
 
 type Status = "starting" | "idle" | "listening" | "transcribing" | "thinking" | "speaking";
@@ -215,6 +224,21 @@ export function useLara() {
     [authed, mission, refresh, store],
   );
 
+  /** Asks the backend whether the modeled oxygen, energy and time cover a planned return. */
+  const assessReturn = useCallback(
+    async (body: { at_s: number; route: ReturnRoute }) => {
+      if (!mission) throw new Error("The mission is not ready yet");
+      return json<ReturnAssessment>(
+        await authed(`missions/${mission.id}/assess-return`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+      );
+    },
+    [authed, mission],
+  );
+
   /** Transcribes a recorded question and asks LARA, dropping a leading wake phrase. */
   const askFromAudio = useCallback(
     async (clip: Blob) => {
@@ -298,6 +322,7 @@ export function useLara() {
     setVoice,
     ask,
     command,
+    assessReturn,
     startListening,
     stopListening,
     wakeHandlers,
