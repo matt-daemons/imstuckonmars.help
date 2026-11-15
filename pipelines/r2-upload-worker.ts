@@ -6,7 +6,7 @@ export default {
     const key = new URL(request.url).pathname.slice(1);
     if (
       request.method !== "PUT" ||
-      !/^(mars-v2|viking-native-v1)\/[a-zA-Z0-9_./-]+$/.test(key) ||
+      !/^(mars-v2|viking-native-v1|sites-v1)\/[a-zA-Z0-9_./-]+$/.test(key) ||
       key.includes("..")
     ) {
       return new Response("Not allowed", { status: 405 });

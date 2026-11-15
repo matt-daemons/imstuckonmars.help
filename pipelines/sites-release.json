@@ -4,5 +4,8 @@
   "bucket": "ares-mars-data",
   "publicOrigin": "https://tiles.imstuckonmars.help",
   "directory": "data/map-assets/sites-v1",
-  "sourceDownloadLimitBytes": 2000000000
+  "sourceDownloadLimitBytes": 2000000000,
+  "outputLimitBytes": 750000000,
+  "uploadWorkers": 16,
+  "uploadIntervalSeconds": 0.02
 }

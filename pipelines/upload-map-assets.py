@@ -9,6 +9,7 @@ import json
 import mimetypes
 import os
 from pathlib import Path
+import subprocess
 import time
 import threading
 import tomllib
@@ -39,8 +40,9 @@ files = sorted(
     path
     for path in root.rglob("*")
     if path.is_file()
+    and not any(part.startswith(".") for part in path.relative_to(root).parts)
     and path.name not in {"release.json", "upload-inventory.json"}
-    and path.suffix in {".png", ".jpg", ".json", ".tif", ".img", ".lbl", ".md5"}
+    and path.suffix in {".png", ".jpg", ".webp", ".json", ".geojson", ".tif", ".img", ".lbl", ".md5"}
 )
 manifest = []
 for path in files:
@@ -87,10 +89,24 @@ def publish(entry):
     )
     if local_uploader:
         url = local_uploader + "/" + key
-    data = (root / entry["path"]).read_bytes()
     content_type = mimetypes.guess_type(entry["path"])[0] or "application/octet-stream"
     if entry["path"].endswith((".lbl", ".md5")):
         content_type = "text/plain; charset=utf-8"
+    elif entry["path"].endswith(".geojson"):
+        content_type = "application/geo+json"
+    if local_uploader and entry["bytes"] > 40_000_000:
+        # Large bodies can stall in the remote-binding bridge; use Wrangler's direct upload.
+        result = subprocess.run([
+            "pnpm", "exec", "wrangler", "r2", "object", "put", bucket + "/" + key,
+            "--remote", "--config", "pipelines/wrangler-upload.jsonc",
+            "--file", str(root / entry["path"]), "--content-type", content_type,
+            "--cache-control", "public, max-age=31536000, immutable",
+        ], capture_output=True, timeout=300)
+        if result.returncode:
+            raise RuntimeError("Direct Wrangler upload failed for " + key)
+        record_receipt(entry)
+        return entry
+    data = (root / entry["path"]).read_bytes()
     for attempt in range(4):
         rate_limit()
         headers = {
@@ -105,14 +121,18 @@ def publish(entry):
             with urllib.request.urlopen(request, timeout=90) as response:
                 if response.status not in (200, 201):
                     raise RuntimeError("Unexpected upload status")
-            with receipt_lock:
-                with receipt_path.open("a") as receipt_file:
-                    receipt_file.write(json.dumps({"path": entry["path"], "sha256": entry["sha256"]}) + "\n")
+            record_receipt(entry)
             return entry
         except (urllib.error.URLError, TimeoutError):
             if attempt == 3:
                 raise RuntimeError("Upload failed for " + key) from None
             time.sleep(2 ** attempt)
+
+
+def record_receipt(entry):
+    with receipt_lock:
+        with receipt_path.open("a") as receipt_file:
+            receipt_file.write(json.dumps({"path": entry["path"], "sha256": entry["sha256"]}) + "\n")
 
 
 # A release prefix is write-once. Re-running is allowed only with identical bytes.
