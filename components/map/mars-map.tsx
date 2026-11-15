@@ -12,7 +12,7 @@ import {
   addSites,
   addTerrain,
   habitatLayer,
-  setDustStorm,
+  setMarsSky,
 } from "@/components/map/scene";
 import { ScenePanel, type SitePoi } from "@/components/map/scene-panel";
 import type { LayerManifest, LngLat } from "@/lib/mars/types";
@@ -92,7 +92,7 @@ export function MarsMap() {
           m,
           pois.map((f) => f.properties),
         );
-        setDustStorm(m, 0, 270);
+        setMarsSky(m);
 
         for (const layer of data.layers) {
           const url = new URL(layer.path, `${location.origin}${DATA_ROOT}/`).href;

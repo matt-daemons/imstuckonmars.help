@@ -1,82 +1,94 @@
 import type { ImageSource, Map } from "maplibre-gl";
-import { DUST_FOOTPRINT, DUST_IMAGE_PATCHES, dustColor, dustField } from "@/lib/mars/dust-field";
+import { dustColor } from "@/lib/mars/dust-field";
+import {
+  DUST_FIELDS,
+  DUST_PATCHES,
+  dustValue,
+  type DustField,
+  type DustSimulation,
+} from "@/lib/mars/dust-simulation";
 
-const states = new WeakMap<Map, { windFrom: number; sources: ImageSource[] }>();
+const states = new WeakMap<Map, { sources: ImageSource[]; frame: number; field: DustField }>();
 
-function sourceId(patch: (typeof DUST_IMAGE_PATCHES)[number]) {
-  return `simulated-dust-${patch.id}`;
-}
-
-function image(windFrom: number, patch: (typeof DUST_IMAGE_PATCHES)[number]): string {
+function image(
+  simulation: DustSimulation,
+  frame: number,
+  field: DustField,
+  patch: (typeof DUST_PATCHES)[number],
+) {
   const canvas = document.createElement("canvas");
-  canvas.width = Math.round(
-    (384 * (patch.east - patch.west)) / (DUST_FOOTPRINT.east - DUST_FOOTPRINT.west),
-  );
-  canvas.height = 384;
+  canvas.width = 90;
+  canvas.height = 128;
   const context = canvas.getContext("2d");
-  if (!context) throw new Error("Dust illustration requires a canvas context");
+  if (!context) throw new Error("Dust map requires a canvas context");
   const pixels = context.createImageData(canvas.width, canvas.height);
-  const mercatorY = (latitude: number) => Math.asinh(Math.tan((latitude * Math.PI) / 180));
-  const top = mercatorY(DUST_FOOTPRINT.north),
-    bottom = mercatorY(DUST_FOOTPRINT.south);
+  const mercator = (latitude: number) => Math.asinh(Math.tan((latitude * Math.PI) / 180));
+  const top = mercator(patch.north),
+    bottom = mercator(patch.south);
   for (let y = 0; y < canvas.height; y++) {
     const latitude =
       (Math.atan(Math.sinh(top + ((bottom - top) * (y + 0.5)) / canvas.height)) * 180) / Math.PI;
     for (let x = 0; x < canvas.width; x++) {
-      const longitude =
-        patch.west + patch.longitudeOffset + ((patch.east - patch.west) * (x + 0.5)) / canvas.width;
-      pixels.data.set(
-        dustColor(dustField(longitude, latitude, windFrom)),
-        (y * canvas.width + x) * 4,
-      );
+      const longitude = patch.west + ((patch.east - patch.west) * (x + 0.5)) / canvas.width;
+      const value = dustValue(simulation, frame, field, longitude, latitude);
+      if (value !== null)
+        pixels.data.set(dustColor(value / DUST_FIELDS[field].maximum), (y * canvas.width + x) * 4);
     }
   }
   context.putImageData(pixels, 0, 0);
   return canvas.toDataURL();
 }
 
-/** Geographic raster is clipped by the globe and cannot paint dust into space. */
-export function updateDustStorm(map: Map, intensity: number, windFrom: number) {
+export function hideDustSimulation(map: Map) {
+  for (const patch of DUST_PATCHES) {
+    if (map.getLayer(patch.id)) map.setLayoutProperty(patch.id, "visibility", "none");
+  }
+}
+
+export function showDustSimulation(
+  map: Map,
+  simulation: DustSimulation,
+  frame: number,
+  field: DustField,
+) {
   let state = states.get(map);
   if (!state) {
-    if (intensity <= 0.01) return;
-    const { north, south } = DUST_FOOTPRINT;
     const before = map
       .getStyle()
       .layers.find((layer) => layer.type !== "background" && layer.type !== "raster")?.id;
-    // Terrain clips image sources per canonical world. Never span ±180° in one image.
-    const sources = DUST_IMAGE_PATCHES.map((patch) => {
-      const id = sourceId(patch);
-      map.addSource(id, {
+    const sources = DUST_PATCHES.map((patch) => {
+      map.addSource(patch.id, {
         type: "image",
-        url: image(windFrom, patch),
+        url: image(simulation, frame, field, patch),
         coordinates: [
-          [patch.west, north],
-          [patch.east, north],
-          [patch.east, south],
-          [patch.west, south],
+          [patch.west, patch.north],
+          [patch.east, patch.north],
+          [patch.east, patch.south],
+          [patch.west, patch.south],
         ],
       });
-      const source = map.getSource<ImageSource>(id);
-      if (!source) throw new Error("Dust illustration source was not created");
+      const source = map.getSource<ImageSource>(patch.id);
+      if (!source) throw new Error("NASA dust image source was not created");
       map.addLayer(
-        { id, type: "raster", source: id, paint: { "raster-fade-duration": 0 } },
+        {
+          id: patch.id,
+          type: "raster",
+          source: patch.id,
+          paint: { "raster-fade-duration": 0, "raster-opacity": 0.85 },
+        },
         before,
       );
       return source;
     });
-    state = { windFrom, sources };
+    state = { sources, frame, field };
     states.set(map, state);
     map.once("remove", () => states.delete(map));
+  } else if (state.frame !== frame || state.field !== field) {
+    state.sources.forEach((source, index) =>
+      source.updateImage({ url: image(simulation, frame, field, DUST_PATCHES[index]) }),
+    );
+    state.frame = frame;
+    state.field = field;
   }
-  if (state.windFrom !== windFrom) {
-    state.sources.forEach((source, index) => {
-      source.updateImage({ url: image(windFrom, DUST_IMAGE_PATCHES[index]) });
-    });
-    state.windFrom = windFrom;
-  }
-  for (const patch of DUST_IMAGE_PATCHES) {
-    map.setPaintProperty(sourceId(patch), "raster-opacity", Math.max(0, Math.min(1, intensity)));
-    map.setLayoutProperty(sourceId(patch), "visibility", intensity > 0.01 ? "visible" : "none");
-  }
+  for (const patch of DUST_PATCHES) map.setLayoutProperty(patch.id, "visibility", "visible");
 }

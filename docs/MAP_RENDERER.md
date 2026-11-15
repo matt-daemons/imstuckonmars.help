@@ -23,25 +23,43 @@ and Mars model scaling are unchanged.
 
 ## Dust display
 
-The dust control now draws an illustrative geographic raster around Arcadia.
-It is clipped to the globe, not painted across the screen. The wind control
-changes the orientation of the plume. Intensity controls its opacity; Stop
-removes it. Close-up views also use MapLibre's sky and fog controls. There are
-no screen-space particles in space and no Earth hurricane eye.
+The dust control replays the NASA Ames reference simulation of the 2018
+global storm. It replaces the earlier invented Arcadia plume. The initial
+browser extract contains 128 snapshots sampled every two model sols, spanning
+254 elapsed sols, for visible column optical depth and surface lifting.
 
-The raster is split at the antimeridian. Each image uses coordinates within
-−180° to 180°, while both sample the same continuous dust field. A single image
-crossing that boundary lost its western half when terrain became active.
+Load the simulation, select Opacity or Surface lifting, and use Play, Pause,
+Reset, Next frame or the time slider. Playback starts paused, stops at the
+last frame, and pauses when the tab is hidden. It is separate from the mission
+resource clock. A 4 MB download is checksum-verified before display.
+Both compressed and transparently decompressed server responses are supported
+and verified against their respective checksums.
 
-Local browser checks cover zooms 2, 3, 4, 5, 6 and 8 across that boundary,
-including a pitched, rotated view centered at 180°. Both image halves remain
-visible with terrain enabled. Keyboard wind changes and reduced-motion
-start/stop commands update both halves together.
+Eight geographic patches avoid crossing the antimeridian and omit polar caps
+above 80°. Both fields use fixed numeric legends; transparent missing cells
+are not treated as zero. The source is a 2° global grid, not local weather.
+Changing opacity over time does not by itself distinguish transport from
+settling. This extract has no wind trajectories. MapLibre's background sky
+is a visual treatment, not derived from the simulation.
 
-The legend says this is simulated relative intensity. Colors are not measured
-optical depths, alert levels, or a forecast. Starting and stopping a storm
-never changes mission resources or historical NASA observations. Reduced-motion
-users receive immediate control updates instead of a ramp.
+Source details, encoding and limits live in
+[the release README](../public/data/dust/nasa-2018-v1/README.md) and
+[manifest](../public/data/dust/nasa-2018-v1/manifest.json).
+The offline preparation script is `pipelines/prepare-dust-playback.py`, using
+Python with numpy and netCDF4. The original file stays in ignored
+`data/raw/dust/`; NASA's published MD5 is verified before extraction.
+
+This bounded 4 MB prototype is bundled in `public/data/dust/`. It is not
+telemetry or mission state. Move expanded frame releases to immutable R2
+storage rather than increasing the Worker asset bundle without a budget.
+
+Verification: all 4,147,200 retained field values were compared with the source
+NetCDF. Maximum quantization error is 0.0005 for optical depth and
+5 × 10⁻¹² kg/m²/s for lifting. No retained source cells are masked. Unit tests
+also cover missing cells, longitude wrapping, frame limits and corrupted
+downloads. Chromium checks on both Vite dev and the packaged Worker exercised
+loading, keyboard scrubbing, play/pause, reset, field selection, hiding and
+antimeridian terrain views. No dust-request errors or script exceptions occurred.
 
 ### Observational data available for future integration
 
@@ -55,8 +73,8 @@ users receive immediate control updates instead of a ramp.
   remain explicit. These are archived observations and reconstructions, not
   current weather at the simulated habitat.
 
-Neither dataset has been downloaded or connected to the dust control. The
-current illustration must not be described as NASA weather data.
+Neither observational dataset has been downloaded or connected to the dust
+control. The connected dataset is NASA model output, not NASA observations.
 
 ## License notices
 

@@ -1,7 +1,6 @@
 // 3D scene helpers: MOLA terrain, the habitat model, and the dust-storm effect.
 import type { CustomLayerInterface, Map as MapLibreMap } from "maplibre-gl";
 import * as THREE from "three";
-import { updateDustStorm } from "./dust-storm";
 
 import type { LngLat } from "@/lib/mars/types";
 import { GLOBAL_COLOR_SOURCE, SITE_DATA_ROOT, mapAsset } from "@/lib/mars/map-data";
@@ -165,24 +164,18 @@ export function setSlopeVisible(m: MapLibreMap, sites: { id: string }[], on: boo
 }
 
 const CLEAR = { sky: [176, 132, 104], horizon: [214, 172, 132] };
-const STORM = { sky: [150, 92, 52], horizon: [168, 104, 58] };
 
-const mix = (a: number[], b: number[], t: number) =>
-  `rgb(${a.map((v, i) => Math.round(v + (b[i] - v) * t)).join(",")})`;
-
-/** Geographic dust footprint; only close-up terrain views get illustrative atmospheric haze. */
-export function setDustStorm(m: MapLibreMap, intensity: number, windFromDeg: number) {
-  const t = m.getZoom() >= 8 ? intensity : 0;
+/** A visual atmosphere, independent of the NASA dust measurements and model fields. */
+export function setMarsSky(m: MapLibreMap) {
   m.setSky({
-    "sky-color": mix(CLEAR.sky, STORM.sky, t),
-    "horizon-color": mix(CLEAR.horizon, STORM.horizon, t),
-    "fog-color": mix(CLEAR.horizon, STORM.horizon, t),
+    "sky-color": `rgb(${CLEAR.sky.join(",")})`,
+    "horizon-color": `rgb(${CLEAR.horizon.join(",")})`,
+    "fog-color": `rgb(${CLEAR.horizon.join(",")})`,
     "sky-horizon-blend": 0.5,
-    "horizon-fog-blend": 0.2 + 0.5 * t,
-    "fog-ground-blend": 0.1 + 0.7 * t,
+    "horizon-fog-blend": 0.2,
+    "fog-ground-blend": 0.1,
     "atmosphere-blend": ["interpolate", ["linear"], ["zoom"], 0, 1, 5, 0],
   });
-  updateDustStorm(m, intensity, windFromDeg);
 }
 
 /** Placeholder habitat built from primitives: hab module, airlock, solar arrays. Units are Mars metres. */
