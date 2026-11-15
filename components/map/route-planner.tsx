@@ -198,7 +198,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   );
 
   return (
-    <aside className="absolute bottom-4 left-4 w-72 max-w-[calc(100%-2rem)] space-y-3 rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur">
+    <aside className="absolute right-4 bottom-12 max-h-[calc(100svh-31rem)] w-72 max-w-[calc(100%-2rem)] space-y-3 overflow-y-auto rounded-lg border bg-background/90 p-4 text-sm shadow-lg backdrop-blur">
       <h2 className="font-heading text-sm font-semibold">Route (A*)</h2>
       <div className="flex flex-wrap gap-2">
         {modeButton("start", "Set start")}
@@ -245,14 +245,14 @@ function RouteResult({ plan, loadFailed }: { plan: Plan | null; loadFailed: bool
       </p>
       <p>Steepest slope: {summary.max_slope.toFixed(1)}°</p>
       <p>Cells searched: {outbound.expanded + back.expanded}</p>
-      <p>Farthest from base: {summary.farthest_from_base_km.toFixed(2)} km</p>
+      <p>Farthest from start: {summary.farthest_from_base_km.toFixed(2)} km</p>
       <p className={verdictStyle.className}>Route check: {verdictStyle.label}</p>
       {check.reasons.map((reason) => (
         <p key={reason}>{reason}</p>
       ))}
       <p className="text-xs text-muted-foreground">
-        Route rules only: slope, walk-back and suit time. Radiation, dust and daylight are not
-        checked here.
+        Route rules only: slope, walk-back and suit time, with the start point treated as base.
+        Radiation, dust and daylight are not checked here.
       </p>
     </div>
   );
