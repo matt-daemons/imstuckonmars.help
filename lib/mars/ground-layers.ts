@@ -68,12 +68,14 @@ export const THERMAL_INERTIA_LEGEND: LegendClass[] = [
   { label: "firm ground / rock", range: "≥ 400", color: "rgb(70 90 170)" },
 ];
 
-/** Same classes as the HiRISE site slope tiles; below 10° is transparent. */
+/** Corridor classes (pipelines/stable/regional-slope.ts): the plain is flat, so they start at 1°. */
 export const REGIONAL_SLOPE_LEGEND: LegendClass[] = [
-  { label: "gentle", range: "< 10°", color: null },
-  { label: "moderate", range: "10–15°", color: "rgb(250 220 90)" },
-  { label: "steep", range: "15–20°", color: "rgb(245 150 50)" },
-  { label: "beyond suit limit", range: "≥ 20°", color: "rgb(220 40 30)" },
+  { label: "flat", range: "< 1°", color: null },
+  { label: "gentle", range: "1–2°", color: "rgb(255 240 170)" },
+  { label: "slight", range: "2–5°", color: "rgb(250 220 90)" },
+  { label: "moderate", range: "5–10°", color: "rgb(245 150 50)" },
+  { label: "steep", range: "10–20°", color: "rgb(230 90 40)" },
+  { label: "beyond suit limit", range: "≥ 20°", color: "rgb(200 30 30)" },
 ];
 
 export const ROUGHNESS_LEGEND: LegendClass[] = [

@@ -1,8 +1,8 @@
 # Shared pipeline config. Values marked TBD are owned by team role A; don't guess them.
 
 aoi:
-  # Placeholder — replace after the HiRISE DTM pick (Step 2).
-  name: Arcadia Planitia (placeholder)
+  # Habitat + 4 HiRISE sites span the drive corridor (172–194 °E); the centre is near the habitat.
+  name: Arcadia Planitia · simulated base
   center_lon_e: 184.0 # east-positive, planetocentric
   center_lat_n: 46.0
   buffer_m: 200

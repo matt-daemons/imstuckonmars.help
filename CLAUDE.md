@@ -78,6 +78,8 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | Toolchain                | Plain Git + GitHub (no jj); Nix optional; Node 24 + pnpm; TypeScript pipelines + GDAL CLI. Details §8.                                                                                                                                                                                                                                                                                                                        |
 | Data home                | Telemetry in **D1** (teammate's backend). Static rasters/tiles on **R2** (`tiles.imstuckonmars.help`, M uploads) or locally in `public/data/`.                                                                                                                                                                                                                                                                                |
 | Schemas                  | Owned by a teammate — don't build `schemas/` here. Longitude: store −180..180, display 0–360 °E.                                                                                                                                                                                                                                                                                                                              |
+| Proxy-data framing       | **Team, Sun Nov 15:** Gale/Jezero data may stand in for Arcadia, always labelled as a proxy with the caveat that **Arcadia has not been ground-truthed**. **No Mars Climate Database adjustment for now** (keeps every shown number a real measurement); MCD scaling (pressure, temperature, sun elevation) is future work.                                                                                                   |
+| Manifest format          | **M OK'd, Sun Nov 15:** optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`) may be added.                                                                                                                                                                                                                                                                                                              |
 | UI theme                 | _The Martian_-inspired, original design — no copyrighted assets/logos.                                                                                                                                                                                                                                                                                                                                                        |
 
 ### Telemetry units (team table, Sat Nov 14 — the table was titled "ARES" by mistake; the product is **LARA**)
@@ -161,8 +163,8 @@ Grouped by who acts. Strike through and move to §11 when done.
 ### Team decisions (shared role A)
 
 1. **Regional slope 200 m** — waiting on the routing teammate; router input (would mean re-setting the halved MOLA slope limits) or display-only?
-2. **Manifest format change** (map branch, needs M's OK): optional `sceneControl` + `caveats` on `StableLayer` (`lib/mars/types.ts`).
-3. **Proxy-data framing** — exact UI wording for Gale/Jezero data standing in for Arcadia; use Mars Climate Database adjustment or not.
+2. ~~Manifest format change~~ — M OK'd (§4). Jess/Role A to add `sceneControl` + `caveats` to `StableLayer`.
+3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Exact UI wording still to write (D / M).
 4. Confirm owner names for roles C and D.
 
 ### M (hosting + UI)
@@ -170,7 +172,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 1. ~~Upload sites-v2~~ done Sun Nov 15 — live at `tiles.imstuckonmars.help/sites-v2`; `SITE_DATA_ROOT` / `ROUGHNESS_DATA_ROOT` point at it (verified: slope + roughness COGs, TI / regional-slope / roughness tiles all HTTP 200).
 2. ~~Host regional-slope tiles~~ — already inside sites-v2 (`sites-v2/regional-slope`), no release config needed.
 3. Steep-tilt terrain fallback fix (§9 Gotchas) — centre-based check in `terrainSourceForView`.
-4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` / AOI name with real routes so nothing fake ships.
+4. Before freeze: replace placeholder `stops.geojson` / `route.geojson` (AOI name now fixed in `config.yaml`) with real routes so nothing fake ships.
 5. Polish (incl. tinted HiRISE RED, imagery to z18 — moved from Jess): map hex colours → theme tokens in `app/globals.css`; error state if manifest fetch fails; confirm °E readout convention.
 
 ### Jess (role B)
@@ -179,7 +181,8 @@ Grouped by who acts. Strike through and move to §11 when done.
 2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
 3. Slides: pin the page of the Hassler 2014 quiet-time dose rate (~9 µGy/h) — the radiation flight rule's 18 / 90 µGy/h thresholds are
    2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
-4. **SWIM** ice layer — swim.psi.edu down (HTTP 523); retry. PIA26045 is a PNG illustration → slides only.
+4. **Ice evidence** — swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
+5. **Regional slope tiles** regenerated with 1° / 2° / 5° / 10° / 20° classes (the corridor is flat: ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %). **M: re-upload `sites-v2/regional-slope`** (local tiles are new; R2 still has the old 10°+ classes, so the overlay looks blank until then).
 
 ### Roles C / D
 
@@ -276,7 +279,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 ### Regional slope + geology (drive corridor)
 
 - **Regional slope** (`pnpm pipe:regional-slope`): MOLA/HRSC 200 m → `data/processed/regional-slope/regional-slope.tif` (Int16 tenths °, lon
-  0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 10° 0.04 %, ≥ 20° 0 %.
+  0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
   Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
   on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. Not on the map yet.
@@ -388,7 +391,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **Viking global colour mosaic** (teammates' basemap): USGS/NASA Ames colorized Viking MDIM 2.1. Credit: NASA/Viking; USGS; NASA Ames.
 - **CTX global mosaic** (imagery around the habitat, ~5 m): Caltech Murray Lab, served by Esri (https://astro.arcgis.com/arcgis/rest/services/OnMars/CTX1/MapServer). Credit: NASA/JPL/MSSS/The Murray Lab. Murray Lab "grants free use of the V01 version of the mosaic for all purposes" and asks users to cite Dickson et al. 2024 (https://murray-lab.caltech.edu/CTX/). Note: the Esri service labels itself beta01.
 - **NASA Ames Mars GCM 2018 global dust storm simulation** (dust playback): https://data.nas.nasa.gov/legacygcm/ — Bertrand et al. 2020.
-- **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
+- **SWIM — Subsurface Water Ice Mapping** (swim.psi.edu down long-term; use the papers + Odyssey neutron-spectrometer maps instead, see §7): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
 - **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
 - **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
 - **Geologic Map of Mars** (USGS SIM 3292, 1:20M; geologic units along the drive corridor, `pnpm pipe:geology`): USGS Astrogeology / NASA — Tanaka et al. 2014. https://pubs.usgs.gov/sim/3292/

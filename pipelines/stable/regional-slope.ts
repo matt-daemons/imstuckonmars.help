@@ -8,7 +8,7 @@
 //   COG for routing: data/processed/regional-slope/regional-slope.tif — Int16 tenths of a degree (value / 10 = °,
 //                    scale metadata 0.1), nodata −9999, lon/lat Mars 2000 sphere.
 //                    ⚠ Longitudes are 0..360 °E because the corridor crosses ±180.
-//   Map overlay tiles: public/data/regional-slope/{z}/{x}/{y}.webp, z5–10 (same classes as the site slope tiles)
+//   Map overlay tiles: public/data/regional-slope/{z}/{x}/{y}.webp, z5–10 (classes from 1°: the corridor is flat)
 //   Summary:           public/data/processed/regional-slope.json
 // Usage: pnpm pipe:regional-slope
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -205,19 +205,24 @@ await execa("gdal_translate", [
   published,
 ]);
 
-// 3. Overlay tiles: < 10° clear, 10–15° yellow, 15°–threshold orange, ≥ threshold red (same as slope.ts).
+// 3. Overlay tiles: the corridor is flat (mean < 1°), so the classes start at 1°: < 1° clear, then 1–2°, 2–5°,
+//    5–10° (rover caution on MOLA), 10–20°, ≥ 20° (suit limit). Keep REGIONAL_SLOPE_LEGEND in sync.
 const ramp = join(work, "slope-ramp.txt");
 writeFileSync(
   ramp,
   [
     "0 0 0 0 0",
-    "9.99 0 0 0 0",
-    "10 250 220 90 120",
-    "14.99 250 220 90 120",
-    "15 245 150 50 160",
-    `${maxSlope - 0.01} 245 150 50 160`,
-    `${maxSlope} 220 40 30 210`,
-    "90 220 40 30 210",
+    "0.99 0 0 0 0",
+    "1 255 240 170 90",
+    "1.99 255 240 170 90",
+    "2 250 220 90 130",
+    "4.99 250 220 90 130",
+    "5 245 150 50 170",
+    "9.99 245 150 50 170",
+    "10 230 90 40 200",
+    `${maxSlope - 0.01} 230 90 40 200`,
+    `${maxSlope} 200 30 30 220`,
+    "90 200 30 30 220",
     "nv 0 0 0 0",
     "",
   ].join("\n"),
@@ -312,14 +317,16 @@ const atLeast = (deg: number) =>
       total,
   ) / 100;
 const percent = {
+  ge_1_deg: atLeast(1),
+  ge_2_deg: atLeast(2),
+  ge_5_deg: atLeast(5),
   ge_10_deg: atLeast(10),
-  ge_15_deg: atLeast(15),
   [`ge_${maxSlope}_deg`]: atLeast(maxSlope),
 };
 const info = JSON.parse((await execa("gdalinfo", ["-json", published])).stdout);
 console.log(
   `regional slope: ${info.size.join(" × ")} cells, mean ${b.mean.toFixed(2)}°, ` +
-    `≥10° ${percent.ge_10_deg} %, ≥15° ${percent.ge_15_deg} %, ≥${maxSlope}° ${percent[`ge_${maxSlope}_deg`]} %`,
+    `≥1° ${percent.ge_1_deg} %, ≥2° ${percent.ge_2_deg} %, ≥5° ${percent.ge_5_deg} %, ≥10° ${percent.ge_10_deg} %, ≥${maxSlope}° ${percent[`ge_${maxSlope}_deg`]} %`,
 );
 writeFileSync(
   "public/data/processed/regional-slope.json",
@@ -351,7 +358,7 @@ writeFileSync(
       },
       stats: { mean_deg: Math.round(b.mean * 100) / 100, max_deg: Math.round(b.maximum * 10) / 10 },
       percent_of_cells: percent,
-      class_breaks_deg: [10, 15, maxSlope],
+      class_breaks_deg: [1, 2, 5, 10, maxSlope],
       caveats: [
         "200 m cells average out short steep slopes (crater walls, scarps, ridges narrower than a few hundred metres): use for drive-leg routing only, never for the final approach or the walking leg (use the 1 m HiRISE slope there).",
         "Real local slopes are steeper than this layer shows; treat a 200 m slope near the limit as a likely hazard.",
