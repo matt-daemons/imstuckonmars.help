@@ -148,7 +148,7 @@ config.yaml   # AOI, CRS, resolution, thresholds — no hardcoding
 3. **Proxy-data framing:** decide exactly how the UI labels Gale/Jezero data as a proxy for Arcadia (and whether to adjust with Mars Climate Database values).
 4. **Fill in flight rules:** suit/walk rules stay (EVA legs) + **rover rules** (slope limit, range/battery reserve, drive hours per sol); radiation thresholds done.
 5. **Journey structure (Role C + team):** 2-leg drive+walk journeys, or one mode per journey with EVA only for short distances? Define "short" (walk-back ≤ 2 km rule is the candidate).
-6. ✅ **MapLibre port (M)** landed (`1bbb6d0`, `docs/MAP_RENDERER.md`). Still: re-check site layers after the port. Original note: Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
+6. ✅ **MapLibre port (M)** landed (`1bbb6d0`, `docs/MAP_RENDERER.md`). ✅ Site layers re-checked on MapLibre 6.18.0 (Sun Nov 15 ~01:30, Step 3b). Original note: Mapbox-only features we used (3D terrain fog, `three` model layer, attribution control, `NEXT_PUBLIC_MAPBOX_TOKEN`) need MapLibre equivalents; site tile URLs/XYZ should carry over unchanged.
 7. **Role A owner** and owners for C and D: confirm names.
 
 ## 8. Working agreements
@@ -220,7 +220,7 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
   `lib/mars/map-data.ts` himself. ✅ **Done (Sun Nov 15):** M uploaded `sites-v1` to R2 and set `SITE_DATA_ROOT`.
 - **Role C** has the brief (below) and agreed a **slope-only cost surface first**; slope COGs are in `sites-v1/slope/` (Int16, value/10 = °).
 - **Mobility (Sun Nov 15, with Role C): driving AND walking** — see §4 "Mobility" (2-leg vs one-mode-per-journey still open). No new POI.
-- **Map library: M replaced Mapbox with MapLibre** (`1bbb6d0`, unexpected ruling). Re-check site layers (imagery/terrain/slope, attribution, terrain switching) after the port.
+- **Map library: M replaced Mapbox with MapLibre** (`1bbb6d0`, unexpected ruling). ✅ Site layers re-checked after the port (Step 3b): all 4 sites pass; steep-tilt terrain caveat under Gotchas.
 
 **Thermal inertia ✅ (Sun Nov 15):** `pnpm pipe:thermal-inertia` (`pipelines/stable/thermal-inertia.ts`, ~4 min) reads THEMIS quantitative TI
 (100 m) over HTTP for 170–196°E, 43–48°N. Outputs: `data/processed/thermal-inertia/thermal-inertia.tif` (Int16 TI, nodata −9999, **lon 0..360 °E**
@@ -287,6 +287,10 @@ Not yet wired into the map (MapLibre port has landed, so this is unblocked) or i
   - A half-finished rebase leaves conflict markers in `package.json` → the app fails with `JSONError … key must be a string`. Finish/abort the rebase.
   - `mapbox-gl.css` forces `position: relative` on the container → size it with `h-full w-full`, not `absolute inset-0`.
   - The map needs absolute tile/GeoJSON URLs (we prefix `location.origin`).
+  - **Site terrain drops to MOLA 463 m at steep or zoomed-out tilts** (e.g. ESP_033225 z15/80°, z14/70°, z11.5/60°): `terrainSourceForView`
+    needs the whole view bounds inside the site's padded box (`lib/mars/terrain.ts:29-31`, bounds from `components/map/scene.ts:33-36`), and a
+    tilted view reaches the horizon. Landing view (z15/65°) is fine. Possible fix: centre-based check — pending M.
+  - Local `POST /api/copilot/session` → 500 = local D1 not migrated/seeded → follow `docs/BACKEND.md` "Reproduce locally" (import once only).
   - Display terrain tiles are **not** true heights (+10 km offset) — read elevations from the DTM / COGs.
 
 ## Architecture (summary)
@@ -347,7 +351,9 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 
 - 3a. ✅ **Slope + hazard classes for all 4 sites** — results in "Data quality & processing decisions" below. Overlay: yellow 10–15°, orange 15°–limit,
   red ≥ limit (`config.yaml` `slope_max_deg` = 20°, NASA lunar suit limit assumed for Mars); "Slope hazard" switch in the Scene panel. Hillshade: teammates' terrain stack.
-- 3b. Check: eyeball HiRISE imagery vs terrain vs slope alignment in the browser (same lon/lat grid by construction; not yet visually confirmed).
+- 3b. ✅ **Visual check on MapLibre 6.18.0** (Sun Nov 15 ~01:30): all 4 sites pass — imagery loads, relief matches imagery (no visible offset),
+  slope red/orange on crater walls/ridge flanks, POI in the bowl, NASA/JPL/University of Arizona credit in panel + map attribution, tiles from R2
+  `sites-v1`, no console errors. Caveat: steep-tilt terrain fallback (Current state → Gotchas).
 - 3c. ✅ Sources: `sites` layer in the layer panel + compact Mapbox attribution control credits **NASA/JPL/University of Arizona** on every site source.
 
 ### Data quality & processing decisions (HiRISE sites)
