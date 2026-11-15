@@ -40,8 +40,12 @@ Read the detailed evidence and proposed scope before implementation:
   derived output for sol 901. Elapsed time is unique only within a verified counter segment.
 - The retained subset includes calibrated/derived sol-816 MEDA measurements verified against
   official NASA/PDS products. `sources.json` records retained-file provenance. Catalogs, raw
-  MOXIE, RAD and REMS were removed by the approved cleanup. Never restore catalog rows as
-  weather samples or attach sol-816 weather to other experiments or a hypothetical base.
+  MOXIE, the 2012 RAD product and REMS were removed by the approved cleanup. Never restore
+  catalog rows as weather samples or attach sol-816 weather to other experiments or a base.
+- Curiosity RAD Level 2 observations overlapping sol 816 by UTC live in a separate immutable
+  release (`RADIATION_RELEASE`, manifest `data/telemetry/msl_rad_l2/sources.json`). They are
+  Gale crater absorbed dose rates, a distant proxy: never Jezero/base radiation or crew exposure.
+  Wind and dust are not acquired; the MEDA wind sensor has no product after sol 313's damage.
 - MEDA derived products still contain artifacts and metadata conflicts. Follow ingestion masks,
   field definitions and geometry warnings; do not assume finite or derived means valid.
 - Candidate CTX DEM: 20 m, Jezero, float32; matched image approximately 5 m. PDS4 labels use
@@ -135,6 +139,8 @@ Keep commits small, with messages formatted as `feature-name(action): Brief desc
 - Production uses the `imstuckonmars` D1 database and the bounded release in `wrangler.jsonc`.
   Keep imports below 50,000 total application rows and budget index writes against the account's
   daily D1 quota. Never upload the full offline release or reimport data on every deployment.
+  Add new observational data as a small companion release rather than rebuilding the main one.
+  Deploys never apply migrations: apply remote migrations and publish data before deploying code.
 
 ## UI standards
 

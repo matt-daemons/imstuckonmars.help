@@ -1,6 +1,6 @@
 # Telemetry analysis
 
-> Acquisition update (2026-11-14): this is the pre-cleanup research snapshot. The verified retained subset and normalized counts are documented in [BACKEND.md](BACKEND.md) and `data/telemetry/sources.json`. Sol-816 MEDA measurements have since been acquired; catalogs, raw MOXIE, RAD and REMS were removed from the active subset. Do not treat the historical inventory below as the current checkout.
+> Acquisition update (2026-11-14): this is the pre-cleanup research snapshot. The verified retained subset and normalized counts are documented in [BACKEND.md](BACKEND.md) and `data/telemetry/sources.json`. Sol-816 MEDA measurements have since been acquired; catalogs, raw MOXIE, the 2012 RAD product and REMS were removed from the active subset. Curiosity RAD Level 2 observations overlapping sol 816 were later added as a separate release (see [RAD](#rad)). Do not treat the historical inventory below as the current checkout.
 
 ## Findings and scope
 
@@ -176,6 +176,22 @@ For each positive-production run, divide elapsed seconds into nonoverlapping `fl
 These describe controlled engineering sequences. Power and oxygen share electrical inputs; setpoints, warmup, control schedules and autocorrelation confound associations. Binning does not make observations independent. Changing signs across runs refute a simple universal temperature/pressure predictor. No causal interpretation, significance tests, learned forecast, weather-performance law or atmospheric-pressure claim is justified. MEDA/REMS correlations are unavailable; the 2012 RAD interval does not overlap the 2021-2023 MOXIE runs.
 
 ## RAD
+
+### Current RAD companion release (2026-11-14)
+
+The checkout now retains two Curiosity RAD Level 2 daily CDFs from NASA SPDF (CDAWeb dataset `MSL_RAD_OBS-L2`): `msl_rad_obs-l2_2023157_v05` (Curiosity sol 3850) and `msl_rad_obs-l2_2023158_v06` (sol 3851). They cover the MEDA sol-816 span and the sol-816 MOXIE run (2023-06-06T15:19Z to 18:43Z) by **UTC**. Provenance is in `data/telemetry/msl_rad_l2/sources.json`. SPDF publishes no checksums, so SHA-256 was recorded at acquisition, and two independent downloads were byte-identical. Each file's `Start_time` equals its first `EPOCH`, so epochs are treated as observation **starts**.
+
+There are 169 observations, with a median spacing of 1,026 s (range 359 to 1,166 s). Unflagged alive times are 925.4 to 926.8 s. `FLAGGED_DATA` marks six commanding (`Cmds`) observations and three DAN-firing (`DAN`) observations. The source says flagged data should be removed for science, so their dose rates are withheld. One commanding observation (2023-06-06T04:32:32Z) has a negative source value (-28.6 µGy/day). Fourteen observations start inside the MOXIE window; one of them is flagged.
+
+| Usable rate, µGy/day (L2 unit) |   n | Masked |    Min | Median |   Mean |   SD |    Max | Mean, µGy/h |
+| ------------------------------ | --: | -----: | -----: | -----: | -----: | ---: | -----: | ----------: |
+| Total Dose B (silicon)         | 160 |      9 | 180.47 | 194.00 | 195.41 | 8.40 | 218.65 |       8.142 |
+| RTG Corrected Dose B (silicon) | 160 |      9 | 121.25 | 134.79 | 136.19 | 8.40 | 159.44 |       5.675 |
+| Total Dose E (tissue-eq.)      | 160 |      9 | 187.69 | 193.56 | 193.80 | 2.76 | 202.99 |       8.075 |
+
+The two days are a quiet galactic-cosmic-ray background with no solar particle event. These are absorbed dose rates at Gale crater, about 3,800 km from Jezero. The unsupported uses listed at the end of this section still apply: no relocation to Jezero or the base, no dose equivalent, no crew exposure and no thresholds. Dosimetry time slices, LET spectra and neutral histograms are present in the CDFs but not ingested.
+
+### Historical PDS3 snapshot (removed by the cleanup)
 
 The detached label identifies `RAD_RDR_2012_220_02_25_0001_V00`. There are 14 observation blocks, from 2012-08-07 02:25:43 UTC to a final **start** at 06:03:10 UTC. Label stop is `UNK`. The hierarchical product also includes counters, histograms and event-related sections; these were inspected structurally but not promoted into a fully calibrated spectrum or LET analysis.
 
