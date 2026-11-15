@@ -41,7 +41,10 @@ export function ObservationPlot({
   const bottom = min - pad,
     top = max + pad;
   const x = (ms: number) => ((ms - start) / Math.max(1, to - start)) * 1000;
-  const y = (value: number) => 190 - ((value - bottom) / (top - bottom)) * 180;
+  const y = (value: number) => 200 - ((value - bottom) / (top - bottom)) * 200;
+  const segments = observationSegments(points, metric.cadence_s);
+  const isolated = segments.filter((segment) => segment.length === 1).flat();
+  const ticks = compact ? [0, 0.5, 1] : [0, 0.25, 0.5, 0.75, 1];
   const selected =
     cursor === null ? null : nearestObservation(points, cursor, (metric.cadence_s * 1000) / 2);
   return (
@@ -82,8 +85,10 @@ export function ObservationPlot({
       </p>
       <div className="hb-plot-frame">
         <div className="hb-y-axis" aria-hidden>
-          {[top, (top + bottom) / 2, bottom].map((v, i) => (
-            <span key={i}>{formatNumber(v, metric.decimals)}</span>
+          {ticks.map((fraction) => (
+            <span key={fraction}>
+              {formatNumber(top - fraction * (top - bottom), metric.decimals)}
+            </span>
           ))}
         </div>
         <div className="hb-plot-canvas">
@@ -105,8 +110,15 @@ export function ObservationPlot({
                 />
               </clipPath>
             </defs>
-            {[10, 100, 190].map((v) => (
-              <line className="hb-gridline" key={v} x1="0" x2="1000" y1={v} y2={v} />
+            {ticks.map((fraction) => (
+              <line
+                className="hb-gridline"
+                key={fraction}
+                x1="0"
+                x2="1000"
+                y1={fraction * 200}
+                y2={fraction * 200}
+              />
             ))}
             {[0, 250, 500, 750, 1000].map((v) => (
               <line
@@ -119,25 +131,14 @@ export function ObservationPlot({
               />
             ))}
             <g className="hb-plot-series" clipPath={`url(#${clipId})`}>
-              {observationSegments(points, metric.cadence_s).map((segment, i) => (
-                <g key={i}>
-                  <path
-                    className="hb-signal"
-                    d={segment
-                      .map((p, index) => `${index ? "L" : "M"}${x(p.utc_ms)},${y(p.value!)}`)
-                      .join(" ")}
-                  />
-                  {segment.map((p) => (
-                    <circle
-                      className="hb-signal-dot"
-                      key={p.utc_ms}
-                      cx={x(p.utc_ms)}
-                      cy={y(p.value!)}
-                      r="2.1"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ))}
-                </g>
+              {segments.map((segment, i) => (
+                <path
+                  key={i}
+                  className="hb-signal"
+                  d={segment
+                    .map((p, index) => `${index ? "L" : "M"}${x(p.utc_ms)},${y(p.value!)}`)
+                    .join(" ")}
+                />
               ))}
             </g>
             {cursor !== null && (
@@ -158,6 +159,21 @@ export function ObservationPlot({
               onPointerLeave={() => setCursor(null)}
             />
           </svg>
+          {isolated.map((point) => (
+            <span
+              key={point.utc_ms}
+              className="hb-signal-point"
+              aria-hidden
+              style={{ left: `${x(point.utc_ms) / 10}%`, top: `${y(point.value!) / 2}%` }}
+            />
+          ))}
+          {selected?.value != null && (
+            <span
+              className="hb-signal-point hb-selected-point"
+              aria-hidden
+              style={{ left: `${x(selected.utc_ms) / 10}%`, top: `${y(selected.value) / 2}%` }}
+            />
+          )}
         </div>
         <div className="hb-axis-unit">{metric.unit}</div>
       </div>

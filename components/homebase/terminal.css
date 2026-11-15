@@ -489,6 +489,10 @@
 }
 .hb-y-axis span {
   line-height: 1;
+  transform: translateY(-50%);
+}
+.hb-y-axis span:last-child {
+  transform: translateY(50%);
 }
 .hb-plot-canvas {
   position: relative;
@@ -510,7 +514,7 @@
 .hb-gridline {
   stroke: #294446;
   stroke-width: 1;
-  stroke-dasharray: 2 5;
+  stroke-opacity: 0.65;
   vector-effect: non-scaling-stroke;
 }
 .hb-gridline-vertical {
@@ -519,11 +523,25 @@
 .hb-signal {
   fill: none;
   stroke: var(--foreground);
-  stroke-width: 1.4;
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+  stroke-linecap: round;
   vector-effect: non-scaling-stroke;
 }
-.hb-signal-dot {
-  fill: var(--foreground);
+.hb-signal-point {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--foreground);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.hb-selected-point {
+  width: 8px;
+  height: 8px;
+  border: 2px solid var(--background);
+  outline: 1px solid var(--primary);
 }
 .hb-inspect-line {
   stroke: var(--primary);

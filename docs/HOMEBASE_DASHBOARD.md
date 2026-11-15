@@ -42,6 +42,11 @@ Overview and Experiments are separate pages, with 1/2 shortcuts outside form con
 
 The console itself does not scroll. On narrow or zoomed displays, all four readings remain visible and select one chart; Reference details provides clock, surface, oxygen and source panes without shrinking labels. Persistent archive/date, historical-mode and connection labels remain visible. Normal/error/loading layouts use the same fixed viewport shell, not a fixed footer covering data.
 
+Observation charts use unsmoothed line segments and preserve gaps. Repeated
+sample markers are omitted; isolated observations and the inspected sample use
+fixed-size circular markers outside the stretched SVG coordinate system.
+Expanded charts have five aligned value ticks and compact charts have three.
+
 Loading happens in place with fixed-size pane frames. Every numeric readout is one text node containing the actual fetched value; a short transform-only settle replaces the former clipped glyph reels and their stray top bars. A single SVG mask reveals the entire chart signal smoothly, including all disconnected segments, rather than animating each path or sweeping a bar over the data. Reloads retain the current readings and frames until the next response. Reduced-motion mode renders final text and signals immediately with a static loaded border. There is no flashing, fake boot log, startup gate, substitute digit sequence or continuously changing weather.
 
 Desktop viewing distance is assumed to be 600 mm and handheld 400 mm. Labels are at least 16 px, text uses high-contrast theme pairs, and narrow/zoomed displays use selection and pagination instead of scrolling or smaller type. This is not formal operational-safety certification.
