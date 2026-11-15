@@ -306,6 +306,8 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         use: "Air temperature, pressure and other weather readings.",
         caveats: [
           "Proxy data. Jezero is about 5,200 km from the habitat.",
+          "Not ground-truthed: no rover has operated in Arcadia Planitia, so these values may differ at the base.",
+          "Real measurements shown unadjusted: not scaled for Arcadia's altitude, latitude or season (Mars Climate Database scaling is future work).",
           "Historical readings replayed as live. It is not current weather.",
           "Derived products contain artifacts and metadata conflicts. Masked values are withheld.",
           "No observed wind or dust: the wind sensor has no product after damage on sol 313.",
@@ -320,6 +322,8 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         use: "Dose rate readout and the radiation flight rule.",
         caveats: [
           "Proxy data. Gale crater is about 3,900 km from the habitat.",
+          "Not ground-truthed: no rover has operated in Arcadia Planitia, so these values may differ at the base.",
+          "Real measurements shown unadjusted: not scaled for Arcadia's altitude, latitude or season (Mars Climate Database scaling is future work).",
           "Absorbed dose rate in the detector material. It is not dose equivalent or crew exposure.",
           "Historical observations aligned by UTC. It is not live space weather.",
           "Flagged observations are withheld, not shown as zero.",
@@ -420,6 +424,26 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         layerIds: ["roughness"],
       },
       {
+        id: "regional-slope",
+        title: "Regional slope",
+        kind: "derived",
+        credit: "NASA/MOLA; ESA/DLR/FU Berlin/HRSC; USGS (derived)",
+        detail:
+          "Slope from the 200 m MOLA/HRSC blended DEM along the drive corridor. Mean 0.45°; 0.4 % of cells ≥ 5°",
+        use: "Regional slope switch in the Scene panel. Display only: the route planner uses the 463 m MOLA grid.",
+        caveats: [
+          "200 m cells smooth out crater walls and anything smaller than a few hundred metres.",
+          "Classes 1 / 2 / 5 / 10 / 20° show how flat the corridor is; they are not flight-rule limits.",
+        ],
+        links: [
+          {
+            label: "MOLA/HRSC blended DEM",
+            url: "https://planetarymaps.usgs.gov/mosaic/Mars/HRSC_MOLA_Blend/Mars_HRSC_MOLA_BlendDEM_Global_200mp_v2.tif",
+          },
+        ],
+        layerIds: ["regional-slope"],
+      },
+      {
         id: "geology",
         title: "Geologic units",
         kind: "derived",
@@ -467,6 +491,14 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         caveats: [
           "The team chose the concept, location, science objective and flight-rule values.",
         ],
+      },
+      {
+        id: "grok",
+        title: "AI chatbot",
+        kind: "ai",
+        credit: "xAI Grok",
+        use: "Helped edit the team's to-do list.",
+        caveats: ["Not used for data, code, verdicts or anything shown in the app."],
       },
     ],
   },

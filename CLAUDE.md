@@ -166,10 +166,10 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Team decisions (shared role A)
 
-1. **Regional slope 200 m** — waiting on the routing teammate; router input (would mean re-setting the halved MOLA slope limits) or display-only?
+1. ~~Regional slope 200 m~~ — display only (live on the map).
 2. ~~Manifest format change~~ — M OK'd (§4); `sceneControl` + `caveats` are on `StableLayer` (`lib/mars/types.ts`).
-3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Exact UI wording still to write (D / M).
-4. Confirm owner names for roles C and D.
+3. ~~Proxy-data framing~~ — decided (§4): proxy label + not ground-truthed caveat, no MCD adjustment yet. Wording added Sun Nov 15 (Sources screen MEDA/RAD caveats + LARA vitals footnote).
+4. ~~Owner names for C/D~~ — dropped (not needed).
 
 ### M (hosting + UI)
 
@@ -185,7 +185,7 @@ Grouped by who acts. Strike through and move to §11 when done.
 2. ~~Regional slope onto the map~~ — Scene panel switch "Regional slope" (`addRegionalSlope`, `REGIONAL_SLOPE_*` in `lib/mars/ground-layers.ts`); display only until the team decides §7 item 1. ~~Geology~~ done (`8704a69e`).
 3. Slides: pin the page of the Hassler 2014 average dose rate (~9 µGy/h; say "average", not "quiet") — the radiation flight rule's 18 / 90 µGy/h thresholds are
    2× / 10× it (`config.yaml`). ~~Golombek 2012 journal URL~~ added to `docs/PITCH_NOTES.md`.
-4. **Ice evidence** — swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
+4. ~~Ice evidence~~ — dropped Sun Nov 15. (Old notes:) swim.psi.edu is down for the long term (HTTP 523, no mirror found). Use instead: Bramson 2015 + Morgan 2021 figures on slides; Mars Odyssey Neutron Spectrometer water-equivalent-hydrogen maps (Feldman et al.; arXiv 1708.00518; coarse ~300 km; PDS download path not yet confirmed) as a regional layer; HiRISE terraced craters (have). PIA26045 / PIA12214 are illustrations → slides only.
 5. **Regional slope tiles** regenerated with 1° / 2° / 5° / 10° / 20° classes (the corridor is flat: ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %). **M: re-upload `sites-v2/regional-slope`** (local tiles are new; R2 still has the old 10°+ classes, so the overlay looks blank until then).
 
 ### Roles C / D
@@ -457,6 +457,7 @@ GDAL/OGR (gdalwarp, gdaldem, gdal2tiles) · PROJ · MapLibre GL JS (replaced Map
 - **OpenRouter** — language model **openai/gpt-4.1-mini** behind the LARA copilot (set by `DIAGNOSTICS_MODEL` on the server). Explains results; verdicts come from `lib/flight-rules`, never from the model.
 - **ElevenLabs** — LARA's voice. **The voice is AI-generated speech**: acknowledge it wherever it is heard (demo video, project page).
 - **Anthropic Claude (Claude Code)** — AI coding agent used to write and review code, pipelines and docs.
+- **xAI Grok** — AI chatbot (https://x.ai/grok) used to update the to-do list.
 
 ### Fonts
 
