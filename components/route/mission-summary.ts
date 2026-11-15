@@ -36,7 +36,7 @@ export function titleRows({
 }: {
   mission: MissionType;
   site: Site | null;
-  power: PowerSource | null;
+  power: PowerSource;
   samplingMin: number;
   madeAt: Date;
 }): StripField[] {
@@ -47,10 +47,7 @@ export function titleRows({
   ];
   // Only drive + walk has a rover; both mission modes can include sampling.
   if (mission === "drive-walk") {
-    rows.push({
-      label: "Power",
-      value: power ? `${power[0].toUpperCase()}${power.slice(1)}` : "Not chosen",
-    });
+    rows.push({ label: "Power", value: `${power[0].toUpperCase()}${power.slice(1)}` });
   }
   rows.push({ label: "Sampling time", value: `${samplingMin} min` });
   rows.push({ label: "Plan made", value: `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC` });

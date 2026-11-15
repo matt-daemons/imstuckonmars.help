@@ -53,8 +53,7 @@ export interface DriveWalkInputs {
   start: LngLat;
   /** The site to walk at, or null when the end was set on the map. */
   destination: SitePoi | null;
-  /** Null until the operator picks one; nothing is planned until then. */
-  power: PowerSource | null;
+  power: PowerSource;
   samplingMin: number;
   zones: NoGoZone[];
   /** Also plan the shortest trip, for step ③'s comparison. */

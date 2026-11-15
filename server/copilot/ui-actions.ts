@@ -3,7 +3,6 @@ import * as zod from "zod";
 import type { FocusTarget, LaraAction } from "../../components/copilot/lara-bridge";
 import {
   MAX_DESTINATIONS,
-  POWER_QUESTION,
   powerSourceSchema,
   ROUTE_CHECK_SENTENCE,
   routeChoiceSchema,
@@ -152,10 +151,7 @@ export function uiActionRecorder(context: LaraContext) {
         note: `There is no destination ${action.number}. The plan has ${plan.destinations.length} destinations, numbered from 1.`,
       };
     actions.push(action);
-    const note =
-      plan?.power === null
-        ? `The app selects the destination. The rover power is not chosen, so the route calculation cannot start. Reply with one short sentence that names the destination, then ask: "${POWER_QUESTION}"`
-        : `The app selects the destination and says "${ROUTE_CHECK_SENTENCE}" Your reply only names the destination. The new route plan is not ready during this reply.`;
+    const note = `The app selects the destination and says "${ROUTE_CHECK_SENTENCE}" Your reply only names the destination. The new route plan is not ready during this reply.`;
     return {
       done: true,
       note,
@@ -181,8 +177,6 @@ function missingForTrip(context: LaraContext): string | null {
   const plan = context.route_plan.value;
   const notStarted = "The simulation does not start.";
   if (!plan.mission) return `${notStarted} Ask the crew to choose a mission type.`;
-  if (plan.mission === "drive-walk" && !plan.power)
-    return `${notStarted} The rover power is not chosen. Ask: "${POWER_QUESTION}"`;
   if (plan.destination_number === null && plan.status === "no_destination")
     return `${notStarted} Ask the crew to choose a destination.`;
   if (plan.status === "ok" || plan.status === "planning") return null;

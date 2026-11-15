@@ -8,8 +8,8 @@ export type MissionType = "walking" | "drive-walk";
 export type Step = "mission" | "where" | "check" | "run";
 
 /**
- * The operator's route choices. Mission, end, power and route start empty: nothing is chosen for the
- * operator. The destination is not stored: it is the site the end is on.
+ * The operator's route choices. Mission, end and route start empty: nothing is chosen for the
+ * operator. Power starts as fission. The destination is not stored: it is the site the end is on.
  */
 export interface RoutePlanInputs {
   mission: MissionType | null;
@@ -17,7 +17,7 @@ export interface RoutePlanInputs {
   start: LngLat;
   /** Null until the operator picks a destination or sets the end on the map. */
   end: LngLat | null;
-  power: PowerSource | null;
+  power: PowerSource;
   samplingMin: number;
   zones: NoGoZone[];
   /** How many zones the operator has drawn, so each new one gets the next number. */
@@ -45,13 +45,13 @@ export type RoutePlanAction =
 // Time at the site, a planning input like the walk-leg timing's, not a NASA value.
 const DEFAULT_SAMPLING_MIN = 60;
 
-/** Nothing chosen yet: no mission, destination, power or route. Starts at the base, with no zones. */
+/** Nothing chosen yet: no mission, destination or route; fission power. Starts at the base, with no zones. */
 export function initialRoutePlan(base: LngLat): RoutePlanInputs {
   return {
     mission: null,
     start: base,
     end: null,
-    power: null,
+    power: "fission",
     samplingMin: DEFAULT_SAMPLING_MIN,
     zones: [],
     zonesDrawn: 0,
@@ -62,10 +62,8 @@ export function initialRoutePlan(base: LngLat): RoutePlanInputs {
 }
 
 /** What the operator still has to choose before a route can be planned, or null when nothing is. */
-export function missingChoice(inputs: Pick<RoutePlanInputs, "mission" | "power" | "end">) {
+export function missingChoice(inputs: Pick<RoutePlanInputs, "mission" | "end">) {
   if (!inputs.mission) return "Pick a mission type in step ① Mission.";
-  if (inputs.mission === "drive-walk" && !inputs.power)
-    return "Pick the rover's power in step ① Mission.";
   if (!inputs.end) return "Pick a destination in step ② Where.";
   return null;
 }

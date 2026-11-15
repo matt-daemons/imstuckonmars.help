@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   readLaraContext,
-  POWER_QUESTION,
   ROUTE_CHECK_SENTENCE,
   type RoutePlanContext,
 } from "../../lib/copilot/lara-context";
@@ -108,18 +107,9 @@ describe("LARA app actions", () => {
     expect(toolbox.actions).toEqual([]);
   });
 
-  it("asks for the rover power when a destination is picked before it", async () => {
-    const noPower = { ...routePlan, power: null };
-    const toolbox = laraToolbox(noMissionTool, readLaraContext({ route_plan: noPower }));
-    const receipt = (await toolbox.run("select_destination", { number: 1 })) as { note: string };
-    expect(toolbox.actions).toEqual([{ type: "select_destination", number: 1 }]);
-    expect(receipt.note).toContain(POWER_QUESTION);
-    expect(receipt.note).not.toContain(ROUTE_CHECK_SENTENCE);
-  });
-
   it("refuses to start the expedition before the trip can be planned", async () => {
     const cases: Array<[Partial<RoutePlanContext>, string]> = [
-      [{ power: null, status: "no_power" }, POWER_QUESTION],
+      [{ mission: null, status: "no_mission" }, "mission type"],
       [{ destination_number: null, status: "no_destination" }, "destination"],
       [{ status: "no_staging" }, "no_staging"],
     ];

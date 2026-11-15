@@ -95,7 +95,6 @@ export function routeToPlan(
   const out = legs.find((leg) => leg.from === "staging");
   const back = legs.find((leg) => leg.to === "staging");
   if (!out || !back) return { plan: null, reason: "The trip has no walk from the parked rover." };
-  if (!inputs.power) return { plan: null, reason: "Pick the rover's power in step ① Mission." };
   return {
     plan: {
       id: out.route_id,

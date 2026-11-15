@@ -42,8 +42,7 @@ export function LaraRouteBridge({ map }: { map: MapLibreMap | null }) {
     dispatch({ type: "setEnd", point: site.center });
     dispatch({ type: "goTo", step: "check" });
     fitPoints(map, [base, site.center]);
-    // Without a power source the route cannot be planned; LARA asks for one in her reply.
-    if (inputs.power) bridge.say(ROUTE_CHECK_SENTENCE);
+    bridge.say(ROUTE_CHECK_SENTENCE);
   });
 
   useLaraAction("choose_route", ({ route }) => chooseRoute(dispatch, route));

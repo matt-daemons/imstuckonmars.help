@@ -102,15 +102,12 @@ describe("noRouteText", () => {
   const walk = { plan: null, loadFailed: false };
   const journey = { plan: null, driveFailed: false, siteFailed: false };
   const end: LngLat = [-176.33383, 44.41589];
-  const walking = { mission: "walking", power: null, end } as const;
-  const driveWalk = { mission: "drive-walk", power: "fission", end } as const;
+  const walking = { mission: "walking", end } as const;
+  const driveWalk = { mission: "drive-walk", end } as const;
 
   it("says what is not chosen yet", () => {
-    expect(noRouteText({ mission: null, power: null, end: null }, walk, journey, false)).toBe(
+    expect(noRouteText({ mission: null, end: null }, walk, journey, false)).toBe(
       "No mission selected",
-    );
-    expect(noRouteText({ ...driveWalk, power: null }, walk, journey, true)).toBe(
-      "No rover power selected",
     );
     expect(noRouteText({ ...walking, end: null }, walk, journey, false)).toBe(
       "No destination selected",

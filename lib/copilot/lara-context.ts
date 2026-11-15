@@ -16,8 +16,6 @@ export const MAX_ASSUMPTIONS = 16;
 
 /** What the app says itself when a destination is selected, before the model's answer. */
 export const ROUTE_CHECK_SENTENCE = "Starting route calculation and safety analysis.";
-/** What LARA asks when a rover trip has a destination but no power source yet. */
-export const POWER_QUESTION = "Which power source should the rover use, solar or fission?";
 
 const text = zod.string().max(MAX_TEXT);
 const amount = zod.number().finite();
@@ -87,15 +85,14 @@ export const routePlanContextSchema = zod
     step: zod.enum(["mission", "where", "check", "run"]),
     /** Null until the operator or LARA picks the route the expedition follows. */
     route_choice: routeChoiceSchema.nullable(),
-    /** The rover's power source; null until the operator or LARA picks one. */
-    power: powerSourceSchema.nullable(),
+    /** The rover's power source; fission unless the operator or LARA picks solar. */
+    power: powerSourceSchema,
     shortest_on_map: zod.boolean(),
     destinations: zod.array(destinationSchema).max(MAX_DESTINATIONS),
     /** The destination's number, or null when the end is a point set on the map. */
     destination_number: zod.number().int().min(1).max(MAX_DESTINATIONS).nullable(),
     status: zod.enum([
       "no_mission",
-      "no_power",
       "planning",
       "ok",
       "no_destination",

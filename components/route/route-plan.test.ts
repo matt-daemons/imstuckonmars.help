@@ -19,12 +19,12 @@ const zone: NoGoZone = { id: "zone-1", name: "No-go zone 1", ring };
 const initial = initialRoutePlan(base);
 
 describe("initialRoutePlan", () => {
-  it("starts at the base with no mission, destination, power or route chosen", () => {
+  it("starts at the base with fission power and no mission, destination or route chosen", () => {
     expect(initial).toEqual({
       mission: null,
       start: base,
       end: null,
-      power: null,
+      power: "fission",
       samplingMin: 60,
       zones: [],
       zonesDrawn: 0,
@@ -38,16 +38,13 @@ describe("initialRoutePlan", () => {
 describe("missingChoice", () => {
   it("names the first choice still to make, in step order", () => {
     expect(missingChoice(initial)).toMatch(/mission type/);
-    expect(missingChoice({ mission: "drive-walk", power: null, end: site })).toMatch(/power/);
-    expect(missingChoice({ mission: "drive-walk", power: "solar", end: null })).toMatch(
-      /destination/,
-    );
-    expect(missingChoice({ mission: "walking", power: null, end: null })).toMatch(/destination/);
+    expect(missingChoice({ mission: "drive-walk", end: null })).toMatch(/destination/);
+    expect(missingChoice({ mission: "walking", end: null })).toMatch(/destination/);
   });
 
   it("is null once a route can be planned", () => {
-    expect(missingChoice({ mission: "walking", power: null, end: target })).toBeNull();
-    expect(missingChoice({ mission: "drive-walk", power: "fission", end: site })).toBeNull();
+    expect(missingChoice({ mission: "walking", end: target })).toBeNull();
+    expect(missingChoice({ mission: "drive-walk", end: site })).toBeNull();
   });
 });
 

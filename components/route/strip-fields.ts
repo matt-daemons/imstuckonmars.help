@@ -105,13 +105,12 @@ export function stripFields(
 
 /** What the strip says without a verdict: the terrain failed, a plan is on its way, or no route. */
 export function noRouteText(
-  inputs: Pick<RoutePlanInputs, "mission" | "power" | "end">,
+  inputs: Pick<RoutePlanInputs, "mission" | "end">,
   walk: { plan: object | null; loadFailed: boolean },
   journey: { plan: object | null; driveFailed: boolean; siteFailed: boolean },
   hasDestination: boolean,
 ): string {
   if (!inputs.mission) return "No mission selected";
-  if (inputs.mission === "drive-walk" && !inputs.power) return "No rover power selected";
   if (!inputs.end) return "No destination selected";
   if (inputs.mission === "walking") {
     if (walk.loadFailed) return "Terrain unavailable";

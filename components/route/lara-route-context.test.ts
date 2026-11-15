@@ -175,8 +175,6 @@ describe("routePlanContext", () => {
     const context = routePlanContext(empty, conditions);
     expect(context).toMatchObject({ mission: null, route_choice: null, status: "no_mission" });
     expect(routePlanContextSchema.parse(context)).toEqual(context);
-    const noPower = view({ inputs: { ...view().inputs, power: null } });
-    expect(routePlanContext(noPower, conditions).status).toBe("no_power");
   });
 });
 

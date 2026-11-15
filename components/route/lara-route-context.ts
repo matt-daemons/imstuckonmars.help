@@ -72,7 +72,6 @@ export function routePlanContext(plan: RoutePlanView, conditions: Conditions): R
 
 function planStatus({ inputs, journey, walk, destination }: RoutePlanView) {
   if (!inputs.mission) return "no_mission";
-  if (inputs.mission === "drive-walk" && !inputs.power) return "no_power";
   if (!inputs.end) return "no_destination";
   if (inputs.mission === "walking") {
     if (walk.loadFailed) return "terrain_failed";
