@@ -74,3 +74,23 @@ export function returnRequest(
     },
   };
 }
+
+// The reasons lib/mission/engine.ts assessReturn can give, in words a crew member reads at a glance.
+const REASON_TEXT: Record<string, string> = {
+  stale_route_or_different_base: "the route is out of date or starts at another base",
+  source_unavailable: "LARA's data source is unavailable",
+  no_path: "the planner found no path",
+  unknown_data: "the planner is missing data",
+  simulated_route_blocked: "a simulated event blocked the route",
+  return_legs_missing: "the route has no legs",
+  eva_time_limit_unknown: "the EVA time limit is not set",
+  portable_discharge_power_limit: "the suit battery cannot supply that much power",
+  future_scenario_events_not_projected:
+    "a scenario event is scheduled during the walk back, and LARA does not project it",
+  prior_unmet_resource_demand: "the mission already ran short of oxygen or energy",
+};
+
+/** A backend reason code in plain words; an unknown code is shown with spaces instead of underscores. */
+export function reasonText(code: string): string {
+  return REASON_TEXT[code] ?? code.replaceAll("_", " ");
+}

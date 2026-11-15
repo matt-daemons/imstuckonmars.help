@@ -4,7 +4,7 @@
  * CLAUDE.md §10 References. Caveats are copied from each layer's provenance file or pipeline notes.
  */
 
-import { ROVER_RULES } from "../flight-rules/rover-rules";
+import { GROUND, ROVER_RULES } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
 import { BOULDER_CLEARANCE_M, PARKING_SQUARE_M, SITE_CELL_M } from "./site-grid";
 
@@ -226,14 +226,15 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         title: "Route planner · walking and drive + walk",
         kind: "derived",
         credit:
-          "LARA routing (A*) on NASA/USGS MOLA terrain and NASA/JPL/University of Arizona HiRISE slope",
-        detail: `Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Drive + walk: MOLA 463 m strip, 42.5–48.5°N, 171–196°E, for the drive; HiRISE 1 m slope max-pooled to ${SITE_CELL_M} m cells around the site, and the site's boulders, for the walk`,
+          "LARA routing (A*) on NASA/USGS MOLA terrain, NASA/JPL-Caltech/ASU/USGS THEMIS thermal inertia and NASA/JPL/University of Arizona HiRISE slope",
+        detail: `Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Drive + walk: MOLA 463 m strip, 42.5–48.5°N, 171–196°E, with THEMIS thermal inertia on the same cells, for the drive; HiRISE 1 m slope max-pooled to ${SITE_CELL_M} m cells around the site, and the site's boulders, for the walk`,
         use: "Mission sidebar: walking and drive + walk routes, the route check, the rover trip and the suit time.",
         caveats: [
           "The 200 m and 463 m terrain cannot see rocks, boulders or small craters. A route is not a hazard clearance.",
           `Walking missions use Tobler's hiking model, an Earth model, not a suited Mars walk. Walks at a site use the flight-rule pace of ${FLIGHT_RULES.walk_back.walking_km_per_hour} km/h instead, as the walk-leg timing does.`,
           "On 463 m terrain slopes read about 6° low, so driving uses lowered slope limits (5° / 10°), our assumption.",
           "Rover numbers come from NASA design studies; motor efficiency and the rough-ground factor are our assumptions. The rover rules are a proposal, not NASA flight rules.",
+          `Soft ground: on loose dust (thermal inertia below ${GROUND.loose_dust.below_thermal_inertia}) the drive uses rolling resistance ${GROUND.loose_dust.rolling_resistance.toFixed(2)}, double the study's ${GROUND.sand_crust.rolling_resistance}, our assumption: no rolling resistance has been measured on Mars. Thermal inertia is ±20 %, describes only the top few centimetres, averages 100 m pixels and covers about 57 % of the area; cells without data keep ${GROUND.no_data.rolling_resistance}, which is unknown ground, not firm ground.`,
           `The walk takes each ${SITE_CELL_M} m cell's steepest 1 m slope, so steep ground is never under-counted. The 1 m slope still misses rocks smaller than a metre.`,
           `Walk boulders are the automated HiRISE shadow detections near each site. A sample review confirmed none as rocks (most are pits or trough shading), so walling every one off, with ${BOULDER_CLEARANCE_M} m clearance (our assumption), errs on the side of caution. Coverage differs by site: the ridges site has one.`,
           `The staging point is our rule: the rover parks where a ${PARKING_SQUARE_M} m square is no steeper than ${ROVER_RULES.slope.caution_above_degrees}° and clear of boulders, on the habitat side if it can, within the ${FLIGHT_RULES.walk_back.max_distance_km} km walk-back limit.`,
@@ -243,6 +244,10 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "Chappell, Hoffman & Bekdash (2022). Mars Architecture Team paper on surface power and operations, incl. the pressurized rover (IEEE). NASA NTRS 20210022250.",
           "Drake, B. G. (ed.) (2009). Human Exploration of Mars Design Reference Architecture 5.0, NASA/SP-2009-566, and Addendum.",
           "Rucker, M. (2015). Integrated Surface Power Strategy for Mars. NASA NTRS 20150006958.",
+          "Fergason, R. L., Christensen, P. R. & Kieffer, H. H. (2006). High-resolution thermal inertia derived from THEMIS: thermal model and applications. JGR 111, E12004.",
+          "Costes, N. C., Farmer, J. E. & George, E. B. (1972). Mobility Performance of the Lunar Roving Vehicle: Terrestrial Studies – Apollo 15 Results. NASA TR R-401.",
+          "Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. JGR 115, E00F03.",
+          "Arvidson, R. E. et al. (2017). Mars Science Laboratory Curiosity Rover Megaripple Crossings up to Sol 710 in Gale Crater. Journal of Field Robotics 34(3), 495–518.",
         ],
         links: [
           {
@@ -376,7 +381,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         kind: "derived",
         credit: "NASA/JPL-Caltech/Arizona State University/USGS",
         detail: "THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px",
-        use: "Loose dust and sand versus firm or rocky ground at each site.",
+        use: "Loose dust and sand versus firm or rocky ground at each site, and the rover's rolling resistance along the drive.",
         caveats: [
           "THEMIS covers about 57 % of the area. Gaps are unknown, not safe.",
           "About 20 % accurate, and describes only the top few centimetres.",

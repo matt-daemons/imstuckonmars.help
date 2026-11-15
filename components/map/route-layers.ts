@@ -29,6 +29,7 @@ export const SOURCES = [
   "route-ends",
   "journey",
   "boulders",
+  "shortest-route",
 ] as const;
 
 // Where each mode's return leg ends: the drive back at the base, the walk back at the parked
@@ -94,6 +95,17 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
     journeyLeg("walk", token("--route-walk"), false),
     journeyLeg("walk", token("--route-walk"), true),
   ];
+  // The shortest route, shown only to compare: thin, dashed and grey, so it never reads as the plan.
+  const shortest: LineLayerSpecification = {
+    id: "shortest-route",
+    type: "line",
+    source: "shortest-route",
+    paint: {
+      "line-color": token("--muted-foreground"),
+      "line-width": 1.5,
+      "line-dasharray": [2, 2],
+    },
+  };
   return [
     {
       id: "no-go-zones",
@@ -117,6 +129,9 @@ export function routeLayers(token: (name: string) => string): LayerSpecification
         "circle-stroke-color": background,
       },
     },
+    // Under every planned line, so where the two routes agree the plan stays on top.
+    casing(shortest, 3.5),
+    shortest,
     // The two legs often share a path, so both casings go under both legs; otherwise the
     // return leg's casing would hide the outbound line.
     casing(outbound, 6),

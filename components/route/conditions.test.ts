@@ -156,6 +156,7 @@ describe("tripWithStorms", () => {
     max_slope: 3,
     straight_km: 55,
     power: "fission",
+    ground_km: { loose_dust: 0, sand_crust: 0, firm: 0, no_data: 120 },
   };
   // Only the drive summary and the walk route are read, so the rest of the plan is left out.
   const plan = { drive: { summary: drive }, walk: { route } } as unknown as DriveWalkPlan;

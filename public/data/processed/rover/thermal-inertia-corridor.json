@@ -1,0 +1,13 @@
+{
+  "width": 3200,
+  "height": 768,
+  "west": 171,
+  "north": 48.5,
+  "degreesPerPixel": 0.0078125,
+  "nodata": -9999,
+  "coverage_percent": 47.4,
+  "units": "J m^-2 K^-1 s^-1/2",
+  "source": "THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px (USGS Astrogeology / ASU; Fergason et al. 2006)",
+  "attribution": "NASA/JPL-Caltech/Arizona State University/USGS",
+  "note": "Int16 thermal inertia, median of the THEMIS pixels in each cell of mola-corridor.bin (same grid). ±20 %, top few cm only; nodata is unknown ground, not firm ground."
+}

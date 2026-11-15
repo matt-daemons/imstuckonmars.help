@@ -1,3 +1,4 @@
+import type { DriveGrid } from "./driving";
 import { mapAsset } from "./map-data";
 import { type EquirectMeta, gridFromEquirect, gridFromTiles, type RouteGrid } from "./route-grid";
 
@@ -30,17 +31,29 @@ async function loadTilePixels(x: number, y: number, signal?: AbortSignal) {
 }
 
 const DRIVE_DATA = "/data/processed/rover/mola-corridor";
+// THEMIS thermal inertia on the same cells as the strip (pnpm pipe:thermal-inertia).
+const DRIVE_GROUND = "/data/processed/rover/thermal-inertia-corridor.bin";
 
-/** Fetches the 463 m MOLA driving strip (pnpm pipe:mola-corridor) and builds its grid. */
-export async function loadDriveGrid(signal?: AbortSignal): Promise<RouteGrid> {
-  const [metaResponse, heightsResponse] = await Promise.all([
+/** Fetches the 463 m MOLA driving strip (pnpm pipe:mola-corridor) and its ground, and builds its grid. */
+export async function loadDriveGrid(signal?: AbortSignal): Promise<DriveGrid> {
+  const [metaResponse, heightsResponse, groundResponse] = await Promise.all([
     fetch(`${DRIVE_DATA}.json`, { signal }),
     fetch(`${DRIVE_DATA}.bin`, { signal }),
+    fetch(DRIVE_GROUND, { signal }),
   ]);
-  if (!metaResponse.ok || !heightsResponse.ok) {
-    throw new Error(`Driving terrain: HTTP ${metaResponse.status} / ${heightsResponse.status}`);
+  if (!metaResponse.ok || !heightsResponse.ok || !groundResponse.ok) {
+    throw new Error(
+      `Driving terrain: HTTP ${metaResponse.status} / ${heightsResponse.status} / ${groundResponse.status}`,
+    );
   }
   const meta = (await metaResponse.json()) as EquirectMeta;
-  // The file is Int16 little-endian, which matches every browser's byte order.
-  return gridFromEquirect(meta, new Int16Array(await heightsResponse.arrayBuffer()));
+  // Both files are Int16 little-endian, which matches every browser's byte order.
+  const grid = gridFromEquirect(meta, new Int16Array(await heightsResponse.arrayBuffer()));
+  const thermalInertia = new Int16Array(await groundResponse.arrayBuffer());
+  if (thermalInertia.length !== grid.width * grid.height) {
+    throw new Error(
+      "Driving ground does not match the terrain grid; rerun pnpm pipe:thermal-inertia",
+    );
+  }
+  return { ...grid, thermalInertia };
 }

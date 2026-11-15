@@ -4,7 +4,7 @@ import type { Plan } from "@/components/map/route-layers";
 import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import { parseRoute } from "@/lib/mission/validation";
 
-import { plannedReturn, returnCheckKey, returnRequest } from "./return-route";
+import { plannedReturn, reasonText, returnCheckKey, returnRequest } from "./return-route";
 
 const path = (time_min: number) => ({ status: "ok", time_min }) as Plan["back"];
 
@@ -106,5 +106,20 @@ describe("returnCheckKey", () => {
   it("ignores the clock while paused, but not a new revision", () => {
     expect(key(false, 0)).toBe(key(false, 900));
     expect(key(false, 0)).not.toBe(key(false, 0, 4));
+  });
+});
+
+describe("reasonText", () => {
+  it("says the backend's reason codes in plain words", () => {
+    expect(reasonText("future_scenario_events_not_projected")).toBe(
+      "a scenario event is scheduled during the walk back, and LARA does not project it",
+    );
+    expect(reasonText("prior_unmet_resource_demand")).toBe(
+      "the mission already ran short of oxygen or energy",
+    );
+  });
+
+  it("falls back to the code with spaces for a reason it does not know", () => {
+    expect(reasonText("some_new_reason")).toBe("some new reason");
   });
 });
