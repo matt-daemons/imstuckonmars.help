@@ -209,6 +209,7 @@ export function LaraPanel() {
       )}
       <p className="text-[11px] text-muted-foreground">
         Resources are simulated. MOXIE, MEDA, and RAD are archived NASA data, not live measurements.
+        LARA&apos;s answers are AI-generated. NASA has not reviewed them.
       </p>
 
       <ol ref={log} className="min-h-0 flex-1 space-y-2 overflow-y-auto" aria-live="polite">

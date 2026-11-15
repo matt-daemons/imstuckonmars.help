@@ -441,6 +441,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "LARA's voice is AI-generated speech (ElevenLabs).",
           "Explains results from LARA's tools. It does not decide.",
           "GO, CAUTION and NO-GO come from fixed flight-rule thresholds, never from the model.",
+          "NASA has not reviewed or endorsed LARA or its answers. Answers are attributed to LARA, not NASA.",
         ],
       },
       {
