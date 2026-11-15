@@ -32,7 +32,11 @@ export interface StableLayer {
   units?: string;
   opacity?: number;
   visible?: boolean;
+  /** Drawn and switched by the Scene panel (several map layers), so the layer panel only lists it. */
+  sceneControl?: boolean;
   source: LayerSource;
+  /** Short uncertainty notes shown with the layer. */
+  caveats?: string[];
 }
 
 export interface LayerManifest {

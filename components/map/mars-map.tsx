@@ -14,6 +14,7 @@ import {
   type SiteProps,
   addSites,
   addTerrain,
+  addThermalInertia,
   habitatLayer,
   setMarsSky,
 } from "@/components/map/scene";
@@ -199,6 +200,8 @@ export function MarsMap({ children }: { children?: ReactNode }) {
             });
           }
         }
+        // Above the manifest imagery so the overlay isn't hidden under CTX near the habitat.
+        addThermalInertia(m);
         m.addLayer(habitatLayer(maplibregl, HABITAT));
         setLoaded(m);
       });

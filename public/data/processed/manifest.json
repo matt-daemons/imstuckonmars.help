@@ -77,6 +77,47 @@
       }
     },
     {
+      "id": "thermal-inertia",
+      "title": "Thermal inertia (THEMIS)",
+      "kind": "raster",
+      "path": "thermal-inertia-sites.json",
+      "minzoom": 5,
+      "maxzoom": 11,
+      "units": "J m^-2 K^-1 s^-1/2",
+      "visible": false,
+      "sceneControl": true,
+      "source": {
+        "name": "Mars Odyssey THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px · NASA/JPL-Caltech/Arizona State University/USGS",
+        "url": "https://astrogeology.usgs.gov/search/map/themis_thermal_inertia_mosaic_quantitative_30n180e_100mpp"
+      },
+      "caveats": [
+        "Incomplete coverage: THEMIS has no data for part of the area (see coverage).",
+        "Thermal inertia is ~20 % accurate and describes only the top few centimetres of the surface.",
+        "100 m pixels average over rocks, sand and dust; classes are indicative, not a trafficability guarantee.",
+        "Not ground-truthed: no rover has operated in Arcadia Planitia."
+      ]
+    },
+    {
+      "id": "roughness",
+      "title": "Roughness (HiRISE DTM)",
+      "kind": "raster",
+      "path": "roughness-sites.json",
+      "minzoom": 11,
+      "maxzoom": 16,
+      "units": "m",
+      "visible": false,
+      "sceneControl": true,
+      "source": {
+        "name": "Derived from MRO HiRISE DTMs · NASA/JPL/University of Arizona (derived)",
+        "url": "https://www.uahirise.org/dtm/"
+      },
+      "caveats": [
+        "Class breaks (0.25 / 0.5 / 1 m) are a Role B assumption, not team-agreed; NASA publishes no suited-walking roughness limit.",
+        "Mostly DTM noise (vertical precision ~tens of cm, Kirk et al. 2008): only crater rims and ridge flanks stand out.",
+        "Bumps narrower than ~2 m and boulders are not resolved; see the boulder review for rocks."
+      ]
+    },
+    {
       "id": "stops",
       "title": "Science stops",
       "kind": "vector",

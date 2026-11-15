@@ -4,6 +4,13 @@ import * as THREE from "three";
 import { MARS_HORIZON_COLOR, MARS_SKY_COLOR, skyBackground } from "@/lib/mars/sky";
 
 import type { LngLat } from "@/lib/mars/types";
+import {
+  ROUGHNESS_ATTRIBUTION,
+  THERMAL_INERTIA_ATTRIBUTION,
+  THERMAL_INERTIA_BOUNDS,
+  roughnessTiles,
+  thermalInertiaTiles,
+} from "@/lib/mars/ground-layers";
 import { GLOBAL_COLOR_SOURCE, SITE_DATA_ROOT, mapAsset } from "@/lib/mars/map-data";
 import {
   LOCAL_TERRAIN_BOUNDS,
@@ -154,6 +161,68 @@ export function addSites(m: MapLibreMap, sites: SiteProps[], beforeId?: string) 
       },
       beforeId,
     );
+    // Roughness classes (pipelines/stable/roughness.ts); smooth cells are transparent in the tiles.
+    m.addSource(`roughness-${site.id}`, {
+      type: "raster",
+      tiles: roughnessTiles(location.origin, site.id),
+      tileSize: 256,
+      minzoom: 11,
+      maxzoom: 16,
+      bounds: site.bbox,
+      attribution: ROUGHNESS_ATTRIBUTION,
+    });
+    m.addLayer(
+      {
+        id: `roughness-${site.id}`,
+        type: "raster",
+        source: `roughness-${site.id}`,
+        minzoom: 10,
+        layout: { visibility: "none" },
+        paint: { "raster-opacity": 0.8 },
+      },
+      beforeId,
+    );
+  }
+}
+
+export function setRoughnessVisible(m: MapLibreMap, sites: { id: string }[], on: boolean) {
+  for (const s of sites) {
+    const id = `roughness-${s.id}`;
+    if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
+  }
+}
+
+const thermalInertiaLayers = THERMAL_INERTIA_BOUNDS.map((_, i) => `thermal-inertia-${i}`);
+
+/** THEMIS thermal inertia, z5–11; no-data pixels are transparent in the tiles. Two sources split at ±180. */
+export function addThermalInertia(m: MapLibreMap, beforeId?: string) {
+  THERMAL_INERTIA_BOUNDS.forEach((bounds, i) => {
+    const id = thermalInertiaLayers[i];
+    m.addSource(id, {
+      type: "raster",
+      tiles: thermalInertiaTiles(location.origin),
+      tileSize: 256,
+      minzoom: 5,
+      maxzoom: 11,
+      bounds,
+      attribution: THERMAL_INERTIA_ATTRIBUTION,
+    });
+    m.addLayer(
+      {
+        id,
+        type: "raster",
+        source: id,
+        layout: { visibility: "none" },
+        paint: { "raster-opacity": 0.7 },
+      },
+      beforeId,
+    );
+  });
+}
+
+export function setThermalInertiaVisible(m: MapLibreMap, on: boolean) {
+  for (const id of thermalInertiaLayers) {
+    if (m.getLayer(id)) m.setLayoutProperty(id, "visibility", on ? "visible" : "none");
   }
 }
 

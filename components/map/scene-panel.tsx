@@ -16,6 +16,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import type { LngLat } from "@/lib/mars/types";
 import { DustPlayback } from "./dust-playback";
+import { GroundOverlays } from "./ground-overlays";
 
 // coss Slider reports number | number[]; these sliders are single-thumb.
 const single = (set: (v: number) => void) => (v: number | readonly number[]) =>
@@ -134,6 +135,8 @@ export function ScenePanelBody({ map, habitat, sites }: ScenePanelProps) {
               />
             </label>
           </div>
+
+          <GroundOverlays map={map} sites={sites} />
 
           <div className="space-y-2">
             <p>
