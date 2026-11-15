@@ -141,6 +141,11 @@
 .hb-saved-report > div {
   min-width: 0;
 }
+.hb-report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
 .hb-saved-report h3 {
   font: 500 18px var(--font-heading);
   margin-bottom: 4px;

@@ -10,6 +10,13 @@ Click the **Mission dashboard** button on `/` to open the console over the exist
 
 **Simulation reports** reads immutable browser-local copies saved when a run completes or is ended. It retains the latest 20 reports independently of the six-hour mission session and subsequent plans. It does not recompute simulations, require a live session, or query NASA observations. Search by date, outcome or report ID; open the shared read-only report viewer to inspect and print. Storage/fetch failures are explicit, with retry. These reports are not synced to another browser or device and are removed when site data is cleared. The NASA experiment log remains separate and unchanged. Keyboard shortcuts 1/2/3 select Overview, Experiments and Reports outside form controls.
 
+**Remove report** deletes one saved browser copy after confirmation identifies its
+save time and report ID. Cancel leaves it intact. The list updates after the
+IndexedDB transaction completes; failures stay in the confirmation with retry.
+Removal does not change the server simulation or other reports. A small local
+removal marker prevents reloading the same finished mission from automatically
+saving that report again. The local-data reset clears those markers too.
+
 The hidden reset shortcut is **↑ ↑ ↓ ↓**, with no more than 1.5 seconds between keys.
 It opens a confirmation before deleting this browser's saved reports, training
 progress, current-tab mission session and sidebar preference, then reloading.

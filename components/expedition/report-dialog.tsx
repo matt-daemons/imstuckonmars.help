@@ -217,6 +217,8 @@ export function ReportDialog() {
           <div className="report-save-status" role="status">
             {reportSave === "saved" ? (
               "Saved in this browser. Reopen from Mission dashboard → Simulation reports."
+            ) : reportSave === "removed" ? (
+              "The saved browser copy was removed. This current-session report is still available to print."
             ) : reportSave === "error" ? (
               <>
                 Report not saved: {reportSaveError}. Keep this run until saving succeeds.{" "}
