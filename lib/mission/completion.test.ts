@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 import type { Snapshot } from "./client";
-import { reportKey, simulationFinished } from "./completion";
+import {
+  completionAlreadyShown,
+  parseShownCompletion,
+  reportKey,
+  shownCompletion,
+  simulationFinished,
+} from "./completion";
 
 function snapshot(mode: "playing" | "paused" | "ended", time: number, route = true) {
   return {
@@ -26,5 +32,33 @@ describe("simulation completion", () => {
   it("identifies a completed revision separately from a rerun of the same route", () => {
     expect(reportKey(snapshot("ended", 100))).toBe("mission:2");
     expect(reportKey({ ...snapshot("ended", 100), revision: 3 })).not.toBe("mission:2");
+  });
+});
+
+describe("report shown once per completed run", () => {
+  const done = snapshot("ended", 3600);
+  it("shows the first completion", () => {
+    expect(completionAlreadyShown(null, done)).toBe(false);
+  });
+  it("does not show it again after a reload or a later command on the same run", () => {
+    const shown = parseShownCompletion(JSON.stringify(shownCompletion(done)));
+    expect(completionAlreadyShown(shown, done)).toBe(true);
+    expect(completionAlreadyShown(shown, { ...done, revision: 5 })).toBe(true);
+  });
+  it("shows another mission, route or an older record's successor", () => {
+    const shown = shownCompletion(done);
+    expect(completionAlreadyShown(shown, { ...done, mission_id: "other" })).toBe(false);
+    expect(
+      completionAlreadyShown(shown, {
+        ...done,
+        config: { ...done.config, route: { id: "other" } },
+      } as Snapshot),
+    ).toBe(false);
+    expect(completionAlreadyShown({ ...shown, revision: 9 }, done)).toBe(false);
+  });
+  it("ignores malformed storage", () => {
+    expect(parseShownCompletion("{")).toBeNull();
+    expect(parseShownCompletion(null)).toBeNull();
+    expect(parseShownCompletion('{"mission_id":1}')).toBeNull();
   });
 });

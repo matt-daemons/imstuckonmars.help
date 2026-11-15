@@ -27,6 +27,10 @@ import {
 
 export function reportOutcome(saved: SavedReport) {
   const facts = summarize(saved.report);
+  if (saved.report.ended_by_operator) return "Ended by operator";
+  if (saved.report.status !== "ok") return "Outcome unknown";
+  if (facts.powerUnmet || facts.oxygenUnmet || facts.timeExceeded)
+    return facts.returned ? "Returned · suit constraint violated" : "Suit constraint violated";
   return facts.returned
     ? facts.breached
       ? "Returned · reserve breached"
