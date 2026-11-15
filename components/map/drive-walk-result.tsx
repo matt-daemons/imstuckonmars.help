@@ -145,8 +145,10 @@ export function DriveWalkAssumptions({
         {slope.no_go_above_degrees}° is impassable ({slope.applies_to} limit, assumed for Mars).
       </p>
       <p>
-        Boulders: automated HiRISE detections near the site, each walled off with{" "}
-        {BOULDER_CLEARANCE_M} m clearance (our assumption). Coverage differs by site.
+        Boulders: automated HiRISE shadow detections near the site, not checked by hand. A hand
+        review of a sample found mostly pits and trough shadows, so avoiding them is cautious. Each
+        is walled off with {BOULDER_CLEARANCE_M} m clearance (our assumption). Coverage differs by
+        site.
       </p>
       <p>
         Staging point (our rule): the rover parks where a {PARKING_SQUARE_M} m square is no steeper
