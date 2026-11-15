@@ -40,7 +40,12 @@ export function WhereStep({
   // A walk has one preset end, the science stop; a drive + walk ends at one of the sites.
   const choices =
     mission === "drive-walk"
-      ? destinations.map((site) => ({ id: site.id, title: siteLabel(site), center: site.center }))
+      ? destinations.map((site) => ({
+          id: site.id,
+          // The sidebar header already says Arcadia, so the titles fit one line.
+          title: siteLabel(site).replace(" in Arcadia Planitia", ""),
+          center: site.center,
+        }))
       : [{ id: "science-stop", title: "Science stop (placeholder)", center: target }];
   const chosen = end ? choices.find((choice) => samePoint(choice.center, end)) : undefined;
 
@@ -65,8 +70,10 @@ export function WhereStep({
         >
           {choices.map((choice) => (
             <ChoiceCard key={choice.id} value={choice.id} title={choice.title}>
-              {formatNumber(marsDistanceM(base, choice.center) / 1000, 1)} km from the habitat in a
-              straight line
+              <span className="font-mono tabular-nums">
+                {formatNumber(marsDistanceM(base, choice.center) / 1000, 1)} km
+              </span>{" "}
+              from the habitat in a straight line
             </ChoiceCard>
           ))}
         </RadioGroup>
@@ -96,7 +103,7 @@ function EditRoute({ placement }: { placement: Placement }) {
   function choose(next: PlaceMode | null) {
     // Below md the sidebar is a sheet over the map, so it gets out of the way for the click.
     if (next) setOpenMobile(false);
-    placement.choose(next);
+    placement.arm(next);
   }
 
   return (

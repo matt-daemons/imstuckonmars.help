@@ -1,6 +1,12 @@
 "use client";
 
-import { CircleXIcon, InfoIcon, SirenIcon, TriangleAlertIcon } from "lucide-react";
+import {
+  ChevronRightIcon,
+  CircleXIcon,
+  InfoIcon,
+  SirenIcon,
+  TriangleAlertIcon,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { useExpedition } from "@/components/expedition/expedition-provider";
@@ -94,13 +100,17 @@ export function VerdictStrip() {
     if (isMobile) setOpenMobile(true);
     else setOpen(true);
     dispatch({ type: "goTo", step: route ? "run" : "check" });
+    // Step 03 mounts on the next render, so its verdict is focused a frame later.
+    if (!route) requestAnimationFrame(focusCheckStep);
   }
 
   return (
     // While a drill runs, a dashed frame and the DRILL tag keep it from passing for real data.
+    // Below md it spans the map right of the sidebar trigger and wraps, so the margin and the time
+    // to shelter are never cut off; with no expedition running, the mission half gives way there.
     <div
       className={cn(
-        "map-verdict-strip absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md",
+        "map-verdict-strip group absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md transition-colors duration-150 ease-out hover:border-primary motion-reduce:transition-none max-md:right-4 max-md:left-16 max-md:max-w-none max-md:translate-x-0 max-md:whitespace-normal",
         drilling && "border-2 border-dashed border-info",
       )}
     >
@@ -117,15 +127,22 @@ export function VerdictStrip() {
       >
         {verdict ? (
           <>
-            <Badge variant={verdict.status.variant}>
+            {/* The status is what the strip is for, so it outweighs the fields and the DRILL tag. */}
+            <Badge
+              size="lg"
+              variant={verdict.status.variant}
+              className="font-semibold sm:h-6.5 sm:text-base"
+            >
               <verdict.status.Icon aria-hidden />
               {verdict.status.label}
             </Badge>{" "}
-            <span className="truncate">
+            <span className="md:truncate">
               {verdict.fields.map(({ label, value }, index) => (
                 <span key={label}>
-                  {index > 0 && " · "}
-                  {label} <span className="font-mono">{value}</span>
+                  {/* When the strip wraps on a phone, the no-break space keeps the dot off the
+                      start of a line, and nowrap keeps each value with its unit. */}
+                  {index > 0 && "\u00a0· "}
+                  {label} <span className="font-mono whitespace-nowrap">{value}</span>
                 </span>
               ))}
             </span>
@@ -137,7 +154,7 @@ export function VerdictStrip() {
       <p
         className={cn(
           "flex min-w-0 items-center gap-1.5 border-l pl-3",
-          clock && "max-sm:border-l-0 max-sm:pl-0",
+          clock ? "max-sm:border-l-0 max-sm:pl-0" : "max-md:hidden",
         )}
       >
         {clock ? (
@@ -162,17 +179,19 @@ export function VerdictStrip() {
           <span className="truncate text-muted-foreground">{missionState}</span>
         )}
       </p>
-      {/* Covers the whole strip, so a click anywhere opens step 03; the title holds the full text. */}
+      <ChevronRightIcon
+        aria-hidden
+        className="size-4 shrink-0 text-muted-foreground transition-colors duration-150 ease-out group-hover:text-foreground motion-reduce:transition-none"
+      />
+      {/* Covers the whole strip, so a click anywhere opens step 03; the title holds the full text.
+          The name starts with the visible verdict, so "click CAUTION" works by voice. */}
       <button
         type="button"
         title={`${verdictText} · ${laraText}`}
+        aria-label={`${verdictText}. ${route ? "Open the running expedition" : "Open the route check"}`}
         onClick={openCheck}
         className="absolute inset-0 cursor-pointer outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      >
-        <span className="sr-only">
-          {route ? "Open the running expedition" : "Open the route check"}
-        </span>
-      </button>
+      />
     </div>
   );
 }
@@ -185,6 +204,16 @@ function AlertSummary({ level, name }: { level: keyof typeof ALERT_ICON; name: s
       <span className="max-w-64 truncate">{name}</span>
     </span>
   );
+}
+
+/**
+ * Focuses step 03's panel (the sidebar marks it with data-step) and scrolls it into view. The
+ * verdict is its first block, so reading starts at the reasons for the status in the strip.
+ */
+function focusCheckStep() {
+  const panel = document.querySelector<HTMLElement>('[role="tabpanel"][data-step="check"]');
+  panel?.focus({ preventScroll: true });
+  panel?.scrollIntoView({ block: "start" });
 }
 
 /** The walk's verdict, or null while there is no walk. */
