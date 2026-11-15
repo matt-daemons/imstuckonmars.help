@@ -1,0 +1,129 @@
+{
+  "sites": {
+    "DTEEC_033225_2250_033146_2250_A01": {
+      "hirise_id": "ESP_033225_2250",
+      "radius_m": 500,
+      "area_m2": 785396,
+      "sun": {
+        "azimuthFromNorth": 226.97,
+        "incidence": 47.491054,
+        "label": "https://hirise.lpl.arizona.edu/PDS/RDR/ESP/ORB_033200_033299/ESP_033225_2250/ESP_033225_2250_RED.LBL"
+      },
+      "candidates_ge_report_m": 183,
+      "candidates_ge_complete_m": 181,
+      "shadows_rejected": 2596,
+      "review": {
+        "candidates": 181,
+        "sampled": 36,
+        "confirmed": 0,
+        "reviewer": "Claude (visual), confirmed by Jess",
+        "date": "2026-11-15",
+        "note": "All pits / polygon-trough shading: lit wall beyond the shadow, no compact bright rock body."
+      },
+      "review_stale": false,
+      "upper_bound": {
+        "precision_max": 0.083,
+        "k_max": 0.0668,
+        "rocks_per_100m2_max": {
+          "ge_0.3m": 12.44,
+          "ge_0.5m": 2.484,
+          "ge_1m": 0.102
+        }
+      }
+    },
+    "DTEEC_034082_2260_033014_2260_A01": {
+      "hirise_id": "ESP_034082_2260",
+      "radius_m": 500,
+      "area_m2": 785396,
+      "sun": {
+        "azimuthFromNorth": 242.89,
+        "incidence": 43.474031,
+        "label": "https://hirise.lpl.arizona.edu/PDS/RDR/ESP/ORB_034000_034099/ESP_034082_2260/ESP_034082_2260_RED.LBL"
+      },
+      "candidates_ge_report_m": 865,
+      "candidates_ge_complete_m": 838,
+      "shadows_rejected": 5190,
+      "review": {
+        "candidates": 838,
+        "sampled": 36,
+        "confirmed": 0,
+        "reviewer": "Claude (visual), confirmed by Jess",
+        "date": "2026-11-15",
+        "note": "All pits / polygon-trough shading. #21 (row 4 col 3, small dark spot on a bright patch) was ambiguous; Jess judged it not a rock (likely a pit on a sun-facing slope)."
+      },
+      "review_stale": false,
+      "upper_bound": {
+        "precision_max": 0.083,
+        "k_max": 0.1067,
+        "rocks_per_100m2_max": {
+          "ge_0.3m": 22.793,
+          "ge_0.5m": 5.519,
+          "ge_1m": 0.358
+        }
+      }
+    },
+    "DTEEC_037352_2245_037418_2245_A01": {
+      "hirise_id": "ESP_037352_2245",
+      "radius_m": 500,
+      "area_m2": 785396,
+      "sun": {
+        "azimuthFromNorth": 248.95,
+        "incidence": 58.674653,
+        "label": "https://hirise.lpl.arizona.edu/PDS/RDR/ESP/ORB_037300_037399/ESP_037352_2245/ESP_037352_2245_RED.LBL"
+      },
+      "candidates_ge_report_m": 451,
+      "candidates_ge_complete_m": 434,
+      "shadows_rejected": 3993,
+      "review": {
+        "candidates": 434,
+        "sampled": 36,
+        "confirmed": 0,
+        "reviewer": "Claude (visual), confirmed by Jess",
+        "date": "2026-11-15",
+        "note": "All pits / polygon-trough shading."
+      },
+      "review_stale": false,
+      "upper_bound": {
+        "precision_max": 0.083,
+        "k_max": 0.0932,
+        "rocks_per_100m2_max": {
+          "ge_0.3m": 19.341,
+          "ge_0.5m": 4.468,
+          "ge_1m": 0.259
+        }
+      }
+    },
+    "DTEEC_054060_2265_054126_2265_A01": {
+      "hirise_id": "ESP_054060_2265",
+      "radius_m": 500,
+      "area_m2": 785396,
+      "sun": {
+        "azimuthFromNorth": 250.95,
+        "incidence": 45.140416,
+        "label": "https://hirise.lpl.arizona.edu/PDS/RDR/ESP/ORB_054000_054099/ESP_054060_2265/ESP_054060_2265_RED.LBL"
+      },
+      "candidates_ge_report_m": 1,
+      "candidates_ge_complete_m": 1,
+      "shadows_rejected": 147,
+      "review": {
+        "candidates": 1,
+        "sampled": 1,
+        "confirmed": 0,
+        "reviewer": "Claude (visual), confirmed by Jess",
+        "date": "2026-11-15",
+        "note": "Single candidate is trough shading on the ridge flank."
+      },
+      "review_stale": false,
+      "upper_bound": {
+        "precision_max": 1,
+        "k_max": 0.04,
+        "rocks_per_100m2_max": {
+          "ge_0.3m": 5.448,
+          "ge_0.5m": 0.778,
+          "ge_1m": 0.014
+        }
+      }
+    }
+  },
+  "method": "Shadow-based rock candidates on 0.25 m HiRISE RED orthos (after Golombek et al. 2008, 2012), lit-face and pit filters, human review of 36 random candidates per POI; rock abundance k is an UPPER BOUND from the reviewed precision, with the Golombek & Rapp (1997) model F(D) = k·exp(−(1.79 + 0.152/k)·D) predicting rocks below HiRISE resolution. Thresholds are Role B ASSUMPTIONS. Source: NASA/JPL/University of Arizona."
+}

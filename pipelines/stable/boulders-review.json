@@ -1,0 +1,34 @@
+{
+  "DTEEC_033225_2250_033146_2250_A01": {
+    "candidates": 181,
+    "sampled": 36,
+    "confirmed": 0,
+    "reviewer": "Claude (visual), confirmed by Jess",
+    "date": "2026-11-15",
+    "note": "All pits / polygon-trough shading: lit wall beyond the shadow, no compact bright rock body."
+  },
+  "DTEEC_034082_2260_033014_2260_A01": {
+    "candidates": 838,
+    "sampled": 36,
+    "confirmed": 0,
+    "reviewer": "Claude (visual), confirmed by Jess",
+    "date": "2026-11-15",
+    "note": "All pits / polygon-trough shading. #21 (row 4 col 3, small dark spot on a bright patch) was ambiguous; Jess judged it not a rock (likely a pit on a sun-facing slope)."
+  },
+  "DTEEC_037352_2245_037418_2245_A01": {
+    "candidates": 434,
+    "sampled": 36,
+    "confirmed": 0,
+    "reviewer": "Claude (visual), confirmed by Jess",
+    "date": "2026-11-15",
+    "note": "All pits / polygon-trough shading."
+  },
+  "DTEEC_054060_2265_054126_2265_A01": {
+    "candidates": 1,
+    "sampled": 1,
+    "confirmed": 0,
+    "reviewer": "Claude (visual), confirmed by Jess",
+    "date": "2026-11-15",
+    "note": "Single candidate is trough shading on the ridge flank."
+  }
+}
