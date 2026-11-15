@@ -24,6 +24,32 @@ describe("LARA tool loop", () => {
     expect(SYSTEM_PROMPT).toContain("Never attribute your answers to NASA");
     expect(SYSTEM_PROMPT).not.toContain("say what the app does");
     expect(SYSTEM_PROMPT).toContain("End after answering the request");
+    expect(SYSTEM_PROMPT).toContain("For every resource question, call get_status");
+    expect(SYSTEM_PROMPT).toContain("Never repeat a resource number from an earlier answer");
+    expect(SYSTEM_PROMPT).toContain("say the reduced capacity, not the nominal capacity");
+  });
+  it("supplies the fresh mission tool result after outdated conversation numbers", async () => {
+    const { fetcher, requests } = provider([
+      call("get_status", {}),
+      { content: "The simulated suit battery has 405 watt-hours of usable capacity." },
+    ]);
+    await askCopilot({
+      key: "k",
+      model: "m",
+      prompt: "And after the cell loss?",
+      history: [{ role: "assistant", content: "Suit battery capacity is 900 watt-hours." }],
+      fetcher,
+      run: async () => ({
+        resources_simulated: { battery: { suit: { capacity: 405, nominal_capacity: 900 } } },
+        active_faults: ["suit battery cell loss"],
+      }),
+    });
+    const latest = requests[1].messages.at(-1);
+    expect(latest?.role).toBe("tool");
+    expect(JSON.parse(String(latest?.content))).toMatchObject({
+      resources_simulated: { battery: { suit: { capacity: 405 } } },
+      active_faults: ["suit battery cell loss"],
+    });
   });
   it("runs requested tools and returns the spoken answer", async () => {
     const { fetcher, requests } = provider([

@@ -1,8 +1,10 @@
 "use client";
 
-import { ArrowDown, Pause, Play } from "lucide-react";
+import { ArrowDown, Pause, Play, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
+import { missionTime } from "@/components/expedition/present";
 import { MapPanel } from "@/components/map/map-panel";
+import { formatDuration, formatNumber } from "@/lib/mission/format";
 import { Button } from "@/components/ui/button";
 import { useLaraContext } from "./lara-context";
 import { POLL_MS } from "./use-lara";
@@ -41,6 +43,15 @@ function Readout({
   );
 }
 
+/** At (or stopped before) its configured end, play is refused until the run is restarted. */
+export function vitalsFinished(s: Lara["snapshot"]): boolean {
+  return Boolean(
+    s && (s.clock.mode === "ended" || s.clock.position_s >= s.config.duration_s - 1e-6),
+  );
+}
+
+const RESTART_LABEL = "Restart simulation";
+
 export function LaraVitals() {
   const lara = useLaraContext();
   const mobile = useIsMobile();
@@ -57,16 +68,20 @@ export function LaraVitals() {
       defaultOpen={!mobile}
       snapshot={lara.snapshot}
       ageSeconds={lara.polledAt ? Math.max(0, Math.floor((now - lara.polledAt) / 1000)) : null}
+      stale={lara.readingsStale}
       pending={pending}
       error={error}
       onToggle={async () => {
         setPending(true);
         setError(null);
         try {
-          if (lara.snapshot?.clock.mode === "playing") await lara.command({ type: "pause" });
+          if (vitalsFinished(lara.snapshot)) {
+            await lara.command({ type: "reset" }, RESTART_LABEL);
+          } else if (lara.snapshot?.clock.mode === "playing")
+            await lara.command({ type: "pause" }, "Pause simulation");
           else {
-            await lara.command({ type: "speed", speed: 20 });
-            await lara.command({ type: "play" });
+            await lara.command({ type: "speed", speed: 20 }, "Simulation speed 20×");
+            await lara.command({ type: "play" }, "Run simulation");
           }
         } catch (cause) {
           setError(
@@ -83,6 +98,7 @@ export function LaraVitals() {
 export function LaraVitalsView({
   snapshot: s,
   ageSeconds,
+  stale = ageSeconds === null || ageSeconds > (POLL_MS * 3) / 1000,
   pending,
   error,
   onToggle,
@@ -90,14 +106,17 @@ export function LaraVitalsView({
 }: {
   snapshot: Lara["snapshot"];
   ageSeconds: number | null;
+  stale?: boolean;
   pending: boolean;
   error: string | null;
   onToggle: () => void;
   defaultOpen?: boolean;
 }) {
-  const stale = ageSeconds === null || ageSeconds > (POLL_MS * 3) / 1000;
   const dose = s?.observed.radiation.observation?.dose_rate_e_ugy_day;
-  const playing = s?.clock.mode === "playing";
+  const finished = vitalsFinished(s);
+  const playing = !finished && s?.clock.mode === "playing";
+  // Before an expedition is loaded the session is the base-only demo, not an expedition.
+  const base = !s?.config.route;
   return (
     <MapPanel
       title="Vitals and mission details"
@@ -110,44 +129,58 @@ export function LaraVitalsView({
           <p role="status">
             {stale
               ? `Mission readings stale · ${ageSeconds ?? "Unknown"} s old · reconnecting`
-              : playing
-                ? `Simulation running · ${s.clock.speed}×`
-                : "Simulation paused"}
+              : finished
+                ? "Simulation complete"
+                : playing
+                  ? `Simulation running · ${s.clock.speed}×`
+                  : "Simulation paused"}
           </p>
           <dl className={`grid grid-cols-2 gap-3 ${stale ? "text-muted-foreground" : ""}`}>
             <Readout
               label="Mission elapsed"
-              value={fmtMin(s.clock.position_s)}
-              note={`of ${fmtMin(s.config.duration_s)} · min:s`}
+              value={missionTime(s.clock.position_s)}
+              note={`of ${formatDuration(s.config.duration_s)} · hh:mm:ss`}
             />
             <Readout
               label="Suit O₂"
-              value={`${Math.round(s.state.oxygen.eva.remaining_g)} g`}
+              value={`${formatNumber(s.state.oxygen.eva.remaining_g)} g`}
               note={`Reserve ${s.config.oxygen.eva.reserve_g} g`}
               belowReserve={s.state.oxygen.eva.remaining_g < s.config.oxygen.eva.reserve_g}
             />
             <Readout
               label="Suit battery"
-              value={`${Math.round(s.state.battery.eva.remaining_wh)} Wh`}
+              value={`${formatNumber(s.state.battery.eva.remaining_wh)} Wh`}
               note={`Reserve ${s.config.battery.eva.reserve_wh} Wh`}
               belowReserve={s.state.battery.eva.remaining_wh < s.config.battery.eva.reserve_wh}
             />
             <Readout
               label="Dose rate"
-              value={dose == null ? "No data" : `${(dose / 24).toFixed(1)} µGy/h`}
+              value={dose == null ? "No data" : `${formatNumber(dose / 24, 1)} µGy/h`}
               note="Gale proxy · archived"
             />
           </dl>
           <Button size="default" variant="outline" disabled={pending || stale} onClick={onToggle}>
-            {playing ? <Pause aria-hidden /> : <Play aria-hidden />}
-            {playing ? "Pause simulation" : "Run simulation at 20×"}
+            {finished ? (
+              <RotateCcw aria-hidden />
+            ) : playing ? (
+              <Pause aria-hidden />
+            ) : (
+              <Play aria-hidden />
+            )}
+            {finished
+              ? RESTART_LABEL
+              : playing
+                ? "Pause simulation"
+                : base
+                  ? "Run base simulation at 20×"
+                  : "Run simulation at 20×"}
           </Button>
           <p role="status">{pending ? "Applying simulation command…" : ""}</p>
           {error && <p role="alert">{error}</p>}
         </>
       ) : (
         <p role="status" className="text-sm">
-          Mission data unavailable.
+          Mission data unavailable: no reading received yet. If this message stays, reload the page.
         </p>
       )}
       <p className="text-muted-foreground">

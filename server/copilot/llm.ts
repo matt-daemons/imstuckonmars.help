@@ -71,6 +71,8 @@ Routes:
 
 Resources:
 - The mission tools (get_status, project_resources, time_to_reserve) read the running expedition: suit oxygen, suit battery, base oxygen, and base battery. Use them during the expedition.
+- Resources change every minute and faults change them at once. For every resource question, call get_status or another mission tool again. Never repeat a resource number from an earlier answer in the conversation.
+- get_status lists active_faults. When a fault reduced a capacity, say the reduced capacity, not the nominal capacity.
 - Before the expedition starts, use the planned numbers from get_route_plan and say that they are planned.
 - The expedition animates the walk from the parked rover. The drive is planned only, so rover battery comes from get_route_plan.
 - Use get_status and the other mission tools for MOXIE, weather, and radiation.
