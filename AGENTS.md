@@ -103,7 +103,7 @@ GitHub Actions deploys every push to `main` that passes its checks. The workflow
 ## Commits
 
 Keep commits small, with messages formatted as `feature-name(action): Brief description`.
-Work directly in `default@`. Do not create additional jj workspaces.
+Use plain git on `main`. If a push is rejected, run `git pull --rebase` and push again.
 
 ## Stack
 
