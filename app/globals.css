@@ -39,6 +39,9 @@
   --warning-foreground: #ffd873;
   --hazard: var(--warning);
   --hazard-contrast: #010405;
+  /* Walk legs of a route on the map. Violet, so it carries no status meaning. 8.0:1 against
+     --background, the line's casing (a map line needs 3:1). Drive legs use --primary. */
+  --route-walk: #b48cff;
   --chart-1: var(--hermes-cyan);
   --chart-2: #3ee08f;
   --chart-3: #e6f3f3;
@@ -69,6 +72,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+  --color-route-walk: var(--route-walk);
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);

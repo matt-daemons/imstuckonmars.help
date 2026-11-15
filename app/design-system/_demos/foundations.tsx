@@ -43,6 +43,7 @@ const colorGroups = [
     ],
   },
   { title: "Lines", tokens: ["border", "input", "ring"] },
+  { title: "Map", tokens: ["route-walk"] },
   { title: "Charts", tokens: ["chart-1", "chart-2", "chart-3", "chart-4", "chart-5"] },
   {
     title: "Sidebar",

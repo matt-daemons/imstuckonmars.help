@@ -129,6 +129,17 @@ export function StatusLine({
       />
     );
   }
+  return <VerdictAlert check={check} notChecked={copy.notChecked} />;
+}
+
+/** The verdict with its reasons, for inside a status slot. */
+export function VerdictAlert({
+  check,
+  notChecked,
+}: {
+  check: EvaVerdict<string>;
+  notChecked: string;
+}) {
   const { variant, Icon, label } = VERDICT_STYLES[check.verdict];
   // role="none": the wrapper is the live region, so the Alert must not be one too.
   return (
@@ -139,13 +150,13 @@ export function StatusLine({
         {check.reasons.map((reason) => (
           <p key={reason}>{reason}</p>
         ))}
-        <p>{copy.notChecked}</p>
+        <p>{notChecked}</p>
       </AlertDescription>
     </Alert>
   );
 }
 
-function ErrorAlert({ message, className }: { message: string; className?: string }) {
+export function ErrorAlert({ message, className }: { message: string; className?: string }) {
   return (
     <Alert variant="error" role="none" className={className}>
       <CircleXIcon aria-hidden />

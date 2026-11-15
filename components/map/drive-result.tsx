@@ -54,7 +54,7 @@ export function DriveResult({
 }
 
 // D-5: fixed decimals, a true minus sign, thousands separators from five digits.
-function formatNumber(value: number, digits: number): string {
+export function formatNumber(value: number, digits: number): string {
   return value
     .toLocaleString("en-US", {
       minimumFractionDigits: digits,
