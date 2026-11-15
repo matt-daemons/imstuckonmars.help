@@ -11,6 +11,7 @@ import {
   type SiteProps,
   addSites,
   addTerrain,
+  addThermalInertia,
   habitatLayer,
   setMarsSky,
 } from "@/components/map/scene";
@@ -88,6 +89,7 @@ export function MarsMap() {
       m.on("mousemove", (e) => setCursor([e.lngLat.lng, e.lngLat.lat]));
       m.on("load", () => {
         addTerrain(m);
+        addThermalInertia(m);
         addSites(
           m,
           pois.map((f) => f.properties),

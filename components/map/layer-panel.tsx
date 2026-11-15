@@ -21,11 +21,15 @@ export function LayerPanel({ manifest, visible, onToggle }: LayerPanelProps) {
               <p className="text-sm">{layer.title}</p>
               <p className="text-xs text-muted-foreground">Source: {layer.source.name}</p>
             </div>
-            <Switch
-              checked={visible[layer.id] ?? false}
-              onCheckedChange={(on) => onToggle(layer.id, on)}
-              aria-label={`Toggle ${layer.title}`}
-            />
+            {layer.sceneControl ? (
+              <span className="shrink-0 text-xs text-muted-foreground">Scene panel</span>
+            ) : (
+              <Switch
+                checked={visible[layer.id] ?? false}
+                onCheckedChange={(on) => onToggle(layer.id, on)}
+                aria-label={`Toggle ${layer.title}`}
+              />
+            )}
           </li>
         ))}
       </ul>

@@ -326,11 +326,11 @@ export const SOURCE_GROUPS: SourceGroup[] = [
       },
       {
         id: "themis",
-        title: "Thermal inertia (not on the map yet)",
+        title: "Thermal inertia",
         kind: "derived",
         credit: "NASA/JPL-Caltech/Arizona State University/USGS",
         detail: "THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px",
-        use: "Loose dust and sand versus firm or rocky ground at each site.",
+        use: "Thermal inertia switch in the Scene panel: loose dust and sand versus firm or rocky ground at each site.",
         caveats: [
           "THEMIS covers about 57 % of the area. Gaps are unknown, not safe.",
           "About 20 % accurate, and describes only the top few centimetres.",
@@ -346,6 +346,25 @@ export const SOURCE_GROUPS: SourceGroup[] = [
             url: "https://astrogeology.usgs.gov/search/map/themis_thermal_inertia_mosaic_quantitative_30n180e_100mpp",
           },
         ],
+        layerIds: ["thermal-inertia"],
+      },
+      {
+        id: "roughness",
+        title: "Roughness classes",
+        kind: "derived",
+        credit: "NASA/JPL/University of Arizona (derived)",
+        detail:
+          "RMS height deviation from the local 5 m trend, 5 m cells, from the 1 m HiRISE DTMs. Median 0.08–0.15 m",
+        use: "Roughness switch in the Scene panel, for walking legs.",
+        caveats: [
+          "Class breaks (0.25 / 0.5 / 1 m) are a Role B assumption, not team-agreed. NASA has no suited-walking roughness limit.",
+          "Mostly DTM noise: only crater rims and ridge flanks stand out.",
+          "The DTM can't see boulders or bumps narrower than ~2 m.",
+        ],
+        citations: [
+          "Kirk, R. L. et al. (2008). Ultrahigh resolution topographic mapping of Mars with MRO HiRISE stereo images. JGR 113, E00A24.",
+        ],
+        layerIds: ["roughness"],
       },
     ],
   },
