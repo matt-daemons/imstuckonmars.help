@@ -21,8 +21,8 @@ import { isDrillSet, NO_DRILL } from "../conditions";
 import { useConditions } from "../conditions-provider";
 
 /**
- * Step 03's storm drill, closed by default: sets a solar alert, a dust opacity or a start time by
- * hand, to rehearse a storm. Each set value is labelled as drill in the verdict's reasons.
+ * Step 03's storm drill, closed by default: sets a solar alert or a dust opacity by hand, to
+ * rehearse a storm. Each set value is labelled as drill in the verdict's reasons.
  */
 export function StormDrill() {
   const { drill, setDrill } = useConditions();
@@ -85,22 +85,6 @@ export function StormDrill() {
           <NumberFieldGroup>
             <NumberFieldDecrement />
             <NumberFieldInput className="text-right" placeholder="Real" />
-            <NumberFieldIncrement />
-          </NumberFieldGroup>
-        </NumberField>
-        <NumberField
-          size="sm"
-          value={drill.start_local_hour}
-          onValueChange={(hour) => setDrill({ ...drill, start_local_hour: hour })}
-          min={0}
-          max={23}
-          step={1}
-          format={{ maximumFractionDigits: 0 }}
-        >
-          <NumberFieldScrubArea label="Start time (local solar hour, 0–23)" />
-          <NumberFieldGroup>
-            <NumberFieldDecrement />
-            <NumberFieldInput className="text-right" placeholder="Now" />
             <NumberFieldIncrement />
           </NumberFieldGroup>
         </NumberField>

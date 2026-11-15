@@ -44,6 +44,7 @@ import { cn } from "@/lib/utils";
 import { splitHeadline } from "./headline";
 import { MissionSummary } from "./mission-summary-dialog";
 import { RouteCompare } from "./route-compare";
+import { SimulationTime } from "./simulation-time";
 import { SpaceWeatherLine } from "./space-weather-line";
 import { StormDrill } from "./storm-drill";
 import { selectedRoute } from "../selected-route";
@@ -168,6 +169,7 @@ function CheckLayout({
       {split.headline.length > 0 && <Readouts items={split.headline} lead />}
       {/* The feed behind the verdict comes after its numbers, so the verdict leads straight into them. */}
       <SpaceWeatherLine />
+      <SimulationTime />
       <div className="flex flex-wrap gap-2">
         {fit}
         <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />

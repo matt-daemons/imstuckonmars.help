@@ -7,14 +7,18 @@ import type { DriveWalkPlan } from "@/lib/mars/drive-walk";
 import type { DriveSummary } from "@/lib/mars/driving";
 
 import {
+  formatLocalHour,
   mergeConditions,
   minutesUntilSunsetAt,
   NO_DRILL,
   notCheckedText,
   realConditions,
+  simLocalHour,
   spaceWeatherLine,
+  sunTimes,
   tripWithStorms,
   walkWithStorms,
+  withSimTime,
 } from "./conditions";
 
 // A short, flat walk: 234 min with the terrain margin.
@@ -49,7 +53,6 @@ const nothingReal = realConditions({
   simulatedDust: null,
   spaceWeather: "failed",
 });
-const noSunset = () => null;
 
 describe("realConditions", () => {
   it("marks each known value with its source", () => {
@@ -87,28 +90,78 @@ describe("realConditions", () => {
 });
 
 describe("mergeConditions", () => {
-  const drill = { solar_alert_level: "watch" as const, dust_opacity: 2.5, start_local_hour: 10 };
+  const drill = { solar_alert_level: "watch" as const, dust_opacity: 2.5 };
 
   it("lets a drill value win over a real one and marks its source as drill", () => {
-    const merged = mergeConditions(real, drill, (hour) => minutesUntilSunsetAt(hour, midday));
+    const merged = mergeConditions(real, drill);
     expect(merged).toMatchObject({
       solar_alert_level: "watch",
       dust_opacity: 2.5,
-      minutes_until_sunset: 8 * EARTH_MINUTES_PER_MARS_HOUR,
-      start_time: "10:00",
-      sources: { radiation: "drill", dust: "drill", daylight: "drill", dose_rate: "real" },
+      sources: { radiation: "drill", dust: "drill", daylight: "real", dose_rate: "real" },
     });
     expect(merged.reasons_unknown).toEqual({});
   });
 
   it("restores the real values once the drill is cleared", () => {
-    expect(mergeConditions(real, NO_DRILL, noSunset)).toEqual(real);
+    expect(mergeConditions(real, NO_DRILL)).toEqual(real);
+  });
+});
+
+describe("withSimTime", () => {
+  it("starts the walk at the simulated hour and marks daylight as simulation", () => {
+    const simulated = withSimTime(real, 10, midday);
+    expect(simulated).toMatchObject({
+      minutes_until_sunset: 8 * EARTH_MINUTES_PER_MARS_HOUR,
+      start_time: "10:00",
+      sources: { daylight: "simulation" },
+    });
   });
 
-  it("leaves daylight unknown when the sun neither rises nor sets this sol", () => {
-    const merged = mergeConditions(nothingReal, { ...NO_DRILL, start_local_hour: 10 }, noSunset);
-    expect(merged.minutes_until_sunset).toBeNull();
-    expect(merged.reasons_unknown.daylight).toBe("no sunrise or sunset this sol");
+  it("keeps the real values when the sun neither rises nor sets this sol", () => {
+    const clock = { ltst: "12:00:00", minutes_until_sunset: null };
+    expect(withSimTime(nothingReal, 10, clock)).toEqual(nothingReal);
+  });
+
+  it("names the simulated start time in the daylight reason", () => {
+    // Three hours before sunset is too short for the 234 min walk, so the daylight rule fires.
+    const { reasons } = walkWithStorms(route, withSimTime(real, 15, midday));
+    expect(reasons.join(" ")).toContain("Walk starts at 15:00 simulated local solar time.");
+    expect(reasons.join(" ")).not.toContain("Drill");
+  });
+});
+
+describe("simLocalHour", () => {
+  const marsHourMs = EARTH_MINUTES_PER_MARS_HOUR * 60_000;
+
+  it("runs on with real time from the hour it was set", () => {
+    expect(simLocalHour({ hour: 10, set_at_ms: 0 }, 2.5 * marsHourMs)).toBeCloseTo(12.5);
+  });
+
+  it("wraps past midnight", () => {
+    expect(simLocalHour({ hour: 23, set_at_ms: 0 }, 2 * marsHourMs)).toBeCloseTo(1);
+  });
+
+  it("does not run backwards before the moment it was set", () => {
+    expect(simLocalHour({ hour: 10, set_at_ms: 5000 }, 0)).toBe(10);
+  });
+});
+
+describe("sunTimes", () => {
+  it("finds sunrise and sunset from a midday reading", () => {
+    const sun = sunTimes(midday);
+    expect(sun?.sunset).toBeCloseTo(18);
+    expect(sun?.sunrise).toBeCloseTo(6);
+  });
+
+  it("is null when the sun neither rises nor sets this sol", () => {
+    expect(sunTimes({ ltst: "12:00:00", minutes_until_sunset: null })).toBeNull();
+  });
+});
+
+describe("formatLocalHour", () => {
+  it("formats a fractional hour as HH:MM", () => {
+    expect(formatLocalHour(13.5)).toBe("13:30");
+    expect(formatLocalHour(6.01)).toBe("06:00");
   });
 });
 
@@ -137,7 +190,7 @@ describe("minutesUntilSunsetAt", () => {
 
 describe("walkWithStorms", () => {
   it("labels a drill reason as drill, not real data", () => {
-    const merged = mergeConditions(real, { ...NO_DRILL, dust_opacity: 2.5 }, noSunset);
+    const merged = mergeConditions(real, { ...NO_DRILL, dust_opacity: 2.5 });
     const check = walkWithStorms(route, merged);
     expect(check.verdict).toBe("NO_GO");
     expect(check.limiting_factor).toBe("dust");
@@ -175,7 +228,7 @@ describe("walkWithStorms", () => {
       simulatedDust: 0.4,
       spaceWeather: solarWatch,
     });
-    const merged = mergeConditions(watch, { ...NO_DRILL, solar_alert_level: "warning" }, noSunset);
+    const merged = mergeConditions(watch, { ...NO_DRILL, solar_alert_level: "warning" });
     const check = walkWithStorms(route, merged);
     expect(check.verdict).toBe("NO_GO");
     expect(check.reasons[0]).toContain("Drill, not real data");
@@ -236,7 +289,7 @@ describe("tripWithStorms", () => {
   const plan = { drive: { summary: drive }, walk: { route } } as unknown as DriveWalkPlan;
 
   it("gives NO_GO on radiation for a solar warning, even when the drive is GO", () => {
-    const merged = mergeConditions(real, { ...NO_DRILL, solar_alert_level: "warning" }, noSunset);
+    const merged = mergeConditions(real, { ...NO_DRILL, solar_alert_level: "warning" });
     const check = tripWithStorms(plan, merged);
     expect(check).toMatchObject({ verdict: "NO_GO", limiting_factor: "radiation" });
   });
@@ -244,7 +297,7 @@ describe("tripWithStorms", () => {
   it("keeps the drive's verdict when the walk is no worse", () => {
     const battery = { ...drive, battery_left_percent: 25 };
     const cautious = { ...plan, drive: { summary: battery } } as unknown as DriveWalkPlan;
-    const merged = mergeConditions(real, { ...NO_DRILL, solar_alert_level: "watch" }, noSunset);
+    const merged = mergeConditions(real, { ...NO_DRILL, solar_alert_level: "watch" });
     expect(tripWithStorms(cautious, merged)).toMatchObject({
       verdict: "CAUTION",
       limiting_factor: "battery",
