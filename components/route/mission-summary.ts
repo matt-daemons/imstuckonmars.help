@@ -45,13 +45,11 @@ export function titleRows({
     { label: "Mission", value: mission === "walking" ? "Walking" : "Drive + walk" },
     { label: "Destination", value: site ? `${site.title} · ${site.hiriseId}` : "Map point" },
   ];
-  // A walk has no rover and no sampling time, so it has neither line.
+  // Only drive + walk has a rover; both mission modes can include sampling.
   if (mission === "drive-walk") {
-    rows.push(
-      { label: "Power", value: `${power[0].toUpperCase()}${power.slice(1)}` },
-      { label: "Sampling time", value: `${samplingMin} min` },
-    );
+    rows.push({ label: "Power", value: `${power[0].toUpperCase()}${power.slice(1)}` });
   }
+  rows.push({ label: "Sampling time", value: `${samplingMin} min` });
   rows.push({ label: "Plan made", value: `${iso.slice(0, 10)} ${iso.slice(11, 16)} UTC` });
   return rows;
 }
@@ -67,7 +65,9 @@ export function objectiveText(
     return `Sample water ice at ${site.title} (${site.hiriseId}), ${samplingMin} min at the site.`;
   }
   const home = fromHabitat ? "the habitat" : "the start";
-  return `Walk to the map point and back to ${home}. No sampling time is planned on a walk.`;
+  return samplingMin > 0
+    ? `Walk to the map point, sample for ${samplingMin} min, then return to ${home}.`
+    : `Walk to the map point and back to ${home}.`;
 }
 
 /** One line of the timeline: a leg, or the stop at the end of one. Values carry their units. */
@@ -140,7 +140,11 @@ function legsOf(collection: RouteCollection): RouteLegProperties[] {
  * alone, like the drive + walk collection's: storm conditions are not part of the file.
  * Null until the walk is planned.
  */
-export function walkingCollection(plan: Plan, fromHabitat: boolean): RouteCollection | null {
+export function walkingCollection(
+  plan: Plan,
+  fromHabitat: boolean,
+  samplingMin = 0,
+): RouteCollection | null {
   const { outbound, back, summary } = plan;
   if (!summary) return null;
   const check = evaluateRoute(summary);
@@ -161,7 +165,7 @@ export function walkingCollection(plan: Plan, fromHabitat: boolean): RouteCollec
       to,
       start_offset_min: start,
       est_time_min: path.time_min,
-      stop_min: 0,
+      stop_min: number === 1 ? samplingMin : 0,
       distance_km: path.distance_m / 1000,
       max_slope: path.max_slope_deg,
       verdict: check.verdict,
@@ -178,7 +182,7 @@ export function walkingCollection(plan: Plan, fromHabitat: boolean): RouteCollec
     type: "FeatureCollection",
     features: [
       leg(1, [home, "map-point"], outbound, 0),
-      leg(2, ["map-point", home], back, outbound.time_min),
+      leg(2, ["map-point", home], back, outbound.time_min + samplingMin),
     ],
     route: {
       route_id: "walk-map-point",

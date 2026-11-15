@@ -59,8 +59,8 @@ export function MissionSummary({
   const { inputs, walk, journey, base } = useRoutePlan();
   const fromHabitat = samePoint(inputs.start, base);
   const walkCollection = useMemo(
-    () => (walk.plan ? walkingCollection(walk.plan, fromHabitat) : null),
-    [walk.plan, fromHabitat],
+    () => (walk.plan ? walkingCollection(walk.plan, fromHabitat, inputs.samplingMin) : null),
+    [walk.plan, fromHabitat, inputs.samplingMin],
   );
   const collection = inputs.mission === "walking" ? walkCollection : journey.plan?.collection;
   return (

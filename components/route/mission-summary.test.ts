@@ -150,12 +150,13 @@ describe("titleRows", () => {
     ]);
   });
 
-  it("leaves out power and sampling for a walk, which ends at a map point", () => {
+  it("includes walking sampling but leaves out rover power", () => {
     expect(
       titleRows({ mission: "walking", site: null, power: "fission", samplingMin: 60, madeAt }),
     ).toEqual([
       { label: "Mission", value: "Walking" },
       { label: "Destination", value: "Map point" },
+      { label: "Sampling time", value: "60 min" },
       { label: "Plan made", value: "2026-11-15 14:32 UTC" },
     ]);
   });
@@ -170,9 +171,12 @@ describe("objectiveText", () => {
 
   it("is the walk out and back, to the habitat or to the start", () => {
     expect(objectiveText("walking", null, 60, true)).toBe(
-      "Walk to the map point and back to the habitat. No sampling time is planned on a walk.",
+      "Walk to the map point, sample for 60 min, then return to the habitat.",
     );
-    expect(objectiveText("walking", null, 60, false)).toContain("back to the start.");
+    expect(objectiveText("walking", null, 60, false)).toContain("return to the start.");
+    expect(objectiveText("walking", null, 0, true)).toBe(
+      "Walk to the map point and back to the habitat.",
+    );
   });
 });
 
@@ -254,6 +258,18 @@ describe("walkingCollection", () => {
       simulated: false,
     });
     expect(Object.keys(route.margin)).toEqual(["resource", "value", "limit", "unit"]);
+  });
+
+  it("includes sampling between outbound and return in the exported timeline", () => {
+    const walk = walkingCollection(
+      { outbound, back, summary: { ...summary, est_time_min: 56 } },
+      true,
+      30,
+    )!;
+    expect(walk.features[0].properties).toMatchObject({ stop_min: 30 });
+    expect(walk.features[1].properties).toMatchObject({ start_offset_min: 42 });
+    expect(timelineRows(walk, {}).map((row) => row.mode)).toEqual(["Walk", "Sampling", "Walk"]);
+    expect(walk.route.est_time_min).toBe(56);
   });
 
   it("starts at the start point when the walk does not start at the habitat", () => {

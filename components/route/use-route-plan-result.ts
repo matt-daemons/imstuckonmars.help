@@ -60,10 +60,7 @@ export function useRoutePlanResult(
   );
   const terrain = useMemo(() => (grid && slope ? { grid, slope } : null), [grid, slope]);
   // Time at the end counts towards suit time, as it does for a drive + walk.
-  const plan = useMemo(
-    () => withSamplingTime(path, samplingMin),
-    [path, samplingMin],
-  );
+  const plan = useMemo(() => withSamplingTime(path, samplingMin), [path, samplingMin]);
   const shortest = useMemo(
     () => withSamplingTime(shortestPath, samplingMin),
     [shortestPath, samplingMin],
@@ -85,8 +82,13 @@ export function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
 }
 
 function withSamplingTime(plan: Plan | null, minutes: number): Plan | null {
-  return plan && {
-    ...plan,
-    summary: plan.summary && { ...plan.summary, est_time_min: plan.summary.est_time_min + minutes },
-  };
+  return (
+    plan && {
+      ...plan,
+      summary: plan.summary && {
+        ...plan.summary,
+        est_time_min: plan.summary.est_time_min + minutes,
+      },
+    }
+  );
 }

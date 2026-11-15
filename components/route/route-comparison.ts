@@ -64,7 +64,7 @@ export function walkComparison(
     rows: rowsOf(
       [
         ["distance", "Distance one way"],
-        ["time", "Out-and-back time"],
+        ["time", "Walk + sampling time"],
         ["climb", "Climb, out and back"],
         ["slope", "Steepest slope"],
       ],
