@@ -35,21 +35,42 @@ export interface SpeechClip {
   alignment: SpeechAlignment | null;
 }
 
+/** Keep offsets intact until timing is applied; markup is never caption content. */
+function maskSpeechMarkers(text: string): string {
+  return text
+    .replace(/<\/?[a-z][^>]*>/gi, (marker) => " ".repeat(marker.length))
+    .replace(
+      /\[(?:(?:short|long) pause|pause|break|sighs?|laughs?|laughing|chuckles?|whispers?|whispering|shouts?|shouting|clears throat|gasps?|excited|sad|angry|curious|sarcastic|crying|thoughtful|cheerfully|mischievously)\]/gi,
+      (marker) => " ".repeat(marker.length),
+    );
+}
+
+export function displaySpeechText(text: string): string {
+  return maskSpeechMarkers(text)
+    .replace(/\s+/g, " ")
+    .replace(/\s+([.,!?;:])/g, "$1")
+    .trim();
+}
+
 /** Reveal whole words at their actual audio start, not a timer-based typing estimate. */
 export function spokenText(
   text: string,
   alignment: SpeechAlignment | null,
   seconds: number,
 ): string {
-  if (!alignment?.characters.length) return text;
+  if (!alignment?.characters.length) return displaySpeechText(text);
+  const caption = maskSpeechMarkers(alignment.characters.join(""));
   let end = 0;
+  let offset = 0;
   for (let index = 0; index < alignment.characters.length; index++) {
     if (alignment.character_start_times_seconds[index] > seconds) break;
-    if (!/\s/.test(alignment.characters[index])) end = index + 1;
+    const length = alignment.characters[index].length;
+    if (/\S/.test(caption.slice(offset, offset + length))) end = offset + length;
+    offset += length;
   }
   if (end === 0) return "";
-  while (end < alignment.characters.length && !/\s/.test(alignment.characters[end])) end++;
-  return alignment.characters.slice(0, end).join("").trimEnd();
+  while (end < caption.length && !/\s/.test(caption[end])) end++;
+  return displaySpeechText(caption.slice(0, end));
 }
 
 export function recentWords(text: string, count = 3): string {

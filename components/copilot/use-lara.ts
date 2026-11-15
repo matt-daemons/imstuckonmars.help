@@ -17,7 +17,12 @@ import {
   type WakeTurnSteps,
 } from "./follow-up";
 import type { AfterUtterance } from "./wake-session";
-import { spokenText, timedSpeechSchema, type SpeechClip } from "@/lib/copilot/speech";
+import {
+  displaySpeechText,
+  spokenText,
+  timedSpeechSchema,
+  type SpeechClip,
+} from "@/lib/copilot/speech";
 import { startTranscriptPreview } from "./transcript-preview";
 
 export interface Turn {
@@ -209,10 +214,11 @@ export function useLara(shared?: { id: string; token: string } | null) {
   );
 
   const play = useCallback(async (clip: SpeechClip) => {
+    const text = displaySpeechText(clip.text);
     const url = URL.createObjectURL(clip.audio);
     audio.current?.pause();
     const player = new Audio(url);
-    player.playbackRate = 1.75;
+    player.playbackRate = 1.4;
     player.preservesPitch = true;
     audio.current = player;
     const id = ++replyId.current;
@@ -222,11 +228,11 @@ export function useLara(shared?: { id: string; token: string } | null) {
       const visibleText = spokenText(clip.text, clip.alignment, player.currentTime);
       if (visibleText !== last) {
         last = visibleText;
-        setReply({ id, text: clip.text, visibleText, speaking: true });
+        setReply({ id, text, visibleText, speaking: true });
       }
       frame = requestAnimationFrame(update);
     };
-    setReply({ id, text: clip.text, visibleText: clip.alignment ? "" : clip.text, speaking: true });
+    setReply({ id, text, visibleText: clip.alignment ? "" : text, speaking: true });
     try {
       await new Promise<void>((resolve, reject) => {
         // A clip cut off by the next one (an alert over a follow-up prompt) must still resolve.
@@ -247,7 +253,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
       URL.revokeObjectURL(url);
       if (audio.current === player) audio.current = null;
       setReply((current) =>
-        current?.id === id ? { ...current, visibleText: clip.text, speaking: false } : current,
+        current?.id === id ? { ...current, visibleText: text, speaking: false } : current,
       );
     }
   }, []);
@@ -278,14 +284,15 @@ export function useLara(shared?: { id: string; token: string } | null) {
   );
 
   const speak = useCallback(
-    async (text: string) => {
+    async (speech: string) => {
+      const text = displaySpeechText(speech);
       const id = ++replyId.current;
       if (!mission || !voice) {
         setReply({ id, text, visibleText: text, speaking: false });
         return;
       }
       try {
-        await enqueueSpeech(synthesize(text));
+        await enqueueSpeech(synthesize(speech));
         if (!voiceEnabled.current) setReply({ id, text, visibleText: text, speaking: false });
       } catch (error) {
         setReply({ id, text, visibleText: text, speaking: false });
@@ -297,13 +304,14 @@ export function useLara(shared?: { id: string; token: string } | null) {
 
   /** Says one of the app's fixed lines at once, keeping its clip for the next time. */
   const say = useCallback(
-    (text: string) => {
+    (speech: string) => {
+      const text = displaySpeechText(speech);
       setTurns((t) => [...t, { role: "assistant", content: text }]);
       if (!mission || !voice) {
         setReply({ id: ++replyId.current, text, visibleText: text, speaking: false });
         return;
       }
-      enqueueSpeech(phraseClip(text)).catch(() => {
+      enqueueSpeech(phraseClip(speech)).catch(() => {
         setReply({ id: ++replyId.current, text, visibleText: text, speaking: false });
         setError("LARA's voice is unavailable. Read the reply or try again.");
       });
@@ -370,7 +378,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
           }),
         );
         await runActions(answer.actions ?? []);
-        setTurns((t) => [...t, { role: "assistant", content: answer.text, alert: userTurn.alert }]);
+        setTurns((t) => [
+          ...t,
+          { role: "assistant", content: displaySpeechText(answer.text), alert: userTurn.alert },
+        ]);
         await speak(followUp ? withFollowUp(answer.text, followUp) : answer.text);
       } catch (e) {
         setError((e as Error).message);

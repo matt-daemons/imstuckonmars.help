@@ -20,7 +20,8 @@ client requests `/api/copilot/:id/speak` with `timestamps: true`. The Worker use
 ElevenLabs' `with-timestamps` endpoint, bounds the JSON response to 10 MB, and
 validates character timing arrays. Existing callers without that flag retain
 streamed MP3 responses. Words appear according to the audio element's `currentTime`,
-including its existing playback speed. Missing timestamps show the full text rather
+at 1.4× playback speed. Speech-control tags and delivery cues are hidden in captions,
+chat and screen-reader announcements, but retained in speech requests. Missing timestamps show the full text rather
 than guessed timing. Muted or failed speech leaves a readable response.
 
 Stop speech, mute, dismissal and page cleanup stop playback. The reply announces
