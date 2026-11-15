@@ -16,7 +16,22 @@ The following map features retain their existing data and controls:
 - Optional AI comparison imagery, separate from terrain and measurements.
 - Source attribution and cursor coordinates.
 
-The habitat uses MapLibre's custom-layer projection matrix. Terrain elevation
+The habitat loads the existing `/models/mars/hab.glb` asset instead of the old
+primitive dome. Its 9,904 triangles include a ribbed shell, windows, airlock,
+stairs, solar-cell grids, supports and a ground-mounted communications dish.
+The roof antenna has been removed. It is an
+original conceptual asset, not a validated NASA habitat. The map preserves the
+asset's metre units and ground-level origin. At distant views, display-only
+scaling keeps its projected extent at least 90 CSS pixels. The Homebase label
+shows Not to scale while enlarged. Close views return to the authored scale;
+the base coordinates, terrain elevation and route calculations never change.
+
+The habitat uses an elevated, local tangent frame on the globe and the Mercator
+frame at close zoom. Their clip-space matrices blend with MapLibre's projection
+transition so the ground origin does not drift when the camera tilts or zooms.
+Enlarged views clear terrain depth so
+the display symbol is not buried by relief outside its actual footprint.
+Terrain elevation
 queries already include exaggeration in MapLibre, so no second multiplier is
 applied to the queried ground height. The inherited display elevation offset
 and Mars model scaling are unchanged.

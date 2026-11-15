@@ -140,12 +140,15 @@ export function buildHab() {
       model.box([side * 7.5, 0.05, -1.8], [0.5, 0.1, 0.5], 1);
     }
   });
-  model.part("Communications mast, dish and roof equipment", () => {
-    model.cylinder([-1.5, 4.65, -0.7], [-1.5, 6.25, -0.7], 0.045, 2, 12);
-    model.cylinder([-1.85, 5.95, -0.7], [-1.15, 5.95, -0.7], 0.018, 2, 8);
+  model.part("Ground-mounted communications dish and equipment", () => {
+    model.box([5.2, 0.08, 3.6], [1.6, 0.16, 1.6], 1);
+    model.cylinder([5.2, 0.16, 3.6], [5.2, 1.2, 3.6], 0.09, 2, 16);
+    for (const side of [-1, 1]) {
+      model.cylinder([5.2 + side * 0.6, 0.16, 3.6], [5.2, 0.9, 3.6], 0.045, 2, 12);
+    }
     model.lathe(
-      [1.5, 4.65, -0.8],
-      [1.5, 5.65, -0.4],
+      [5.2, 1.1, 3.6],
+      [5.2, 2.1, 4],
       [
         [0, 0.16],
         [0.2, 0.3],
@@ -154,7 +157,7 @@ export function buildHab() {
       ],
       0,
     );
-    model.cylinder([1.5, 5.02, -0.65], [1.5, 5.58, -0.43], 0.03, 2, 8);
+    model.cylinder([5.2, 1.47, 3.75], [5.2, 2.03, 3.97], 0.03, 2, 8);
     crate(model, 2.6, 0.35, 5.2);
     crate(model, 3.4, 0.35, 5.2);
   });

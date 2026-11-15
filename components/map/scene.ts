@@ -1,7 +1,13 @@
 // 3D scene helpers: MOLA terrain, the habitat model, and the dust-storm effect.
 import type { CustomLayerInterface, Map as MapLibreMap } from "maplibre-gl";
 import * as THREE from "three";
+import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { MARS_HORIZON_COLOR, MARS_SKY_COLOR, skyBackground } from "@/lib/mars/sky";
+import {
+  habitatDisplayScale,
+  habitatGlobeMatrix,
+  habitatProjection,
+} from "@/lib/mars/habitat-display";
 
 import type { LngLat } from "@/lib/mars/types";
 import {
@@ -254,50 +260,33 @@ export function setMarsSky(m: MapLibreMap) {
   m.once("remove", () => m.off("zoom", updateBackground));
 }
 
-/** Placeholder habitat built from primitives: hab module, airlock, solar arrays. Units are Mars metres. */
-function buildHabitat(): THREE.Group {
-  const g = new THREE.Group();
-  const white = new THREE.MeshStandardMaterial({ color: 0xe8e4de, roughness: 0.6 });
-  const grey = new THREE.MeshStandardMaterial({ color: 0x8a8a8a, roughness: 0.8 });
-  const panel = new THREE.MeshStandardMaterial({ color: 0x1e2a4a, roughness: 0.3, metalness: 0.5 });
-
-  const hab = new THREE.Mesh(new THREE.CylinderGeometry(5, 5, 4, 32), white);
-  hab.position.y = 2;
-  const dome = new THREE.Mesh(
-    new THREE.SphereGeometry(5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
-    white,
-  );
-  dome.position.y = 4;
-  const airlock = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 4, 16), grey);
-  airlock.rotation.z = Math.PI / 2;
-  airlock.position.set(6.5, 1.5, 0);
-  g.add(hab, dome, airlock);
-
-  for (const z of [-14, 14]) {
-    for (const x of [-6, 6]) {
-      const array = new THREE.Mesh(new THREE.BoxGeometry(8, 0.15, 4), panel);
-      array.position.set(x, 1.6, z);
-      array.rotation.x = -0.35;
-      const post = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 1.6, 6), grey);
-      post.position.set(x, 0.8, z);
-      g.add(array, post);
-    }
-  }
-  return g;
+function disposeModel(model: THREE.Object3D) {
+  model.traverse((object) => {
+    if (!(object instanceof THREE.Mesh)) return;
+    object.geometry.dispose();
+    const materials = Array.isArray(object.material) ? object.material : [object.material];
+    materials.forEach((material) => material.dispose());
+  });
 }
 
 /** three.js custom layer placing the habitat on the terrain at `at`. */
-export function habitatLayer(maplibregl: MapLibreGL, at: LngLat): CustomLayerInterface {
+export function habitatLayer(
+  maplibregl: MapLibreGL,
+  at: LngLat,
+  onEnlargedChange?: (enlarged: boolean) => void,
+): CustomLayerInterface {
   const camera = new THREE.Camera();
   const scene = new THREE.Scene();
-  scene.add(buildHabitat());
-  scene.add(new THREE.AmbientLight(0xffe6cc, 1.2));
-  const sun = new THREE.DirectionalLight(0xfff0dd, 2.2);
+  scene.add(new THREE.HemisphereLight(0xffeee0, 0x785849, 1.8));
+  const sun = new THREE.DirectionalLight(0xfff4e8, 2.8);
   sun.position.set(40, 60, 20);
   scene.add(sun);
 
   let renderer: THREE.WebGLRenderer;
   let map: MapLibreMap;
+  let removed = false;
+  let bounds: THREE.Box3 | undefined;
+  let enlarged = false;
 
   return {
     id: "habitat",
@@ -307,10 +296,29 @@ export function habitatLayer(maplibregl: MapLibreGL, at: LngLat): CustomLayerInt
       map = m;
       renderer = new THREE.WebGLRenderer({ canvas: m.getCanvas(), context: gl, antialias: true });
       renderer.autoClear = false;
+      new GLTFLoader().load(
+        "/models/mars/hab.glb",
+        (gltf) => {
+          if (removed) {
+            disposeModel(gltf.scene);
+            return;
+          }
+          // The authored asset is already ground-centered, Y-up and measured in metres.
+          scene.add(gltf.scene);
+          bounds = new THREE.Box3().setFromObject(gltf.scene);
+          map.triggerRepaint();
+        },
+        undefined,
+        () => {
+          if (!removed)
+            map.fire("error", {
+              error: new Error("Habitat model could not load. Reload the map to retry."),
+            });
+        },
+      );
     },
     render(_gl, { defaultProjectionData }) {
-      // The model uses a local Mercator matrix, after globe's close-up transition.
-      if (map.getZoom() < 7 || !map.getTerrain()) return;
+      if (map.getZoom() < 7 || !map.getTerrain() || !bounds) return;
       const elevation = map.queryTerrainElevation(at) ?? 0;
       const origin = maplibregl.MercatorCoordinate.fromLngLat(at, elevation);
       const scale = origin.meterInMercatorCoordinateUnits() * MARS_TO_MAP;
@@ -318,21 +326,39 @@ export function habitatLayer(maplibregl: MapLibreGL, at: LngLat): CustomLayerInt
         .makeTranslation(origin.x, origin.y, origin.z ?? 0)
         .scale(new THREE.Vector3(scale, -scale, scale))
         .multiply(new THREE.Matrix4().makeRotationX(Math.PI / 2));
-      camera.projectionMatrix = new THREE.Matrix4()
-        .fromArray(defaultProjectionData.mainMatrix)
+      const flat = new THREE.Matrix4()
+        .fromArray(defaultProjectionData.fallbackMatrix)
         .multiply(model);
+      const globe = new THREE.Matrix4()
+        .fromArray(defaultProjectionData.mainMatrix)
+        .multiply(habitatGlobeMatrix(at[0], at[1], elevation));
+      camera.projectionMatrix = habitatProjection(
+        flat,
+        globe,
+        defaultProjectionData.projectionTransition,
+      );
+      const canvas = map.getCanvas();
+      const displayScale = habitatDisplayScale(
+        camera.projectionMatrix,
+        bounds,
+        canvas.clientWidth,
+        canvas.clientHeight,
+      );
+      const nextEnlarged = displayScale > 1.001;
+      if (nextEnlarged !== enlarged) {
+        enlarged = nextEnlarged;
+        onEnlargedChange?.(enlarged);
+      }
+      camera.projectionMatrix.scale(new THREE.Vector3(displayScale, displayScale, displayScale));
       renderer.resetState();
+      // A display-sized symbol must not disappear beneath terrain outside its true footprint.
+      if (enlarged) renderer.clearDepth();
       renderer.render(scene, camera);
       map.triggerRepaint();
     },
     onRemove() {
-      scene.traverse((object) => {
-        if (object instanceof THREE.Mesh) {
-          object.geometry.dispose();
-          const materials = Array.isArray(object.material) ? object.material : [object.material];
-          materials.forEach((material) => material.dispose());
-        }
-      });
+      removed = true;
+      disposeModel(scene);
       renderer.dispose();
     },
   };

@@ -57,6 +57,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [cursor, setCursor] = useState<LngLat | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [sites, setSites] = useState<SitePoi[]>([]);
+  const [habitatEnlarged, setHabitatEnlarged] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -163,7 +164,11 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               id: `${layer.id}-point`,
               type: "circle",
               source: layer.id,
-              filter: ["==", ["geometry-type"], "Point"],
+              filter: [
+                "all",
+                ["==", ["geometry-type"], "Point"],
+                ["any", ["!=", ["get", "kind"], "base"], ["<", ["zoom"], 7]],
+              ],
               layout: { visibility },
               paint: {
                 "circle-radius": 7,
@@ -176,7 +181,11 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               id: `${layer.id}-label`,
               type: "symbol",
               source: layer.id,
-              filter: ["==", ["geometry-type"], "Point"],
+              filter: [
+                "all",
+                ["==", ["geometry-type"], "Point"],
+                ["any", ["!=", ["get", "kind"], "base"], ["<", ["zoom"], 7]],
+              ],
               layout: {
                 visibility,
                 "text-field": ["coalesce", ["get", "title"], ["get", "name"], ""],
@@ -204,7 +213,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
         }
         // Above the manifest imagery so the overlay isn't hidden under CTX near the habitat.
         addThermalInertia(m);
-        m.addLayer(habitatLayer(maplibregl, HABITAT));
+        m.addLayer(habitatLayer(maplibregl, HABITAT, setHabitatEnlarged));
         setLoaded(m);
       });
     })().catch((error: unknown) => {
@@ -255,7 +264,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               <LaraRouteBridge map={loaded} />
               <LaraExpeditionBridge />
               <CrewLayer map={loaded} />
-              <HomebaseMapEntry map={loaded} habitat={HABITAT} />
+              <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
               <Tooltip>
                 <TooltipTrigger
                   render={

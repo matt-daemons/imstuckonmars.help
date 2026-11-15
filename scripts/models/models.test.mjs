@@ -8,6 +8,23 @@ import { assertClose, assertEquivalentGlb, decodeGlb } from "./glb-assertions.mj
 
 const output = new URL("../../public/models/mars/", import.meta.url);
 
+test("habitat has a clear roof and a ground-mounted dish beside the shell", () => {
+  const model = buildHab();
+  assert.equal(model.bounds().max[1], 5);
+  const part = model.parts.find(
+    (part) => part.name === "Ground-mounted communications dish and equipment",
+  );
+  assert.ok(part);
+  const offset = model.parts
+    .slice(0, model.parts.indexOf(part))
+    .reduce((sum, part) => sum + part.triangles, 0);
+  const vertices = model.triangles
+    .slice(offset, offset + part.triangles)
+    .flatMap((triangle) => triangle.vertices);
+  assert.ok(vertices.every(([x, y]) => x > 2 && y < 3));
+  assert.ok(vertices.some(([x, y]) => x > 4.5 && y < 0.2));
+});
+
 test("box normals point outwards on every face", () => {
   const model = new Model("box", "Box");
   model.box([0, 0, 0], [2, 2, 2], 0);

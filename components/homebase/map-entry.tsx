@@ -9,7 +9,15 @@ import { HomebaseDashboard } from "./dashboard";
 import type { LngLat } from "@/lib/mars/types";
 
 /** Keep the map alive underneath a read-only dashboard; closing returns to its exact view. */
-export function HomebaseMapEntry({ map, habitat }: { map: MapLibreMap | null; habitat: LngLat }) {
+export function HomebaseMapEntry({
+  map,
+  habitat,
+  enlarged = false,
+}: {
+  map: MapLibreMap | null;
+  habitat: LngLat;
+  enlarged?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
   const [shortcut, setShortcut] = useState<HTMLDivElement | null>(null);
@@ -34,7 +42,7 @@ export function HomebaseMapEntry({ map, habitat }: { map: MapLibreMap | null; ha
     const element = document.createElement("div");
     void import("maplibre-gl").then(({ Marker }) => {
       if (cancelled) return;
-      marker = new Marker({ element, anchor: "bottom", offset: [0, -12] })
+      marker = new Marker({ element, anchor: "bottom", offset: [0, enlarged ? -64 : -12] })
         .setLngLat([lng, lat])
         .addTo(map);
       setTarget(element);
@@ -51,16 +59,20 @@ export function HomebaseMapEntry({ map, habitat }: { map: MapLibreMap | null; ha
       setTarget(null);
       map.off("click", click);
     };
-  }, [map, lng, lat]);
+  }, [map, lng, lat, enlarged]);
   const trigger = (
     <button
       type="button"
       className="homebase-map-trigger"
       onClick={() => setOpen(true)}
-      aria-label="Open homebase mission dashboard"
+      aria-label={
+        enlarged
+          ? "Open homebase mission dashboard. Model not to scale."
+          : "Open homebase mission dashboard"
+      }
     >
       <Home aria-hidden />
-      Homebase
+      Homebase{enlarged && " · Not to scale"}
     </button>
   );
   return (

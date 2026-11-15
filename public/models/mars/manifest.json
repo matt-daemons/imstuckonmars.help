@@ -17,14 +17,14 @@
       "path": "/models/mars/hab.glb",
       "preview": "/models/mars/hab.png",
       "rear_preview": "/models/mars/hab-rear.png",
-      "byte_length": 710912,
-      "sha256": "777c5582386c902af5f5976692e055691ddcf5667577390b7e2627b088413d3c",
-      "triangles": 9812,
+      "byte_length": 717540,
+      "sha256": "85cd979d4dbd290b4f94918e213ca957f09b5ab3ce2712e9faebfcb117c24f37",
+      "triangles": 9904,
       "bounds_m": {
         "min": [-8.43, 0, -4.5],
-        "max": [8.43, 6.25, 7.54]
+        "max": [8.43, 5, 7.54]
       },
-      "dimensions_m": [16.86, 6.25, 12.04],
+      "dimensions_m": [16.86, 5, 12.04],
       "parts": [
         {
           "name": "Raised deck and eight leveling feet",
@@ -47,8 +47,8 @@
           "triangles": 1392
         },
         {
-          "name": "Communications mast, dish and roof equipment",
-          "triangles": 464
+          "name": "Ground-mounted communications dish and equipment",
+          "triangles": 556
         }
       ]
     },
