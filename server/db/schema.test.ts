@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { DatabaseSync } from "node:sqlite";
 import { is } from "drizzle-orm";
 import { getTableConfig, SQLiteTable } from "drizzle-orm/sqlite-core";
@@ -6,7 +6,12 @@ import { afterAll, describe, expect, it } from "vitest";
 import * as schema from "./schema";
 
 const sqlite = new DatabaseSync(":memory:");
-sqlite.exec(readFileSync(new URL("../../migrations/0001_telemetry.sql", import.meta.url), "utf8"));
+// Apply every Wrangler migration in order, as D1 does.
+const migrations = new URL("../../migrations/", import.meta.url);
+for (const name of readdirSync(migrations)
+  .filter((file) => file.endsWith(".sql"))
+  .sort())
+  sqlite.exec(readFileSync(new URL(name, migrations), "utf8"));
 afterAll(() => sqlite.close());
 const tables = Object.values(schema).filter((value) => is(value, SQLiteTable));
 
@@ -18,7 +23,7 @@ describe("Drizzle mapping of the existing D1 schema", () => {
     expect(tables.map((table) => getTableConfig(table).name).sort()).toEqual(
       actual.map((row) => row.name),
     );
-    expect(tables).toHaveLength(18);
+    expect(tables).toHaveLength(19);
   });
 
   for (const table of tables) {

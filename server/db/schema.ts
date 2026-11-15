@@ -378,6 +378,27 @@ export const metricRollups = sqliteTable(
   (t) => [primaryKey({ columns: [t.product_id, t.field, t.bucket_sclk_ms] })],
 );
 
+// Curiosity RAD at Gale crater, aligned by UTC. No sclk_ms: MSL and Perseverance clocks differ.
+export const radObservations = sqliteTable(
+  "rad_observations",
+  {
+    product_id: text()
+      .notNull()
+      .references(() => sourceProducts.id),
+    source_row: integer().notNull(),
+    utc_ms: integer().notNull(),
+    alive_time_s: real(),
+    flag: text(),
+    dose_rate_b_ugy_day: real(),
+    dose_rate_b_rtg_corrected_ugy_day: real(),
+    dose_rate_e_ugy_day: real(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.product_id, t.source_row] }),
+    index("rad_time").on(t.product_id, t.utc_ms),
+  ],
+);
+
 export const missionSessions = sqliteTable(
   "mission_sessions",
   {
