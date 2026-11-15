@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/accordion";
 
 import { splitHeadline } from "./headline";
+import { MissionSummary } from "./mission-summary-dialog";
 import { ReturnCheck } from "./return-check";
 import { RouteCompare } from "./route-compare";
 import { StormDrill } from "./storm-drill";
@@ -105,7 +106,10 @@ function CheckLayout({
       <div role="status">{status}</div>
       <ReturnCheck />
       {split.headline.length > 0 && <Readouts items={split.headline} className="grid-cols-3" />}
-      {fit}
+      <div className="flex flex-wrap gap-2">
+        {fit}
+        <MissionSummary status={status} keyNumbers={split.headline} assumptions={assumptions} />
+      </div>
       <RouteCompare />
       <Accordion multiple>
         <AccordionItem value="details">

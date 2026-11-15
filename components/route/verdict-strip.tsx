@@ -134,7 +134,7 @@ export function VerdictStrip() {
 }
 
 /** The walk's verdict, or null while there is no walk. */
-function walkVerdict(
+export function walkVerdict(
   plan: RoutePlan["walk"]["plan"],
   fromHabitat: boolean,
   conditions: Conditions,
@@ -154,7 +154,7 @@ function walkVerdict(
 }
 
 /** The trip's verdict, or null; the plan is null while a new trip is planned, so none goes stale. */
-function tripVerdict({ plan }: DriveWalk, conditions: Conditions): StripVerdict | null {
+export function tripVerdict({ plan }: DriveWalk, conditions: Conditions): StripVerdict | null {
   const route = plan?.collection?.route;
   const walkRoute = plan?.walk?.route;
   const check = plan && tripWithStorms(plan, conditions);
