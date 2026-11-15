@@ -159,6 +159,16 @@ describe("A* route", () => {
     for (let row = 8; row <= 11; row++)
       for (let col = 8; col <= 11; col++) expected.push(row * 20 + col);
     expect([...walls.keys()].filter((cell) => walls[cell])).toEqual(expected);
+    const start = center(grid, 10, 10);
+    const goal = center(grid, 15, 15);
+    const slope = slopeDegrees(grid);
+    expect(findPath(grid, slope, walls, start, goal)).toMatchObject({
+      status: "start_blocked",
+      blocked_by: "zone_or_obstacle",
+    });
+    const cleared = findPath(grid, slope, wallMask(grid, slope, []), start, goal);
+    expect(cleared.status).toBe("ok");
+    expect(cleared.path.at(-1)).toEqual(goal);
   });
 
   it("reports no_path when the goal is walled in", () => {
@@ -185,6 +195,34 @@ describe("A* route", () => {
     expect(route(grid, walls, gridPoint(grid, 5, -1), center(grid, 10, 10)).status).toBe(
       "outside_grid",
     );
+  });
+
+  it("distinguishes excluded endpoints from steep and missing terrain without changing rejection", () => {
+    const grid = flatGrid(20, 20, 10);
+    const start = center(grid, 3, 3);
+    const goal = center(grid, 10, 10);
+    const cell = cellAt(grid, start)!;
+    const slope = slopeDegrees(grid);
+    const walls = openWalls(grid);
+    walls[cell] = 1;
+    expect(findPath(grid, slope, walls, start, goal)).toMatchObject({
+      status: "start_blocked",
+      blocked_by: "zone_or_obstacle",
+      path: [],
+      expanded: 0,
+    });
+    expect(findPath(grid, slope, walls, goal, start)).toMatchObject({
+      status: "goal_blocked",
+      blocked_by: "zone_or_obstacle",
+    });
+    slope[cell] = 21;
+    expect(findPath(grid, slope, walls, start, goal)).toMatchObject({ blocked_by: "slope" });
+    slope[cell] = 11;
+    expect(findPath(grid, slope, walls, start, goal, { maxSlopeDeg: 10 })).toMatchObject({
+      blocked_by: "slope",
+    });
+    slope[cell] = NaN;
+    expect(findPath(grid, slope, walls, start, goal)).toMatchObject({ blocked_by: "no_data" });
   });
 
   it("returns a two-point path when start and goal share a cell", () => {
