@@ -2,7 +2,13 @@ import { describe, expect, it } from "vitest";
 
 import { cellAt, cellCenter, type EquirectMeta, type RouteGrid } from "./route-grid";
 import { marsDistanceM } from "./routing";
-import { findStagingPoint, PARKING_SQUARE_M, siteGridFromSlope, type SiteGrid } from "./site-grid";
+import {
+  findStagingPoint,
+  PARKING_SQUARE_M,
+  siteGridFromSlope,
+  withZones,
+  type SiteGrid,
+} from "./site-grid";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat } from "./types";
 
@@ -36,6 +42,36 @@ describe("siteGridFromSlope", () => {
     );
     expect(Array.from(walls)).toEqual(inside);
     expect(walls.reduce((sum, wall) => sum + wall, 0)).toBeGreaterThan(10);
+  });
+});
+
+describe("withZones", () => {
+  it("walls the cells inside a drawn zone and keeps the boulder walls", () => {
+    const boulder = { center: [10 * DEG_PER_M, -10 * DEG_PER_M] as LngLat, radius_m: 3 };
+    const site = siteGridFromSlope(rasterMeta(60, 60), new Int16Array(3600), [boulder]);
+    // A 20 m square zone over the south-east corner of the 60 m site.
+    const [west, north, east, south] = [40, -40, 60, -60].map((m) => m * DEG_PER_M);
+    const zone = {
+      id: "z",
+      name: "Z",
+      ring: [
+        [west, north],
+        [east, north],
+        [east, south],
+        [west, south],
+      ] as LngLat[],
+    };
+    const zoned = withZones(site, [zone]);
+    const inZone = (cell: number) => {
+      const [lng, lat] = cellCenter(site.grid, cell);
+      return lng > west && lng < east && lat < north && lat > south;
+    };
+    const expected = Array.from(site.walls, (wall, cell) => (wall || inZone(cell) ? 1 : 0));
+    expect(Array.from(zoned.walls)).toEqual(expected);
+    expect(zoned.walls.reduce((sum, wall) => sum + wall, 0)).toBeGreaterThan(
+      site.walls.reduce((sum, wall) => sum + wall, 0) + 90,
+    );
+    expect(withZones(site, [])).toBe(site);
   });
 });
 

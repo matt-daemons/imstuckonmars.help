@@ -4,7 +4,7 @@ import { ROVER_RULES } from "../flight-rules/rover-rules";
 import { FLIGHT_RULES } from "../flight-rules/rules";
 import { SITE_DATA_ROOT } from "./map-data";
 import { cellAt, cellCenter, cellSize, type EquirectMeta, type RouteGrid } from "./route-grid";
-import { marsDistanceM, wallMask } from "./routing";
+import { marsDistanceM, wallMask, type NoGoZone } from "./routing";
 import { MARS_RADIUS_M } from "./terrain";
 import type { LngLat } from "./types";
 
@@ -105,6 +105,13 @@ function maxPool(
     }
   }
   return slope;
+}
+
+/** The site with hand-drawn no-go zones walled too, so neither the walk nor the parking spot enters them. */
+export function withZones(site: SiteGrid, zones: NoGoZone[]): SiteGrid {
+  if (!zones.length) return site;
+  const inZone = wallMask(site.grid, site.slope, zones, Infinity); // zones only: steep cells are walled already
+  return { ...site, walls: site.walls.map((wall, cell) => wall | inZone[cell]) };
 }
 
 /** Walls every cell whose centre lies within the boulder's radius. */

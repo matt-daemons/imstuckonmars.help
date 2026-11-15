@@ -6,7 +6,7 @@ import type { PowerSource } from "@/lib/mars/driving";
 import { loadDriveGrid } from "@/lib/mars/load-route-grid";
 import { toGridLng, type RouteGrid } from "@/lib/mars/route-grid";
 import { slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
-import { loadSiteGrid, type SiteGrid, type SiteInfo } from "@/lib/mars/site-grid";
+import { loadSiteGrid, withZones, type SiteGrid, type SiteInfo } from "@/lib/mars/site-grid";
 import type { LngLat } from "@/lib/mars/types";
 
 import type { SitePoi } from "./scene-panel";
@@ -110,7 +110,7 @@ export function useDriveWalk(inputs: DriveWalkInputs, enabled: boolean) {
         request.driveGrid,
         slope,
         walls,
-        request.siteGrid,
+        withZones(request.siteGrid, request.zones),
         request.site,
         request.start,
         request.power,
