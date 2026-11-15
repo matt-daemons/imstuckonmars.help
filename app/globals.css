@@ -526,3 +526,8 @@
   outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
+
+/* Hide map panels with CSS, not unmounting, so they keep their state (route, zones, chat). */
+[data-panels-hidden] [data-map-panel] {
+  display: none;
+}
