@@ -39,25 +39,35 @@ export interface SimulationSummary {
 }
 
 export interface LaraBridge {
-  /** Registers the handler for one action type; returns a function that removes it. */
+  /**
+   * Registers a handler for one action type; returns a function that removes it. One type can have
+   * several handlers, for example focus_map for the route and for the rover: each runs, and each
+   * ignores what is not its own.
+   */
   handle<T extends LaraActionType>(type: T, fn: (action: ActionOf<T>) => void): () => void;
   /** Registers a reader for one context key; returns a function that removes it. */
   provide(key: LaraContextKey, read: () => unknown): () => void;
   /** Runs the action; false when nothing handles it. */
   run(action: LaraAction): boolean;
-  /** The current value of every registered context key. */
+  /** The current value of every registered context key; a key whose reader throws is left out. */
   context(): Partial<Record<LaraContextKey, unknown>>;
+  /** Registers how LARA says a line aloud; returns a function that removes it. */
+  speaker(fn: (text: string) => void): () => void;
+  /** Says a fixed line in LARA's voice, without the model; false when no speaker is registered. */
+  say(text: string): boolean;
 }
 
 export function createLaraBridge(): LaraBridge {
-  const handlers = new Map<LaraActionType, (action: LaraAction) => void>();
+  const handlers = new Map<LaraActionType, Set<(action: LaraAction) => void>>();
   const readers = new Map<LaraContextKey, () => unknown>();
+  let speak: ((text: string) => void) | null = null;
   return {
     handle(type, fn) {
       const handler = fn as (action: LaraAction) => void;
-      handlers.set(type, handler);
+      const forType = handlers.get(type) ?? new Set();
+      handlers.set(type, forType.add(handler));
       return () => {
-        if (handlers.get(type) === handler) handlers.delete(type);
+        forType.delete(handler);
       };
     },
     provide(key, read) {
@@ -67,15 +77,33 @@ export function createLaraBridge(): LaraBridge {
       };
     },
     run(action) {
-      const handler = handlers.get(action.type);
-      if (!handler) return false;
-      handler(action);
-      return true;
+      const forType = [...(handlers.get(action.type) ?? [])];
+      for (const handler of forType) handler(action);
+      return forType.length > 0;
     },
     context() {
-      return Object.fromEntries([...readers].map(([key, read]) => [key, read()]));
+      return Object.fromEntries([...readers].flatMap(([key, read]) => readSafely(key, read)));
+    },
+    speaker(fn) {
+      speak = fn;
+      return () => {
+        if (speak === fn) speak = null;
+      };
+    },
+    say(text) {
+      if (!speak) return false;
+      speak(text);
+      return true;
     },
   };
+}
+
+function readSafely(key: LaraContextKey, read: () => unknown): [LaraContextKey, unknown][] {
+  try {
+    return [[key, read()]];
+  } catch {
+    return [];
+  }
 }
 
 const BridgeContext = createContext<LaraBridge | null>(null);

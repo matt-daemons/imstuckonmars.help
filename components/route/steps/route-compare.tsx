@@ -5,6 +5,7 @@ import { useId, useMemo } from "react";
 import { VERDICT_STYLES } from "@/components/map/route-result";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Table,
   TableBody,
@@ -13,9 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { RouteChoice } from "@/lib/mars/drive-walk";
 import type { Verdict } from "@/lib/mars/types";
 import { cn } from "@/lib/utils";
 
+import { chooseRoute } from "../route-choice";
 import { driveWalkComparison, walkComparison } from "../route-comparison";
 import { useRoutePlan } from "../route-plan-provider";
 import { RouteProfile } from "./route-profile";
@@ -28,13 +31,15 @@ const VALUE = cn(COLUMN, "font-mono tabular-nums");
 
 /**
  * Step ③'s comparison of the planned (safest) route with the shortest one the same walls allow:
- * the numbers side by side, their route-rule verdicts, and the ground along the way out.
+ * the numbers side by side, their route-rule verdicts, and the ground along the way out. The
+ * operator, or LARA, chooses which one the expedition follows.
  */
 export function RouteCompare() {
   const { inputs, dispatch, walk, journey } = useRoutePlan();
-  const { mission, showShortest } = inputs;
+  const { mission, showShortest, route } = inputs;
   const titleId = useId();
   const switchLabelId = useId();
+  const choiceLabelId = useId();
   const comparison = useMemo(
     () =>
       mission === "walking"
@@ -59,6 +64,22 @@ export function RouteCompare() {
           />
           <span id={switchLabelId}>Show shortest on map</span>
         </label>
+      </div>
+      <div className="flex items-center justify-between gap-3">
+        <span id={choiceLabelId} className="text-xs">
+          Expedition follows
+        </span>
+        <ToggleGroup
+          aria-labelledby={choiceLabelId}
+          variant="outline"
+          size="sm"
+          value={[route]}
+          // Safe cast: the only values are the two items below; [] (pressing the chosen one) keeps it.
+          onValueChange={(value) => value[0] && chooseRoute(dispatch, value[0] as RouteChoice)}
+        >
+          <ToggleGroupItem value="safest">Safest</ToggleGroupItem>
+          <ToggleGroupItem value="shortest">Shortest</ToggleGroupItem>
+        </ToggleGroup>
       </div>
       <Table>
         <TableHeader>

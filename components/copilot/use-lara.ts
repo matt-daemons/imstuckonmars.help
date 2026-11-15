@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import type { ReturnRoute } from "@/lib/mission/types";
 
+import { useLaraBridge, type LaraAction } from "./lara-bridge";
 import {
   answerWakeQuestion,
   FOLLOW_UP_PROMPTS,
@@ -41,6 +42,13 @@ interface MissionSnapshot {
   };
 }
 
+/** The subset of POST /api/copilot/:id/ask the chat reads. */
+interface AskReply {
+  text: string;
+  /** App actions LARA named, for the browser to carry out. */
+  actions?: LaraAction[];
+}
+
 /** The subset of POST /api/missions/:id/assess-return the route check reads. */
 export interface ReturnAssessment {
   status: "modeled_resource_feasible" | "modeled_constraint_violation" | "unknown";
@@ -54,6 +62,7 @@ const WAKE_REPLY = "Yes?";
 const ASK_DONE_CHECK_MS = 100;
 export const POLL_MS = 2000;
 const HISTORY_TURNS = 8;
+const ACTION_GAP_MS = 50;
 
 async function json<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & { error?: { message?: string } };
@@ -75,6 +84,11 @@ export function useLara() {
   const recorder = useRef<MediaRecorder | null>(null);
   const audio = useRef<HTMLAudioElement | null>(null);
   const busy = useRef(false);
+  const bridge = useLaraBridge();
+  // Each line waits for the one before it, so a line never cuts off another.
+  const speechQueue = useRef<Promise<void>>(Promise.resolve());
+  /** Lines LARA repeats (the wake reply, follow-up prompts, sign-offs, fixed lines), synthesized once. */
+  const phraseClips = useRef(new Map<string, Promise<Blob>>());
 
   const authed = useCallback(
     (path: string, init: RequestInit = {}) => {
@@ -135,6 +149,18 @@ export function useLara() {
     [authed, mission],
   );
 
+  const phraseClip = useCallback(
+    (text: string) => {
+      const cached = phraseClips.current.get(text);
+      if (cached) return cached;
+      const clip = synthesize(text);
+      phraseClips.current.set(text, clip);
+      clip.catch(() => phraseClips.current.delete(text));
+      return clip;
+    },
+    [synthesize],
+  );
+
   const play = useCallback(async (clip: Blob) => {
     const url = URL.createObjectURL(clip);
     audio.current?.pause();
@@ -148,13 +174,51 @@ export function useLara() {
     URL.revokeObjectURL(url);
   }, []);
 
+  const enqueueSpeech = useCallback(
+    (clip: Promise<Blob>) => {
+      const spoken = speechQueue.current.then(async () => {
+        setStatus("speaking");
+        await play(await clip);
+      });
+      speechQueue.current = spoken.catch(() => {});
+      return spoken;
+    },
+    [play],
+  );
+
   const speak = useCallback(
     async (text: string) => {
       if (!mission || !voice) return;
-      setStatus("speaking");
-      await play(await synthesize(text));
+      await enqueueSpeech(synthesize(text));
     },
-    [mission, play, synthesize, voice],
+    [enqueueSpeech, mission, synthesize, voice],
+  );
+
+  /** Says one of the app's fixed lines at once, keeping its clip for the next time. */
+  const say = useCallback(
+    (text: string) => {
+      setTurns((t) => [...t, { role: "assistant", content: text }]);
+      if (!mission || !voice) return;
+      enqueueSpeech(phraseClip(text)).catch(() => setError("LARA's voice is unavailable"));
+    },
+    [enqueueSpeech, mission, phraseClip, voice],
+  );
+
+  useEffect(() => bridge.speaker(say), [bridge, say]);
+
+  // A gap between actions lets React render the last one, so the next handler sees its result.
+  const runActions = useCallback(
+    async (actions: LaraAction[]) => {
+      for (const [index, action] of actions.entries()) {
+        if (index > 0) await afterRender();
+        try {
+          bridge.run(action);
+        } catch {
+          setError(`The app could not carry out ${action.type.replaceAll("_", " ")}`);
+        }
+      }
+    },
+    [bridge],
   );
 
   const ask = useCallback(
@@ -173,13 +237,14 @@ export function useLara() {
       setTurns((t) => [...t, userTurn]);
       setStatus("thinking");
       try {
-        const answer = await json<{ text: string }>(
+        const answer = await json<AskReply>(
           await authed(`copilot/${mission.id}/ask`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...input, history }),
+            body: JSON.stringify({ ...input, history, context: bridge.context() }),
           }),
         );
+        await runActions(answer.actions ?? []);
         setTurns((t) => [...t, { role: "assistant", content: answer.text, alert: userTurn.alert }]);
         await speak(answer.text);
       } catch (e) {
@@ -189,7 +254,7 @@ export function useLara() {
         setStatus("idle");
       }
     },
-    [authed, mission, speak, turns],
+    [authed, bridge, mission, runActions, speak, turns],
   );
 
   // Poll the mission; announce any finding that was not present before.
@@ -313,25 +378,15 @@ export function useLara() {
 
   const stopListening = useCallback(() => recorder.current?.stop(), []);
 
-  /** Short phrases LARA repeats (the wake reply, follow-up prompts, sign-offs), synthesized once. */
-  const phraseClips = useRef(new Map<string, Promise<Blob>>());
-  const phraseClip = (text: string) => {
-    const cached = phraseClips.current.get(text);
-    if (cached) return cached;
-    const clip = synthesize(text);
-    phraseClips.current.set(text, clip);
-    clip.catch(() => phraseClips.current.delete(text));
-    return clip;
-  };
   const prefetchFollowUpPhrases = () => {
     if (voice) [...FOLLOW_UP_PROMPTS, ...SIGN_OFFS].forEach(phraseClip);
   };
   /** Plays a short phrase. Resolves once it has finished, or at once with the voice off. */
   const sayPhrase = async (text: string) => {
     if (!voice) return;
-    setStatus("speaking");
     try {
-      await play(await phraseClip(text));
+      // Queued, so a phrase never cuts off a fixed line or an answer still playing.
+      await enqueueSpeech(phraseClip(text));
     } catch {
       // Without the clip, LARA skips the phrase and keeps going.
     }
@@ -390,6 +445,10 @@ export function useLara() {
     stopListening,
     wakeHandlers,
   };
+}
+
+function afterRender(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ACTION_GAP_MS));
 }
 
 /** `crypto.randomUUID` exists only in secure contexts (HTTPS/localhost); LAN-IP dev over HTTP lacks it. */
