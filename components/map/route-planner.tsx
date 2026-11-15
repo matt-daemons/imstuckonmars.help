@@ -4,16 +4,6 @@ import { ChevronDownIcon } from "lucide-react";
 import type { LngLat as MapboxLngLat, Map as MapboxMap, MapMouseEvent } from "mapbox-gl";
 import { useEffect, useEffectEvent, useMemo, useRef, useState } from "react";
 
-import {
-  AlertDialog,
-  AlertDialogClose,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogPopup,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Kbd } from "@/components/ui/kbd";
@@ -35,6 +25,7 @@ import {
   SOURCES,
   zoneFeature,
 } from "./route-layers";
+import { ClearZonesButton } from "./clear-zones-button";
 import { RouteResult } from "./route-result";
 
 type Mode = "start" | "end" | "zone" | null;
@@ -61,6 +52,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   const [draft, setDraft] = useState<LngLat[]>([]);
   const [mode, setMode] = useState<Mode>(null);
   const zonesDrawn = useRef(0);
+  const drawZoneItem = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -150,6 +142,8 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     return () => {
       map.doubleClickZoom.enable();
       map.off("dblclick", onDoubleClick);
+      // Finish zone unmounts with drawing mode; if it had focus, hand focus to the map.
+      if (document.activeElement === document.body) map.getCanvas().focus();
     };
   }, [map, drawing]);
 
@@ -172,7 +166,7 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   }
 
   const searchLine = plan?.summary
-    ? `Search: A*, ${(plan.outbound.expanded + plan.back.expanded).toLocaleString("en-US")} cells searched.`
+    ? `Search: A*, ${(plan.outbound.expanded + plan.back.expanded).toLocaleString("en-US", { useGrouping: "min2" })} cells searched.`
     : "Search: A*.";
 
   return (
@@ -195,21 +189,16 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
           >
             <ToggleGroupItem value="start">Set start</ToggleGroupItem>
             <ToggleGroupItem value="end">Set end</ToggleGroupItem>
-            <ToggleGroupItem value="zone">Draw no-go zone</ToggleGroupItem>
+            <ToggleGroupItem ref={drawZoneItem} value="zone">
+              Draw no-go zone
+            </ToggleGroupItem>
           </ToggleGroup>
           {drawing && (
-            <Button
-              size="sm"
-              disabled={draft.length < 3}
-              onClick={() => {
-                finishZone();
-                map?.getCanvas().focus(); // the button unmounts, so focus would fall to the page
-              }}
-            >
+            <Button size="sm" disabled={draft.length < 3} onClick={finishZone}>
               {draft.length < 3 ? `Finish zone (${draft.length}/3)` : "Finish zone"}
             </Button>
           )}
-          <ClearZonesButton zones={zones} onClear={clearZones} map={map} />
+          <ClearZonesButton zones={zones} onClear={clearZones} focusAfterClear={drawZoneItem} />
         </div>
         {/* Always mounted, so screen readers announce the hint when it changes. */}
         <p aria-live="polite" className={mode ? "text-xs text-muted-foreground" : "sr-only"}>
@@ -226,26 +215,36 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
           No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
         </p>
         <div className="flex gap-3 text-xs text-muted-foreground">
+          {plan?.summary && (
+            <>
+              <span className="flex items-center gap-1">
+                <span aria-hidden className="h-1 w-4 bg-primary forced-color-adjust-none" />
+                Out
+              </span>
+              <span className="flex items-center gap-1">
+                <span
+                  aria-hidden
+                  className="w-4 border-t-2 border-dashed border-foreground forced-color-adjust-none"
+                />
+                Back
+              </span>
+            </>
+          )}
           <span className="flex items-center gap-1">
-            <span aria-hidden className="h-1 w-4 bg-primary" />
-            Out
-          </span>
-          <span className="flex items-center gap-1">
-            <span aria-hidden className="w-4 border-t-2 border-dashed border-foreground" />
-            Back
-          </span>
-          <span className="flex items-center gap-1">
-            <span aria-hidden className="size-3 bg-destructive" />
+            <span aria-hidden className="size-3 bg-destructive forced-color-adjust-none" />
             No-go zone
           </span>
         </div>
       </div>
       <Collapsible>
-        <CollapsibleTrigger render={<Button variant="ghost" size="xs" />}>
+        <CollapsibleTrigger
+          render={<Button variant="ghost" size="xs" />}
+          className="[&[data-panel-open]>svg]:rotate-180"
+        >
           Assumptions and data
           <ChevronDownIcon aria-hidden />
         </CollapsibleTrigger>
-        <CollapsiblePanel className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground">
+        <CollapsiblePanel className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground motion-reduce:transition-none">
           <p>
             Checks slope, walk-back distance and suit time only. The start point counts as base.
           </p>
@@ -258,48 +257,5 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
         </CollapsiblePanel>
       </Collapsible>
     </aside>
-  );
-}
-
-/** Clearing zones can turn a NO-GO into a GO, so it asks first. */
-function ClearZonesButton({
-  zones,
-  onClear,
-  map,
-}: {
-  zones: NoGoZone[];
-  onClear: () => void;
-  map: MapboxMap | null;
-}) {
-  // The zones as they were when the dialog opened, so its copy holds still while it closes.
-  const [asked, setAsked] = useState<NoGoZone[]>([]);
-  const count = asked.length;
-  const includesExample = asked.some((zone) => zone.id === EXAMPLE_ZONE.id);
-  return (
-    <AlertDialog onOpenChange={(open) => open && setAsked(zones)}>
-      <AlertDialogTrigger
-        disabled={zones.length === 0}
-        render={<Button size="sm" variant="destructive-outline" />}
-      >
-        Clear zones
-      </AlertDialogTrigger>
-      {/* After clearing, the trigger is disabled and cannot take focus back, so the map gets it. */}
-      <AlertDialogPopup data-hazard finalFocus={() => zones.length > 0 || map?.getCanvas()}>
-        <AlertDialogHeader>
-          <AlertDialogTitle>
-            Clear {count} no-go {count === 1 ? "zone" : "zones"}?
-          </AlertDialogTitle>
-          <AlertDialogDescription>
-            Routes will no longer avoid them.{includesExample && " This includes the example zone."}
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogClose render={<Button variant="ghost" />}>Cancel</AlertDialogClose>
-          <AlertDialogClose render={<Button variant="destructive" />} onClick={onClear}>
-            Clear zones
-          </AlertDialogClose>
-        </AlertDialogFooter>
-      </AlertDialogPopup>
-    </AlertDialog>
   );
 }

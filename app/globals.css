@@ -520,3 +520,9 @@
 .dark [data-slot="button"][class~="hover:bg-destructive/4"]:is(:hover, [data-pressed]) {
   background-color: color-mix(in srgb, var(--destructive) 12%, transparent);
 }
+
+/* The map canvas fills the viewport, so its focus ring is drawn inside the edge. */
+.mapboxgl-canvas:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
