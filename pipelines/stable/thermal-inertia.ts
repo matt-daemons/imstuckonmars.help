@@ -7,6 +7,8 @@
 //                    lon/lat Mars 2000 sphere. ⚠ Longitudes are 0..360 °E (170–196) because the AOI crosses ±180.
 //   Map overlay tiles: public/data/thermal-inertia/{z}/{x}/{y}.webp, z5–11 (classes below)
 //   Per-site summary:  public/data/processed/thermal-inertia-sites.json (mean/percentiles within RADIUS_M of each POI)
+//   Rover drive grid:  public/data/processed/rover/thermal-inertia-corridor.{bin,json} — Int16 thermal inertia on
+//                      the exact cells of mola-corridor.bin (pnpm pipe:mola-corridor), nodata −9999
 // Usage: pnpm pipe:thermal-inertia
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
@@ -70,6 +72,50 @@ await execa("gdal_translate", [
   ...["-q", "-of", "COG", "-ot", "Int16", "-a_nodata", "-9999"],
   ...["-co", "COMPRESS=DEFLATE", "-co", "PREDICTOR=2", ti, published],
 ]);
+
+// Thermal inertia on the rover's drive grid, cell for cell, so the drive planner can price soft ground.
+// Each 463 m cell holds ~15 THEMIS pixels; the median is the typical ground and ignores the odd rock or
+// dust patch. Cells with no THEMIS pixel stay nodata; the strip's outer 0.5° rows lie outside our box.
+const corridor = JSON.parse(readFileSync("public/data/processed/rover/mola-corridor.json", "utf8"));
+const corridorRaw = join(work, "ti-corridor.bin"); // ENVI: bare little-endian Int16, rows north to south
+const { west, south, east, north } = corridor.extent;
+await execa(
+  "gdalwarp",
+  [
+    ...["-q", "-overwrite", "-t_srs", mars0360, "-te", west, south, east, north],
+    ...["-ts", corridor.width, corridor.height, "-r", "med", "-srcnodata", "-9999"],
+    ...["-dstnodata", "-9999", "-ot", "Int16", "-of", "ENVI", published, corridorRaw],
+  ].map(String),
+);
+const corridorTi = new Int16Array(new Uint8Array(readFileSync(corridorRaw)).buffer);
+if (corridorTi.length !== corridor.width * corridor.height) {
+  throw new Error(`Corridor grid: ${corridorTi.length} cells, expected the MOLA strip's`);
+}
+const corridorCoverage =
+  Math.round((1000 * corridorTi.filter((v) => v !== -9999).length) / corridorTi.length) / 10;
+writeFileSync("public/data/processed/rover/thermal-inertia-corridor.bin", corridorTi);
+writeFileSync(
+  "public/data/processed/rover/thermal-inertia-corridor.json",
+  JSON.stringify(
+    {
+      width: corridor.width,
+      height: corridor.height,
+      west: corridor.west,
+      north: corridor.north,
+      degreesPerPixel: corridor.degreesPerPixel,
+      nodata: -9999,
+      coverage_percent: corridorCoverage,
+      units: "J m^-2 K^-1 s^-1/2",
+      source:
+        "THEMIS Thermal Inertia Mosaic, Quantitative, 100 m/px (USGS Astrogeology / ASU; Fergason et al. 2006)",
+      attribution: "NASA/JPL-Caltech/Arizona State University/USGS",
+      note: "Int16 thermal inertia, median of the THEMIS pixels in each cell of mola-corridor.bin (same grid). ±20 %, top few cm only; nodata is unknown ground, not firm ground.",
+    },
+    null,
+    2,
+  ) + "\n",
+);
+console.log(`Drive grid: THEMIS data for ${corridorCoverage} % of the MOLA strip's cells`);
 
 // Coloured overlay. Tiles are cut in −180..180 (Mapbox/MapLibre treat Mars degrees as Earth degrees),
 // so tile each side of the antimeridian separately; 180° is a tile edge at every zoom, so they don't overlap.
