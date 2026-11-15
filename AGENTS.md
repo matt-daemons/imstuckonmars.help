@@ -131,7 +131,7 @@ Use plain git on `main`. If a push is rejected, run `git pull --rebase` and push
   `pnpm dlx shadcn@latest add @coss/<name>`. Do not add shadcn/ui registry components.
   Keep coss files unmodified so they can be updated in place; customize through theme tokens in
   `app/globals.css` or wrapper components. Reference: https://coss.com/ui/llms.txt
-- `/design-system` (`app/design-system/`) shows every component and theme token. When you add a
+- The development-only `/design-system` (`app/design-system/`; 404 in production) shows every component and theme token. When you add a
   component, variant, or token, add it there too.
 - Visual design: the Hermes theme, after Territory Studio's screen graphics for The Martian
   (https://territorystudio.com/project/the-martian, the Hermes screens). Dark only (`dark` is
