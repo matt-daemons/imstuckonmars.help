@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeftIcon, ArrowRightIcon } from "lucide-react";
+import { ArrowLeftIcon, ArrowRightIcon, XIcon } from "lucide-react";
 import type { Map as MapLibreMap } from "maplibre-gl";
 import { useEffect, type ReactNode } from "react";
 
@@ -57,7 +57,7 @@ export function RouteSidebar({
   children?: ReactNode;
 }) {
   const { inputs, dispatch } = useRoutePlan();
-  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
+  const { isMobile, open, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const placement = usePlacement(map);
   const index = STEPS.findIndex(({ step }) => step === inputs.step);
   const atFirst = index === 0;
@@ -92,12 +92,23 @@ export function RouteSidebar({
           className="min-h-0 flex-1 gap-0"
         >
           <SidebarHeader className="gap-3 border-b bg-secondary p-4">
-            <h2 className="font-heading text-sm font-semibold">LARA · Arcadia base</h2>
+            <div className="flex items-center justify-between gap-2">
+              <h2 className="font-heading text-sm font-semibold">LARA · Arcadia base</h2>
+              {isMobile && (
+                <Button variant="outline" size="sm" onClick={() => setOpenMobile(false)}>
+                  <XIcon aria-hidden />
+                  Close
+                </Button>
+              )}
+            </div>
             {/* Full muted foreground: coss's 72 % muted tabs measure 3.8:1 on the tab bar. */}
-            <TabsList aria-label="Mission steps" className="w-full text-muted-foreground">
+            <TabsList
+              aria-label="Mission steps"
+              className="route-step-tabs w-full text-muted-foreground"
+            >
               {STEPS.map(({ step, number, label }) => (
                 <TabsTab key={step} value={step}>
-                  <span aria-hidden className="font-mono tabular-nums opacity-70">
+                  <span aria-hidden className="font-mono tabular-nums">
                     {number}
                   </span>
                   {label}
