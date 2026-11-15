@@ -8,10 +8,10 @@ import { FAKE_LAYERS, FAKE_SENSOR_COUNT, FAKE_SENSOR_VERSION } from "./fake-sens
 const entries = SOURCE_GROUPS.flatMap((g) => g.entries);
 
 describe("sources and caveats", () => {
-  it("credits all fictional sensor layers to the versioned ARES model, not NASA", () => {
+  it("credits all fictional sensor layers to the versioned LARA model, not NASA", () => {
     const source = entries.find((entry) => entry.id === "fake-sensors");
     expect(source?.kind).toBe("simulated");
-    expect(source?.credit).toContain("ARES");
+    expect(source?.credit).toContain("LARA");
     expect(source?.detail).toContain(String(FAKE_SENSOR_COUNT));
     expect(source?.detail).toContain(FAKE_SENSOR_VERSION);
     for (const layer of FAKE_LAYERS) expect(source?.use).toContain(layer.label);

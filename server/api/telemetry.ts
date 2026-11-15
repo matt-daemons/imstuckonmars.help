@@ -334,7 +334,7 @@ telemetry.get("/moxie/comparison", async (c) => {
   return c.json({
     release_id: release,
     experiments,
-    provenance: "ARES mathematical summaries of NASA archived telemetry",
+    provenance: "LARA mathematical summaries of NASA archived telemetry",
     warnings: [
       "Whole-run energy includes warmup and diagnostics",
       "Zero production differs from missing derived output",

@@ -25,6 +25,6 @@ function deleteSavedReports(): Promise<void> {
     request.onsuccess = () => resolve();
     request.onerror = () =>
       reject(request.error ?? new Error("Saved reports could not be cleared."));
-    request.onblocked = () => reject(new Error("Close other ARES tabs, then retry the reset."));
+    request.onblocked = () => reject(new Error("Close other LARA tabs, then retry the reset."));
   });
 }

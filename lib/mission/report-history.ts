@@ -29,7 +29,7 @@ function openDatabase(): Promise<IDBDatabase> {
     };
     request.onerror = () => reject(request.error);
     request.onblocked = () =>
-      reject(new Error("Close other ARES tabs and retry saving the report"));
+      reject(new Error("Close other LARA tabs and retry saving the report"));
   });
 }
 

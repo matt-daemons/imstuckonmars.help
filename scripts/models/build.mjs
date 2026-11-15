@@ -38,7 +38,7 @@ writeFileSync(
       version: 1,
       license: "MIT",
       attribution:
-        "Original ARES conceptual assets, 2026 matt-daemons. Not film assets or NASA hardware models.",
+        "Original LARA conceptual assets, 2026 matt-daemons. Not film assets or NASA hardware models.",
       units: "meters",
       coordinates: {
         handedness: "right",

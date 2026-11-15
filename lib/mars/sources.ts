@@ -254,7 +254,7 @@ export const SOURCE_GROUPS: SourceGroup[] = [
         id: "fake-sensors",
         title: "Fake data mode (future sensors)",
         kind: "simulated",
-        credit: "ARES / LARA team · deterministic synthetic generator",
+        credit: "LARA team · deterministic synthetic generator",
         detail: `${FAKE_SENSOR_VERSION} · ${FAKE_SENSOR_COUNT} fictional stations · ${FAKE_SOL_COUNT} Martian solar days · readings every ${FAKE_SAMPLE_SECONDS} seconds`,
         use: `Map-only demonstration, off by default under Debug. Layers: ${FAKE_LAYERS.map((layer) => layer.label).join(", ")}.`,
         caveats: [

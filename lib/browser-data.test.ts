@@ -58,9 +58,9 @@ describe("browser data reset", () => {
   it("reports failed deletion without clearing session or training", async () => {
     const f = fixture();
     const reset = resetBrowserData(f.browser, () =>
-      Promise.reject(new Error("Close other ARES tabs")),
+      Promise.reject(new Error("Close other LARA tabs")),
     );
-    await expect(reset).rejects.toThrow("Close other ARES tabs");
+    await expect(reset).rejects.toThrow("Close other LARA tabs");
     expect(f.session.get(MISSION_STORAGE_KEY)).toBe("session");
     expect(f.local.get(TRAINING_STORAGE_KEY)).toBe("progress");
   });
