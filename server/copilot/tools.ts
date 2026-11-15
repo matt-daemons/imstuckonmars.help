@@ -2,8 +2,8 @@ import * as zod from "zod";
 import type { Database } from "../db";
 import { FLIGHT_RULES, type Factor } from "../../lib/flight-rules/rules";
 import { projectResources } from "../../lib/copilot/projection";
-import { parseConfig, parseEvent } from "../../lib/mission/validation";
-import type { MoxieSample, ScenarioEvent } from "../../lib/mission/types";
+import { parseConfig } from "../../lib/mission/validation";
+import type { MoxieSample } from "../../lib/mission/types";
 import { explain } from "../mission/diagnostics";
 import { snapshot, type sessionFor } from "../mission/service";
 import { loadTrace } from "../telemetry/repository";
@@ -218,9 +218,8 @@ export async function copilotTools(
     );
     return samples;
   };
-  const events = (JSON.parse(session.events_json) as unknown[]).map((value) =>
-    parseEvent(value, result.config.duration_s),
-  ) as ScenarioEvent[];
+  // The mission owner already validated history, including events beyond a shortened replan.
+  const events = result.events;
 
   const run = async (name: CopilotTool, rawArgs: unknown): Promise<unknown> => {
     switch (name) {

@@ -72,6 +72,7 @@ describe("actual mission get_status tool", () => {
       currentSnapshot.mockResolvedValueOnce({
         revision: time < atS ? 1 : 2,
         config,
+        events,
         clock: { mode: "paused", speed: 1 },
         state: evaluateMission(config, samples, events, time),
         observed: { moxie: null, environment: { status: "unavailable", series: [] } },
@@ -105,6 +106,34 @@ describe("actual mission get_status tool", () => {
     // A rewind/reset must not retain faults from the previous answer.
     expect(await askStatus(0)).toMatchObject({ active_faults: [] });
     expect(currentSnapshot).toHaveBeenCalledTimes(3);
+  });
+
+  it("keeps LARA available after a replan ends before a retained future event", async () => {
+    const shortened = {
+      ...config,
+      duration_s: 1800,
+      schedule: [{ start_s: 0, end_s: 1800, activity: "base" as const }],
+    };
+    const events: ScenarioEvent[] = [
+      { id: "after-shortened-end", type: "generator_failure", at_s: 2400 },
+    ];
+    currentSnapshot.mockResolvedValueOnce({
+      config: shortened,
+      events,
+      clock: { mode: "paused", speed: 1 },
+      state: evaluateMission(shortened, samples, events, 1000),
+      observed: { moxie: null, environment: { status: "unavailable", series: [] } },
+      limitations: [],
+    });
+    const tools = await copilotTools(
+      {} as Parameters<typeof copilotTools>[0],
+      { events_json: JSON.stringify(events) } as Parameters<typeof copilotTools>[1],
+      undefined,
+    );
+    expect(await tools.run("get_status", {})).toMatchObject({
+      generator: { available: true },
+      active_faults: [],
+    });
   });
 });
 

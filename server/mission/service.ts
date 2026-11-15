@@ -7,6 +7,7 @@ import { evaluateMission, assessReturn } from "../../lib/mission/engine";
 import { buildExpeditionConfig, parsePlan } from "../../lib/mission/expedition";
 import { missionOutlook, replanConfig } from "../../lib/mission/outlook";
 import {
+  MAX_DURATION_S,
   MissionError,
   type Evaluation,
   type MissionConfig,
@@ -114,11 +115,13 @@ function readClock(value: string): MissionClock {
   };
 }
 
-function readEvents(session: Session, config: MissionConfig): ScenarioEvent[] {
+function readEvents(session: Session): ScenarioEvent[] {
   const values: unknown = JSON.parse(session.events_json);
   if (!Array.isArray(values) || values.length > 100)
     throw new MissionError("invalid_events", "Invalid event history");
-  return values.map((value) => parseEvent(value, config.duration_s));
+  // Replanning may shorten the mission before a previously scheduled event. Retain that history;
+  // the engine and reports apply only events at or before their requested cursor.
+  return values.map((value) => parseEvent(value, MAX_DURATION_S));
 }
 
 /** The archived rows a configuration replays, one per mission second. */
@@ -155,7 +158,7 @@ async function inputs(db: Database, session: Session) {
     config,
     run,
     samples,
-    events: readEvents(session, config),
+    events: readEvents(session),
     clock: readClock(session.clock_json),
   };
 }
@@ -310,6 +313,23 @@ function canonical(value: unknown, depth = 0): unknown {
   return value;
 }
 
+// Commands that only make sense while the run still has time left to play.
+const NEEDS_TIME_LEFT = new Set(["play", "speed", "event", "replan"]);
+
+/**
+ * Rejects a command that needs time left once the run has played to its end, the same 409 as a
+ * run ended by the "end" command. Reset, plan and seek stay allowed to start over or look back.
+ * The client's "finished" test (lib/mission/completion.ts) uses the same 1e-6 s tolerance.
+ */
+export function requireUnfinishedFor(type: unknown, elapsedS: number, durationS: number) {
+  if (elapsedS >= durationS - 1e-6 && typeof type === "string" && NEEDS_TIME_LEFT.has(type))
+    throw new MissionError(
+      "simulation_ended",
+      "This simulation has finished. Seek back, restart it or launch a new expedition to make changes",
+      409,
+    );
+}
+
 export async function command(
   db: Database,
   session: Session,
@@ -372,6 +392,7 @@ export async function command(
     events,
     clockPosition(input.clock, now, config.duration_s),
   );
+  requireUnfinishedFor(body.type, evaluated.elapsed_s, config.duration_s);
   let clock = anchorClock(input.clock, evaluated.elapsed_s, now);
   switch (body.type) {
     case "play":
