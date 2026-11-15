@@ -24,7 +24,10 @@ export function MapPanel({ title, className, bodyClassName, children, ...rest }:
       onOpenChange={setOpen}
       render={<aside {...rest} />}
       aria-labelledby={titleId}
-      className={cn("rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur", className)}
+      className={cn(
+        "map-panel rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur-md",
+        className,
+      )}
     >
       <div className="flex items-center justify-between gap-2">
         <h2 id={titleId} className="font-heading text-sm font-semibold">

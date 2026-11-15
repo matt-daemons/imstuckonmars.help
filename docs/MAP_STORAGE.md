@@ -1,5 +1,20 @@
 # Map imagery and terrain in R2
 
+## Full-screen map and overlays
+
+The map canvas fills the viewport behind the route sidebar and expedition HUD.
+Overlay controls keep their existing positions in the unobstructed area.
+`components/map/map-overlay-viewport.tsx` measures that area and updates camera
+padding plus the built-in map-control offsets. Collapsing the sidebar returns its
+padding without resizing the canvas; route fitting retains these insets.
+
+`components/map/map-overlays.css` scopes translucent surfaces and 12 px backdrop
+blur to the map, including the portaled mobile sidebar. Panels use an 82% dark
+surface and brighter secondary text. Reduced-transparency and forced-color
+preferences restore opaque surfaces. The read-only dashboard and alert/dialog
+surfaces keep their existing styles. The design-system map overlay example
+shows the same treatment against a synthetic background.
+
 The map reads terrain and regional imagery from
 `https://tiles.imstuckonmars.help/mars-v2/` and native-resolution global color
 imagery from `https://tiles.imstuckonmars.help/viking-native-v1/`.

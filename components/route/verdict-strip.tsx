@@ -93,7 +93,7 @@ export function VerdictStrip() {
     // While a drill runs, a dashed frame and the DRILL tag keep it from passing for real data.
     <div
       className={cn(
-        "absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur",
+        "map-verdict-strip absolute top-4 left-1/2 flex max-w-[calc(100%-8rem)] -translate-x-1/2 items-center gap-3 overflow-hidden border bg-background/90 px-3 py-1.5 text-sm whitespace-nowrap backdrop-blur-md",
         drilling && "border-2 border-dashed border-info",
       )}
     >

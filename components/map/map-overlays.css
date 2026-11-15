@@ -1,0 +1,76 @@
+/* Scoped to the map: the reference dashboard and modal surfaces stay unchanged. */
+.mars-map-shell {
+  --map-panel-surface: color-mix(in srgb, var(--background) 82%, transparent);
+  --map-panel-header: color-mix(in srgb, var(--secondary) 84%, transparent);
+  --muted-foreground: #b5c7c8;
+  --sidebar-foreground: var(--foreground);
+}
+
+/* MapLibre writes position: relative inline on its container. */
+.mars-map-shell > .mars-map-canvas {
+  position: absolute !important;
+  width: 100%;
+  height: 100%;
+}
+
+.map-overlay-column {
+  pointer-events: none;
+}
+.map-overlay-viewport > *,
+.map-overlay-column > .expedition-hud {
+  pointer-events: auto;
+}
+
+.mars-map-shell [data-slot="sidebar-inner"],
+.mars-map-shell .map-panel,
+.mars-map-shell .map-verdict-strip,
+.mars-map-shell .expedition-hud,
+.mars-map-shell .map-compass,
+.mars-map-shell .lara-listening-control > .lara-launcher,
+.mars-map-shell .homebase-map-trigger,
+.mars-map-shell [data-sidebar="trigger"],
+.mars-map-shell .map-coordinate-readout {
+  background: var(--map-panel-surface);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.mars-map-shell [data-slot="sidebar-header"] {
+  background: color-mix(in srgb, var(--secondary) 35%, transparent);
+}
+
+.mars-map-shell .hud-header {
+  background: transparent;
+}
+.mars-map-shell
+  .lara-listening-control
+  > .lara-launcher:is(:hover, [aria-expanded="true"], [data-pressed]) {
+  background: var(--map-panel-header);
+}
+
+.mars-map-canvas .maplibregl-ctrl-bottom-left {
+  left: var(--map-overlay-left, 0px);
+  bottom: var(--map-overlay-bottom, 0px);
+}
+.mars-map-canvas .maplibregl-ctrl-bottom-right {
+  bottom: var(--map-overlay-bottom, 0px);
+}
+
+/* The mobile sidebar is portaled outside the map shell by coss. */
+body:has(.mars-map-shell) [data-mobile="true"][data-sidebar="sidebar"] {
+  background: color-mix(in srgb, var(--background) 82%, transparent);
+  color: var(--foreground);
+  --muted-foreground: #b5c7c8;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+@media (prefers-reduced-transparency: reduce), (forced-colors: active) {
+  .mars-map-shell {
+    --map-panel-surface: var(--background);
+    --map-panel-header: var(--secondary);
+  }
+  body:has(.mars-map-shell) [data-mobile="true"][data-sidebar="sidebar"] {
+    background: var(--background);
+  }
+}

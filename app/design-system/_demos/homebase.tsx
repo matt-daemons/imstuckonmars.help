@@ -11,6 +11,8 @@ import { Section } from "../_components/section";
 import { DebugMenu } from "@/components/debug/debug-menu";
 import { ListeningEffect } from "@/components/copilot/listening-effect";
 import { MapCompass } from "@/components/map/map-compass";
+import { MapPanel } from "@/components/map/map-panel";
+import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
   id: "temperature",
@@ -39,6 +41,15 @@ export function HomebaseComponents() {
   const [listeningPreview, setListeningPreview] = useState(false);
   return (
     <>
+      <Section id="map-overlay-surfaces" title="Map overlay surfaces">
+        <div className="mars-map-shell w-full bg-linear-to-r from-[#4d2d22] to-[#c6a692] p-6">
+          <MapPanel title="Translucent map panel" className="max-w-sm">
+            <p className="text-sm text-muted-foreground">
+              Synthetic backdrop. Map panels use an 82% dark surface and 12 px backdrop blur.
+            </p>
+          </MapPanel>
+        </div>
+      </Section>
       <Section id="map-compass" title="Map compass">
         <div className="relative h-24 w-40">
           <MapCompass map={null} />

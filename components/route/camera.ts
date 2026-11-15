@@ -2,8 +2,7 @@ import type { Map as MapLibreMap } from "maplibre-gl";
 
 import type { LngLat } from "@/lib/mars/types";
 
-// The sidebar takes its own room beside the map, so a margin keeps fits clear of the edges; the
-// top one is wider to clear the verdict strip as well.
+// MapLibre adds fit margins to the live sidebar/HUD padding by default.
 const FIT_PADDING_PX = { top: 96, right: 64, bottom: 64, left: 64 };
 
 /** Fits the map to the points. Called only from the operator's own choices, so it never fights their panning. */

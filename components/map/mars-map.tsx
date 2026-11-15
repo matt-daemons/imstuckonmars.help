@@ -13,6 +13,8 @@ import { LaraExpeditionBridge } from "@/components/expedition/lara-expedition-br
 import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import { DebugMenu } from "@/components/debug/debug-menu";
 import { MapCompass } from "@/components/map/map-compass";
+import { MapOverlayViewport } from "./map-overlay-viewport";
+import "./map-overlays.css";
 import {
   type SiteProps,
   addGeology,
@@ -243,10 +245,12 @@ export function MarsMap({ children }: { children?: ReactNode }) {
     }
   }
 
-  // The sidebar reserves its own width, so the map container shrinks beside it and MapLibre's
-  // resize observer keeps fits and centring clear of the sidebar.
   return (
-    <SidebarProvider style={SIDEBAR_STYLE}>
+    <SidebarProvider
+      style={SIDEBAR_STYLE}
+      className="mars-map-shell relative isolate h-svh overflow-hidden"
+    >
+      <div ref={container} className="mars-map-canvas absolute inset-0" />
       {/* The route plan is shared by the sidebar and the map layers; it renders no DOM of its own. */}
       <RoutePlanProvider base={HABITAT} sites={sites}>
         {/* Storm conditions at the habitat, for the route check in the sidebar and the strip. */}
@@ -261,11 +265,9 @@ export function MarsMap({ children }: { children?: ReactNode }) {
               scene={<ScenePanelBody map={loaded} habitat={HABITAT} sites={sites} />}
             />
           </RouteSidebar>
-          {/* The map above, the expedition display below: overlays stay clear of the display. */}
-          <div className="relative flex h-svh min-w-0 flex-1 flex-col">
-            <div className="relative min-h-0 flex-1">
-              {/* The renderer positions the container relatively, so size it with h-full. */}
-              <div ref={container} className="h-full w-full" />
+          {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
+          <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
+            <MapOverlayViewport map={loaded}>
               <RouteMapLayers map={loaded} />
               <LaraRouteBridge map={loaded} />
               <LaraExpeditionBridge />
@@ -353,14 +355,14 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                 </div>
               )}
               {cursor && (
-                <div className="absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                <div className="map-coordinate-readout absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
                   {cursor[1].toFixed(5)}°N{" "}
                   {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
                   °E
                 </div>
               )}
               {children}
-            </div>
+            </MapOverlayViewport>
             <ExpeditionHud />
           </div>
         </ConditionsProvider>

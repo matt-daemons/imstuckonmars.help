@@ -9,6 +9,7 @@ export const sectionGroups: SectionGroup[] = [
     sections: [
       { id: "debug-menu", title: "Debug menu" },
       { id: "listening-effect", title: "LARA listening indicator" },
+      { id: "map-overlay-surfaces", title: "Map overlay surfaces" },
       { id: "map-compass", title: "Map compass" },
       { id: "homebase-readout", title: "Archive readout" },
       { id: "homebase-history", title: "Observation history" },
