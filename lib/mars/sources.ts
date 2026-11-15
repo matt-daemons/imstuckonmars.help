@@ -232,6 +232,10 @@ export const SOURCE_GROUPS: SourceGroup[] = [
           "Costes, N. C., Farmer, J. E. & George, E. B. (1972). Mobility Performance of the Lunar Roving Vehicle: Terrestrial Studies – Apollo 15 Results. NASA TR R-401.",
           "Arvidson, R. E. et al. (2010). Spirit Mars Rover Mission: Overview and selected results from the northern Home Plate Winter Haven to the side of Scamander crater. JGR 115, E00F03.",
           "Arvidson, R. E. et al. (2017). Mars Science Laboratory Curiosity Rover Megaripple Crossings up to Sol 710 in Gale Crater. Journal of Field Robotics 34(3), 495–518.",
+          "Ono, M. et al. (2016). Data-driven surface traversability analysis for Mars 2020 landing site selection. NASA JPL. (rover climb limits; real drives run about 30 % longer than planned)",
+          "Toups, L., Hoffman, S. & Watts, K. (2016). Mars surface Exploration Zone briefing. NASA NTRS 20160002369. (about 100 km rover reach; two-week sorties)",
+          "Wang, Y. & Wu, B. (2017). ISPRS Archives XLII-3/W1, 155. (MOLA slopes read lower than HiRISE slopes)",
+          "Tobler, W. (1993). Three presentations on geographical analysis and modeling. NCGIA Technical Report 93-1. (hiking function used for walking time)",
         ],
         links: [
           {

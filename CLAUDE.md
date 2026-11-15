@@ -445,6 +445,20 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Tanaka, K. L., Skinner, J. A., Jr., Dohm, J. M., Irwin, R. P., III, Kolb, E. J., Fortezzo, C. M., Platz, T., Michael, G. G. & Hare, T. M. (2014). Geologic Map of Mars. _U.S. Geological Survey Scientific Investigations Map_ 3292, scale 1:20,000,000. doi:10.3133/sim3292 ✓ (Crossref) (geologic units along the drive corridor)
 - Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. _JASA_ 22(158), 209–212. (Wilson bound — boulder review)
 
+### Route-planner and rover-rule sources (cited in `lib/flight-rules/rover-rules.ts` and on the Sources screen; added Sun Nov 15 — details as recorded in the code and `docs/research/rover/`, not re-checked against the papers)
+
+- Chappell, Hoffman & Bekdash (2022). Mars Architecture Team paper on surface power and operations, incl. the pressurized rover (IEEE). NASA NTRS 20210022250.
+- Costes, N. C., Farmer, J. E. & George, E. B. (1972). Mobility Performance of the Lunar Roving Vehicle: Terrestrial Studies – Apollo 15 Results. NASA TR R-401.
+- Drake, B. G. (ed.) (2009). Human Exploration of Mars Design Reference Architecture 5.0, NASA/SP-2009-566, and Addendum. https://www.nasa.gov/pdf/373665main_NASA-SP-2009-566.pdf
+- Arvidson, R. E. et al. (2017). Mars Science Laboratory Curiosity Rover Megaripple Crossings up to Sol 710 in Gale Crater. _Journal of Field Robotics_ 34(3), 495–518.
+- Ono, M. et al. (2016). Data-driven surface traversability analysis for Mars 2020 landing site selection. NASA JPL. https://www-robotics.jpl.nasa.gov/media/documents/Data-driven%20surface%20traversability%20analysis%20for%20Mars%202020%20landing%20site%20selection.pdf
+- Rucker, M. (2015). Integrated Surface Power Strategy for Mars. NASA NTRS 20150006958.
+- Toups, L., Hoffman, S. & Watts, K. (2016). Mars surface Exploration Zone briefing. NASA NTRS 20160002369. https://ntrs.nasa.gov/api/citations/20160002369/downloads/20160002369.pdf (title to confirm)
+- Wang, Y. & Wu, B. (2017). _ISPRS Archives_ XLII-3/W1, 155. https://isprs-archives.copernicus.org/articles/XLII-3-W1/155/2017/isprs-archives-XLII-3-W1-155-2017.pdf (title to confirm)
+- Tobler, W. (1993). Three presentations on geographical analysis and modeling. NCGIA Technical Report 93-1. (hiking function for walking time — an Earth model)
+- MSL Landing Site Engineering Constraints (2006) — cited in `rover-rules.ts`; full reference to confirm.
+- Mars24 algorithm page, NASA GISS: https://www.giss.nasa.gov/tools/mars24/help/algorithm.html (Mars clock, with Allison & McEwen 2000)
+
 ### Flight-rule sources (agreed by the team, shared role A — full wording in `config.yaml`)
 
 NASA xEVA ConOps (NTRS 20200001071) · NASA EVA-EXP-0042 Rev B · ISS suit timeline (NTRS 20140009556) · NASA field test (NTRS 20080014286) · NASA radiation action levels (NTRS 20230004380) · NASA OCHMO-TB-020 · Posner et al. (NTRS 20250001542).
