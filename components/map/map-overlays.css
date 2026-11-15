@@ -66,18 +66,28 @@
 }
 .map-top-buttons {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.map-top-left-controls > .map-top-buttons {
+  flex-shrink: 1;
+}
+.map-top-buttons > div {
+  max-width: 100%;
+}
+.map-top-buttons .homebase-map-trigger {
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
 }
 .map-top-left-controls > .map-top-strip-slot {
   z-index: 11;
   display: flex;
   flex: 1 1 18rem;
   min-width: 0;
-  /* With no free width at all (a narrow map column with Layers open) the strip shrinks away
-     rather than run under the camera stack; it stays in the DOM, so it is still announced. */
-  overflow: clip;
-  overflow-clip-margin: 0.25rem;
   pointer-events: none;
 }
 
@@ -127,6 +137,43 @@
   top: calc(var(--map-top-row-height, 2.75rem) + 2rem);
   max-height: calc(100% - var(--map-top-row-height, 2.75rem) - 8.25rem);
 }
+/* Only horizontally competing panels share vertical space. The observer measures the complete
+   control stack (including open disclosures and legends) and reserves the vitals readouts. */
+.mars-map-shell .map-overlay-column[data-shared-map-panels] .map-left-panels {
+  top: var(--map-shared-panels-top);
+  max-height: max(0px, calc(100% - var(--map-shared-panels-top) - 6.25rem));
+}
+.map-overlay-column[data-shared-map-panels] .map-camera-stack {
+  max-height: min(
+    var(--map-shared-controls-height),
+    calc(100% - var(--map-top-row-height, 2.75rem) - 8.5rem)
+  );
+}
+.map-overlay-column[data-shared-map-panels] .map-control-row {
+  flex: 0 1 auto;
+  min-height: var(--map-controls-min-height, 0px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  /* The control list scrolls, not the enabled reference legends below it. */
+  scrollbar-gutter: stable;
+}
+/* When even the minimum controls viewport and enabled legends cannot coexist, scroll their
+   complete list instead of flex-shrinking the controls to zero. All regions are keyboard focusable. */
+.map-camera-stack[data-map-stack-scroll] {
+  pointer-events: auto;
+  scrollbar-gutter: stable;
+}
+.map-overlay-column .map-camera-stack[data-map-stack-scroll] .map-control-row {
+  flex: none;
+  overflow-y: visible;
+}
+.map-camera-stack:focus-visible,
+.map-camera-stack .fake-sensor-legend:focus-visible,
+.map-camera-stack .dust-map-legend:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
 
 /* With the chat open, LARA's reply sits left of the chat panel (right 1rem, 24rem wide)
    instead of over its last message and input. */
@@ -150,6 +197,7 @@
 }
 .map-control-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-end;
   gap: 0.75rem;
@@ -164,8 +212,11 @@
 }
 .map-control-row > .map-view-controls {
   position: static;
-  flex: 0 0 var(--map-views-width);
-  max-width: var(--map-views-width);
+  flex: 0 1 var(--map-views-width);
+  max-width: min(var(--map-views-width), 100%);
+}
+.map-control-row > .map-layers-control {
+  max-width: 100%;
 }
 .map-camera-stack {
   position: absolute;
@@ -192,11 +243,20 @@
 .map-camera-stack > .map-legend-slot > .dust-map-legend {
   position: static;
   flex: none;
-  min-height: 0;
+  min-height: var(--map-legend-min-height, 0px);
+  max-height: min(45svh, 26rem);
+  overflow-y: auto;
   width: min(16rem, 100%);
   max-width: 100%;
   overscroll-behavior: contain;
   pointer-events: auto;
+}
+.map-camera-stack .fake-sensor-legend > h2,
+.map-camera-stack .dust-map-legend > p:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--background);
 }
 @container map-chrome (max-width: 49rem) {
   /* The full response and speech controls already appear in the open chat. */
@@ -213,25 +273,19 @@
     width: min(100% - 2rem, 24rem);
     max-height: calc(100% - var(--map-top-row-height, 2.75rem) - 12.25rem);
   }
-  .mars-map-shell .map-left-panels {
-    top: calc(var(--map-top-row-height, 2.75rem) + 9.75rem);
-    max-height: calc(100% - var(--map-top-row-height, 2.75rem) - 15.25rem);
-  }
   .map-camera-stack:has(.map-layers-control > details[open]) {
     width: min(100% - 2rem, 36rem);
   }
   .map-layers-control:has(> details[open]) {
     width: auto;
-    flex: 1;
+    flex: 1 1 16rem;
   }
   .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
-    flex: 0 0 11.25rem;
+    flex-basis: var(--map-views-width);
   }
 }
 @media (max-height: 600px) {
   .map-camera-stack {
-    bottom: 150px;
-    max-height: none;
     flex-direction: column;
   }
   .map-control-row .map-disclosure-content {
@@ -240,19 +294,6 @@
   .map-camera-stack > .fake-sensor-legend,
   .map-camera-stack > .map-legend-slot > .dust-map-legend {
     flex: none;
-  }
-}
-@media (max-width: 399px) {
-  .map-control-row > .map-view-controls,
-  .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
-    flex-basis: 10.25rem;
-  }
-  .map-control-row > .map-layers-control {
-    flex: 1;
-  }
-  .map-control-row .map-disclosure > summary {
-    gap: 4px;
-    padding-inline: 4px;
   }
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, type RefObject } from "react";
+import { observeMapPanelLayout } from "./map-panel-layout";
 
 /**
  * Where the verdict strip renders: a flex item of the map's top row, beside the sidebar trigger
@@ -40,6 +41,10 @@ export function useTopRowHeight(
     observer.observe(element);
     if (slot) observer.observe(slot);
     update();
-    return () => observer.disconnect();
+    const stopPanels = observeMapPanelLayout(target);
+    return () => {
+      observer.disconnect();
+      stopPanels();
+    };
   }, [row, slot, column]);
 }
