@@ -42,11 +42,18 @@ describe("PushToTalk", () => {
     expect(log).toEqual(["start", "stop"]);
   });
 
-  it("leaves Space to text fields and to a busy LARA", () => {
+  it("leaves Space to text fields, and to a focused control while LARA is busy", () => {
     const { ptt, log } = harness();
     expect(ptt.down(text, true)).toBe(false);
     expect(ptt.up()).toBe(false);
-    expect(ptt.down(free, false)).toBe(false);
+    expect(ptt.down(button, false)).toBe(false);
+    expect(log).toEqual([]);
+  });
+
+  it("swallows Space away from controls while LARA is busy, so the page never scrolls", () => {
+    const { ptt, log } = harness();
+    expect(ptt.down(free, false)).toBe(true);
+    expect(ptt.up()).toBe(false);
     expect(log).toEqual([]);
   });
 

@@ -59,7 +59,9 @@ export class PushToTalk {
   down(target: { kind: SpaceTarget; control: HTMLElement | null }, canTalk: boolean): boolean {
     // Repeats of a held key belong to the press already in progress.
     if (this.state.kind !== "idle") return true;
-    if (target.kind === "text" || !canTalk) return false;
+    if (target.kind === "text") return false;
+    // While LARA is busy, Space still never scrolls the page; a focused control keeps its own Space.
+    if (!canTalk) return target.kind === "free";
     if (target.kind === "free" || !target.control) {
       this.talk();
       return true;
