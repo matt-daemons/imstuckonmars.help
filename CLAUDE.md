@@ -84,17 +84,20 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 
 ### Telemetry units (team table, Sat Nov 14 — the table was titled "ARES" by mistake; the product is **LARA**)
 
+Units below distinguish retained source fields from application conversions. The table is not a claim that every instrument channel is acquired or displayed. Current release availability, masks and field definitions are documented in [docs/BACKEND.md](docs/BACKEND.md); dashboard readouts are documented in [docs/HOMEBASE_DASHBOARD.md](docs/HOMEBASE_DASHBOARD.md).
+
 | Dataset | Measurement                           | Unit                                          |
 | ------- | ------------------------------------- | --------------------------------------------- |
 | MEDA    | Air temperature                       | K                                             |
-| MEDA    | Atmospheric pressure                  | mbar                                          |
+| MEDA    | Atmospheric pressure                  | Pa                                            |
 | MEDA    | Ground/thermal brightness temperature | K                                             |
-| MEDA    | Relative humidity                     | %RH                                           |
-| MEDA    | Wind speed                            | m/s                                           |
-| MEDA    | Wind direction                        | °                                             |
+| MEDA    | Relative humidity                     | XML scale unspecified; do not label as %RH    |
+| MEDA    | Water-vapor volume mixing ratio       | ppm; the dashboard's humidity-related readout |
+| MEDA    | Wind speed (not acquired)             | m/s                                           |
+| MEDA    | Wind direction (not acquired)         | °                                             |
 | MEDA    | Solar irradiance                      | W/m²                                          |
 | MEDA    | Infrared radiation                    | sensor-dependent; brightness temperature in K |
-| MEDA    | Dust optical depth                    | dimensionless                                 |
+| MEDA    | Dust optical depth (not acquired)     | dimensionless                                 |
 | MOXIE   | Oxygen production rate                | g/h                                           |
 | MOXIE   | Total oxygen produced                 | g                                             |
 | MOXIE   | Electrical current                    | A                                             |
@@ -104,19 +107,23 @@ Note: "Create Your Own Challenge" projects are not eligible for global awards; w
 | MOXIE   | Gas pressure                          | field-dependent (requires XML verification)   |
 | MOXIE   | Gas flow rate                         | field-dependent (requires XML verification)   |
 | MOXIE   | Experiment elapsed time               | s                                             |
-| RAD     | Radiation absorbed-dose rate          | µGy/h                                         |
+| RAD     | Radiation absorbed-dose rate          | µGy/day in Level 2; displayed as µGy/h        |
+
+MOXIE oxygen rate is current-derived, not independently measured flow; integrated output is not crew inventory. MOXIE `TT`/`TB` are °C in the source and normalized to K; `P1_cal`/`P4_cal` are bar in the source and normalized to Pa. Other engineering fields require their own label definitions. MEDA relative-humidity values are not reinterpreted as percent; the dashboard uses the separately defined mixing ratio. Wind and measured dust are unavailable. The NASA Ames dust-map replay is a separate reference simulation, not a MEDA measurement. RAD remains a historical Gale-crater detector rate, not crew exposure.
 
 Not in this table → **PLACEHOLDER** until agreed: sol/LMST format, solar alert levels, sun elevation.
 
 ## 5. User story — "Plan a science mission and get home"
 
-You open LARA and select a hypothetical habitat in Arcadia Planitia as your base. Your goal is to explore an interesting geological site by rover and return within your simulated battery budget.
+You open LARA at a hypothetical habitat in Arcadia Planitia. Your goal is to plan a rover drive to a water-ice site, a suited walk from the staging point, and the return.
+
+**Implemented boundary:** long rover drives are planner-only. The animated expedition covers the walk from the habitat or parked rover, with map-based resource readouts. The homebase dashboard remains a read-only archive. See [docs/EXPEDITION.md](docs/EXPEDITION.md) for the current launch, fault, replan and report flow.
 
 1. **Inspect the terrain** — click the Mars map to see elevation, slope, imagery, and data sources. Overlays highlight steep terrain and areas without reliable coverage.
 2. **Discover meaningful destinations** — browse science targets with geological context, relevant orbital imagery (HiRISE/CTX), and what you could investigate there.
 3. **Compare routes** — shortest allowed route vs. terrain-aware alternative: distance, elevation profile, ascent, difficult segments.
-4. **Check the whole mission** — set simulated rover battery, drive speed, crew consumables, science-stop duration, reserve requirements. LARA assesses outbound + return and shows your **limiting resource**.
-5. **Play through the traverse** — simulated rover position moves along the route; dashboard updates elapsed time, remaining resources, modeled return reserves. Pause or change assumptions for "what if?"
+4. **Check the plan** — choose rover power and sampling time, then review the drive assessment and walking resource budget. LARA shows terrain constraints and modeled return reserves as separate checks, with their assumptions.
+5. **Play through the walk** — simulated crew position moves along the walking route; the map's expedition display updates elapsed time, remaining resources and modeled return margins. Pause, inject a confirmed scenario fault or compare replan options for "what if?"
 
 - **Understand the recommendation** — why a route/destination fits your constraints, the evidence, what remains uncertain. Finish with a mission summary (route, objectives, assumptions, sources).
 - **Stretch:** AI copilot explains comparisons; draw a hypothetical blocked zone and reroute; thermal-material context.
@@ -207,7 +214,7 @@ line-of-sight to habitat (one pitch sentence or simple viewshed) · click-to-ins
 ### Architecture (summary)
 
 TypeScript pipelines (Node + GDAL CLI) → COGs + tiles + GeoJSON (R2 / `public/data/`); telemetry → D1 (`/api/telemetry`, `/api/missions`).
-MapLibre in the vinext app reads `manifest.json`; Hono `/api/*` serves `/routes/plan`, `/verdict`, `/space-weather` (+ an unused `/live` stub). Each raster = COG (true values) + coloured
+MapLibre in the vinext app reads `manifest.json`; Hono `/api/*` serves `/routes/plan`, `/verdict`, `/space-weather`. The unused `/api/live` stub was removed. Each raster = COG (true values) + coloured
 tiles. The map measures with Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code; no built-in scale bar.
 
 ## 9. Data reference (Role B — what exists, where, caveats)

@@ -8,7 +8,7 @@ Three original, movie-inspired conceptual assets. These are not extracted film p
 | Pressurized rover | [/models/mars/rover.glb](/models/mars/rover.glb) | [/models/mars/rover.png](/models/mars/rover.png) | [/models/mars/rover-rear.png](/models/mars/rover-rear.png) |
 | MAV               | [/models/mars/mav.glb](/models/mars/mav.glb)     | [/models/mars/mav.png](/models/mars/mav.png)     | [/models/mars/mav-rear.png](/models/mars/mav-rear.png)     |
 
-The HAB has a ribbed pressure shell, forward airlock and platform, paired solar wings, observation ports, service panels, and roof communications equipment. The rover has six treaded wheels, exposed suspension, a glazed pressure cabin, rear access hatch, utility tanks, cargo, and a roof array. The MAV has an ascent stage, four external tanks, four landing legs, engine bells, a ladder, and an access platform. MAV means Mars Ascent Vehicle, not the ground rover.
+The HAB has a ribbed pressure shell, forward airlock and platform, paired solar wings, observation ports, service panels, and a ground-mounted communications dish beside the shell. Its roof antenna has been removed. The rover has six treaded wheels, exposed suspension, a glazed pressure cabin, rear access hatch, utility tanks, cargo, and a roof array. The MAV has an ascent stage, four external tanks, four landing legs, engine bells, a ladder, and an access platform. MAV means Mars Ascent Vehicle, not the ground rover.
 
 ## Placement contract
 

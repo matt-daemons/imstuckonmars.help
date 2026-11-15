@@ -2,6 +2,8 @@
 
 Status: revised after four reviews, Sat Nov 14, 2026, 23:30. Owner: tai-shis (LARA copilot).
 
+> Historical demo work plan. Its blockers, battery-failure timings, session setup and rehearsal expectations describe the Nov 14 snapshot, not the current application. Use [EXPEDITION.md](EXPEDITION.md) for the implemented demo loop, [BACKEND.md](BACKEND.md) for current session/API contracts, [WEATHER_RISKS.md](WEATHER_RISKS.md) for injected weather drills and [LARA_VOICE.md](LARA_VOICE.md) for voice behavior. Tasks below are retained for context, not as the current backlog.
+
 This plan covers only the work that the LARA copilot owner can do alone. It is the executable subset of [INFERENCE_PLAN.md](INFERENCE_PLAN.md). Section 7 lists the work that needs another team member, with a message to send to each one.
 
 ## 0. What changed from v1

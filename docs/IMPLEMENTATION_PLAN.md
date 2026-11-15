@@ -2,6 +2,8 @@
 
 Planning date: 2026-11-14. **This is a proposed plan, not an implementation record.** Existing application code is unchanged by this research.
 
+> Historical Jezero plan, not the current architecture, release checklist or approval to implement its tasks. Current LARA/Arcadia decisions are in [CLAUDE.md](../CLAUDE.md); implemented backend, route planning and expedition contracts are in [BACKEND.md](BACKEND.md), [ROUTE_PLANNING.md](ROUTE_PLANNING.md) and [EXPEDITION.md](EXPEDITION.md). The missing-data and missing-feature statements below describe the original snapshot, not the current checkout.
+
 ## 1. Final scope and release contract
 
 Deliver one bounded Jezero sortie, integrated into the mapping interface and mission dashboard already under development:

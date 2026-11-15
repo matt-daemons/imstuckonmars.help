@@ -2,6 +2,8 @@
 
 Research date: 2026-11-14. Repository snapshot: `b6e0e4c83bde486d724c69b39143695726c64410`.
 
+> Historical Jezero metadata study, not the current data inventory. The project is now LARA, based in Arcadia Planitia, with acquired HiRISE terrain, THEMIS thermal inertia and SIM 3292 geology documented in [CLAUDE.md §9](../CLAUDE.md#9-data-reference-role-b--what-exists-where-caveats). [BACKEND.md](BACKEND.md) covers acquired telemetry. The no-local-data findings below apply only to the recorded snapshot; the inspected Jezero metadata and its caveats remain historical evidence.
+
 ## 1. Executive summary
 
 **ARES should build a bounded Jezero exploration-planning demonstration, not claim operational astronaut navigation.** NASA-derived topography can support terrain screening and route comparison. Geologic interpretations and rover observations can explain why a destination matters. EVA resources must be explicitly modeled, not presented as NASA telemetry.

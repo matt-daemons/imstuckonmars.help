@@ -150,7 +150,7 @@ export default function SourcesPage() {
       </section>
 
       <footer className="border-t border-border/40 pt-4 text-xs text-muted-foreground">
-        Full reference list: CLAUDE.md §10 in the project repository.
+        Full reference list: CLAUDE.md §12 in the project repository.
       </footer>
     </main>
   );

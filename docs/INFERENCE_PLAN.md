@@ -1,6 +1,8 @@
 # LARA inference plan: weather, radiation, resources, and verdicts
 
-Status: proposal, Sat Nov 14, 2026. The team has not implemented any part of this file yet.
+Status: historical proposal, Sat Nov 14, 2026. Implementation-status statements below describe that snapshot, not the current checkout.
+
+> Current behavior and contracts are documented in [BACKEND.md](BACKEND.md), [EXPEDITION.md](EXPEDITION.md), [WEATHER_RISKS.md](WEATHER_RISKS.md) and [LARA_VOICE.md](LARA_VOICE.md). The weather/radiation forecasts, scripted SEP and API shapes proposed here are not a description of the deployed application or an approved current backlog. Preserve this plan as research; check the current contracts before reusing a task or demo value.
 
 Scope: the forecasts, verdicts, and LARA answers that sit on top of the simulation. POIs and route planning belong to another team member. This plan only defines what it needs from the route.
 

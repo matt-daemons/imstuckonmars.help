@@ -1,5 +1,7 @@
 # Telemetry features
 
+> Historical proposal (2026-11-14), not the current feature backlog or acquisition inventory. Sol-816 MEDA measurements and a separate overlapping RAD Level 2 release have since been acquired; the catalog-only MEDA and 2012 RAD descriptions below are historical. Current contracts and behavior are in [BACKEND.md](BACKEND.md), [HOMEBASE_DASHBOARD.md](HOMEBASE_DASHBOARD.md), [EXPEDITION.md](EXPEDITION.md) and [WEATHER_RISKS.md](WEATHER_RISKS.md). The original recommendations remain below for context, not as approval to implement deferred features.
+
 ## Recommendation
 
 Research snapshot: 2026-11-14. These are proposed integrations, not delivered application features. Preserve the map and dashboard owners' components; agree on their mission-state contract before connecting anything. The preset base is configuration, not a hard-coded Jezero location. See [data evidence](TELEMETRY_ANALYSIS.md), [model equations](SIMULATION_RESEARCH.md), and [service design](TELEMETRY_ARCHITECTURE.md).

@@ -56,7 +56,7 @@ Mission admission still checks the active-session limit inside its insert statem
 - TIRS field-of-view flags remain available. Obstructed upward-looking channels are withheld; blank wheel/HGA/SkyCam flags remain unknown, not good. Finite temperatures and zero quality issues do not establish scientific validity.
 - Ancillary positions are local M2020_TOPO meters relative to landing, not latitude/longitude or crew positions. RDS optical bands are not dust concentration or astronaut radiation dose.
 - Sol 901 retains its elapsed-counter reset, nonzero fault counter and absent derived output. Sol 96's copied absolute timing is quarantined. Missing oxygen output is `null`, not zero. Compressor power is already included in archived total power; do not add it twice.
-- REMS, wind, dust measurements and quantitative thermal grids are not acquired. The MEDA wind sensor has no sol-816 product (it was damaged on sol 313). RAD is only in the separate Gale-crater companion release above. Do not synthesize substitutes.
+- REMS, wind and dust measurements are not acquired. The MEDA wind sensor has no sol-816 product (it was damaged on sol 313). The map separately uses acquired quantitative THEMIS thermal-inertia grids; these are terrain-material context, not live temperature or telemetry weather (see [CLAUDE.md §9](../CLAUDE.md#thermal-inertia-themis-100-m)). RAD is only in the separate Gale-crater companion release above. Do not synthesize substitutes.
 
 ## Reproduce locally
 

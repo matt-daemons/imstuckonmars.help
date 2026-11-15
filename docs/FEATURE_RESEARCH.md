@@ -2,6 +2,8 @@
 
 Research date: 2026-11-14. Scope: recommendations only; no application features implemented.
 
+> Historical Jezero proposal, not the current product scope or backlog. The project is now LARA, based in Arcadia Planitia. Current decisions and data are in [CLAUDE.md](../CLAUDE.md); implemented planning, simulation and dashboard behavior are in [ROUTE_PLANNING.md](ROUTE_PLANNING.md), [EXPEDITION.md](EXPEDITION.md) and [HOMEBASE_DASHBOARD.md](HOMEBASE_DASHBOARD.md). Availability and implementation statements below describe the original research snapshot.
+
 ## 1. Recommended product decision
 
 **Deliver an evidence-backed Jezero sortie planner that answers: "Which scientifically useful destination can this modeled crew visit and return from, given the terrain and declared reserves?"** Integrate into the maps and futuristic dashboard already being developed. Do not build another map, dashboard, globe, or generic Mars chatbot.
