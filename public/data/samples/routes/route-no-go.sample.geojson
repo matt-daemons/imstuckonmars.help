@@ -1,0 +1,97 @@
+{
+  "type": "FeatureCollection",
+  "route": {
+    "route_id": "sample-no-go",
+    "title": "SAMPLE · Base → ESP_034082 bullseye crater (drive + walk)",
+    "destination_id": "DTEEC_034082_2260_033014_2260_A01",
+    "distance_km": 193.98,
+    "est_time_min": 1261,
+    "max_slope": 11.2,
+    "verdict": "NO_GO",
+    "limiting_factor": "rover_battery",
+    "reasons": [
+      "SAMPLE: rover battery would be 12 % at return, below the 20 % reserve (rover rule pending from role A)."
+    ],
+    "margin": { "resource": "rover_battery", "value": 12, "limit": 20, "unit": "% at return" },
+    "time_to_shelter_min": 46,
+    "simulated": true,
+    "source": "SAMPLE — hand-made for UI work, not a computed route"
+  },
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-no-go",
+        "leg": 1,
+        "mode": "drive",
+        "from": "base",
+        "to": "staging",
+        "start_offset_min": 0,
+        "distance_km": 192.46,
+        "est_time_min": 1155,
+        "stop_min": 0,
+        "max_slope": 11.2,
+        "verdict": "NO_GO",
+        "limiting_factor": "rover_battery",
+        "reasons": [
+          "SAMPLE: rover battery would be 12 % at return, below the 20 % reserve (rover rule pending from role A)."
+        ],
+        "time_to_shelter_min": 0,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-176.05, 45.97],
+          [-174.8603, 45.88703],
+          [-173.77196, 45.79247],
+          [-172.55628, 45.74203],
+          [-171.41571, 45.65239]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "route-leg",
+        "route_id": "sample-no-go",
+        "leg": 2,
+        "mode": "walk",
+        "from": "staging",
+        "to": "DTEEC_034082_2260_033014_2260_A01",
+        "start_offset_min": 1155,
+        "distance_km": 1.52,
+        "est_time_min": 46,
+        "stop_min": 60,
+        "max_slope": 9.3,
+        "verdict": "GO",
+        "limiting_factor": null,
+        "reasons": [
+          "SAMPLE: 1.4 km from the rover, inside the 2 km walk-back rule; walk at 2 km/h."
+        ],
+        "time_to_shelter_min": 46,
+        "simulated": true
+      },
+      "geometry": {
+        "type": "LineString",
+        "coordinates": [
+          [-171.41571, 45.65239],
+          [-171.39627, 45.65506],
+          [-171.38243, 45.64829]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "staging",
+        "id": "staging",
+        "name": "Rover staging point (sample)",
+        "route_id": "sample-no-go",
+        "simulated": true
+      },
+      "geometry": { "type": "Point", "coordinates": [-171.41571, 45.65239] }
+    }
+  ]
+}
