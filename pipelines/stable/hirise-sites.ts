@@ -2,8 +2,7 @@
 //   imagery: public/data/sites/<dtm>/imagery/{z}/{x}/{y}.webp, z11–17 (z17 ≈ 0.45 m/px on Mars)
 //   terrain: public/data/sites/<dtm>/terrain/{z}/{x}/{y}.png, z9–15, HiRISE inside the DTM, MOLA around it,
 //            display-shifted by DISPLAY_ELEVATION_OFFSET_M like the team's other terrain sources
-//   Mapbox upload: data/interim/hirise/<dtm>/<obs>_mapbox.tif (JPEG GeoTIFF for M's Mapbox account;
-//                  named by HiRISE ID because Mapbox Studio names each tileset after the file)
+//   R2: `pnpm sites:package` gathers these for M's upload (pipelines/sites-release.json).
 //   POIs + footprints: public/data/processed/sites.geojson
 // Inputs: data/raw/hirise/<dtm>/ (see data/raw/README.md).
 // Usage: pnpm pipe:sites [dtm-id]   (REBUILD_IMAGERY=1 to re-cut imagery tiles that already exist)
@@ -148,14 +147,6 @@ for (const site of SITES) {
       ...[orthoAsEarth, imageryOut],
     ]);
   }
-  // Same image as one GeoTIFF for a Mapbox raster tileset upload (Mapbox tiles it itself).
-  // Grey → RGB + mask with JPEG: ~10× smaller than RGBA deflate. Quality 75: no visible loss at full
-  // resolution, with headroom for Mapbox re-compressing its own tiles (65 also looked identical).
-  await execa("gdal_translate", [
-    ...["-q", "-of", "COG", "-b", "1", "-b", "1", "-b", "1", "-mask", "4"],
-    ...["-co", "COMPRESS=JPEG", "-co", "QUALITY=75", "-co", "BIGTIFF=IF_SAFER"],
-    ...[orthoAsEarth, join(work, `${site.obs}_mapbox.tif`)],
-  ]);
 
   // Terrain: HiRISE where it has data, MOLA elsewhere in the padded box.
   const g = await loadGrid(dem);

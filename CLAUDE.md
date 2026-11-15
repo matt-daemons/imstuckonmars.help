@@ -243,9 +243,11 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
   `pnpm pipe:slope <dtm>` (`pipelines/stable/slope.ts`, ~20 s/site). Shared tile helpers: `pipelines/lib/xyz.ts`. Raw inputs ~1.8 GB (gitignored).
   Outputs (all **gitignored**, local only until hosted): `public/data/sites/<dtm>/{imagery,terrain,slope}/`, `data/processed/sites/<dtm>/slope.tif` (COG),
   `data/interim/hirise/<dtm>/<HiRISE ID>_mapbox.tif` (upload file, named per site so Mapbox tilesets are distinguishable). Committed: `public/data/processed/sites.geojson` (POIs + footprints).
-- 2f. **Hosting — imagery → M's Mapbox account (M's call).** Upload the 4 `<HiRISE ID>_mapbox.tif` (e.g. `ESP_033225_2250_mapbox.tif`) in Mapbox Studio → Tilesets → New tileset, then put
-  each tileset ID in `lib/mars/site-tilesets.ts`; the map switches from local tiles to `mapbox://` automatically. **Open:** site terrain + slope tiles
-  (Mapbox doesn't host custom Terrarium DEMs simply) → teammates' **R2** release (`tiles.imstuckonmars.help`, `pnpm maps:*` scripts) — ask its owner.
+- 2f. **Hosting → M's R2 (M's call, Sun Nov 15; replaces the Mapbox-tileset plan).** `pnpm sites:package` gathers everything into
+  `data/map-assets/sites-v1/` (722 MB, ~23.5k files, gitignored): `sites/<dtm>/{imagery,terrain,slope}/` tiles, `slope/<HiRISE ID>_slope.tif`
+  routing COGs, `sites.geojson`, `catalog.json`. M uploads with `MAP_RELEASE_CONFIG=pipelines/sites-release.json pnpm maps:upload`
+  (his uploader; immutable prefix `sites-v1` in bucket `ares-mars-data`). Then set `SITE_DATA_ROOT` in `lib/mars/map-data.ts` to
+  `https://tiles.imstuckonmars.help/sites-v1` — until then the map reads local tiles. The `<HiRISE ID>_mapbox.tif` files are obsolete.
 - 2h. **SWIM ice layer (Step 4a) — queued.** swim.psi.edu (SWIM4MIM products: combined ice-consistency GeoTIFF, 0–1 m / 1–5 m / >5 m,
   ~3 km/px, simple cylindrical 0–360°E, −60..60°N, nodata −30, values −1..+1) was **down (HTTP 523)** on Sun Nov 15; retry. Context: Morgan et al.
   2021 (Nature Astronomy) — Arcadia plains match the most criteria for accessible ice.
@@ -262,7 +264,7 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 
 - **Slope results** (1 m DTM, metre grid, edges trimmed; limit 20°): ESP_033225 mean 4.3°, **0.1 %** ≥ 20° · ESP_034082 mean 7.3°,
   **1.8 %** · ESP_037352 mean 4.1°, **0.2 %** · ESP_054060 (ridges) mean 5.5°, **0.7 %**. All very walkable; hazards are crater walls/ridge flanks.
-- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~395 MB total**; Mapbox upload GeoTIFFs **274 MB total**
+- **Sizes:** local tiles (imagery + terrain + slope) 71–157 MB/site, **~430 MB total**; slope COGs **277 MB** as Int16 tenths (990 MB as Float32); Mapbox upload GeoTIFFs **274 MB total**
   (JPEG Q75 + mask; RGBA deflate was 1.55 GB, Q85 355 MB; single-band grey saves nothing).
 
 - **Reprojection decision:** everything is stored as **lon/lat on the Mars 2000 sphere** (`+proj=longlat +R=3396190`), east-positive −180..180.
@@ -286,8 +288,9 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 
 - **POIs:** `public/data/processed/sites.geojson` — per site a `poi` point (crater bowl centre, DTM-refined; ridges site = DTM centre) and a
   `footprint` polygon; props `id` (DTM), `hirise_id`, `title`, `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`.
-- **Slope (degrees, true values):** `data/processed/sites/<dtm>/slope.tif` — COG, lon/lat Mars 2000 sphere, ~1 m grid, nodata −9999
-  (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. **Gitignored** → share via R2 or `pnpm pipe:slope`.
+- **Slope:** `data/processed/sites/<dtm>/slope.tif` (on R2: `sites-v1/slope/<HiRISE ID>_slope.tif`) — COG, **Int16 tenths of a degree**
+  (value / 10 = degrees; scale metadata 0.1), lon/lat Mars 2000 sphere, ~1 m grid, nodata −9999
+  (incl. a 10 m trimmed DTM edge). Computed on a local metre grid. % ≥ 20°: 0.1 / 1.8 / 0.2 / 0.7 %. Shared via R2 (`sites-v1`) or `pnpm pipe:slope`.
 - **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` — 1 m DTM, lon/lat Mars 2000, nodata −32768. MOLA 463 m around it.
 - **Hazard threshold + resources:** `config.yaml` / `lib/flight-rules/rules.ts` — slope ≤ 20°, suit 8 h (walks planned 6 h), 30 min reserve,
   walk-back ≤ 2 km, radiation 18 / 90 µGy/h.
@@ -312,8 +315,9 @@ Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code, no
 ### Next steps (Jess, Sun Nov 15)
 
 1. **Push** local `main` (4 sites commits) — CI will still fail on the teammates' model test until they fix it; tell them.
-2. ~~Send M the 4 `<HiRISE ID>_mapbox.tif`~~ ✅ sent Sun Nov 15 — **waiting for tileset IDs** → paste into `lib/mars/site-tilesets.ts`.
-3. **Ask the R2 owner** to host site terrain + slope tiles (and the slope COGs for C); otherwise the deployed site shows MOLA only at the sites.
+2. **M hosts site data on R2 instead of Mapbox** — send/upload `data/map-assets/sites-v1/`; ask M to confirm the public URL
+   (`https://tiles.imstuckonmars.help/sites-v1/...`) → set `SITE_DATA_ROOT`. The `_mapbox.tif` files he received can be ignored.
+3. ~~Ask the R2 owner~~ → M (same person, item 2).
 4. **Raise the habitat↔site distance** with A + C (and M for the story): it decides whether routing is base→site or local EVAs within a site.
 5. ~~Brief C~~ ✅ sent. **Agreed: slope-only cost surface first**; add hazard mask / roughness / thermal inertia later.
 6. **SWIM** (4a): swim.psi.edu still down. NASA's "SWIM map shows subsurface water ice on Mars" (PIA26045) is a **PNG illustration**,

@@ -3,8 +3,7 @@ import type { CustomLayerInterface, Map as MapboxMap } from "mapbox-gl";
 import * as THREE from "three";
 
 import type { LngLat } from "@/lib/mars/types";
-import { GLOBAL_COLOR_SOURCE, mapAsset } from "@/lib/mars/map-data";
-import { SITE_TILESETS } from "@/lib/mars/site-tilesets";
+import { GLOBAL_COLOR_SOURCE, SITE_DATA_ROOT, mapAsset } from "@/lib/mars/map-data";
 import {
   LOCAL_TERRAIN_BOUNDS,
   LOCAL_TERRAIN_SOURCE,
@@ -98,9 +97,11 @@ export interface SiteProps {
   position_note?: string;
 }
 
-// Site tiles are generated locally (gitignored) until they are hosted; see CLAUDE.md Step 2f.
+// Site tiles from M's R2 release once uploaded, else local (gitignored) output of pnpm pipe:sites.
 const siteTiles = (id: string, layer: string, ext: string) => [
-  `${location.origin}/data/sites/${id}/${layer}/{z}/{x}/{y}.${ext}`,
+  SITE_DATA_ROOT
+    ? `${SITE_DATA_ROOT}/sites/${id}/${layer}/{z}/{x}/{y}.${ext}`
+    : `${location.origin}/data/sites/${id}/${layer}/{z}/{x}/{y}.${ext}`,
 ];
 
 /** Per site: 1 m terrain (display-shifted like the other sources), 0.45 m imagery, slope classes. */
@@ -119,13 +120,9 @@ export function addSites(m: MapboxMap, sites: SiteProps[], beforeId?: string) {
       attribution: SITE_ATTRIBUTION,
     });
     siteTerrains.push({ source: dem, bounds: site.terrain_bbox });
-    const tileset = SITE_TILESETS[site.id];
     m.addSource(`site-${site.id}`, {
       type: "raster",
-      // Mapbox-hosted imagery once M uploads it; local tiles until then.
-      ...(tileset
-        ? { url: `mapbox://${tileset}` }
-        : { tiles: siteTiles(site.id, "imagery", "webp") }),
+      tiles: siteTiles(site.id, "imagery", "webp"),
       tileSize: 256,
       minzoom: 11,
       maxzoom: 17,

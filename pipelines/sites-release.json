@@ -1,0 +1,8 @@
+{
+  "version": "sites-v1",
+  "accountId": "c9f498eef7a97c90a87c47f676709e7d",
+  "bucket": "ares-mars-data",
+  "publicOrigin": "https://tiles.imstuckonmars.help",
+  "directory": "data/map-assets/sites-v1",
+  "sourceDownloadLimitBytes": 2000000000
+}

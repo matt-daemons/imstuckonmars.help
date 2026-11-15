@@ -12,6 +12,12 @@ export const GLOBAL_COLOR_SOURCE = {
 
 export const mapAsset = (path: string) => `${MAP_DATA_ROOT}/${path}`;
 
+/**
+ * HiRISE water-ice site tiles (pnpm sites:package → M's R2 upload). Set to
+ * "https://tiles.imstuckonmars.help/sites-v1" once M confirms the upload; null = local tiles from pnpm pipe:sites.
+ */
+export const SITE_DATA_ROOT: string | null = null;
+
 export const ARCADIA_IMAGERY_BOUNDS = [
   -176.220703125, 45.791015625, -175.78125, 46.23046875,
 ] as const;

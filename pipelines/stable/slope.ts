@@ -1,5 +1,6 @@
 // Slope + hazard classes for a HiRISE site (run after hirise-sites.ts).
-//   COG (true values, degrees): data/processed/sites/<dtm>/slope.tif
+//   COG for routing: data/processed/sites/<dtm>/slope.tif — Int16 tenths of a degree (value / 10 = degrees,
+//                    scale metadata 0.1), nodata −9999; ~4× smaller than Float32 (990 MB → 277 MB for 4 sites)
 //   Map overlay tiles:          public/data/sites/<dtm>/slope/{z}/{x}/{y}.webp, z11–16
 // Slope is computed on a local equirectangular metre grid centred on the site (Mars 2000 sphere),
 // so x and y metres are both true; then warped back to lon/lat for tiling.
@@ -30,7 +31,8 @@ const EDGE_TRIM_M = 10; // local grid is 1 m, so also pixels
 
 const demLocal = join(work, "dem-local.tif");
 const slopeLocal = join(work, "slope-local.tif");
-const slope = join(out, "slope.tif");
+const slope = join(work, "slope-deg.tif"); // Float32 degrees, used for the overlay and stats
+const published = join(out, "slope.tif");
 await execa("gdalwarp", [
   "-q",
   "-overwrite",
@@ -72,6 +74,10 @@ await execa("gdalwarp", [
   ...["-srcnodata", "-9999", "-dstnodata", "-9999"],
   ...["-of", "COG", "-co", "COMPRESS=DEFLATE"],
   ...[trimmed, slope],
+]);
+await execa("gdal_translate", [
+  ...["-q", "-of", "COG", "-ot", "Int16", "-scale", "0", "90", "0", "900", "-a_scale", "0.1"],
+  ...["-a_nodata", "-9999", "-co", "COMPRESS=DEFLATE", "-co", "PREDICTOR=2", slope, published],
 ]);
 
 // Classes: < 10° clear, 10–15° yellow, 15°–threshold orange, ≥ threshold red (hazard).
