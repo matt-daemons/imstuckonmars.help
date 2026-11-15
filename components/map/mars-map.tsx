@@ -405,7 +405,7 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                     </div>
                   )}
                   {cursor && (
-                    <div className="map-coordinate-readout absolute right-4 bottom-4 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                    <div className="map-coordinate-readout absolute right-4 bottom-16 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
                       {cursor[1].toFixed(5)}°N{" "}
                       {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
                       °E

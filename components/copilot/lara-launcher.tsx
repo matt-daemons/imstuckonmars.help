@@ -50,7 +50,7 @@ export function LaraLauncher({ children }: { children: ReactNode }) {
   return (
     <>
       {/* Before the chat, so Tab moves from the button into the chat it opens. */}
-      <div className="lara-launcher-position absolute right-4 bottom-12">
+      <div className="lara-launcher-position absolute right-4 bottom-4">
         <ListeningEffect active={listening}>
           <Button
             variant="outline"

@@ -169,6 +169,18 @@
 .mars-map-canvas .maplibregl-ctrl-bottom-left {
   left: var(--map-overlay-left, 0px);
   bottom: var(--map-overlay-bottom, 0px);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 0 16px 16px;
+}
+.mars-map-canvas .maplibregl-ctrl-bottom-left > .maplibregl-ctrl {
+  float: none;
+  margin: 0;
+}
+.mars-map-canvas .maplibregl-ctrl-bottom-left > .homebase-map-shortcut {
+  order: 1;
 }
 .mars-map-canvas .maplibregl-ctrl-bottom-right {
   bottom: var(--map-overlay-bottom, 0px);

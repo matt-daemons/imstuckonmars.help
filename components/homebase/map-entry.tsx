@@ -22,7 +22,7 @@ export function HomebaseMapEntry({
   const [target, setTarget] = useState<HTMLDivElement | null>(null);
   const [shortcut, setShortcut] = useState<HTMLDivElement | null>(null);
   const [lng, lat] = habitat;
-  // A map control, so the button stacks above the credits however many lines they wrap to.
+  // The bottom-left control column places this after the credits, regardless of their height.
   useEffect(() => {
     if (!map) return;
     const element = document.createElement("div");
