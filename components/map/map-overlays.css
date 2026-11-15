@@ -47,6 +47,19 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
+/* Centre the verdict strip in the band between the sidebar trigger (left) and the Layers
+   button + compass (right) instead of the whole map, so it never runs under the Layers button. */
+.mars-map-shell .map-verdict-strip {
+  left: 4rem;
+  right: 12rem;
+  width: fit-content;
+  max-width: calc(100% - 16rem);
+  margin-inline: auto;
+  --tw-translate-x: 0;
+  translate: none;
+  transform: none;
+}
+
 .map-layers-control {
   position: absolute;
   inset-block-start: 1rem;
