@@ -126,6 +126,8 @@ NASA has not reviewed or endorsed this project.
   OpenRouter). It only explains results; GO / CAUTION / NO-GO verdicts come from fixed
   flight-rule thresholds in `lib/flight-rules`, never from the model. The app works without it.
 - **LARA's voice is AI-generated speech** (ElevenLabs). It is labelled wherever it is heard.
+- **Planning notes:** an AI chatbot (xAI Grok) helped edit the team's to-do list. It was not used
+  for data, code, verdicts or anything shown in the app.
 
 ## License
 
