@@ -40,7 +40,7 @@ const SIDEBAR_STYLE = { "--sidebar-width": "22.5rem" } as CSSProperties;
 
 // MapLibre assumes Earth, but lng/lat on the Mars 2000 sphere render correctly at AOI scale.
 // Its scale bar and measurements use Earth's radius, so we compute distances ourselves.
-/** `children` are more panels over the map, such as LARA. */
+/** `children` sit over the map and can read the route plan: the verdict strip and LARA. */
 export function MarsMap({ children }: { children?: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);

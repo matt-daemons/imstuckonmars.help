@@ -17,15 +17,23 @@ export type Placement = ReturnType<typeof usePlacement>;
  * step sits in a sheet that closes (and unmounts) while the operator clicks the map.
  */
 export function usePlacement(map: MapLibreMap | null) {
-  const { dispatch } = useRoutePlan();
+  const { inputs, dispatch } = useRoutePlan();
   const [mode, setMode] = useState<PlaceMode | null>(null);
   const [draft, setDraft] = useState<LngLat[]>([]);
+  const [step, setStep] = useState(inputs.step);
 
   useEffect(() => setData(map, "zone-draft", draftFeatures(draft)), [map, draft]);
 
   function choose(next: PlaceMode | null) {
     if (next !== "zone") setDraft([]); // a half-drawn zone never outlives drawing mode
     setMode(next);
+  }
+
+  // Placing belongs to step ②, so any change of step cancels it: the sidebar's tabs, Back / Next,
+  // or the verdict strip. Set during render, React's way to reset state when an input changes.
+  if (step !== inputs.step) {
+    setStep(inputs.step);
+    choose(null);
   }
 
   // Effect events: the map listeners below read the current mode and draft without re-registering.

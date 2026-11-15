@@ -5,7 +5,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 
 import { Button } from "@/components/ui/button";
 import { MapPanel } from "@/components/map/map-panel";
-import { useLara } from "@/components/copilot/use-lara";
+import { useLaraContext } from "@/components/copilot/lara-context";
 import { useWakeWord, type WakeState } from "@/components/copilot/use-wake-word";
 
 const STATUS_TEXT = {
@@ -29,7 +29,7 @@ const WAKE_TEXT: Record<WakeState, string> = {
 const DEMO_SPEED = 20;
 
 /** Mission time as minutes and seconds, so the readout moves every second during playback. */
-const fmtMin = (s: number) => {
+export const fmtMin = (s: number) => {
   const whole = Math.floor(s);
   return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, "0")}`;
 };
@@ -46,7 +46,7 @@ function Readout({ label, value, note }: { label: string; value: string; note?: 
 
 /** Voice and text copilot over the authoritative mission snapshot. Read-only for now. */
 export function LaraPanel() {
-  const lara = useLara();
+  const lara = useLaraContext();
   const [draft, setDraft] = useState("");
   const log = useRef<HTMLOListElement>(null);
   const s = lara.snapshot;
@@ -97,7 +97,7 @@ export function LaraPanel() {
   return (
     <MapPanel
       title="LARA"
-      className="absolute bottom-12 left-4 flex max-h-[60svh] w-96 max-w-[calc(100%-2rem)] flex-col text-sm"
+      className="absolute right-4 bottom-24 flex max-h-[60svh] w-96 max-w-[calc(100%-2rem)] flex-col text-sm"
       bodyClassName="flex min-h-0 flex-col gap-3"
     >
       <header className="flex items-start justify-between gap-2">

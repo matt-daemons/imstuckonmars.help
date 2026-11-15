@@ -279,7 +279,7 @@ function tripSummary(
 }
 
 /** A resource against its no-go limit; `used` is the share of the limit taken, for finding the tightest. */
-type Margin = RouteSummary["margin"] & { factor: string; used: number };
+export type Margin = RouteSummary["margin"] & { factor: string; used: number };
 
 function makeMargin(
   factor: string,
@@ -324,7 +324,7 @@ function driveMargins(trip: DriveSummary): Margin[] {
   ];
 }
 
-function walkMargins(route: WalkRoute): Margin[] {
+export function walkMargins(route: WalkRoute): Margin[] {
   const { slope, walk_back, suit_supply } = FLIGHT_RULES;
   return [
     makeMargin("slope", "walk_slope", route.max_slope, slope.no_go_above_degrees, "°", "max"),

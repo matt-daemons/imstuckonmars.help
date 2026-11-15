@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import type { Plan } from "./route-layers";
 
 // The icons /design-system#alert-levels assigns to each level.
-const VERDICT_STYLES: Record<
+export const VERDICT_STYLES: Record<
   Verdict,
   { variant: "success" | "warning" | "error"; Icon: LucideIcon; label: string }
 > = {

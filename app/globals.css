@@ -530,9 +530,3 @@
   outline: 2px solid var(--ring);
   outline-offset: -2px;
 }
-
-/* LARA's panel hides with the docked sidebar, so H still clears the map. CSS, not unmounting,
-   so the chat keeps its state. */
-[data-slot="sidebar"][data-state="collapsed"] ~ * [data-map-panel] {
-  display: none;
-}

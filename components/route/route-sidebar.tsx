@@ -59,10 +59,7 @@ export function RouteSidebar({
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [toggleSidebar]);
 
-  function goTo(step: Step) {
-    placement.choose(null); // placing belongs to step ②, whose controls are about to go
-    dispatch({ type: "goTo", step });
-  }
+  const goTo = (step: Step) => dispatch({ type: "goTo", step });
 
   return (
     // invisible once slid away, so Tab cannot reach controls that are off screen

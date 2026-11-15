@@ -13,7 +13,7 @@ interface MapPanelProps extends ComponentProps<"aside"> {
   bodyClassName?: string;
 }
 
-/** A card over the map whose body collapses to its title row. The map hides all of them at once. */
+/** A card over the map whose body collapses to its title row. */
 export function MapPanel({ title, className, bodyClassName, children, ...rest }: MapPanelProps) {
   const [open, setOpen] = useState(true);
   const titleId = useId();
@@ -23,7 +23,6 @@ export function MapPanel({ title, className, bodyClassName, children, ...rest }:
       open={open}
       onOpenChange={setOpen}
       render={<aside {...rest} />}
-      data-map-panel
       aria-labelledby={titleId}
       className={cn("rounded-lg border bg-background/90 p-4 shadow-lg backdrop-blur", className)}
     >
