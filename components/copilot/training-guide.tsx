@@ -48,7 +48,6 @@ export function TrainingGuide() {
   }, [status, completeLinePending, bridge]);
 
   const visible = loaded && state.status === "active";
-  useCardBottom(visible);
 
   if (!visible) return null;
 
@@ -58,9 +57,8 @@ export function TrainingGuide() {
 
   return (
     <MapPanel
-      data-training-card
       title={`Training Wheels Protocol · ${requiredDone} of ${required.length}`}
-      className="absolute top-4 right-4 w-72 max-w-[calc(100%-2rem)] text-sm"
+      className="absolute top-16 left-4 w-72 max-w-[calc(100%-2rem)] text-sm"
       bodyClassName="space-y-3 pt-2"
     >
       <p className="text-xs text-muted-foreground">
@@ -100,28 +98,4 @@ export function TrainingGuide() {
       </Button>
     </MapPanel>
   );
-}
-
-/** Where the card ends, for the LARA panel's max-height: CSS on the map, unset while it is hidden. */
-const CARD_BOTTOM_VAR = "--training-card-bottom";
-
-/**
- * Keeps CARD_BOTTOM_VAR on the map container at the card's bottom edge as the card grows, shrinks
- * or collapses, so the LARA panel below never grows over it.
- */
-function useCardBottom(visible: boolean) {
-  useEffect(() => {
-    const card = visible ? document.querySelector<HTMLElement>("[data-training-card]") : null;
-    const container = card?.offsetParent;
-    if (!card || !(container instanceof HTMLElement)) return;
-    const update = () =>
-      container.style.setProperty(CARD_BOTTOM_VAR, `${card.offsetTop + card.offsetHeight}px`);
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(card);
-    return () => {
-      observer.disconnect();
-      container.style.removeProperty(CARD_BOTTOM_VAR);
-    };
-  }, [visible]);
 }

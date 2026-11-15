@@ -120,7 +120,7 @@ export function LaraPanel() {
       title="LARA"
       // Its top stays 1rem below the training card while that shows (see TrainingGuide), but never
       // below 12rem of height.
-      className="absolute right-4 bottom-24 flex max-h-[max(12rem,min(60svh,calc(100%_-_7rem_-_var(--training-card-bottom,0px))))] w-96 max-w-[calc(100%-2rem)] flex-col text-sm"
+      className="absolute right-4 bottom-24 flex max-h-[max(12rem,min(60svh,calc(100%_-_7rem)))] w-96 max-w-[calc(100%-2rem)] flex-col text-sm"
       bodyClassName="flex min-h-0 flex-col gap-3"
     >
       <header className="flex items-start justify-between gap-2">
