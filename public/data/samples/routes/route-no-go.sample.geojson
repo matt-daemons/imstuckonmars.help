@@ -8,11 +8,16 @@
     "est_time_min": 1261,
     "max_slope": 11.2,
     "verdict": "NO_GO",
-    "limiting_factor": "rover_battery",
+    "limiting_factor": "battery",
     "reasons": [
-      "SAMPLE: rover battery would be 12 % at return, below the 20 % reserve (rover rule pending from role A)."
+      "SAMPLE: rover battery would be 12 % after the hardest sol, below the 20 % floor (agreed rover rule)."
     ],
-    "margin": { "resource": "rover_battery", "value": 12, "limit": 20, "unit": "% at return" },
+    "margin": {
+      "resource": "rover_battery",
+      "value": 12,
+      "limit": 20,
+      "unit": "% after the hardest sol"
+    },
     "time_to_shelter_min": 46,
     "simulated": true,
     "source": "SAMPLE — hand-made for UI work, not a computed route"
@@ -33,9 +38,9 @@
         "stop_min": 0,
         "max_slope": 11.2,
         "verdict": "NO_GO",
-        "limiting_factor": "rover_battery",
+        "limiting_factor": "battery",
         "reasons": [
-          "SAMPLE: rover battery would be 12 % at return, below the 20 % reserve (rover rule pending from role A)."
+          "SAMPLE: rover battery would be 12 % after the hardest sol, below the 20 % floor (agreed rover rule)."
         ],
         "time_to_shelter_min": 0,
         "simulated": true

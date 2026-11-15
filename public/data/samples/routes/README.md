@@ -25,5 +25,19 @@ need changes when they are swapped in. Every number here is **made up** and mark
 
 Base and POI coordinates match `stops.geojson` and `sites.geojson`. Leg distances are true
 great-circle lengths of the drawn lines on the Mars 2000 sphere. Assumed: 10 km/h rover average,
-2 km/h walk (flight rule), 60 min sampling. `rover_battery` is **not a flight rule yet** (pending
-role A). `lib/mars/route-samples.test.ts` checks that the numbers agree with the lines and with each other.
+2 km/h walk (flight rule), 60 min sampling. `lib/mars/route-samples.test.ts` checks that the numbers
+agree with the lines and with each other.
+
+## How these differ from real routes (Sun Nov 15)
+
+Real routes now come from the planner (`planDriveWalk` in `lib/mars/drive-walk.ts`) in this same
+format, so these files are kept only as a test fixture (`components/map/route-layers.test.ts`) and a
+format example. Differences:
+
+- Real routes have **4 legs**: drive out, walk out, walk back, drive back. These samples hold only
+  the 2 outbound legs.
+- Real verdicts use the **agreed rover rules** (`lib/flight-rules/rover-rules.ts`): slope 5° / 10°,
+  battery 30 / 20 %, reserve, range 100 / 200 km, trip length in sols. The sample numbers predate
+  them, so some sample verdicts would differ (e.g. the 8.4° drive slope would now be CAUTION).
+- Real `est_time_min` includes the nights of multi-sol drives; these samples assume one continuous drive.
+- Rule and resource names match the planner: `limiting_factor: "battery"`, `margin.resource: "rover_battery"`.
