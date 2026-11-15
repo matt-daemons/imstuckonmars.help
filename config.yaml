@@ -20,7 +20,7 @@ thresholds:
   slope_max_deg: 20 # NASA lunar suit limit (xEVA concept of operations, NTRS 20200001071, slide 6)
   suit_budget_h: 8 # Artemis suit main supply; walks are planned at 6 h (EVA-EXP-0042 Rev B, p.29)
   suit_reserve_min: 30 # Main supply left on return (ISS suit timeline, NTRS 20140009556, slide 11)
-  radiation_caution_ugy_per_h: 18 # ASSUMPTION — twice the quiet rate of about 9 (Curiosity RAD)
-  radiation_no_go_ugy_per_h: 90 # ASSUMPTION — ten times the quiet rate; May 2024 peaked near 309
+  radiation_caution_ugy_per_h: 18 # ASSUMPTION — twice the average rate of about 9 (Curiosity RAD, Hassler et al. 2014)
+  radiation_no_go_ugy_per_h: 90 # ASSUMPTION — ten times the average rate; May 2024 peaked near 309
   walk_back_max_km: 2 # 2 km at 2 km/h is 1 h of backup oxygen (EVA-EXP-0042 Rev B, p.40)
   walk_pace_km_h: 2 # Lunar suited walking pace, assumed for Mars (EVA-EXP-0042 Rev B, p.40)
