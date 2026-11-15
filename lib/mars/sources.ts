@@ -4,6 +4,10 @@
  * CLAUDE.md §10 References. Caveats are copied from each layer's provenance file or pipeline notes.
  */
 
+import { ROVER_RULES } from "../flight-rules/rover-rules";
+import { FLIGHT_RULES } from "../flight-rules/rules";
+import { BOULDER_CLEARANCE_M, PARKING_SQUARE_M, SITE_CELL_M } from "./site-grid";
+
 /** What kind of evidence an entry is. Drives the badge on the sources screen. */
 export type EvidenceKind =
   | "observation" // NASA measurement or imagery, as archived
@@ -219,17 +223,20 @@ export const SOURCE_GROUPS: SourceGroup[] = [
       },
       {
         id: "route-planner",
-        title: "Route planner · walking and driving",
+        title: "Route planner · walking and drive + walk",
         kind: "derived",
-        credit: "LARA routing (A*) on NASA/USGS MOLA terrain",
-        detail:
-          "Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Driving: MOLA 463 m strip, 42.5–48.5°N, 171–196°E",
-        use: "Route panel: walking and driving routes, the route check and the rover trip numbers.",
+        credit:
+          "LARA routing (A*) on NASA/USGS MOLA terrain and NASA/JPL/University of Arizona HiRISE slope",
+        detail: `Walking: MOLA/HRSC 200 m blend near the habitat (56 m cells). Drive + walk: MOLA 463 m strip, 42.5–48.5°N, 171–196°E, for the drive; HiRISE 1 m slope max-pooled to ${SITE_CELL_M} m cells around the site, and the site's boulders, for the walk`,
+        use: "Route panel: walking and drive + walk routes, the route check, the rover trip and the suit time.",
         caveats: [
-          "Terrain this coarse cannot see rocks, boulders or small craters. A route is not a hazard clearance.",
-          "Walking time uses Tobler's hiking model, an Earth model, not a suited Mars walk.",
+          "The 200 m and 463 m terrain cannot see rocks, boulders or small craters. A route is not a hazard clearance.",
+          `Walking missions use Tobler's hiking model, an Earth model, not a suited Mars walk. Walks at a site use the flight-rule pace of ${FLIGHT_RULES.walk_back.walking_km_per_hour} km/h instead, as the walk-leg timing does.`,
           "On 463 m terrain slopes read about 6° low, so driving uses lowered slope limits (5° / 10°), our assumption.",
           "Rover numbers come from NASA design studies; motor efficiency and the rough-ground factor are our assumptions. The rover rules are a proposal, not NASA flight rules.",
+          `The walk takes each ${SITE_CELL_M} m cell's steepest 1 m slope, so steep ground is never under-counted. The 1 m slope still misses rocks smaller than a metre.`,
+          `Walk boulders are the automated HiRISE shadow detections near each site. A sample review confirmed none as rocks (most are pits or trough shading), so walling every one off, with ${BOULDER_CLEARANCE_M} m clearance (our assumption), errs on the side of caution. Coverage differs by site: the ridges site has one.`,
+          `The staging point is our rule: the rover parks where a ${PARKING_SQUARE_M} m square is no steeper than ${ROVER_RULES.slope.caution_above_degrees}° and clear of boulders, on the habitat side if it can, within the ${FLIGHT_RULES.walk_back.max_distance_km} km walk-back limit.`,
           "The example no-go zone is a placeholder.",
         ],
         citations: [

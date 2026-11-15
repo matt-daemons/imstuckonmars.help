@@ -9,30 +9,33 @@ import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/
 import { Kbd } from "@/components/ui/kbd";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import type { PowerSource } from "@/lib/mars/driving";
-import { loadBaseGrid, loadDriveGrid } from "@/lib/mars/load-route-grid";
+import { loadBaseGrid } from "@/lib/mars/load-route-grid";
 import { appendCorner, EXAMPLE_ZONE } from "@/lib/mars/route-zones";
 import { planWalk, slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 import { ClearZonesButton } from "./clear-zones-button";
 import { DriveControls, nearestFirst } from "./drive-controls";
-import { DriveAssumptions, DriveResult } from "./drive-result";
+import { DriveWalkAssumptions, DriveWalkResult } from "./drive-walk-result";
 import { MapPanel } from "./map-panel";
-import { useDrivePlan, useLoadedGrid } from "./route-hooks";
+import { useDriveWalk, useLoadedGrid } from "./route-hooks";
 import {
+  boulderFeatures,
   collection,
   draftFeatures,
   endFeatures,
+  journeyFeatures,
   routeFeatures,
   routeLayers,
   setData,
   SOURCES,
   zoneFeature,
 } from "./route-layers";
+import { RouteLegend } from "./route-legend";
 import { RouteResult, WalkAssumptions } from "./route-result";
 import type { SitePoi } from "./scene-panel";
 
-type Mission = "walking" | "driving";
+type Mission = "walking" | "drive-walk";
 type Mode = "start" | "end" | "zone" | null;
 
 const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
@@ -41,6 +44,9 @@ const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
   zone: "Click the map to add corners. Double-click to finish.",
 };
 
+// Time at the site, a planning input like the walk-leg timing's, not a NASA value.
+const DEFAULT_SAMPLING_MIN = 60;
+
 interface RoutePlannerProps {
   map: MapLibreMap | null;
   base: LngLat;
@@ -48,10 +54,11 @@ interface RoutePlannerProps {
   sites: SitePoi[];
 }
 
-/** A* walk or drive from start to end and back, avoiding steep ground and no-go zones drawn on the map. */
+/** A* walk, or drive + walk, from start to end and back, avoiding steep ground and no-go zones drawn on the map. */
 export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
   const [mission, setMission] = useState<Mission>("walking");
   const [power, setPower] = useState<PowerSource>("fission");
+  const [samplingMin, setSamplingMin] = useState(DEFAULT_SAMPLING_MIN);
   const [start, setStart] = useState(base);
   const [end, setEnd] = useState(target);
   const [zones, setZones] = useState<NoGoZone[]>([EXAMPLE_ZONE]);
@@ -59,9 +66,8 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
   const [mode, setMode] = useState<Mode>(null);
   const zonesDrawn = useRef(0);
   const drawZoneItem = useRef<HTMLButtonElement>(null);
-  const driving = mission === "driving";
+  const driving = mission === "drive-walk";
   const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
-  const drive = useLoadedGrid(loadDriveGrid, driving);
   const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
   const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
 
@@ -71,10 +77,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
     () => grid && slope && walls && planWalk(grid, slope, walls, start, end),
     [grid, slope, walls, start, end],
   );
-  const drivePlan = useDrivePlan(drive.grid, { start, end, power, zones }, driving);
-  // While a new drive is being planned the old one is stale, so neither the panel nor the map shows it.
-  const shownDrive = drivePlan.planning ? null : drivePlan.plan;
-  const plan = driving ? shownDrive : walkPlan;
+  const journey = useDriveWalk({ start, destination, power, samplingMin, zones }, driving);
 
   useEffect(() => {
     if (!map) return;
@@ -91,30 +94,42 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
     };
   }, [map]);
 
-  useEffect(() => setData(map, "planned-route", plan ? routeFeatures(plan) : []), [map, plan]);
+  // Each mission draws only its own route: the walk's two lines, or the trip's legs and boulders.
+  const walkShown = !driving && walkPlan;
+  const trip = journey.plan?.collection;
+  const boulders = journey.siteGrid?.boulders;
+  useEffect(
+    () => setData(map, "planned-route", walkShown ? routeFeatures(walkShown) : []),
+    [map, walkShown],
+  );
+  useEffect(() => setData(map, "journey", trip ? journeyFeatures(trip) : []), [map, trip]);
+  useEffect(
+    () => setData(map, "boulders", boulders ? boulderFeatures(boulders) : []),
+    [map, boulders],
+  );
   useEffect(() => setData(map, "no-go-zones", zones.map(zoneFeature)), [map, zones]);
   useEffect(() => setData(map, "zone-draft", draftFeatures(draft)), [map, draft]);
   useEffect(() => setData(map, "route-ends", endFeatures(start, end)), [map, start, end]);
 
-  // Each mission starts from its defaults: walking to the science stop, driving to the nearest site.
+  // Each mission starts from its defaults: walking to the science stop, drive + walk to the nearest site.
   function chooseMission(next: Mission) {
-    const nextEnd = next === "driving" ? (destinations[0]?.center ?? target) : target;
+    const nextEnd = next === "drive-walk" ? (destinations[0]?.center ?? target) : target;
     setMission(next);
     setStart(base);
     setEnd(nextEnd);
-    if (next === "driving") frameDrive(base, nextEnd);
+    if (next === "drive-walk") frame([base, nextEnd]);
     else map?.flyTo({ center: base, zoom: 12 });
   }
 
   function chooseDestination(site: SitePoi) {
     setEnd(site.center);
-    frameDrive(start, site.center);
+    frame([start, site.center]);
   }
 
-  // Fits the start and destination between the panels. Called only from the operator's own
-  // choices, so it never fights their panning.
-  function frameDrive(from: LngLat, to: LngLat) {
-    map?.fitBounds(bounds(from, to), { padding: panelPadding() });
+  // Fits the points between the panels. Called only from the operator's own choices, so it
+  // never fights their panning.
+  function frame(points: LngLat[]) {
+    map?.fitBounds(bounds(points), { padding: panelPadding() });
   }
 
   function chooseMode(next: Mode) {
@@ -217,7 +232,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         onValueChange={(value) => value[0] && chooseMission(value[0] as Mission)}
       >
         <ToggleGroupItem value="walking">Walking</ToggleGroupItem>
-        <ToggleGroupItem value="driving">Driving</ToggleGroupItem>
+        <ToggleGroupItem value="drive-walk">Drive + walk</ToggleGroupItem>
       </ToggleGroup>
       {driving && (
         <DriveControls
@@ -226,6 +241,8 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
           onDestination={chooseDestination}
           power={power}
           onPower={setPower}
+          samplingMin={samplingMin}
+          onSamplingMin={setSamplingMin}
         />
       )}
       <div className="flex flex-col gap-1">
@@ -261,7 +278,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         </p>
       </div>
       {driving ? (
-        <DriveResult plan={shownDrive} planning={drivePlan.planning} loadFailed={drive.failed} />
+        <DriveWalkResult journey={journey} destination={destination} onFit={frame} />
       ) : (
         <RouteResult plan={walkPlan} loadFailed={loadFailed} />
       )}
@@ -269,27 +286,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         <p className="text-xs">
           No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
         </p>
-        <div className="flex gap-3 text-xs text-muted-foreground">
-          {plan?.summary && (
-            <>
-              <span className="flex items-center gap-1">
-                <span aria-hidden className="h-1 w-4 bg-primary forced-color-adjust-none" />
-                Out
-              </span>
-              <span className="flex items-center gap-1">
-                <span
-                  aria-hidden
-                  className="w-4 border-t-2 border-dashed border-foreground forced-color-adjust-none"
-                />
-                Back
-              </span>
-            </>
-          )}
-          <span className="flex items-center gap-1">
-            <span aria-hidden className="size-3 bg-destructive forced-color-adjust-none" />
-            No-go zone
-          </span>
-        </div>
+        <RouteLegend mode={mission} />
       </div>
       <Collapsible>
         <CollapsibleTrigger
@@ -301,7 +298,7 @@ export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
         </CollapsibleTrigger>
         <CollapsiblePanel className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground motion-reduce:transition-none">
           {driving ? (
-            <DriveAssumptions grid={drive.grid} plan={shownDrive} />
+            <DriveWalkAssumptions grid={journey.driveGrid} plan={journey.plan} />
           ) : (
             <WalkAssumptions plan={walkPlan} />
           )}
@@ -315,13 +312,15 @@ function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
   return lngA === lngB && latA === latB;
 }
 
-/** South-west and north-east corners around two points, the short way round across ±180°. */
-function bounds([lngA, latA]: LngLat, [lngB, latB]: LngLat): [LngLat, LngLat] {
-  // Shift B by whole turns to within 180° of A; MapLibre accepts longitudes past ±180.
-  const nearLngB = lngB + 360 * Math.round((lngA - lngB) / 360);
+/** South-west and north-east corners around the points, the short way round across ±180°. */
+function bounds(points: LngLat[]): [LngLat, LngLat] {
+  const [firstLng] = points[0];
+  // Shift each point by whole turns to within 180° of the first; MapLibre accepts longitudes past ±180.
+  const lngs = points.map(([lng]) => lng + 360 * Math.round((firstLng - lng) / 360));
+  const lats = points.map(([, lat]) => lat);
   return [
-    [Math.min(lngA, nearLngB), Math.min(latA, latB)],
-    [Math.max(lngA, nearLngB), Math.max(latA, latB)],
+    [Math.min(...lngs), Math.min(...lats)],
+    [Math.max(...lngs), Math.max(...lats)],
   ];
 }
 

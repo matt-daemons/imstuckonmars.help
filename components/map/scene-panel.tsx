@@ -24,6 +24,8 @@ const single = (set: (v: number) => void) => (v: number | readonly number[]) =>
 
 export interface SitePoi {
   id: string;
+  /** Names the site's slope COG, e.g. "ESP_033225_2250". */
+  hiriseId: string;
   title: string;
   confirmed: boolean;
   center: LngLat;

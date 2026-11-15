@@ -1,60 +1,13 @@
-import { evaluateDrive } from "@/lib/flight-rules/drive";
-import type { EvaVerdict } from "@/lib/flight-rules/evaluate";
-import { ROVER, ROVER_RULES, type RoverFactor } from "@/lib/flight-rules/rover-rules";
-import type { DriveSummary, planDrive } from "@/lib/mars/driving";
+import { ROVER, ROVER_RULES } from "@/lib/flight-rules/rover-rules";
+import type { planDrive } from "@/lib/mars/driving";
 import { cellSize, type RouteGrid } from "@/lib/mars/route-grid";
 
-import {
-  failureMessages,
-  limitMark,
-  Readout,
-  searchLine,
-  StatusLine,
-  type StatusCopy,
-} from "./route-result";
+import { searchLine } from "./route-result";
 
 export type DrivePlan = ReturnType<typeof planDrive>;
 
-const DRIVE_COPY: StatusCopy = {
-  loadFailed: "Rover terrain did not load, so no drive can be planned. Reload the page to retry.",
-  failures: failureMessages(
-    ROVER_RULES.slope.no_go_above_degrees,
-    "Start or end is outside the rover terrain strip. Pick a point inside it.",
-  ),
-  notChecked: "Not checked: radiation, dust, daylight, rocks.",
-};
-
-/** Same shape as RouteResult: one status slot with the verdict first, the readouts below it. */
-export function DriveResult({
-  plan,
-  planning,
-  loadFailed,
-}: {
-  plan: DrivePlan | null;
-  planning: boolean;
-  loadFailed: boolean;
-}) {
-  const summary = plan?.summary ?? null;
-  const check = summary && evaluateDrive(summary);
-  return (
-    <div className="flex flex-col gap-1">
-      {/* One live region that stays mounted, so screen readers announce every change in it. */}
-      <div role="status">
-        <StatusLine
-          plan={plan}
-          check={check}
-          loadFailed={loadFailed}
-          pending={planning ? "Planning route…" : "Loading rover terrain…"}
-          copy={DRIVE_COPY}
-        />
-      </div>
-      {summary && check && <DriveReadouts summary={summary} check={check} />}
-    </div>
-  );
-}
-
 // D-5: fixed decimals, a true minus sign, thousands separators from five digits.
-function formatNumber(value: number, digits: number): string {
+export function formatNumber(value: number, digits: number): string {
   return value
     .toLocaleString("en-US", {
       minimumFractionDigits: digits,
@@ -62,52 +15,6 @@ function formatNumber(value: number, digits: number): string {
       useGrouping: "min2",
     })
     .replace("-", "−");
-}
-
-function DriveReadouts({
-  summary,
-  check,
-}: {
-  summary: DriveSummary;
-  check: EvaVerdict<RoverFactor>;
-}) {
-  const pathExtraPercent = Math.round((ROVER.path_factor - 1) * 100);
-  return (
-    <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
-      <Readout
-        label="One way"
-        value={`${formatNumber(summary.one_way_km, 0)} km`}
-        note={`${formatNumber(summary.straight_km, 0)} km in a straight line`}
-        mark={limitMark(check, "range")}
-      />
-      <Readout
-        label="Round trip"
-        value={`${formatNumber(summary.odometer_km, 0)} km`}
-        note={`Odometer: planned path +${pathExtraPercent}%`}
-      />
-      <Readout
-        label="Sols"
-        value={`${summary.sols}`}
-        note={`${ROVER.km_per_sol[summary.power]} km per sol`}
-        mark={limitMark(check, "trip_length")}
-      />
-      <Readout
-        label="Battery after the hardest day"
-        value={`${formatNumber(summary.battery_left_percent, 0)}%`}
-        mark={limitMark(check, "battery", "below")}
-      />
-      <Readout
-        label="Drive-back reserve"
-        value={`${formatNumber(summary.reserve_km, 0)} km`}
-        mark={limitMark(check, "reserve", "below")}
-      />
-      <Readout
-        label="Steepest slope"
-        value={`${formatNumber(summary.max_slope, 1)}°`}
-        mark={limitMark(check, "slope")}
-      />
-    </dl>
-  );
 }
 
 /** The driving lines under "Assumptions and data". Every number comes from the rover rules or the grid. */

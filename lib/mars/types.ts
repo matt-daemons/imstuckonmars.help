@@ -123,3 +123,21 @@ export interface RouteSummary extends Omit<RouteResult, "limiting_factor"> {
   /** Where the numbers came from, e.g. "SAMPLE — hand-made". Show it in the UI. */
   source: string;
 }
+
+/** A whole journey as one GeoJSON file: route-leg lines, the staging point, and the banner summary. */
+export interface RouteCollection {
+  type: "FeatureCollection";
+  features: (
+    | {
+        type: "Feature";
+        properties: RouteLegProperties;
+        geometry: { type: "LineString"; coordinates: LngLat[] };
+      }
+    | {
+        type: "Feature";
+        properties: { kind: "staging" };
+        geometry: { type: "Point"; coordinates: LngLat };
+      }
+  )[];
+  route: RouteSummary;
+}

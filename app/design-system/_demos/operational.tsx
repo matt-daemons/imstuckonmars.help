@@ -105,7 +105,8 @@ const colorTable = [
   },
   { token: "warning", meaning: "Warning alerts (a note), out-of-limit caution, field overflow" },
   { token: "info", meaning: "Info alerts (advisory). Also the chrome accent" },
-  { token: "primary", meaning: "Chrome accent; planned route line on the map" },
+  { token: "primary", meaning: "Chrome accent; planned route line and drive legs on the map" },
+  { token: "route-walk", meaning: "Walk legs of a route on the map" },
   { token: "success", meaning: "Success only" },
   { token: "hazard", meaning: "Hazard tape on confirmations of dangerous actions" },
 ];
