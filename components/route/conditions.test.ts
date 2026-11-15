@@ -210,9 +210,9 @@ describe("walkWithStorms", () => {
 
 describe("spaceWeatherLine", () => {
   it.each([
-    { feed: quietSun, line: "Space weather: none · NASA DONKI, updated 10:42 UTC" },
-    { feed: "loading" as const, line: "Space weather: loading NASA DONKI…" },
-    { feed: "failed" as const, line: "Space weather: NASA DONKI unavailable" },
+    { feed: quietSun, line: "Solar alert: none · NASA DONKI, read 10:42 UTC" },
+    { feed: "loading" as const, line: "Solar alert: loading NASA DONKI…" },
+    { feed: "failed" as const, line: "Solar alert: NASA DONKI unavailable" },
   ])("reads $line", ({ feed, line }) => {
     expect(spaceWeatherLine(feed)).toBe(line);
   });

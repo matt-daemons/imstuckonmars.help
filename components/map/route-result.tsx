@@ -250,23 +250,50 @@ export function walkReadouts(summary: RouteSummary, check: EvaVerdict): ReadoutI
   ];
 }
 
-export function Readouts({ items, className }: { items: ReadoutItem[]; className?: string }) {
+/**
+ * Readouts in a grid. `lead` sets the few numbers a decision rests on in one row, larger: each
+ * readout spans a label row, a value row and a note row of the same grid (subgrid), so the values
+ * share one line however many lines a label or note takes.
+ */
+export function Readouts({
+  items,
+  lead = false,
+  className,
+}: {
+  items: ReadoutItem[];
+  lead?: boolean;
+  className?: string;
+}) {
   return (
-    <dl className={cn("grid grid-cols-2 gap-x-4 gap-y-2", className)}>
+    <dl
+      className={cn(
+        "grid gap-x-4",
+        lead ? "grid-cols-3 gap-y-1" : "grid-cols-2 gap-y-2",
+        className,
+      )}
+    >
       {items.map(({ id, ...item }) => (
-        <Readout key={id} {...item} />
+        <Readout key={id} lead={lead} {...item} />
       ))}
     </dl>
   );
 }
 
 /** One readout, styled like the LARA panel's. */
-function Readout({ label, value, note, mark }: Omit<ReadoutItem, "id">) {
+function Readout({ label, value, note, mark, lead }: Omit<ReadoutItem, "id"> & { lead: boolean }) {
   return (
-    <div className="min-w-0">
-      <dt className="text-xs text-muted-foreground">{label}</dt>
-      <dd className={cn("flex items-center gap-1 font-mono text-sm tabular-nums", mark?.tone)}>
-        {mark && <mark.Icon role="img" aria-label={mark.label} className="size-3.5" />}
+    <div className={cn("min-w-0", lead && "row-span-3 grid grid-rows-subgrid")}>
+      <dt className={cn("text-xs text-muted-foreground", lead && "self-end")}>{label}</dt>
+      <dd
+        className={cn(
+          "flex items-center gap-1 font-mono tabular-nums",
+          lead ? "text-lg" : "text-sm",
+          mark?.tone,
+        )}
+      >
+        {mark && (
+          <mark.Icon role="img" aria-label={mark.label} className={lead ? "size-4" : "size-3.5"} />
+        )}
         {value}
       </dd>
       {note && <dd className="text-xs text-muted-foreground">{note}</dd>}

@@ -26,6 +26,11 @@ export function hoursMinutes(minutes: number): string {
   return `${pad(Math.floor(whole / 60))}:${pad(whole % 60)}`;
 }
 
+/** A distance in km: 1 decimal from 10 km up, else 2, so the same leg reads the same everywhere. */
+export function formatKm(km: number): string {
+  return `${formatNumber(km, km >= 10 ? 1 : 2)} km`;
+}
+
 /** The summary's opening lines: what the mission is, where it goes, and when it was planned. */
 export function titleRows({
   mission,
@@ -107,7 +112,7 @@ export function timelineRows(
       places: `${name(leg.from)} → ${name(leg.to)}`,
       start: afterDeparture(leg.start_offset_min),
       duration: hoursMinutes(leg.est_time_min),
-      distance: `${formatNumber(leg.distance_km, 2)} km`,
+      distance: formatKm(leg.distance_km),
       slope: `${formatNumber(leg.max_slope, 1)}°`,
       shelter: shelter(leg),
     };

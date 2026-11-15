@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useRef } from "react";
 
 import { AccordionItem, AccordionPanel, AccordionTrigger } from "@/components/ui/accordion";
 import { Badge } from "@/components/ui/badge";
@@ -27,6 +27,8 @@ import { useConditions } from "../conditions-provider";
 export function StormDrill() {
   const { drill, setDrill } = useConditions();
   const alertLabel = useId();
+  // Clear drill disables itself, so focus moves here instead of dropping to the page.
+  const realItem = useRef<HTMLButtonElement>(null);
   const drilling = isDrillSet(drill);
   return (
     <AccordionItem value="storm-drill">
@@ -61,7 +63,10 @@ export function StormDrill() {
               if (level) setDrill({ ...drill, solar_alert_level: level === "off" ? null : level });
             }}
           >
-            <ToggleGroupItem value="off">Off</ToggleGroupItem>
+            {/* "Real", as the empty fields below say, so it is not mistaken for a drilled "None". */}
+            <ToggleGroupItem ref={realItem} value="off">
+              Real
+            </ToggleGroupItem>
             <ToggleGroupItem value="none">None</ToggleGroupItem>
             <ToggleGroupItem value="watch">Watch</ToggleGroupItem>
             <ToggleGroupItem value="warning">Warning</ToggleGroupItem>
@@ -103,7 +108,10 @@ export function StormDrill() {
           size="sm"
           variant="outline"
           disabled={!drilling}
-          onClick={() => setDrill(NO_DRILL)}
+          onClick={() => {
+            setDrill(NO_DRILL);
+            realItem.current?.focus();
+          }}
           className="self-start"
         >
           Clear drill
