@@ -32,7 +32,8 @@
     "pipe:thermal-inertia": "node pipelines/stable/thermal-inertia.ts",
     "pipe:roughness": "node pipelines/stable/roughness.ts",
     "pipe:boulders": "node pipelines/stable/boulders.ts",
-    "pipe:regional-slope": "node pipelines/stable/regional-slope.ts"
+    "pipe:regional-slope": "node pipelines/stable/regional-slope.ts",
+    "pipe:geology": "node pipelines/stable/geology.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

@@ -1,0 +1,68 @@
+{
+  "source": "Tanaka, K. L. et al. (2014). Geologic Map of Mars. USGS Scientific Investigations Map 3292, scale 1:20,000,000.",
+  "source_url": "https://pubs.usgs.gov/sim/3292/",
+  "attribution": "USGS Astrogeology / NASA (Tanaka et al. 2014, SIM 3292)",
+  "map_scale": "1:20,000,000",
+  "corridor_bbox_0_360": [172.073414, 44.052522, 194.34936, 46.407658],
+  "geojson": "public/data/processed/geology.geojson",
+  "simplified_deg": null,
+  "caveats": [
+    "Global 1:20M map: unit contacts are placed to within kilometres to tens of kilometres, so this is regional context, not what is under the rover's wheels.",
+    "Units are mapped from orbit (morphology, crater counts); none of these units has been visited in Arcadia Planitia.",
+    "The metres-thick ice-rich mantle seen in the HiRISE images at every site (Mustard et al. 2001) is too thin and patchy for this map; the mapped unit is what lies beneath it.",
+    "Ages are relative epochs from crater statistics, not radiometric dates.",
+    "nearest_contact_km is measured to the mapped contact; treat values under ~10 km as 'near a contact', not a precise distance."
+  ],
+  "places": [
+    {
+      "id": "ESP_033225_2250",
+      "lon": -176.33383,
+      "lat": 44.41589,
+      "unit": "Av",
+      "unit_name": "Amazonian volcanic unit",
+      "age": "Amazonian",
+      "description": "Rugged, hummocky, pitted plains of poorly defined flows, hundreds to >1,000 km across; interpreted as lava and perhaps volcaniclastic flows. Tens of metres or more thick.",
+      "nearest_contact_km": 54.6
+    },
+    {
+      "id": "ESP_034082_2260",
+      "lon": -171.38243,
+      "lat": 45.64829,
+      "unit": "Av",
+      "unit_name": "Amazonian volcanic unit",
+      "age": "Amazonian",
+      "description": "Rugged, hummocky, pitted plains of poorly defined flows, hundreds to >1,000 km across; interpreted as lava and perhaps volcaniclastic flows. Tens of metres or more thick.",
+      "nearest_contact_km": 101.1
+    },
+    {
+      "id": "ESP_037352_2245",
+      "lon": -166.14298,
+      "lat": 44.39035,
+      "unit": "Av",
+      "unit_name": "Amazonian volcanic unit",
+      "age": "Amazonian",
+      "description": "Rugged, hummocky, pitted plains of poorly defined flows, hundreds to >1,000 km across; interpreted as lava and perhaps volcaniclastic flows. Tens of metres or more thick.",
+      "nearest_contact_km": 212.6
+    },
+    {
+      "id": "ESP_054060_2265",
+      "lon": 172.56388,
+      "lat": 46.07022,
+      "unit": "lHl",
+      "unit_name": "Late Hesperian lowland unit",
+      "age": "Late Hesperian",
+      "description": "Planar to undulating plains across most of the northern lowlands; sediments from outflow channels and highland margins, likely with lavas; pervasively modified by periglaciation and mantling. Hundreds of metres to km thick.",
+      "nearest_contact_km": 49.3
+    },
+    {
+      "id": "habitat",
+      "lon": -176.05,
+      "lat": 45.97,
+      "unit": "Av",
+      "unit_name": "Amazonian volcanic unit",
+      "age": "Amazonian",
+      "description": "Rugged, hummocky, pitted plains of poorly defined flows, hundreds to >1,000 km across; interpreted as lava and perhaps volcaniclastic flows. Tens of metres or more thick.",
+      "nearest_contact_km": 120.8
+    }
+  ]
+}

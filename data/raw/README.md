@@ -23,3 +23,10 @@ planetocentric, east-positive. Hashes and reprojection are in `public/data/terra
 
 All processed outputs are reprojected to lon/lat on the Mars 2000 sphere (`+proj=longlat +R=3396190`), east-positive −180..180.
 Angles carry over unchanged from the local-radius spheres (no datum shift between Mars spheres).
+
+## Geology (`pnpm pipe:geology`)
+
+| File                                                                                     | Source                                                                                                           | Downloaded     | CRS                                                                                                                     |
+| ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `geology/sim3292_database.zip` (809 MB; pipeline unzips only `SIM3292_Global_Geology.*`) | [USGS SIM 3292 GIS database](https://pubs.usgs.gov/sim/3292/downloads/sim3292_database.zip) (Tanaka et al. 2014) | 2026-11-15 UTC | Geographic lon/lat, Mars 2000 sphere R = 3,396,190 m (`GCS_Mars_2000_Sphere`); planetocentric, east-positive, −180..180 |
+| `geology/sim3292_readme.txt`, `sim3292_pamphlet.pdf`, `sim3292_dmu.pdf`                  | https://pubs.usgs.gov/sim/3292/ (readme, pamphlet, description of map units with locality images)                | 2026-11-15 UTC | —                                                                                                                       |

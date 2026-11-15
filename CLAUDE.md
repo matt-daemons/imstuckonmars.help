@@ -181,6 +181,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - **SWIM — Subsurface Water Ice Mapping** (planned, swim.psi.edu down): Planetary Science Institute / NASA. Illustration: NASA PIA26045 (slides only).
 - **Curiosity RAD** Level 2 dose rates, Gale crater: NASA Space Physics Data Facility (SPDF), CDAWeb dataset `MSL_RAD_OBS-L2` (https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/). Acknowledgement: RAD PI D. Hassler, Southwest Research Institute. Instrument: Hassler et al. 2012.
 - **Perseverance MEDA** (weather, sol 816) and **MOXIE** (oxygen production), Jezero: NASA PDS Atmospheres Node, bundles `mars2020_meda` and `moxie_bundle` (https://pds-atmospheres.nmsu.edu/PDS/data/PDS4/Mars2020/). Provenance per file: `data/telemetry/sources.json`. (REMS is no longer used.)
+- **Geologic Map of Mars** (USGS SIM 3292, 1:20M; geologic units along the drive corridor, `pnpm pipe:geology`): USGS Astrogeology / NASA — Tanaka et al. 2014. https://pubs.usgs.gov/sim/3292/
 - **NASA DONKI** space-weather API: https://kauai.ccmc.gsfc.nasa.gov/DONKI/ — the app calls CCMC's DONKI API directly (`https://ccmc.gsfc.nasa.gov/DONKI-API/get/{FLR,SEP,WSAEnlilSimulations}`, no key; `/api/space-weather`, cached 15 min), because api.nasa.gov's flare proxy returned 404 on Sun Nov 15.
 - **Mars Climate Database** (if used): LMD/CNES/ESA — Forget et al. 1999.
 
@@ -212,6 +213,7 @@ Respond from these perspectives/expertise: A: You are a geospatial professional 
 - Putzig, N. E. & Mellon, M. T. (2007). Apparent thermal inertia and the surface heterogeneity of Mars. _Icarus_ 191, 68–94. (thermal inertia surface classes)
 - Seidelmann, P. K. et al. (2002). Report of the IAU/IAG Working Group on Cartographic Coordinates and Rotational Elements of the Planets and Satellites: 2000. _Celestial Mechanics and Dynamical Astronomy_ 82(1), 83–111. doi:10.1023/A:1013939327465 (origin of the "Mars 2000" name — cite only if a slide says "Mars 2000"; its radius table was not checked)
 - Smith, D. E. et al. (2001). Mars Orbiter Laser Altimeter: experiment summary after the first year of global mapping of Mars. _JGR_ 106(E10), 23689–23722.
+- Tanaka, K. L., Skinner, J. A., Jr., Dohm, J. M., Irwin, R. P., III, Kolb, E. J., Fortezzo, C. M., Platz, T., Michael, G. G. & Hare, T. M. (2014). Geologic Map of Mars. _U.S. Geological Survey Scientific Investigations Map_ 3292, scale 1:20,000,000. doi:10.3133/sim3292 ✓ (Crossref) (geologic units along the drive corridor)
 - Wilson, E. B. (1927). Probable inference, the law of succession, and statistical inference. _JASA_ 22(158), 209–212. (Wilson bound — boulder review)
 
 ### Flight-rule sources (agreed by the team, shared role A — full wording in `config.yaml`)
