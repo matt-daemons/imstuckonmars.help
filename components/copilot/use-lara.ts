@@ -1,0 +1,300 @@
+"use client";
+
+import { useCallback, useEffect, useRef, useState } from "react";
+
+export interface Turn {
+  role: "user" | "assistant";
+  content: string;
+  alert?: boolean;
+}
+
+/** The subset of GET /api/missions/:id the panel reads. */
+interface MissionSnapshot {
+  revision: number;
+  clock: { mode: "paused" | "playing"; position_s: number; speed: number };
+  config: {
+    duration_s: number;
+    oxygen: Record<"base" | "eva", { reserve_g: number }>;
+    battery: Record<"base" | "eva", { reserve_wh: number }>;
+  };
+  state: {
+    activity: string;
+    reasons: string[];
+    oxygen: Record<"base" | "eva", { remaining_g: number }>;
+    battery: Record<"base" | "eva", { remaining_wh: number }>;
+  };
+  observed: {
+    radiation: { status: string; observation?: { dose_rate_e_ugy_day: number | null } | null };
+  };
+}
+
+type Status = "starting" | "idle" | "listening" | "transcribing" | "thinking" | "speaking";
+
+const WAKE_REPLY = "Yes?";
+const LEADING_WAKE_PHRASE = /^\s*(hey|okay|ok)[\s,]+(lara|laura|lora)\b[\s,.!?]*/i;
+const POLL_MS = 2000;
+const HISTORY_TURNS = 8;
+
+async function json<T>(response: Response): Promise<T> {
+  const body = (await response.json()) as T & { error?: { message?: string } };
+  if (!response.ok) throw new Error(body.error?.message ?? `Request failed (${response.status})`);
+  return body;
+}
+
+/** Owns one demo mission, its polled snapshot, and the ask → speak loop for LARA. */
+export function useLara() {
+  const [mission, setMission] = useState<{ id: string; token: string } | null>(null);
+  const [snapshot, setSnapshot] = useState<MissionSnapshot | null>(null);
+  const [turns, setTurns] = useState<Turn[]>([]);
+  const [status, setStatus] = useState<Status>("starting");
+  const [error, setError] = useState<string | null>(null);
+  const [voice, setVoice] = useState(true);
+  const seenReasons = useRef<Set<string> | null>(null);
+  const recorder = useRef<MediaRecorder | null>(null);
+  const audio = useRef<HTMLAudioElement | null>(null);
+  const busy = useRef(false);
+
+  const authed = useCallback(
+    (path: string, init: RequestInit = {}) => {
+      if (!mission) throw new Error("No mission yet");
+      return fetch(`/api/${path}`, {
+        ...init,
+        headers: { Authorization: `Bearer ${mission.token}`, ...init.headers },
+      });
+    },
+    [mission],
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    fetch("/api/copilot/session", { method: "POST" })
+      .then((r) => json<{ id: string; token: string }>(r))
+      .then((m) => {
+        if (cancelled) return;
+        setMission({ id: m.id, token: m.token });
+        setStatus("idle");
+      })
+      .catch((e: Error) => !cancelled && setError(e.message));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const latest = useRef<MissionSnapshot | null>(null);
+  const store = useCallback((next: MissionSnapshot) => {
+    latest.current = next;
+    setSnapshot(next);
+  }, []);
+
+  const refresh = useCallback(async () => {
+    if (!mission) return null;
+    const next = await json<MissionSnapshot>(await authed(`missions/${mission.id}`));
+    store(next);
+    return next;
+  }, [authed, mission, store]);
+
+  const synthesize = useCallback(
+    async (text: string) => {
+      if (!mission) throw new Error("No mission yet");
+      const response = await authed(`copilot/${mission.id}/speak`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      if (!response.ok) throw new Error("LARA's voice is unavailable");
+      return response.blob();
+    },
+    [authed, mission],
+  );
+
+  const play = useCallback(async (clip: Blob) => {
+    const url = URL.createObjectURL(clip);
+    audio.current?.pause();
+    const player = new Audio(url);
+    audio.current = player;
+    await new Promise<void>((resolve) => {
+      player.onended = player.onerror = () => resolve();
+      player.play().catch(() => resolve());
+    });
+    URL.revokeObjectURL(url);
+  }, []);
+
+  const speak = useCallback(
+    async (text: string) => {
+      if (!mission || !voice) return;
+      setStatus("speaking");
+      await play(await synthesize(text));
+    },
+    [mission, play, synthesize, voice],
+  );
+
+  const ask = useCallback(
+    async (input: { question: string } | { alert: { code: string; detail?: string } }) => {
+      if (!mission || busy.current) return;
+      busy.current = true;
+      setError(null);
+      const userTurn: Turn =
+        "question" in input
+          ? { role: "user", content: input.question }
+          : { role: "user", content: `Alert: ${input.alert.code}`, alert: true };
+      const history = turns
+        .filter((t) => !t.alert)
+        .slice(-HISTORY_TURNS)
+        .map(({ role, content }) => ({ role, content }));
+      setTurns((t) => [...t, userTurn]);
+      setStatus("thinking");
+      try {
+        const answer = await json<{ text: string }>(
+          await authed(`copilot/${mission.id}/ask`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ...input, history }),
+          }),
+        );
+        setTurns((t) => [...t, { role: "assistant", content: answer.text, alert: userTurn.alert }]);
+        await speak(answer.text);
+      } catch (e) {
+        setError((e as Error).message);
+      } finally {
+        busy.current = false;
+        setStatus("idle");
+      }
+    },
+    [authed, mission, speak, turns],
+  );
+
+  // Poll the mission; announce any finding that was not present before.
+  useEffect(() => {
+    if (!mission) return;
+    const timer = setInterval(async () => {
+      try {
+        const next = await refresh();
+        if (!next) return;
+        const reasons = new Set(next.state.reasons);
+        const seen = seenReasons.current;
+        seenReasons.current = reasons;
+        if (!seen) return;
+        const fresh = [...reasons].find((r) => !seen.has(r));
+        if (fresh) void ask({ alert: { code: fresh } });
+      } catch {
+        // A missed poll is retried on the next tick.
+      }
+    }, POLL_MS);
+    void refresh();
+    return () => clearInterval(timer);
+  }, [mission, refresh, ask]);
+
+  const command = useCallback(
+    async (body: Record<string, unknown>) => {
+      if (!mission) return;
+      const current = latest.current ?? (await refresh());
+      if (!current) return;
+      try {
+        const next = await json<MissionSnapshot>(
+          await authed(`missions/${mission.id}/commands`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              command_id: crypto.randomUUID(),
+              expected_revision: current.revision,
+              ...body,
+            }),
+          }),
+        );
+        store(next);
+      } catch (e) {
+        setError((e as Error).message);
+        void refresh();
+      }
+    },
+    [authed, mission, refresh, store],
+  );
+
+  /** Transcribes a recorded question and asks LARA, dropping a leading wake phrase. */
+  const askFromAudio = useCallback(
+    async (clip: Blob) => {
+      if (!mission) return;
+      setStatus("transcribing");
+      try {
+        const { text } = await json<{ text: string }>(
+          await authed(`copilot/${mission.id}/transcribe`, {
+            method: "POST",
+            headers: { "Content-Type": clip.type.split(";")[0] },
+            body: clip,
+          }),
+        );
+        const question = text.replace(LEADING_WAKE_PHRASE, "").trim();
+        if (question) await ask({ question });
+        else setStatus("idle");
+      } catch (e) {
+        setError((e as Error).message);
+        setStatus("idle");
+      }
+    },
+    [ask, authed, mission],
+  );
+
+  const startListening = useCallback(async () => {
+    if (!mission || recorder.current) return;
+    setError(null);
+    audio.current?.pause();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const chunks: Blob[] = [];
+      const r = new MediaRecorder(stream);
+      r.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+      r.onstop = () => {
+        stream.getTracks().forEach((track) => track.stop());
+        recorder.current = null;
+        const clip = new Blob(chunks, { type: r.mimeType || "audio/webm" });
+        if (clip.size === 0) setStatus("idle");
+        else void askFromAudio(clip);
+      };
+      recorder.current = r;
+      r.start();
+      setStatus("listening");
+    } catch {
+      setError("Microphone unavailable or permission denied");
+      setStatus("idle");
+    }
+  }, [askFromAudio, mission]);
+
+  const stopListening = useCallback(() => recorder.current?.stop(), []);
+
+  /** Handlers for the on-device wake word, which captures the question itself. */
+  const ackClip = useRef<Promise<Blob> | null>(null);
+  const wakeHandlers = {
+    onAcknowledge: async () => {
+      setError(null);
+      setStatus("speaking");
+      if (!voice) return;
+      try {
+        ackClip.current ??= synthesize(WAKE_REPLY);
+        await play(await ackClip.current);
+      } catch {
+        ackClip.current = null;
+      }
+    },
+    onCapturing: () => {
+      audio.current?.pause();
+      setStatus("listening");
+    },
+    onUtterance: (clip: Blob) => void askFromAudio(clip),
+    onNoSpeech: () => setStatus("idle"),
+  };
+
+  return {
+    ready: Boolean(mission),
+    snapshot,
+    turns,
+    status,
+    error,
+    voice,
+    setVoice,
+    ask,
+    command,
+    startListening,
+    stopListening,
+    wakeHandlers,
+  };
+}
