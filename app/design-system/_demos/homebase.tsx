@@ -21,6 +21,7 @@ import {
 import { useFakeSensorMode } from "@/components/map/use-fake-sensor-mode";
 import { LayersPanel } from "@/components/map/layers-panel";
 import { RouteCalculationProgress } from "@/components/route/route-calculation-progress";
+import { CameraViewMenu } from "@/components/map/mission-view";
 import "@/components/map/map-overlays.css";
 
 const fixture: HomebaseMetric = {
@@ -69,8 +70,17 @@ export function HomebaseComponents() {
           <FakeSensorControls mode={fakeSensors} map={null} />
         </div>
         {fakeSensors.state.enabled && (
-          <div className="relative min-h-160 w-72">
-            <FakeSensorLegend mode={fakeSensors} />
+          <div className="relative min-h-160 w-full">
+            <div className="map-camera-stack">
+              <CameraViewMenu
+                following={false}
+                canFollow={false}
+                canViewRoute={false}
+                canViewTarget={false}
+                onSelect={() => {}}
+              />
+              <FakeSensorLegend mode={fakeSensors} />
+            </div>
           </div>
         )}
       </Section>

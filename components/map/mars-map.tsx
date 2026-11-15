@@ -297,7 +297,10 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                   />
                 </LayersPanel>
                 <FakeSensorLayers map={loaded} mode={fakeSensors} />
-                <FakeSensorLegend mode={fakeSensors} />
+                <div className="map-camera-stack">
+                  <MapViewControls />
+                  <FakeSensorLegend mode={fakeSensors} />
+                </div>
                 <div className="mission-map-chrome contents">
                   <RouteMapLayers map={loaded} />
                   <RouteFocus map={loaded} />
@@ -306,7 +309,6 @@ export function MarsMap({ children }: { children?: ReactNode }) {
                   <CrewLayer map={loaded} />
                   <HomebaseMapEntry map={loaded} habitat={HABITAT} enlarged={habitatEnlarged} />
                   <MapCompass map={loaded} />
-                  <MapViewControls />
                   <CompletionNotice />
                   <DebugMenu
                     page="Map"
