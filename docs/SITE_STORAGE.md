@@ -45,6 +45,9 @@ The root must only be enabled once the matching release is available.
 
 ## Verification notes
 
+All 23,542 published objects passed SHA-256, byte-length, CORS and immutable-cache
+checks. The public release inventory matches the local inventory exactly.
+
 `https://tiles.imstuckonmars.help/sites-v1/sites.geojson` returns HTTP 200,
 `application/geo+json`, public CORS headers and bytes identical to the archive.
 It contains four site points and four footprints. The largest slope TIFF also
