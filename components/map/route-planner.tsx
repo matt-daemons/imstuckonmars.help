@@ -8,14 +8,16 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsiblePanel, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Kbd } from "@/components/ui/kbd";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { FLIGHT_RULES } from "@/lib/flight-rules/rules";
-import { loadBaseGrid } from "@/lib/mars/load-route-grid";
-import type { RouteGrid } from "@/lib/mars/route-grid";
+import type { PowerSource } from "@/lib/mars/driving";
+import { loadBaseGrid, loadDriveGrid } from "@/lib/mars/load-route-grid";
 import { appendCorner, EXAMPLE_ZONE } from "@/lib/mars/route-zones";
-import { MAX_SLOPE_DEG, planWalk, slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
+import { planWalk, slopeDegrees, wallMask, type NoGoZone } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 import { ClearZonesButton } from "./clear-zones-button";
+import { DriveControls, nearestFirst } from "./drive-controls";
+import { DriveAssumptions, DriveResult } from "./drive-result";
+import { useDrivePlan, useLoadedGrid } from "./route-hooks";
 import {
   collection,
   draftFeatures,
@@ -26,8 +28,10 @@ import {
   SOURCES,
   zoneFeature,
 } from "./route-layers";
-import { RouteResult } from "./route-result";
+import { RouteResult, WalkAssumptions } from "./route-result";
+import type { SitePoi } from "./scene-panel";
 
+type Mission = "walking" | "driving";
 type Mode = "start" | "end" | "zone" | null;
 
 const MODE_HINTS: Record<Exclude<Mode, null>, string> = {
@@ -40,12 +44,13 @@ interface RoutePlannerProps {
   map: MapboxMap | null;
   base: LngLat;
   target: LngLat;
+  sites: SitePoi[];
 }
 
-/** A* walk from start to end and back, avoiding steep ground and no-go zones drawn on the map. */
-export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
-  const [grid, setGrid] = useState<RouteGrid | null>(null);
-  const [loadFailed, setLoadFailed] = useState(false);
+/** A* walk or drive from start to end and back, avoiding steep ground and no-go zones drawn on the map. */
+export function RoutePlanner({ map, base, target, sites }: RoutePlannerProps) {
+  const [mission, setMission] = useState<Mission>("walking");
+  const [power, setPower] = useState<PowerSource>("fission");
   const [start, setStart] = useState(base);
   const [end, setEnd] = useState(target);
   const [zones, setZones] = useState<NoGoZone[]>([EXAMPLE_ZONE]);
@@ -53,21 +58,22 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   const [mode, setMode] = useState<Mode>(null);
   const zonesDrawn = useRef(0);
   const drawZoneItem = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    const controller = new AbortController();
-    loadBaseGrid(controller.signal).then(setGrid, () => {
-      if (!controller.signal.aborted) setLoadFailed(true);
-    });
-    return () => controller.abort();
-  }, []);
+  const driving = mission === "driving";
+  const { grid, failed: loadFailed } = useLoadedGrid(loadBaseGrid, true);
+  const drive = useLoadedGrid(loadDriveGrid, driving);
+  const destinations = useMemo(() => nearestFirst(sites, base), [sites, base]);
+  const destination = destinations.find((site) => samePoint(site.center, end)) ?? null;
 
   const slope = useMemo(() => grid && slopeDegrees(grid), [grid]);
   const walls = useMemo(() => grid && slope && wallMask(grid, slope, zones), [grid, slope, zones]);
-  const plan = useMemo(
+  const walkPlan = useMemo(
     () => grid && slope && walls && planWalk(grid, slope, walls, start, end),
     [grid, slope, walls, start, end],
   );
+  const drivePlan = useDrivePlan(drive.grid, { start, end, power, zones }, driving);
+  // While a new drive is being planned the old one is stale, so neither the panel nor the map shows it.
+  const shownDrive = drivePlan.planning ? null : drivePlan.plan;
+  const plan = driving ? shownDrive : walkPlan;
 
   useEffect(() => {
     if (!map) return;
@@ -88,6 +94,16 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
   useEffect(() => setData(map, "no-go-zones", zones.map(zoneFeature)), [map, zones]);
   useEffect(() => setData(map, "zone-draft", draftFeatures(draft)), [map, draft]);
   useEffect(() => setData(map, "route-ends", endFeatures(start, end)), [map, start, end]);
+
+  // Each mission starts from its defaults: walking to the science stop, driving to the nearest site.
+  function chooseMission(next: Mission) {
+    const nextEnd = next === "driving" ? (destinations[0]?.center ?? target) : target;
+    setMission(next);
+    setStart(base);
+    setEnd(nextEnd);
+    if (next === "driving") map?.fitBounds(bounds(base, nextEnd), { padding: panelPadding() });
+    else map?.flyTo({ center: base, zoom: 12 });
+  }
 
   function chooseMode(next: Mode) {
     if (next !== "zone") setDraft([]); // a half-drawn zone never outlives drawing mode
@@ -172,10 +188,6 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
     setDraft([]);
   }
 
-  const searchLine = plan?.summary
-    ? `Search: A*, ${(plan.outbound.expanded + plan.back.expanded).toLocaleString("en-US", { useGrouping: "min2" })} cells searched.`
-    : "Search: A*.";
-
   return (
     <aside
       aria-labelledby="route-title"
@@ -184,6 +196,27 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
       <h2 id="route-title" className="font-heading text-sm font-semibold">
         Route
       </h2>
+      <ToggleGroup
+        aria-label="Mission type"
+        variant="outline"
+        size="sm"
+        value={[mission]}
+        // Pressing the pressed item empties the value; the mission stays as it is then.
+        // Safe cast: the only values are the two items below.
+        onValueChange={(value) => value[0] && chooseMission(value[0] as Mission)}
+      >
+        <ToggleGroupItem value="walking">Walking</ToggleGroupItem>
+        <ToggleGroupItem value="driving">Driving</ToggleGroupItem>
+      </ToggleGroup>
+      {driving && (
+        <DriveControls
+          sites={destinations}
+          destination={destination}
+          onDestination={(site) => setEnd(site.center)}
+          power={power}
+          onPower={setPower}
+        />
+      )}
       <div className="flex flex-col gap-1">
         <div className="flex flex-wrap gap-2">
           <ToggleGroup
@@ -216,7 +249,11 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
           )}
         </p>
       </div>
-      <RouteResult plan={plan} loadFailed={loadFailed} />
+      {driving ? (
+        <DriveResult plan={shownDrive} planning={drivePlan.planning} loadFailed={drive.failed} />
+      ) : (
+        <RouteResult plan={walkPlan} loadFailed={loadFailed} />
+      )}
       <div className="flex flex-col gap-1">
         <p className="text-xs">
           No-go zones: {zones.length ? zones.map((zone) => zone.name).join(", ") : "none"}
@@ -252,17 +289,32 @@ export function RoutePlanner({ map, base, target }: RoutePlannerProps) {
           <ChevronDownIcon aria-hidden />
         </CollapsibleTrigger>
         <CollapsiblePanel className="flex flex-col gap-1 pt-1 text-xs text-muted-foreground motion-reduce:transition-none">
-          <p>
-            Checks slope, walk-back distance and suit time only. The start point counts as base.
-          </p>
-          <p>Elevation: MOLA/HRSC blend, nominal 200 m. Cannot see rocks or small craters.</p>
-          <p>
-            Ground over {MAX_SLOPE_DEG}° is impassable ({FLIGHT_RULES.slope.applies_to} limit,
-            assumed for Mars).
-          </p>
-          <p>{searchLine}</p>
+          {driving ? (
+            <DriveAssumptions grid={drive.grid} plan={shownDrive} />
+          ) : (
+            <WalkAssumptions plan={walkPlan} />
+          )}
         </CollapsiblePanel>
       </Collapsible>
     </aside>
   );
+}
+
+function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {
+  return lngA === lngB && latA === latB;
+}
+
+/** South-west and north-east corners around two points. */
+function bounds([lngA, latA]: LngLat, [lngB, latB]: LngLat): [LngLat, LngLat] {
+  return [
+    [Math.min(lngA, lngB), Math.min(latA, latB)],
+    [Math.max(lngA, lngB), Math.max(latA, latB)],
+  ];
+}
+
+// From lg up, the layer panel sits on the left and the scene and route panels on the right.
+function panelPadding() {
+  return window.matchMedia("(min-width: 64rem)").matches
+    ? { top: 64, bottom: 64, left: 320, right: 640 }
+    : { top: 64, bottom: 64, left: 32, right: 32 };
 }

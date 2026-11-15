@@ -70,6 +70,8 @@ export const ROVER = {
   speed_loss_kmh_per_degree: 0.175,
   // Odometer km per sol on trips that recharge on the way (Rucker 2015, NTRS 20150006958, slide 11, E15).
   km_per_sol: { solar: 14, fission: 46 },
+  // How far a crew can walk back to safety; past it, a breakdown means waiting for rescue (DRA 5.0 walk-back, D21, D23).
+  walk_back_km: 15,
   // Night-time life support drawn from the battery: half a sol with solar; deployed fission power covers it (builder's call).
   overnight_hours: { solar: 12.3, fission: 0 },
 } as const;

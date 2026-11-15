@@ -1,6 +1,6 @@
 import type { GeoJSONSource, LayerSpecification, Map as MapboxMap } from "mapbox-gl";
 
-import type { NoGoZone, planWalk } from "@/lib/mars/routing";
+import type { NoGoZone, PlannedPath, planWalk } from "@/lib/mars/routing";
 import type { LngLat } from "@/lib/mars/types";
 
 export type Plan = ReturnType<typeof planWalk>;
@@ -119,7 +119,14 @@ function line(coordinates: LngLat[], properties: Record<string, string> = {}): F
   return { type: "Feature", properties, geometry: { type: "LineString", coordinates } };
 }
 
-export function routeFeatures({ outbound, back }: Plan): Feature[] {
+/** The out and back lines of a walk or a drive. */
+export function routeFeatures({
+  outbound,
+  back,
+}: {
+  outbound: PlannedPath;
+  back: PlannedPath;
+}): Feature[] {
   const features: Feature[] = [];
   if (outbound.status === "ok") features.push(line(outbound.path, { leg: "outbound" }));
   if (back.status === "ok") features.push(line(back.path, { leg: "back" }));

@@ -221,7 +221,7 @@ export function MarsMap() {
       <div ref={container} className="h-full w-full" />
       {manifest && <LayerPanel manifest={manifest} visible={visible} onToggle={toggle} />}
       <ScenePanel map={loaded} habitat={HABITAT} sites={sites} />
-      <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} />
+      <RoutePlanner map={loaded} base={HABITAT} target={SCIENCE_STOP} sites={sites} />
       {error && (
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-md bg-destructive px-2 py-1 text-xs text-white">
           {error}
