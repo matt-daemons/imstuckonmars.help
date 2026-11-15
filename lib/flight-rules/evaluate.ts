@@ -31,16 +31,20 @@ export const evaPlanSchema = zod.object({
 
 export type EvaPlan = zod.infer<typeof evaPlanSchema>;
 
-export type EvaVerdict = {
+export type EvaVerdict<F extends string = Factor> = {
   verdict: Verdict;
   /** The rule behind the verdict, or null when the verdict is GO. */
-  limiting_factor: Factor | null;
+  limiting_factor: F | null;
   /** One sentence per broken rule, most severe first. */
   reasons: string[];
 };
 
 /** One broken rule: which rule, how serious, and a sentence explaining it. */
-type Finding = { factor: Factor; verdict: "CAUTION" | "NO_GO"; reason: string };
+export type Finding<F extends string = Factor> = {
+  factor: F;
+  verdict: "CAUTION" | "NO_GO";
+  reason: string;
+};
 
 /** Says where a rule's limit comes from, so every reason admits what is assumed. */
 function describeBasis(factor: Factor): string {
@@ -205,12 +209,12 @@ export function evaluateRoute(route: EvaPlan["route"]): EvaVerdict {
 }
 
 /** Turns check results into a verdict, worst finding first. */
-function toVerdict(results: (Finding | null)[]): EvaVerdict {
+export function toVerdict<F extends string>(results: (Finding<F> | null)[]): EvaVerdict<F> {
   const findings = results.filter((finding) => finding !== null);
   const noGoFindings = findings.filter((finding) => finding.verdict === "NO_GO");
   const cautionFindings = findings.filter((finding) => finding.verdict === "CAUTION");
   const worstFirst = [...noGoFindings, ...cautionFindings];
-  const worstFinding: Finding | undefined = worstFirst[0];
+  const worstFinding: Finding<F> | undefined = worstFirst[0];
 
   return {
     verdict: worstFinding?.verdict ?? "GO",
