@@ -67,10 +67,27 @@ export function MarsMap() {
         setDustStorm(m, 0, 270);
 
         for (const layer of data.layers) {
-          const url = `${location.origin}${DATA_ROOT}/${layer.path}`;
+          const url = new URL(layer.path, `${location.origin}${DATA_ROOT}/`).href;
           const visibility = (layer.visible ?? true) ? "visible" : "none";
 
-          if (layer.kind === "raster" && layer.corners) {
+          if (layer.kind === "raster" && layer.tiles) {
+            m.addSource(layer.id, {
+              type: "raster",
+              tiles: layer.tiles,
+              tileSize: 256,
+              bounds: layer.tileBounds,
+              minzoom: layer.minzoom,
+              maxzoom: layer.maxzoom,
+              attribution: layer.source.name,
+            });
+            m.addLayer({
+              id: layer.id,
+              type: "raster",
+              source: layer.id,
+              layout: { visibility },
+              paint: { "raster-opacity": layer.opacity ?? 1 },
+            });
+          } else if (layer.kind === "raster" && layer.corners) {
             m.addSource(layer.id, { type: "image", url, coordinates: layer.corners });
             m.addLayer({
               id: layer.id,

@@ -4,7 +4,7 @@ import type { Map as MapboxMap } from "mapbox-gl";
 import { useEffect, useRef, useState } from "react";
 
 import { MARS_TO_MAP, TERRAIN_SOURCE, setDustStorm, updateTerrain } from "@/components/map/scene";
-import { LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
+import { GLOBAL_TERRAIN_SOURCE, LOCAL_TERRAIN_SOURCE } from "@/lib/mars/terrain";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import type { LngLat } from "@/lib/mars/types";
@@ -67,9 +67,11 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
         <p className="mt-1 font-mono text-sm" role="status">
           {terrainSource === LOCAL_TERRAIN_SOURCE
             ? "Active elevation grid: 200 m. Fine image detail is not terrain accuracy."
-            : terrainSource
-              ? "Active elevation grid: 463 m. Fine image detail is not terrain accuracy."
-              : "Global image overview. Elevation data covers the Arcadia region only."}
+            : terrainSource === GLOBAL_TERRAIN_SOURCE
+              ? "Active elevation grid: 3.7 km. Regional context, not local hazards."
+              : terrainSource
+                ? "Active elevation grid: 463 m. Fine image detail is not terrain accuracy."
+                : "Global image overview. Zoom in for elevation data."}
         </p>
       </div>
 

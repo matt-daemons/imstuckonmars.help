@@ -1,5 +1,9 @@
 # Habitat terrain and imagery
 
+Storage update: [Map storage](MAP_STORAGE.md) describes the current R2 release,
+expanded imagery and coarse global elevation. This page records the original
+local release and its scientific limits; the paths below are its source archive.
+
 The demo base stays at 45.97°N, 183.95°E. This release adds real regional
 elevation and orbital imagery without moving the HAB, stops or planned route.
 The base and route remain simulated, not historical mission positions.

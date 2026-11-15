@@ -20,7 +20,11 @@
     "pipe:hab-terrain": "node pipelines/stable/hab-terrain.ts",
     "pipe:hab-imagery": "node pipelines/stable/hab-imagery.ts",
     "pipe:display-terrain": "node pipelines/stable/display-terrain.ts",
-    "pipe:globe-imagery": "node pipelines/stable/globe-imagery.ts"
+    "pipe:globe-imagery": "node pipelines/stable/globe-imagery.ts",
+    "maps:prepare": "node pipelines/prepare-map-release.ts",
+    "maps:upload": "python3 pipelines/upload-map-assets.py",
+    "maps:verify": "python3 pipelines/verify-map-release.py",
+    "maps:restore": "node pipelines/restore-map-archive.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

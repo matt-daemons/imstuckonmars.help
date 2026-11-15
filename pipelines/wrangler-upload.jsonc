@@ -1,0 +1,10 @@
+{
+  "$schema": "../node_modules/wrangler/config-schema.json",
+  "name": "ares-map-local-uploader",
+  "main": "r2-upload-worker.ts",
+  "compatibility_date": "2026-11-14",
+  "account_id": "c9f498eef7a97c90a87c47f676709e7d",
+  "workers_dev": false,
+  "r2_buckets": [{ "binding": "MAP_BUCKET", "bucket_name": "ares-mars-data", "remote": true }],
+  "dev": { "ip": "127.0.0.1", "port": 5294 },
+}

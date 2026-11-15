@@ -8,10 +8,12 @@ export const LOCAL_TERRAIN_BOUNDS = [
 ] as const;
 export const LOCAL_TERRAIN_SOURCE = "hab-dem";
 export const REGIONAL_TERRAIN_SOURCE = "mola-dem";
+export const GLOBAL_TERRAIN_SOURCE = "global-dem";
 
 export function terrainSourceForView(bounds: readonly number[], zoom: number): string | null {
   const [west, south, east, north] = bounds;
-  if (zoom < 5 || east < -180 || west > -168 || north < 40 || south > 52) return null;
+  if (zoom < 5) return null;
+  if (west < -180 || east > -168 || south < 40 || north > 52) return GLOBAL_TERRAIN_SOURCE;
   const [localWest, localSouth, localEast, localNorth] = LOCAL_TERRAIN_BOUNDS;
   return zoom >= 10 &&
     west >= localWest &&

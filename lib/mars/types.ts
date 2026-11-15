@@ -22,6 +22,11 @@ export interface StableLayer {
   path: string;
   /** Raster corners: top-left, top-right, bottom-right, bottom-left. */
   corners?: [LngLat, LngLat, LngLat, LngLat];
+  /** Optional tiled raster source; path remains the dataset's provenance document. */
+  tiles?: string[];
+  tileBounds?: [number, number, number, number];
+  minzoom?: number;
+  maxzoom?: number;
   /** Optional COG for click-to-inspect values. */
   cogPath?: string;
   units?: string;

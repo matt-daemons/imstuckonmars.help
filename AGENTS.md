@@ -111,6 +111,9 @@ Work directly in `default@`. Do not create additional jj workspaces.
   Do not reintroduce the `cf` CLI or `cloudflare.config.ts`. `cf` may be used later for
   authentication only.
 - Hono owns `/api/*`: add routes in `server/api/`, not as App Router route handlers.
+- Map assets are versioned at `https://tiles.imstuckonmars.help/mars-v2/` in R2.
+  Use `docs/MAP_STORAGE.md` for acquisition, publication and verification. Keep large map
+  assets out of `public/`; never deploy `pipelines/r2-upload-worker.ts`.
 - coss ui (https://coss.com/ui, built on Base UI) in `components/ui/`, with its hooks in `hooks/`
   and helpers in `lib/`. Install or update components from the `@coss` registry with
   `pnpm dlx shadcn@latest add @coss/<name>`. Do not add shadcn/ui registry components.
@@ -132,7 +135,9 @@ Work directly in `default@`. Do not create additional jj workspaces.
   IDs, values, and numbers always use `--font-mono`.
 - pnpm 12 and Node.js 24.
 - Telemetry uses the existing TypeScript Worker and D1 only. Do not revive the superseded
-  FastAPI/WebSocket proposal, add R2, or introduce a second mission-state owner. Remote D1
+  FastAPI/WebSocket proposal or introduce a second mission-state owner. R2 is approved for
+  immutable map imagery, terrain and provenance at `tiles.imstuckonmars.help`, not telemetry
+  or mission state. Remote D1
   credentials/entitlement and a non-sentinel database ID are required before remote operations.
 - Use Drizzle's native D1 driver for application queries. `server/db/schema.ts` maps the existing
   schema; Wrangler SQL migrations remain the DDL authority. Preserve atomic session admission

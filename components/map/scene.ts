@@ -3,6 +3,7 @@ import type { CustomLayerInterface, Map as MapboxMap } from "mapbox-gl";
 import * as THREE from "three";
 
 import type { LngLat } from "@/lib/mars/types";
+import { mapAsset } from "@/lib/mars/map-data";
 import {
   LOCAL_TERRAIN_BOUNDS,
   LOCAL_TERRAIN_SOURCE,
@@ -19,8 +20,7 @@ type MapboxGL = typeof import("mapbox-gl").default;
  */
 export { MARS_TO_MAP } from "@/lib/mars/terrain";
 
-const TERRAIN_TILES = "/data/terrain/mola";
-export const TERRAIN_SOURCE = "MOLA 463 m regional; MOLA/HRSC 200 m grid near habitat";
+export const TERRAIN_SOURCE = "MOLA global and regional; MOLA/HRSC 200 m grid near habitat";
 
 export function updateTerrain(m: MapboxMap, exaggeration: number) {
   const bounds = m.getBounds();
@@ -43,19 +43,27 @@ export function updateTerrain(m: MapboxMap, exaggeration: number) {
 }
 
 export function addTerrain(m: MapboxMap, beforeId?: string) {
-  const origin = location.origin; // Mapbox needs absolute tile URLs
   m.addSource("mars-global", {
     type: "raster",
-    tiles: [`${origin}/data/terrain/globe/{z}/{x}/{y}.jpg`],
+    tiles: [mapAsset("viking/{z}/{x}/{y}.jpg")],
     tileSize: 256,
     minzoom: 0,
-    maxzoom: 3,
+    maxzoom: 5,
     attribution: "NASA/USGS/Ames; NASA Trek",
   });
   m.addLayer({ id: "mars-global", type: "raster", source: "mars-global" }, beforeId);
+  m.addSource("global-dem", {
+    type: "raster-dem",
+    tiles: [mapAsset("global-dem/{z}/{x}/{y}.png")],
+    encoding: "terrarium",
+    tileSize: 256,
+    minzoom: 0,
+    maxzoom: 4,
+    attribution: "NASA/MGS/MOLA; PDS Geosciences",
+  });
   m.addSource(REGIONAL_TERRAIN_SOURCE, {
     type: "raster-dem",
-    tiles: [`${origin}/data/terrain/display/mola/{z}/{x}/{y}.png`],
+    tiles: [mapAsset("legacy/display/mola/{z}/{x}/{y}.png")],
     encoding: "terrarium",
     tileSize: 256,
     minzoom: 5,
@@ -64,7 +72,7 @@ export function addTerrain(m: MapboxMap, beforeId?: string) {
   });
   m.addSource("mola-base", {
     type: "raster",
-    tiles: [`${origin}${TERRAIN_TILES}/base/{z}/{x}/{y}.png`],
+    tiles: [mapAsset("legacy/mola/base/{z}/{x}/{y}.png")],
     tileSize: 256,
     minzoom: 5,
     maxzoom: 8,
@@ -73,7 +81,7 @@ export function addTerrain(m: MapboxMap, beforeId?: string) {
   m.addLayer({ id: "mola-base", type: "raster", source: "mola-base" }, beforeId);
   m.addSource(LOCAL_TERRAIN_SOURCE, {
     type: "raster-dem",
-    tiles: [`${origin}/data/terrain/display/hab/{z}/{x}/{y}.png`],
+    tiles: [mapAsset("legacy/display/hab/{z}/{x}/{y}.png")],
     encoding: "terrarium",
     tileSize: 256,
     minzoom: 9,

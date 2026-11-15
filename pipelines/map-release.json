@@ -1,0 +1,16 @@
+{
+  "version": "mars-v2",
+  "accountId": "c9f498eef7a97c90a87c47f676709e7d",
+  "bucket": "ares-mars-data",
+  "publicOrigin": "https://tiles.imstuckonmars.help",
+  "directory": "data/map-assets/mars-v2",
+  "sourceDownloadLimitBytes": 500000000,
+  "globalImagery": { "sourceLevel": 4, "maxZoom": 5 },
+  "globalElevation": { "pixelsPerDegree": 16, "maxZoom": 4 },
+  "arcadiaImagery": {
+    "sourceLevel": 12,
+    "minZoom": 9,
+    "maxZoom": 14,
+    "bounds": [-176.2, 45.8, -175.8, 46.2]
+  }
+}

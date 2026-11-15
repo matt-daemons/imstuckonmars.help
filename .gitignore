@@ -25,3 +25,6 @@ __pycache__/
 data/raw/*
 !data/raw/README.md
 data/interim/
+data/map-assets/
+# Retired generators must not accidentally restore large assets to the Worker bundle.
+public/data/terrain/

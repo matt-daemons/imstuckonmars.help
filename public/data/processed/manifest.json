@@ -14,7 +14,11 @@
       "id": "ctx-context",
       "title": "Orbital imagery · 5 m source",
       "kind": "raster",
-      "path": "../terrain/ctx/context.png",
+      "path": "https://tiles.imstuckonmars.help/mars-v2/arcadia-imagery-provenance.json",
+      "tiles": ["https://tiles.imstuckonmars.help/mars-v2/arcadia/{z}/{x}/{y}.png"],
+      "tileBounds": [-176.220703125, 45.791015625, -175.78125, 46.23046875],
+      "minzoom": 9,
+      "maxzoom": 14,
       "corners": [
         [-176.1328125, 46.0986328125],
         [-175.869140625, 46.0986328125],
@@ -32,7 +36,7 @@
       "id": "ai-visual-preview",
       "title": "AI texture experiment · unverified",
       "kind": "raster",
-      "path": "../terrain/ctx/ai-map.png",
+      "path": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-map.png",
       "corners": [
         [-176.0888671875, 46.0107421875],
         [-176.044921875, 46.0107421875],
@@ -43,7 +47,7 @@
       "visible": false,
       "source": {
         "name": "AI-generated texture from orbital imagery · never elevation",
-        "url": "/data/terrain/ctx/ai-provenance.json"
+        "url": "https://tiles.imstuckonmars.help/mars-v2/legacy/ctx/ai-provenance.json"
       }
     },
     {
