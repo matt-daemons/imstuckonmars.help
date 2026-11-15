@@ -1,16 +1,17 @@
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, type ReactNode } from "react";
 
 import { useExpeditionAccess } from "@/components/expedition/expedition-provider";
 
 import { useLara } from "./use-lara";
 import { useWakeWord } from "./use-wake-word";
+import { useWakePreference } from "./use-wake-preference";
 
 export type Lara = ReturnType<typeof useLaraController>;
 function useLaraController() {
   const lara = useLara(useExpeditionAccess());
-  const [wakeOn, setWakeOn] = useState(false);
+  const [wakeOn, setWakeOn] = useWakePreference();
   const wake = useWakeWord({
     enabled: wakeOn && lara.ready,
     paused: lara.status !== "idle",

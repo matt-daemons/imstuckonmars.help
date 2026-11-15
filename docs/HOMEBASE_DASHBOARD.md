@@ -19,7 +19,8 @@ saving that report again. The local-data reset clears those markers too.
 
 The hidden reset shortcut is **↑ ↑ ↓ ↓**, with no more than 1.5 seconds between keys.
 It opens a confirmation before deleting this browser's saved reports, training
-progress, current-tab mission session and sidebar preference, then reloading.
+progress, wake-word preference, current-tab mission session and sidebar preference,
+then reloading. Wake-word listening returns to off.
 Cancel or Escape leaves data unchanged. Text entry, selection controls, open
 dialogs, held keys and modified keys do not activate it. Other tabs retain their
 mission sessions. Server missions, NASA data, unrelated storage and downloaded

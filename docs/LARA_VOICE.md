@@ -3,7 +3,11 @@
 The AI-icon launcher opens text chat without opening it automatically during voice
 capture. Wake-word listening stays in `LaraProvider`, independent of the chat's
 visibility. Space push-to-talk remains available with chat closed. Wake-word
-activation requires an explicit microphone opt-in and resets on reload.
+activation defaults off. The toggle stores `lara.wakeWord` in local storage as
+`true` or `false`, and restores that choice on the next visit. Microphone access
+still requires browser permission. Turning it off persists; the hidden local-data
+reset removes the preference and returns it to off. Other open tabs follow storage
+changes. If storage is blocked, the toggle works only for the current page.
 
 The launcher shows `Say "Hey Lara"` when waiting for the wake word, `Listening…`
 before recognized words, the latest three provisional words during capture, and

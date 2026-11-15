@@ -110,9 +110,10 @@ export function LocalDataResetDialog({
         <AlertDialogHeader>
           <AlertDialogTitle>Reset local data?</AlertDialogTitle>
           <AlertDialogDescription>
-            Delete saved simulation reports, training progress, this tab&apos;s mission session and
-            the sidebar preference, then reload. This cannot be undone. Server missions and NASA
-            data are not deleted. Other tabs keep their active mission sessions.
+            Delete saved simulation reports, training progress, the wake-word preference, this
+            tab&apos;s mission session and the sidebar preference, then reload. This cannot be
+            undone. Server missions and NASA data are not deleted. Other tabs keep their active
+            mission sessions.
           </AlertDialogDescription>
           {error && (
             <p role="alert" className="flex items-start gap-2 text-destructive-foreground">
