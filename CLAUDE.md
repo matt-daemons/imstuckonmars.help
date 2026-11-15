@@ -16,7 +16,7 @@ Build a map, tool, or interface a Mars astronaut could use during a surface expl
 
 ### Judging criteria (equal weight)
 
-Influence · Creativity · Validity (scientifically sound, works in the real world) · Relevance (answers the challenge, complete, usable) · **Presentation** (often neglected — don't).
+Impact · Creativity · Validity (scientifically sound, works in the real world) · Relevance (answers the challenge, complete, usable) · **Presentation** (often neglected — don't).
 Note: "Create Your Own Challenge" projects are not eligible for global awards; we are answering an official challenge.
 
 ### Patterns from past global winners (2025)
@@ -128,6 +128,10 @@ Plan a nominal rover traverse → mid-sol, the replayed feed shows a solar parti
 
 ## 6. Data architecture (agreed approach)
 
+> **As built (code check, Sun Nov 15):** stable pipelines exist as described (`pipelines/stable/*.ts` + GDAL). Not built: `schemas/`, `validate.ts` /
+> `pnpm validate`, `pipelines/live/*.ts` (empty) and the DuckDB/Parquet live pipeline. Telemetry is ingested offline by Python
+> (`scripts/telemetry/`) into D1 and served by `/api/telemetry` — see `docs/BACKEND.md`.
+
 ```
 data/
   raw/        # as downloaded, never edited (+ source/date note)
@@ -186,8 +190,10 @@ Grouped by who acts. Strike through and move to §11 when done.
 
 ### Roles C / D
 
-- C: route GeoJSON fixtures for both legs (demo dry run) so M can build UI; `/api/route` returning `RouteResult`; distances on the Mars radius.
+- C: route GeoJSON fixtures for both legs (demo dry run) so M can build UI; `POST /api/routes/plan` returning `RouteResult`; distances on the Mars radius.
 - D: replace `/api/live` stub with replayed snapshots, show `proxy_source`; never display stub zeros as real data.
+  _Code check (Sun Nov 15):_ the `/api/live` stub (`server/api/app.ts`) is unused by the app — live data reaches the UI via `/api/telemetry` (D1)
+  and `/api/space-weather` (DONKI). Team to decide: delete the stub or wire it.
 
 ### Before feature freeze (~6 h before deadline)
 
@@ -245,8 +251,8 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
 `pipelines/stable/hirise-sites.ts` and `sites.geojson` (`position_note`). Distances: great-circle, Mars 2000 sphere.
 
 - **Files:** `public/data/processed/sites.geojson` (committed; per site `poi` point + `footprint` polygon; props `id`, `hirise_id`, `title`,
-  `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`). Tiles on R2 `sites-v1` (`SITE_DATA_ROOT`).
-- **Slope:** `data/processed/sites/<dtm>/slope.tif` (R2: `sites-v1/slope/<HiRISE ID>_slope.tif`) — COG, Int16 tenths of a degree, lon/lat Mars
+  `site_kind`, `bbox`, `terrain_bbox`, `position_note`, `url`, `attribution`). Tiles on R2 `sites-v2` (`SITE_DATA_ROOT`; `sites-v1` kept as an older release).
+- **Slope:** `data/processed/sites/<dtm>/slope.tif` (R2: `sites-v2/slope/<HiRISE ID>_slope.tif`) — COG, Int16 tenths of a degree, lon/lat Mars
   2000, ~1 m, nodata −9999 (incl. 10 m trimmed edge). Mean / % ≥ 20°: ESP_033225 4.3° / 0.1 % · ESP_034082 7.3° / 1.8 % · ESP_037352 4.1° /
   0.2 % · ESP_054060 5.5° / 0.7 %. Hazards are crater walls / ridge flanks. Overlay: yellow 10–15°, orange 15–20°, red ≥ 20°.
 - **Elevation (true, m):** `data/interim/hirise/<dtm>/dem.tif` (1 m, nodata −32768); MOLA 463 m around it. Never read heights from display tiles (+10 km).
@@ -282,7 +288,7 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
   0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
   Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
-  on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. Not on the map yet.
+  on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. On the map: Scene panel switch "Geology" (`addGeology`, `components/map/ground-overlays.tsx`).
 
 ### Staging point (rationale for the §4 rule)
 
@@ -313,14 +319,14 @@ planning, not Apollo (Apollo walk-back limit 7.6 km). Agreed rover range: 100 km
 - **Reprojection decision:** everything is stored as **lon/lat on the Mars 2000 sphere** (`+proj=longlat +R=3396190`), east-positive −180..180.
   HiRISE DTMs ship in equirectangular on **local-radius spheres** (3,386,150.7 m / 3,387,887.7 m) with site-specific standard parallels; lat/lon angles
   carry over unchanged between Mars spheres (no datum shift), so we reproject rather than resample heights. Tiles are cut by labelling the Mars lon/lat
-  as EPSG:4326 for `gdal2tiles` (it only knows Earth) — correct because Mapbox also treats Mars degrees as Earth degrees.
+  as EPSG:4326 for `gdal2tiles` (it only knows Earth) — correct because MapLibre also treats Mars degrees as Earth degrees.
 - **Slope is computed in metres, not degrees:** DTM → local equirectangular metre grid centred on each site (lat_ts = site latitude, Mars 2000 sphere,
   1 m) → `gdaldem slope` → back to the DTM's lon/lat grid. Computing slope on a lon/lat grid would distort x vs y by cos(lat) (~30 % at 45°N).
 - **Broken JP2 georeferencing:** RED_A orthos for ESP_034082 and ESP_037352 have a GeoJP2 header with standard parallel 0° → GDAL places them at
   **~84–90°N**. Their projected metre coordinates match the DTM exactly, so the pipeline assigns the **DTM label's CRS** to the ortho.
 - **Unreliable DTM edges:** HiRISE DTM borders produce fake ~90° slopes. `-compute_edges` and a footprint cutline did not fix it; the pipeline
   **blanks slope within 10 m of the DTM's no-data area** (`gdal_proximity`). A few isolated 1-px spikes remain → report **percentiles / % ≥ limit**, not max.
-- **Display datum shift:** site terrain tiles add the team's `DISPLAY_ELEVATION_OFFSET_M` (+10 km; Mapbox camera can't go below 0) like their other
+- **Display datum shift:** site terrain tiles add the team's `DISPLAY_ELEVATION_OFFSET_M` (+10 km; MapLibre camera can't go below 0) like their other
   terrain sources — **display only**; true heights are in the DTM/COGs. Terrain blends to MOLA 463 m (`/vsicurl/`, ~1 km pad) outside each DTM.
 - **Antimeridian:** ESP_054060 is at 172.56°E (positive), the others at −176…−166 → the AOI crosses ±180; MOLA pads are cut per site.
 - **Resolution choices:** imagery tiled to z17 (~0.45 m/px; source 0.25 m); terrain mesh to z15 (~1.8 m; DTM 1 m); slope tiles to z16.

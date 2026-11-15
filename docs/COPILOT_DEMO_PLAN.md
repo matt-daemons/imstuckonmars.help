@@ -33,14 +33,14 @@ Four reviewers checked v1 for demo value, scope, time, and technical correctness
 
 **One blocker for pushing.** `lib/inference/local-time.ts` uses `ltst`, which exists only as an uncommitted edit in Joseph's `lib/mars-time/mars-clock.ts`. Nothing under `lib/inference/` can be pushed until Joseph approves that edit. Until then, new code must use only fields that exist at HEAD (`lmst`, `sun_elevation`, `minutes_until_sunset`).
 
-| Item                                 | Value             | Status                                                                                           |
-| ------------------------------------ | ----------------- | ------------------------------------------------------------------------------------------------ |
-| Now                                  | Sat Nov 14, 23:30 | Measured                                                                                         |
-| Submission deadline                  | Sun Nov 15, 23:59 | **ASSUMPTION. Confirm it before sleeping.**                                                      |
-| Demo format                          | Unknown           | **Confirm it.** A reviewer recalls a 30-second video or 7 slides limit. Nobody has checked this. |
-| Cut line (bug fixes only after this) | Sun 15:30         | From the time review                                                                             |
-| Feature freeze                       | Sun 18:00         | CLAUDE.md §8                                                                                     |
-| Backup demo recording                | By Sun 14:00      | From the demo review                                                                             |
+| Item                                 | Value                  | Status                                                                                                                  |
+| ------------------------------------ | ---------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Now                                  | Sat Nov 14, 23:30      | Measured                                                                                                                |
+| Submission deadline                  | Sun Nov 15, 23:59      | Confirmed (Project Submission Guide): local time of our Local Event. Click "Submit for Judging".                        |
+| Demo format                          | 30 s video or 7 slides | Confirmed (Project Submission Guide). Over the limit = not eligible for Global Judging. English; public link, no login. |
+| Cut line (bug fixes only after this) | Sun 15:30              | From the time review                                                                                                    |
+| Feature freeze                       | Sun 18:00              | CLAUDE.md §8                                                                                                            |
+| Backup demo recording                | By Sun 14:00           | From the demo review                                                                                                    |
 
 Measured overhead: the full pre-push check takes about 25 s. CI and deploy take about 2 to 2.5 min. Each browser and voice check takes 10 to 15 min.
 

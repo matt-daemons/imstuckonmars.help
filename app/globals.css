@@ -3,8 +3,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Hermes theme: dark only, after the Hermes avionics screens Territory Studio
- * designed for The Martian. Black surfaces, cyan hairlines, square panels.
+ * Hermes theme: dark only, an original design inspired by science-fiction
+ * spacecraft displays. Black surfaces, cyan hairlines, square panels.
  */
 :root {
   color-scheme: dark;
