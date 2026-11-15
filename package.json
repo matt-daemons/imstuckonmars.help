@@ -13,7 +13,8 @@
     "fmt": "oxfmt",
     "fmt:check": "oxfmt --check",
     "test": "vitest run",
-    "pipe:check": "node pipelines/check-env.ts"
+    "pipe:check": "node pipelines/check-env.ts",
+    "pipe:mola": "node pipelines/stable/mola-terrain.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",
@@ -23,11 +24,12 @@
     "clsx": "^2.1.1",
     "hono": "^4.13.18",
     "lucide-react": "^1.72.0",
-    "maplibre-gl": "^5.24.1",
+    "mapbox-gl": "^3.35.0",
     "react": "latest",
     "react-dom": "latest",
     "react-server-dom-webpack": "^19.3.1",
     "tailwind-merge": "^3.7.0",
+    "three": "^0.187.0",
     "vinext": "^1.4.5"
   },
   "devDependencies": {
@@ -37,14 +39,17 @@
     "@tailwindcss/postcss": "latest",
     "@turf/turf": "^7.4.0",
     "@types/node": "latest",
+    "@types/pngjs": "^6.0.5",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@types/three": "^0.187.0",
     "@vitejs/plugin-react": "^6.3.0",
     "@vitejs/plugin-rsc": "^0.5.39",
     "execa": "^10.2.1",
     "geotiff": "^3.0.5",
     "oxfmt": "^0.78.0",
     "oxlint": "^1.93.0",
+    "pngjs": "^7.0.0",
     "tailwindcss": "latest",
     "typescript": "latest",
     "vite": "8.3.0",
