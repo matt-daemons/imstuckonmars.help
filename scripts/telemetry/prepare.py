@@ -343,9 +343,9 @@ def bound_release(db, max_rows, max_write_units):
             "scope": "complete sol-816 MOXIE trace; selected matching MEDA windows; whole-archive comparison summaries"}
 
 
-def export_sql(db, path):
+def export_sql(db, path, tables=EXPORT_TABLES):
     with path.open("w") as output:
-        for table in EXPORT_TABLES:
+        for table in tables:
             prefix = f'INSERT INTO "{table}" VALUES '
             statement = prefix
             rows = db.execute(f'SELECT * FROM "{table}"')
