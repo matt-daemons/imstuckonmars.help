@@ -1,0 +1,5 @@
+# Offline acquisition and ingestion only; never needed by the Worker or CI.
+# Install into a virtual environment: python3 -m venv .cache/telemetry-venv
+# .cache/telemetry-venv/bin/pip install -r scripts/telemetry/requirements.txt
+cdflib==1.3.16
+numpy==1.26.4

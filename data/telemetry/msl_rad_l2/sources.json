@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "authority": "NASA Space Physics Data Facility (SPDF), CDAWeb dataset MSL_RAD_OBS-L2",
+  "catalog": "https://catalog.data.gov/dataset/mars-science-laboratory-msl-radiation-assessment-detector-rad-level-2-observation-dosimetr",
+  "instrument_reference": "https://doi.org/10.1007/s11214-012-9913-1",
+  "acknowledgement": "RAD Principal Investigator Dr. Hassler of Southwest Research Institute Boulder",
+  "sources": [
+    {
+      "path": "data/telemetry/msl_rad_l2/msl_rad_obs-l2_2023157_v05.cdf",
+      "url": "https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/2023/msl_rad_obs-l2_2023157_v05.cdf",
+      "sha256": "27cae9cb997e908df27ee9230077c6397e0a81eeae232abe255167666025f4c0",
+      "bytes": 124004,
+      "verification": "official_https_download; cdf_logical_file_id_version_and_record_count_match; no_upstream_checksum_published_sha256_recorded_at_acquisition",
+      "logical_file_id": "msl_rad_obs-l2_2023157",
+      "data_version": "05",
+      "records": 85,
+      "start_sol": 3850,
+      "start_time": "20230606_00:16:23",
+      "stop_time": "20230607_00:08:34"
+    },
+    {
+      "path": "data/telemetry/msl_rad_l2/msl_rad_obs-l2_2023158_v06.cdf",
+      "url": "https://spdf.gsfc.nasa.gov/pub/data/aaa_planetary/msl/rad/cdf/obs-l2/2023/msl_rad_obs-l2_2023158_v06.cdf",
+      "sha256": "a9dbed894ccf7ae4c87224461b5e907bb36886813b10a166eac04eccdc3a2313",
+      "bytes": 123144,
+      "verification": "official_https_download; cdf_logical_file_id_version_and_record_count_match; no_upstream_checksum_published_sha256_recorded_at_acquisition",
+      "logical_file_id": "msl_rad_obs-l2_2023158",
+      "data_version": "06",
+      "records": 84,
+      "start_sol": 3851,
+      "start_time": "20230607_00:09:37",
+      "stop_time": "20230608_00:00:00"
+    }
+  ]
+}
