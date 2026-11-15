@@ -61,7 +61,10 @@ export function DriveAssumptions({
         Two rovers travel together; beyond about {ROVER.walk_back_km} km a breakdown means waiting
         for rescue.
       </p>
-      <p>Rover rules are a proposal from NASA studies; sources in docs/research/rover.</p>
+      <p>
+        Rover rules are the team's agreed rules, based on NASA studies; sources in
+        docs/research/rover.
+      </p>
       <p>{searchLine(plan)}</p>
     </>
   );

@@ -1,17 +1,18 @@
-# ARES agent instructions
+# LARA agent instructions
 
 ## Project and priorities
 
-ARES (Autonomous Rover & Exploration System) is a NASA-data-backed Martian exploration
-environment inspired by The Martian. The team targets NASA Space Apps Challenge 2026,
+LARA is the team's layered Mars EVA planning and current-outlook tool, a NASA-data-backed
+Martian exploration environment inspired by The Martian. The team targets NASA Space Apps Challenge 2026,
 "Interplanetary Survival Guide: Martian Map," using the supplied challenge brief. Confirm the
 official challenge-specific page and rubric before claiming compliance; research could not
 independently verify them.
 
 The maps and futuristic dashboard have existing development owners. Preserve and integrate
-their work; do not rebuild them. Prioritize one bounded Jezero sortie: validated terrain and
-evidence inspection, constrained route comparison, explicit modeled return reserves, reviewed
-science targets, and deterministic explanations. AI is optional and follows working tools.
+their work; do not rebuild them. Prioritize one bounded Arcadia Planitia sortie (rover drive to
+a staging point, then a walk to a water-ice site): validated terrain and evidence inspection,
+constrained route comparison, explicit modeled return reserves, reviewed science targets, and
+deterministic explanations. AI is optional and follows working tools.
 Telemetry/resource scenarios use a configurable preset base; do not hard-code the architecture
 to Jezero or relocate historical rover measurements to the chosen base.
 
@@ -61,12 +62,14 @@ Read the detailed evidence and proposed scope before implementation:
   a 3,396,190 m sphere, planetocentric/east-positive coordinates, and equirectangular standard
   parallel 18.4663 degrees. Check actual headers: the web catalog has conflicting metadata.
 - SIM 3464 geology uses Mars Transverse Mercator and warns of about 100-200 m registration
-  offsets. Contacts are contextual, not exact hazard boundaries. THEMIS numeric data remains
-  unacquired; rendered thermal or shaded-relief tiles are not quantitative grids.
+  offsets. Contacts are contextual, not exact hazard boundaries. The Arcadia drive corridor uses
+  USGS SIM 3292 (1:20M, `pnpm pipe:geology`) and the quantitative THEMIS 100 m thermal-inertia
+  mosaic (`pnpm pipe:thermal-inertia`, about 57% coverage, ±20%); see `CLAUDE.md` section 9.
+  Rendered thermal or shaded-relief tiles are not quantitative grids.
 - Keep source products immutable; require approval before large downloads. Record source IDs,
   versions, checksum, units, CRS/body, transforms, masks, resolution, processing and attribution.
   Mask missing values before arithmetic; never substitute synthetic data for NASA measurements.
-- Separate archived measurements/calibrations, archive-derived quantities, ARES mathematical
+- Separate archived measurements/calibrations, archive-derived quantities, LARA mathematical
   derivatives and assumptions. Crew/tank oxygen, battery state, habitat, crew positions and EVA
   scenarios are simulated, distinct from archived MOXIE engineering telemetry. No operational
   safety, human radiation exposure, live-weather or validated physiological claims are supported.

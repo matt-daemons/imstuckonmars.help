@@ -1,6 +1,6 @@
 # Project Context: LARA — Mars EVA Planning Tool (NASA Space Apps Challenge 2026)
 
-_Last updated: Sun Nov 15, 2026 (hackathon day 2 of Nov 14–15). Team of 5. Reorganised: one decisions log, one open-items list (§7), finished work in §11 "Completed"._
+_Last updated: Sun Nov 15, 2026 (hackathon day 2 of Nov 14–15). Team of 5. Reorganised: one decisions log, one open-items list (§7), finished work in §11 "Completed". Facts in §6, §7, §9 re-checked against code (Sun Nov 15)._
 
 **How this file is organised:** §1–2 the brief · §3 who does what · §4 decisions (what's settled) · §5–6 user story + data architecture ·
 **§7 open items — the only to-do list** · §8 how we work + how to run · §9 data reference (what exists, where, caveats) · §10 advisor personas ·
@@ -233,7 +233,7 @@ line-of-sight to habitat (one pitch sentence or simple viewshed) · click-to-ins
 ### Architecture (summary)
 
 TypeScript pipelines (Node + GDAL CLI) → COGs + tiles + GeoJSON (R2 / `public/data/`); telemetry → D1 (`/api/telemetry`, `/api/missions`).
-MapLibre in the vinext app reads `manifest.json`; Hono `/api/*` serves `/live`, `/route`, `/verdict`. Each raster = COG (true values) + coloured
+MapLibre in the vinext app reads `manifest.json`; Hono `/api/*` serves `/routes/plan`, `/verdict`, `/space-weather` (+ an unused `/live` stub). Each raster = COG (true values) + coloured
 tiles. The map measures with Earth's radius (~1.88× Mars) — compute distances in pipeline/routing code; no built-in scale bar.
 
 ## 9. Data reference (Role B — what exists, where, caveats)
@@ -288,7 +288,8 @@ POI refinement: circle → lon/lat via ortho footprint (±~50 m), then centroid 
   0..360 °E), tiles `public/data/regional-slope/` z5–10, summary `public/data/processed/regional-slope.json`. Mean 0.45°; ≥ 1° 8.7 %, ≥ 5° 0.4 %, ≥ 10° 0.04 %, ≥ 20° 0 %; map classes 1/2/5/10/20°.
   Tiles on R2 `sites-v2/regional-slope`; map switch in the Scene panel. Not used by the router (which uses 463 m MOLA) — §7 team item 1.
 - **Geology** (`pnpm pipe:geology`): USGS SIM 3292 (1:20M) → `public/data/processed/geology.geojson` + `geology-sites.json`. Habitat + 3 crater sites
-  on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. On the map: Scene panel switch "Geology" (`addGeology`, `components/map/ground-overlays.tsx`).
+  on **Av** (Amazonian volcanic); ESP_054060 on **lHl** (Late Hesperian lowland). Ice-rich mantle isn't mapped at 1:20M. On the map:
+  Scene panel switch "Geology" (`addGeology`, `components/map/ground-overlays.tsx`).
 
 ### Staging point (rationale for the §4 rule)
 

@@ -17,6 +17,8 @@ import { join } from "node:path";
 import { execa } from "execa";
 import { parse } from "yaml";
 
+import { ROVER_RULES } from "../../lib/flight-rules/rover-rules.ts";
+
 const SRC =
   "/vsicurl/https://planetarymaps.usgs.gov/mosaic/Mars/HRSC_MOLA_Blend/Mars_HRSC_MOLA_BlendDEM_Global_200mp_v2.tif";
 const R = 3396190;
@@ -362,7 +364,7 @@ writeFileSync(
       caveats: [
         "200 m cells average out short steep slopes (crater walls, scarps, ridges narrower than a few hundred metres): use for drive-leg routing only, never for the final approach or the walking leg (use the 1 m HiRISE slope there).",
         "Real local slopes are steeper than this layer shows; treat a 200 m slope near the limit as a likely hazard.",
-        `The slope threshold (${maxSlope}°, config.yaml slope_max_deg) is the suit/walking limit; the rover slope limit is not agreed yet.`,
+        `The slope threshold (${maxSlope}°, config.yaml slope_max_deg) is the suit/walking limit. The agreed rover limits (${ROVER_RULES.slope.caution_above_degrees}° caution, ${ROVER_RULES.slope.no_go_above_degrees}° no-go) apply to the router's 463 m MOLA grid, not to this 200 m layer.`,
         "The blended DEM is MOLA-only where HRSC has no coverage, so effective resolution can be coarser than 200 m between MOLA tracks.",
         "Local metre grid is true-scale at 45.5°N; east-west distances are off by ≤ ~3 % at the corridor's north/south edges.",
       ],
