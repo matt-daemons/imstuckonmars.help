@@ -353,3 +353,105 @@ Implement changes 11, 15 and 16. For change 15: the start stays a filled dot; th
 - [ ] **Step 2: Run** `corepack pnpm vitest run components/map/route-layers.test.ts`; expect FAIL (`routeLayers` not exported).
 - [ ] **Step 3: Implement.** Read tokens once in the map effect with `getComputedStyle(document.documentElement)`. If `line-border-*` does not render on the globe projection, add one wider casing line layer under the route instead and say so in the report.
 - [ ] **Step 4: Run** the focused test (expect PASS), then the full check line from Task 7. Commit: `route-ui(feat): Colour route layers from theme tokens`.
+
+---
+
+# Part 3: Driving mission (Tasks 9–11)
+
+**Spec:** `docs/superpowers/specs/2026-11-15-driving-mission-design.md`. Tasks 9 and 10 touch different files and may run at the same time; Task 11 needs both.
+
+## Global Constraints for Tasks 9–11
+
+- Everything in Part 1 and Part 2 Global Constraints still applies (Karpathy guidelines, readable code, coss unmodified, tokens only, Node 24 + `corepack pnpm`, `area(type): Summary` commits, no AI credit, never push, no `git stash`).
+- Every rover number lives in `lib/flight-rules/rover-rules.ts` with its source and `applies_to`; nothing else retypes one.
+- Mars distances use `MARS_RADIUS_M`; never Mapbox or Turf.
+- Commit only your own files (`git add <paths>`); if git reports `index.lock`, wait a few seconds and retry.
+
+### Task 9: 463 m terrain strip and its grid
+
+**Files:** create `pipelines/stable/mola-corridor.ts`, `public/data/processed/rover/mola-corridor.bin`, `public/data/processed/rover/mola-corridor.json`; modify `package.json` (script `pipe:mola-corridor`), `lib/mars/route-grid.ts`, `lib/mars/route-grid.test.ts`, `lib/mars/load-route-grid.ts`.
+
+**Interfaces (produces):**
+
+```ts
+// lib/mars/route-grid.ts
+export interface EquirectMeta {
+  width: number;
+  height: number;
+  west: number;
+  north: number;
+  degreesPerPixel: number;
+  nodata: number | null;
+}
+/** Grid on a plain lon/lat raster (rows evenly spaced in latitude). West may be above 180 for a strip across the antimeridian. */
+export function gridFromEquirect(meta: EquirectMeta, heights: ArrayLike<number>): RouteGrid;
+/** Longitude in the grid's own domain: adds 360 to points west of 0 when the grid lies east of 180. */
+export function toGridLng(grid: RouteGrid, lng: number): number;
+// lib/mars/load-route-grid.ts
+export function loadDriveGrid(signal?: AbortSignal): Promise<RouteGrid>;
+```
+
+- [ ] Write failing tests: `gridFromEquirect` row edges are evenly spaced from `north` down by `degreesPerPixel`; `cellAt(grid, [toGridLng(grid, -176.05), 45.97])` lands in the expected cell for a strip with `west: 171`; nodata becomes NaN.
+- [ ] Implement them. Run `corepack pnpm vitest run lib/mars/route-grid.test.ts`.
+- [ ] Write the pipeline: source `https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars_MGS_MOLA_DEM_mosaic_global_463m.tif` (46080 × 23040 Int16, uncompressed, one row per strip, IFD at the end of the file; read the TIFF header, IFD, strip offsets, ModelTiepoint and ModelPixelScale to place columns; never assume). Cut 42.5–48.5° N, 171–196° E (two column ranges per row across ±180), write Int16 little-endian rows north to south and a JSON with `EquirectMeta` plus `source`, `sha256` and the extent. Use `fetch` with `Range` headers, a small concurrency limit and retries. Run it once and commit the output.
+- [ ] Spot-check: the habitat (183.95° E, 45.97° N) reads about −4,100 m (the base tile's range is −4106 to −4067 m).
+- [ ] `loadDriveGrid` fetches the two files from `/data/processed/rover/` and builds the grid.
+- [ ] Full check line; commit `rover-data(feat): Cut a 463 m MOLA strip for driving routes`.
+
+### Task 10: Energy-based A\*, trip model and rover rules
+
+**Files:** modify `lib/mars/routing.ts`, `lib/mars/routing.test.ts`, `lib/flight-rules/evaluate.ts` (export `toVerdict` only); create `lib/mars/driving.ts`, `lib/mars/driving.test.ts`, `lib/flight-rules/rover-rules.ts`, `lib/flight-rules/drive.ts`, `lib/flight-rules/drive.test.ts`; copy `research_notes/Rover routing/*.md` (in the parent folder) unchanged to `docs/research/rover/`.
+
+**Interfaces (produces):**
+
+```ts
+// lib/mars/routing.ts — findPath gains a cost model; walking behaviour and numbers unchanged
+interface StepCostModel {
+  stepCost: (horizontalM: number, riseM: number) => number;
+  costPerMetreLowerBound: number;
+}
+// findPath(grid, slope, walls, start, goal, { maxSlopeDeg?, heuristic?, cost?: StepCostModel })
+// PlannedPath gains `cost: number` (the A* total); distance_m stays the 3D path length.
+
+// lib/mars/driving.ts
+export type PowerSource = "fission" | "solar";
+export interface DriveSummary {
+  one_way_km: number;
+  odometer_km: number;
+  sols: number;
+  hardest_sol_kwh: number;
+  battery_left_percent: number;
+  reserve_km: number;
+  max_slope: number;
+  straight_km: number;
+  power: PowerSource;
+}
+export function stepEnergyWh(horizontalM: number, riseM: number, terrainFactor: number): number;
+export function planDrive(
+  grid: RouteGrid,
+  slope: Float32Array,
+  walls: Uint8Array,
+  base: LngLat,
+  target: LngLat,
+  power: PowerSource,
+): { outbound: PlannedPath; back: PlannedPath; summary: DriveSummary | null };
+
+// lib/flight-rules/drive.ts
+export function evaluateDrive(summary: DriveSummary): EvaVerdict;
+```
+
+Rules: the formulas and values are the spec's "Design" section; `ROVER_RULES` cites each value's document (title, year, NTRS or URL, page or table) from `docs/research/rover/rover_guidelines_research.md`, with `applies_to` one of `Mars crewed study`, `Mars robotic rover`, `Moon`, `assumption`. Reasons follow the walking style: "(Mars crewed study limit, assumed for this rover)" / "(our assumption)". Rounded numbers in reasons; comparisons on raw values.
+
+- [ ] Failing tests first: `stepEnergyWh` on flat 1 km with k = 1 is about 1,418 Wh and with k = 2 about 2,602 Wh; downhill traction floors at 0 (only life support left); the walking tests in `routing.test.ts` still pass unchanged; an energy-cost A\* on a grid with a hill prefers the flat way round when it costs less energy; `planDrive` on a flat synthetic strip: 93 km straight line gives `sols` 6 with fission and 18 with solar (±1); `evaluateDrive` gives GO / CAUTION / NO-GO at each rule edge and names the limiting rule.
+- [ ] Implement. Full check line; commit `routing(feat): Energy-cost A* and the driving trip model` and `flight-rules(feat): Proposed rover rules from NASA studies`.
+
+### Task 11: Walking / Driving switch in the panel
+
+**Files:** modify `components/map/route-planner.tsx`, `components/map/mars-map.tsx` (pass `sites` to the planner only); create `components/map/drive-result.tsx`; as needed `components/map/route-result.tsx`.
+
+- [ ] Mode toggle "Walking / Driving" (`aria-label="Mission type"`) at the top; walking exactly as now.
+- [ ] Driving: start defaults to the habitat, end to the nearest site; a destination select of the four sites (title, nearest first); Power toggle "Fission / Solar" (Fission default); the driving grid loads on first use with "Loading rover terrain…".
+- [ ] Driving result: verdict alert first (`evaluateDrive`), readouts One way, Round trip, Sols, Battery after the hardest day, Drive-back reserve, Steepest slope; limiting readout marked; "Not checked: radiation, dust, daylight, rocks." visible; disclosure lines: rover preset and its source, rolling resistance and the two assumptions, terrain resolution and the lowered slope limits, the two-rover rule, `Search: A*, n cells searched.`
+- [ ] On switching to Driving, fit the map to the start and end; on switching back, fly to the habitat.
+- [ ] Measure planning time on the real strip in the browser console; if a leg takes more than about 2 s, downsample the strip by 2 in `loadDriveGrid` and say so.
+- [ ] Full check line; commit `route-ui(feat): Walking and driving missions in the route panel`.
