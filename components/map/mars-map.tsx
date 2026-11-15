@@ -146,7 +146,8 @@ export function MarsMap() {
   if (!MAPBOX_TOKEN) {
     return (
       <div className="flex h-svh items-center justify-center p-6 text-center text-sm text-muted-foreground">
-        Map unavailable: set NEXT_PUBLIC_MAPBOX_TOKEN in .env.local and restart the dev server.
+        The map is not available. Set NEXT_PUBLIC_MAPBOX_TOKEN in .env.local. Then restart the dev
+        server.
       </div>
     );
   }

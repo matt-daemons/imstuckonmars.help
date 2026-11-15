@@ -56,7 +56,7 @@ export function useLara() {
 
   const authed = useCallback(
     (path: string, init: RequestInit = {}) => {
-      if (!mission) throw new Error("No mission yet");
+      if (!mission) throw new Error("The mission is not ready yet");
       return fetch(`/api/${path}`, {
         ...init,
         headers: { Authorization: `Bearer ${mission.token}`, ...init.headers },
@@ -95,7 +95,7 @@ export function useLara() {
 
   const synthesize = useCallback(
     async (text: string) => {
-      if (!mission) throw new Error("No mission yet");
+      if (!mission) throw new Error("The mission is not ready yet");
       const response = await authed(`copilot/${mission.id}/speak`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -254,7 +254,7 @@ export function useLara() {
       r.start();
       setStatus("listening");
     } catch {
-      setError("Microphone unavailable or permission denied");
+      setError("The microphone is not available, or the browser denied permission to use it");
       setStatus("idle");
     }
   }, [askFromAudio, mission]);

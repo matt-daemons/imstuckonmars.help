@@ -61,17 +61,17 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
       <div>
         <h2 className="font-heading text-sm font-semibold">Scene</h2>
         <p className="mt-1 text-xs text-muted-foreground">
-          Terrain: {TERRAIN_SOURCE}. Habitat and dust storm are illustrative, not data. Planet
-          image: NASA/Viking, USGS and NASA Ames.
+          Terrain: {TERRAIN_SOURCE}. The habitat and the dust storm are illustrations, not data.
+          Planet image: NASA/Viking, USGS, and NASA Ames.
         </p>
         <p className="mt-1 font-mono text-sm" role="status">
           {terrainSource === LOCAL_TERRAIN_SOURCE
-            ? "Active elevation grid: 200 m. Fine image detail is not terrain accuracy."
+            ? "Active elevation grid: 200 m. The image shows more detail than the elevation data."
             : terrainSource === GLOBAL_TERRAIN_SOURCE
-              ? "Active elevation grid: 3.7 km. Regional context, not local hazards."
+              ? "Active elevation grid: 3.7 km. Use it for regional context. It does not show local hazards."
               : terrainSource
-                ? "Active elevation grid: 463 m. Fine image detail is not terrain accuracy."
-                : "Global image overview. Zoom in for elevation data."}
+                ? "Active elevation grid: 463 m. The image shows more detail than the elevation data."
+                : "Global image only. Zoom in to see elevation data."}
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export function ScenePanel({ map, habitat }: ScenePanelProps) {
           Trigger dust storm
         </Button>
         <Button size="xs" variant="outline" onClick={() => rampStorm(0)}>
-          Clear
+          Stop dust storm
         </Button>
       </div>
 

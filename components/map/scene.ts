@@ -20,7 +20,8 @@ type MapboxGL = typeof import("mapbox-gl").default;
  */
 export { MARS_TO_MAP } from "@/lib/mars/terrain";
 
-export const TERRAIN_SOURCE = "MOLA global and regional; MOLA/HRSC 200 m grid near habitat";
+export const TERRAIN_SOURCE =
+  "MOLA global and regional grids, and a MOLA/HRSC 200 m grid near the habitat";
 
 export function updateTerrain(m: MapboxMap, exaggeration: number) {
   const bounds = m.getBounds();

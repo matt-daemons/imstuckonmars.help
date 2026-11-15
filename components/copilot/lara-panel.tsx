@@ -17,11 +17,11 @@ const STATUS_TEXT = {
 } as const;
 
 const WAKE_TEXT: Record<WakeState, string> = {
-  off: "Wake word off",
+  off: "Wake word is off",
   loading: "Loading wake word model (about 41 MB)…",
   listening: "Say “Hey LARA”",
-  paused: "Wake word paused while LARA is busy",
-  error: "Wake word unavailable (microphone or model failed to load)",
+  paused: "Wake word is paused while LARA is busy",
+  error: "Wake word is not available. The microphone or the model did not load.",
 };
 
 const fmtMin = (s: number) => {
@@ -155,19 +155,20 @@ export function LaraPanel() {
             note={`reserve ${s.config.oxygen.eva.reserve_g}`}
           />
           <Readout
-            label="Suit power"
+            label="Suit battery"
             value={`${Math.round(s.state.battery.eva.remaining_wh)} Wh`}
             note={`reserve ${s.config.battery.eva.reserve_wh}`}
           />
           <Readout
             label="Dose rate"
-            value={doseH == null ? "n/a" : `${(doseH / 24).toFixed(1)} µGy/h`}
+            value={doseH == null ? "No data" : `${(doseH / 24).toFixed(1)} µGy/h`}
             note="Gale proxy"
           />
         </dl>
       )}
       <p className="text-[11px] text-muted-foreground">
-        Simulated resources. MOXIE, MEDA and RAD are archived NASA data replayed as live.
+        Resources are simulated. MOXIE, MEDA, and RAD are archived NASA data. The app replays them
+        as live data.
       </p>
 
       <ol ref={log} className="min-h-0 flex-1 space-y-2 overflow-y-auto" aria-live="polite">
@@ -200,7 +201,7 @@ export function LaraPanel() {
           id="lara-input"
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ask about oxygen, power, radiation…"
+          placeholder="Ask about oxygen, battery, or radiation"
           disabled={!lara.ready}
           className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-sm"
         />
@@ -213,7 +214,11 @@ export function LaraPanel() {
           variant={listening ? "destructive" : "outline"}
           disabled={busy}
           aria-pressed={listening}
-          aria-label={listening ? "Stop and send voice question" : "Talk to LARA (or hold space)"}
+          aria-label={
+            listening
+              ? "Stop recording and send the question"
+              : "Talk to LARA. You can also hold the space bar."
+          }
           onClick={() => (listening ? lara.stopListening() : void lara.startListening())}
         >
           {listening ? <Square aria-hidden /> : <Mic aria-hidden />}
