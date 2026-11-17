@@ -24,9 +24,18 @@ import {
   type Snapshot,
 } from "@/lib/mission/client";
 import type { ExpeditionPlan } from "@/lib/mission/expedition";
+import { resolveMissionClock } from "@/lib/mission/clock";
 import type { ReplanOption } from "@/lib/mission/types";
 import { usePathname } from "next/navigation";
-import { reportKey, simulationFinished } from "@/lib/mission/completion";
+import {
+  completionAlreadyShown,
+  parseShownCompletion,
+  REPORT_SHOWN_STORAGE_KEY,
+  reportKey,
+  shownCompletion,
+  simulationFinished,
+  type ShownCompletion,
+} from "@/lib/mission/completion";
 import { REPORT_REMOVED, saveReport } from "@/lib/mission/report-history";
 
 import { MISSION_STORAGE_KEY as STORAGE_KEY } from "@/lib/browser-data";
@@ -54,6 +63,23 @@ function readStored(): MissionAccess | null {
     return value && typeof value.id === "string" && typeof value.token === "string" ? value : null;
   } catch {
     return null;
+  }
+}
+
+function readShownCompletion(): ShownCompletion | null {
+  try {
+    return parseShownCompletion(sessionStorage.getItem(REPORT_SHOWN_STORAGE_KEY));
+  } catch {
+    return null;
+  }
+}
+
+function writeShownCompletion(value: ShownCompletion | null) {
+  try {
+    if (value) sessionStorage.setItem(REPORT_SHOWN_STORAGE_KEY, JSON.stringify(value));
+    else sessionStorage.removeItem(REPORT_SHOWN_STORAGE_KEY);
+  } catch {
+    /* Without storage the report can open again after a reload. */
   }
 }
 
@@ -150,23 +176,38 @@ function useExpeditionState() {
     return () => window.removeEventListener(REPORT_REMOVED, removed);
   }, []);
 
+  // Every completed revision is archived, but the notice and report open on their own only once
+  // per completed run: not again after a reload or a command that raises the revision.
   const completionKey = finished && snapshot ? reportKey(snapshot) : null;
   useEffect(() => {
     if (!completionKey) {
+      if (completionTimer.current) clearTimeout(completionTimer.current);
       setCompletionOpen(false);
       return;
     }
+    void archiveReport().catch(() => {});
+    const current = snapshotRef.current;
+    if (!current || completionAlreadyShown(readShownCompletion(), current)) return;
+    writeShownCompletion(shownCompletion(current));
     setCompletionOpen(true);
     setReportOpen(false);
-    void archiveReport().catch(() => {});
+    if (completionTimer.current) clearTimeout(completionTimer.current);
     completionTimer.current = setTimeout(() => {
       setCompletionOpen(false);
       setReportOpen(true);
     }, 1600);
-    return () => {
-      if (completionTimer.current) clearTimeout(completionTimer.current);
-    };
   }, [completionKey, archiveReport]);
+  // A run that is no longer finished (reset, new plan, seek) may open its report again later.
+  const hasSnapshot = snapshot !== null;
+  useEffect(() => {
+    if (hasSnapshot && !finished) writeShownCompletion(null);
+  }, [hasSnapshot, finished]);
+  useEffect(
+    () => () => {
+      if (completionTimer.current) clearTimeout(completionTimer.current);
+    },
+    [],
+  );
 
   // Open the page's one session: resume this tab's, or open a new one at the habitat.
   const [attempt, setAttempt] = useState(0);
@@ -371,9 +412,12 @@ function useExpeditionState() {
       if (!s) return 0;
       if (s.clock.mode !== "playing") return s.clock.position_s;
       // Stop visual extrapolation after two missed polls; do not invent progress during an outage.
-      const elapsed =
-        (Math.min(Math.max(0, ms - receivedAt), STALE_AFTER_MS) * s.clock.speed) / 1000;
-      return Math.min(s.config.duration_s, s.clock.position_s + Math.max(0, elapsed));
+      const elapsedMs = Math.min(Math.max(0, ms - receivedAt), STALE_AFTER_MS);
+      return resolveMissionClock(
+        { ...s.clock, anchor_ms: receivedAt },
+        receivedAt + elapsedMs,
+        s.config,
+      ).position_s;
     },
     [receivedAt],
   );

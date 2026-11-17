@@ -1,6 +1,7 @@
 // Deterministic expedition alerts: derived from the backend snapshot and outlook, never from AI.
 // Display state (acknowledged, suppressed, inhibited) is local and never changes the model.
 import type { MissionOutlook, Snapshot } from "./client";
+import { formatNumber } from "./format";
 import { equipmentPower, weatherExertion } from "./weather-risks";
 
 type ResourceSnapshot = Pick<Snapshot, "config" | "state">;
@@ -112,9 +113,10 @@ export function activeAlerts(
       code: "eva_power_demand_unmet",
       id: "PWS-3",
       level: "emergency",
-      name: "Suit power exhausted",
+      name: "Suit power demand unmet",
       system: "Suits",
-      detail: "The suit batteries cannot cover suit loads.",
+      detail:
+        "The suit batteries cannot cover suit loads: energy may be exhausted or demand may exceed the discharge-power limit.",
       response: "End the walk now and take the shortest return.",
     });
   if (reasons.has("eva_oxygen_below_reserve"))
@@ -124,7 +126,7 @@ export function activeAlerts(
       level: "error",
       name: "Suit oxygen below reserve",
       system: "Suits",
-      detail: `Suit oxygen is ${Math.round(state.oxygen.eva.remaining_g)} g, under the ${Math.round(config.oxygen.eva.reserve_g)} g reserve.`,
+      detail: `Suit oxygen is ${formatNumber(state.oxygen.eva.remaining_g)} g, under the ${formatNumber(config.oxygen.eva.reserve_g)} g reserve.`,
       response: REPLAN,
     });
   if (reasons.has("eva_battery_below_reserve"))
@@ -134,7 +136,7 @@ export function activeAlerts(
       level: "error",
       name: "Suit battery below reserve",
       system: "Suits",
-      detail: `Suit battery is ${Math.round(state.battery.eva.remaining_wh)} Wh, under the ${Math.round(config.battery.eva.reserve_wh)} Wh reserve.`,
+      detail: `Suit battery is ${formatNumber(state.battery.eva.remaining_wh)} Wh, under the ${formatNumber(config.battery.eva.reserve_wh)} Wh reserve.`,
       response: REPLAN,
     });
   for (const [code, id, name] of [
@@ -158,8 +160,8 @@ export function activeAlerts(
     const rescue = best && best.status === "modeled_resource_feasible";
     const short = plan.margins
       ? [
-          plan.margins.oxygen_g < 0 ? `oxygen ${Math.round(-plan.margins.oxygen_g)} g` : null,
-          plan.margins.energy_wh < 0 ? `battery ${Math.round(-plan.margins.energy_wh)} Wh` : null,
+          plan.margins.oxygen_g < 0 ? `oxygen ${formatNumber(-plan.margins.oxygen_g)} g` : null,
+          plan.margins.energy_wh < 0 ? `battery ${formatNumber(-plan.margins.energy_wh)} Wh` : null,
         ]
           .filter(Boolean)
           .join(" and ")
@@ -168,11 +170,11 @@ export function activeAlerts(
       code: rescue ? "return_reserve_at_risk" : "no_option_keeps_reserves",
       id: rescue ? "RTN-2" : "RTN-3",
       level: rescue ? "error" : "emergency",
-      name: rescue ? "Return reserve at risk" : "No option keeps the reserves",
+      name: rescue ? "Return constraints at risk" : "No feasible return option",
       system: "Return",
       detail: rescue
-        ? `As planned, the crew reaches the ${shelter.toLowerCase()} ${short} under reserve. ${best!.title} keeps every reserve.`
-        : `Every option ends under a suit reserve. ${best ? `${best.title} leaves the most margin.` : ""}`,
+        ? `${short ? `As planned, the crew reaches the ${shelter.toLowerCase()} ${short} under reserve.` : "The current plan violates a modeled suit constraint."} ${best!.title} meets the modeled constraints.`
+        : `No option meets every modeled suit constraint. ${best ? `${best.title} leaves the most margin.` : ""}`,
       response: rescue
         ? `Apply “${best!.title}” in 04 Run.`
         : "Apply the option with the most margin now and stop sampling.",
@@ -194,7 +196,7 @@ export function activeAlerts(
       level: "warning",
       name: "Suit oxygen leak",
       system: "Suits",
-      detail: `Simulated leak of ${Math.round(state.oxygen_leak_g_h.eva)} g/h on top of crew demand.`,
+      detail: `Simulated leak of ${formatNumber(state.oxygen_leak_g_h.eva)} g/h on top of crew demand.`,
     });
   if (state.demand_factor.eva > 1)
     add({
@@ -203,7 +205,7 @@ export function activeAlerts(
       level: "warning",
       name: "Crew exertion raised",
       system: "Suits",
-      detail: `Suit oxygen and power draw at ×${state.demand_factor.eva.toFixed(1)} of the activity profile.`,
+      detail: `Suit oxygen and power draw at ×${formatNumber(state.demand_factor.eva, 1)} of the activity profile.`,
     });
   if (state.battery.eva.capacity_wh < config.battery.eva.capacity_wh)
     add({
@@ -212,7 +214,7 @@ export function activeAlerts(
       level: "warning",
       name: "Suit battery capacity reduced",
       system: "Suits",
-      detail: `Simulated cell loss: ${Math.round(state.battery.eva.capacity_wh)} of ${Math.round(config.battery.eva.capacity_wh)} Wh usable.`,
+      detail: `Simulated cell loss: ${formatNumber(state.battery.eva.capacity_wh)} of ${formatNumber(config.battery.eva.capacity_wh)} Wh usable.`,
     });
   if (!state.generator_available && shelter === "Habitat")
     add({
@@ -267,7 +269,8 @@ export function activeAlerts(
       level: "warning",
       name: "Replay stopped at a NASA data gap",
       system: "Archive replay",
-      detail: "The archived MOXIE trace has no derived sample here. Rewind to continue.",
+      detail:
+        "The archived MOXIE trace has no derived sample here, so the replay cannot go on. Restart the expedition to run it again.",
     });
   return alerts.sort((a, b) => ALERT_PRIORITY[a.level] - ALERT_PRIORITY[b.level]);
 }

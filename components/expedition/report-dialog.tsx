@@ -319,13 +319,37 @@ export function ReportViewer({
             </p>
           ) : (
             <>
-              {facts.returned && !facts.breached ? (
+              {facts.returned &&
+              !facts.breached &&
+              !facts.powerUnmet &&
+              !facts.oxygenUnmet &&
+              !facts.timeExceeded &&
+              report.status === "ok" ? (
                 <Alert variant="success">
                   <CircleCheckIcon aria-hidden />
                   <AlertTitle>Crew back at the {shelter} with every suit reserve</AlertTitle>
                   <AlertDescription>
                     Lowest margins: O₂ {signed(facts.o2Margin, "g")}, battery{" "}
                     {signed(facts.whMargin, "Wh")} above reserve.
+                  </AlertDescription>
+                </Alert>
+              ) : facts.powerUnmet || facts.oxygenUnmet || facts.timeExceeded ? (
+                <Alert variant="error">
+                  <CircleXIcon aria-hidden />
+                  <AlertTitle>
+                    {facts.powerUnmet
+                      ? "Suit power demand was not met"
+                      : facts.oxygenUnmet
+                        ? "Suit oxygen demand was not met"
+                        : "The suit time limit was exceeded"}
+                  </AlertTitle>
+                  <AlertDescription>
+                    {facts.powerUnmet
+                      ? "Battery energy or discharge power could not cover suit loads. Positive energy reserves do not rule out a power-output failure. "
+                      : ""}
+                    {report.ended_by_operator
+                      ? "The operator ended the simulation; this is not a completed return."
+                      : "The recorded run did not meet every modeled suit constraint."}
                   </AlertDescription>
                 </Alert>
               ) : facts.breached ? (
@@ -344,7 +368,11 @@ export function ReportViewer({
                 <Alert variant="info">
                   <InfoIcon aria-hidden />
                   <AlertTitle>
-                    {report.ended_by_operator ? "Simulation ended early" : "Expedition in progress"}
+                    {report.ended_by_operator
+                      ? "Simulation ended by operator"
+                      : report.status !== "ok"
+                        ? "Outcome unavailable"
+                        : "Expedition in progress"}
                   </AlertTitle>
                   <AlertDescription>
                     {report.ended_by_operator

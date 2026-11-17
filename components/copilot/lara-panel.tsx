@@ -1,8 +1,9 @@
 "use client";
 
-import { Ear, EarOff, Mic, Send, Square, Volume2, VolumeOff } from "lucide-react";
+import { CircleXIcon, Ear, EarOff, Mic, Send, Square, Volume2, VolumeOff } from "lucide-react";
 import { useEffect, useRef, useState, type FormEvent } from "react";
 
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { MapPanel } from "@/components/map/map-panel";
 import { useLaraContext } from "@/components/copilot/lara-context";
@@ -156,9 +157,10 @@ export function LaraPanel() {
       </ol>
 
       {lara.error && (
-        <p role="alert" className="rounded-md bg-destructive px-2 py-1 text-xs text-white">
-          {lara.error}
-        </p>
+        <Alert variant="error" className="px-2 py-1 text-xs">
+          <CircleXIcon aria-hidden />
+          <AlertDescription>{lara.error}</AlertDescription>
+        </Alert>
       )}
 
       <form onSubmit={submit} className="flex gap-2">
@@ -175,7 +177,7 @@ export function LaraPanel() {
             listening ? "Listening… speak your question" : "Ask about oxygen, battery, or radiation"
           }
           disabled={!lara.ready}
-          className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-sm"
+          className="min-w-0 flex-1 rounded-md border bg-background px-2 py-1 text-sm placeholder:text-muted-foreground"
         />
         <Button
           size="sm"

@@ -20,6 +20,8 @@ export type RouteStatus = "ok" | "no_path" | "outside_grid" | "start_blocked" | 
 
 export interface PlannedPath {
   status: RouteStatus;
+  /** Endpoint rejection cause; an exclusion can be a hand-drawn zone or a mapped obstacle. */
+  blocked_by?: "slope" | "no_data" | "zone_or_obstacle";
   /** Exact start, interior cell centres, exact goal; [] unless ok. */
   path: LngLat[];
   /** 3D length of the path. */
@@ -140,8 +142,8 @@ export function findPath(
   const startCell = cellAt(grid, start);
   const goalCell = cellAt(grid, goal);
   if (startCell === null || goalCell === null) return failed("outside_grid", 0);
-  if (walls[startCell]) return failed("start_blocked", 0);
-  if (walls[goalCell]) return failed("goal_blocked", 0);
+  if (walls[startCell]) return blocked("start_blocked", slope[startCell], maxSlopeDeg);
+  if (walls[goalCell]) return blocked("goal_blocked", slope[goalCell], maxSlopeDeg);
 
   const sizes = Array.from({ length: grid.height }, (_, row) => cellSize(grid, row));
   const distanceToGoal = distanceEstimate(grid, sizes, goalCell);
@@ -179,6 +181,19 @@ export function findPath(
 
 function failed(status: RouteStatus, expanded: number): PlannedPath {
   return { status, path: [], distance_m: 0, cost: 0, max_slope_deg: 0, time_min: 0, expanded };
+}
+
+function blocked(
+  status: "start_blocked" | "goal_blocked",
+  slopeDeg: number,
+  maxSlopeDeg: number,
+): PlannedPath {
+  const blocked_by = Number.isNaN(slopeDeg)
+    ? "no_data"
+    : slopeDeg > maxSlopeDeg
+      ? "slope"
+      : "zone_or_obstacle";
+  return { ...failed(status, 0), blocked_by };
 }
 
 /** Straight-line distance with the grid's smallest spacings, so it never overestimates. */

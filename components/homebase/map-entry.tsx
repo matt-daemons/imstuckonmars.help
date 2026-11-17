@@ -53,7 +53,22 @@ export function HomebaseMapEntry({
           </button>,
           shortcutTarget,
         )}
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog
+        open={open}
+        onOpenChange={(next, details) => {
+          // Escape belongs to an open chart or reference inspector: it closes that, never the
+          // whole dashboard underneath (observed in the hosted app).
+          if (
+            !next &&
+            details.reason === "escape-key" &&
+            document.querySelector(".hb-inspector-dialog")
+          ) {
+            details.cancel();
+            return;
+          }
+          setOpen(next);
+        }}
+      >
         <DialogPopup
           className="homebase-map-dialog"
           showCloseButton={false}

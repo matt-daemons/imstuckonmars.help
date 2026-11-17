@@ -100,6 +100,22 @@ describe("routePlanReducer", () => {
     expect(one.zones).toEqual([zone]);
   });
 
+  it("keeps both endpoints while a start-overlapping zone is added and cleared", () => {
+    const selected = { ...initial, mission: "walking" as const, end: target };
+    const overlapping: LngLat[] = [
+      [base[0] - 0.01, base[1] - 0.01],
+      [base[0] + 0.01, base[1] - 0.01],
+      [base[0] + 0.01, base[1] + 0.01],
+      [base[0] - 0.01, base[1] + 0.01],
+    ];
+    const blocked = routePlanReducer(selected, { type: "addZone", ring: overlapping });
+    expect(blocked.start).toEqual(base);
+    expect(blocked.end).toEqual(target);
+    const changed = routePlanReducer(blocked, { type: "setEnd", point: site });
+    expect(changed.end).toEqual(site);
+    expect(routePlanReducer(changed, { type: "clearZones" }).end).toEqual(site);
+  });
+
   it("addZone numbers drawn zones in order, without reusing a number after clearing", () => {
     const actions: RoutePlanAction[] = [
       { type: "addZone", ring },

@@ -3,7 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 import { buildExpeditionConfig } from "@/lib/mission/expedition";
 import { evaluateMission } from "@/lib/mission/engine";
 import type { MissionReport } from "@/lib/mission/client";
-import { SavedReportCard } from "./simulation-reports";
+import { reportOutcome, SavedReportCard } from "./simulation-reports";
 
 // These framework-bound siblings are not used by the standalone card.
 vi.mock("@/components/expedition/expedition-provider", () => ({ useExpedition: () => ({}) }));
@@ -47,6 +47,31 @@ const report: MissionReport = {
 };
 
 describe("saved report actions", () => {
+  it("does not label a manually ended run Returned even if its last position was at shelter", () => {
+    const ended = {
+      ...report,
+      final: {
+        ...report.final,
+        position: { ...report.final.position!, phase: "shelter" as const },
+      },
+    };
+    expect(reportOutcome({ id: "ended", saved_at_ms: 0, report: ended })).toBe("Ended by operator");
+  });
+
+  it("retains a power failure in the saved outcome even with positive reserves", () => {
+    const failed: MissionReport = {
+      ...report,
+      ended_by_operator: false,
+      final: {
+        ...report.final,
+        position: { ...report.final.position!, phase: "shelter" },
+        battery: { ...report.final.battery, eva: { ...report.final.battery.eva, unmet_wh: 1 } },
+      },
+    };
+    expect(reportOutcome({ id: "failed", saved_at_ms: 0, report: failed })).toBe(
+      "Returned · suit constraint violated",
+    );
+  });
   it("offers separate, named open and remove controls without hiding report identity", () => {
     const markup = renderToStaticMarkup(
       <SavedReportCard

@@ -59,7 +59,15 @@ export function routeToPlan(
 ): PlanResult {
   const sampling_s = Math.round(inputs.samplingMin * 60);
   if (inputs.mission === "walking") {
-    if (!walk?.summary) return { plan: null, reason: "Plan a walk with an end point first." };
+    if (!walk?.summary)
+      return {
+        plan: null,
+        reason: !inputs.end
+          ? "Plan a walk with an end point first."
+          : !walk
+            ? "Waiting for the walking route calculation."
+            : "The selected destination is retained, but no complete walking route is available. Resolve the route check above or edit the route.",
+      };
     if (inputs.start[0] !== base[0] || inputs.start[1] !== base[1])
       return {
         plan: null,

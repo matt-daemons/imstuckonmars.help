@@ -10,7 +10,10 @@ export function summarize(report: MissionReport) {
     .reduce((sum, e) => sum + Math.max(0, Math.min(e.end_s, report.at_s) - e.start_s), 0);
   return {
     departed,
-    returned: departed && final.position?.phase === "shelter",
+    returned: !report.ended_by_operator && departed && final.position?.phase === "shelter",
+    powerUnmet: final.battery.eva.unmet_wh > 1e-9,
+    oxygenUnmet: final.oxygen.eva.unmet_g > 1e-9,
+    timeExceeded: config.eva_limit_s !== null && final.eva_elapsed_s > config.eva_limit_s,
     breached:
       final.oxygen.eva.first_reserve_crossing_s !== null ||
       final.battery.eva.first_reserve_crossing_s !== null,

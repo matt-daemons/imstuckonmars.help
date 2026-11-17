@@ -125,10 +125,7 @@ export function DustPlayback({
             size="sm"
             variant="outline"
             disabled={load.kind === "loading"}
-            onClick={() => {
-              setAttempt((value) => value + 1);
-              overview();
-            }}
+            onClick={() => setAttempt((value) => value + 1)}
           >
             {load.kind === "loading"
               ? "Loading simulation…"

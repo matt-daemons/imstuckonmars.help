@@ -84,6 +84,19 @@ describe("mission report", () => {
     expect(facts.science).toBe(0);
   });
 
+  it("never counts a manually ended run as Returned, including one already at shelter", () => {
+    expect(summarize({ ...report(), ended_by_operator: true }).returned).toBe(false);
+  });
+
+  it("records unmet power even while all inventory reserves remain positive", () => {
+    const value = report();
+    value.final.battery.eva.unmet_wh = 1;
+    const facts = summarize(value);
+    expect(facts.breached).toBe(false);
+    expect(facts.whMargin).toBeGreaterThan(0);
+    expect(facts.powerUnmet).toBe(true);
+  });
+
   it("retains a recorded low margin even if the final inventory was restored", () => {
     const value = report();
     value.series = [

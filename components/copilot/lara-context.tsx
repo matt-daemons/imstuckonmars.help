@@ -2,7 +2,7 @@
 
 import { createContext, useContext, type ReactNode } from "react";
 
-import { useExpeditionAccess } from "@/components/expedition/expedition-provider";
+import { useExpedition } from "@/components/expedition/expedition-provider";
 
 import { useLara } from "./use-lara";
 import { useWakeWord } from "./use-wake-word";
@@ -10,7 +10,7 @@ import { useWakePreference } from "./use-wake-preference";
 
 export type Lara = ReturnType<typeof useLaraController>;
 function useLaraController() {
-  const lara = useLara(useExpeditionAccess());
+  const lara = useLara(useExpedition());
   const [wakeOn, setWakeOn] = useWakePreference();
   const wake = useWakeWord({
     enabled: wakeOn && lara.ready,

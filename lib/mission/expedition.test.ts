@@ -218,7 +218,7 @@ describe("outlook and replanning", () => {
     expect(cont.limiting).toBe("suit_oxygen");
     const chosen = outlook.options.find((o) => o.option === outlook.recommended)!;
     expect(chosen.status).toBe("modeled_resource_feasible");
-    expect(outlook.rationale).toMatch(/breaks a suit reserve/);
+    expect(outlook.rationale).toMatch(/breaks a modeled suit constraint/);
   });
 
   it("applies a replan without rewriting the past", () => {
@@ -240,6 +240,8 @@ describe("outlook and replanning", () => {
       { at_s: 1500, option: "turn_back", title: "Turn back now" },
     ]);
     expect(next.route!.planned_sampling_s).toBe(3600);
+    expect(next.duration_s).toBeLessThan(config.duration_s);
+    expect(next.duration_s).toBe(next.route!.legs.at(-1)!.end_s + RECOVERY_S);
     const home = evaluateMission(next, slice(next), [], next.duration_s);
     expect(home.position!.phase).toBe("shelter");
   });
@@ -252,6 +254,17 @@ describe("outlook and replanning", () => {
     const returning = missionOutlook(config, slice(config), [], 6500);
     expect(returning.options[1].available).toBe(false);
     expect(returning.options[2].unavailable_reason).toMatch(/No sampling/);
+  });
+
+  it("ends a shortened sampling run after its new return and the same recovery interval", () => {
+    const original = buildExpeditionConfig(plan(), "run", TRACE);
+    const next = replanConfig(original, slice(original), [], 3000, "turn_back");
+    if (typeof next === "string") throw new Error(next);
+    expect(next.route!.legs.at(-1)!.end_s).toBe(4800);
+    expect(next.duration_s).toBe(4800 + RECOVERY_S);
+    expect(next.schedule.at(-1)).toEqual({ start_s: 4800, end_s: 5700, activity: "base" });
+    expect(next.source_start_row).toBe(original.source_start_row);
+    expect(evaluateMission(next, slice(next), [], next.duration_s).position!.phase).toBe("shelter");
   });
 });
 

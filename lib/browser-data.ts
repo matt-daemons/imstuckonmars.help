@@ -1,3 +1,5 @@
+import { REPORT_SHOWN_STORAGE_KEY } from "./mission/completion";
+
 export const TRAINING_STORAGE_KEY = "lara.training";
 export const WAKE_WORD_STORAGE_KEY = "lara.wakeWord";
 export const MISSION_STORAGE_KEY = "imstuckonmars.expedition";
@@ -16,6 +18,7 @@ export async function resetBrowserData(
   browser.localStorage.removeItem(TRAINING_STORAGE_KEY);
   browser.localStorage.removeItem(WAKE_WORD_STORAGE_KEY);
   browser.sessionStorage.removeItem(MISSION_STORAGE_KEY);
+  browser.sessionStorage.removeItem(REPORT_SHOWN_STORAGE_KEY);
   browser.document.cookie = "sidebar_state=; Max-Age=0; Path=/; SameSite=Lax";
 }
 

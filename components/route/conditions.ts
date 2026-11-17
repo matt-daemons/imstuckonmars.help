@@ -77,7 +77,14 @@ export function isDrillSet(drill: Drill): boolean {
 }
 
 /** NASA DONKI's last space-weather report, or where fetching it stands. */
-export type SpaceWeatherFeed = SpaceWeatherReport | "loading" | "failed";
+export type SpaceWeatherFeed = (SpaceWeatherReport & { stale?: true }) | "loading" | "failed";
+
+/** Expire the displayed report even when a later browser request has not answered. */
+export function spaceWeatherAt(feed: SpaceWeatherFeed, nowMs: number): SpaceWeatherFeed {
+  if (typeof feed !== "object" || feed.stale) return feed;
+  const age = nowMs - Date.parse(feed.fetched_at);
+  return !Number.isFinite(age) || age > 15 * 60_000 ? { ...feed, stale: true } : feed;
+}
 
 /** What the app reads for real, before any drill. */
 export interface RealReadings {
@@ -105,12 +112,16 @@ export function realConditions({
     sources: {},
     reasons_unknown: {},
   };
-  if (typeof spaceWeather === "object") {
+  if (typeof spaceWeather === "object" && !spaceWeather.stale) {
     conditions.solar_alert_level = spaceWeather.level;
     conditions.sources.radiation = "real";
   } else {
     conditions.reasons_unknown.radiation =
-      spaceWeather === "failed" ? "DONKI unavailable" : "DONKI loading";
+      typeof spaceWeather === "object"
+        ? "DONKI stale; current solar alert unavailable"
+        : spaceWeather === "failed"
+          ? "DONKI unavailable"
+          : "DONKI loading";
   }
   if (typeof doseRate === "number") {
     conditions.radiation_dose_rate = doseRate;
@@ -219,12 +230,15 @@ const SEVERITY: Record<Verdict, number> = { GO: 0, CAUTION: 1, NO_GO: 2 };
 /**
  * The trip's verdict with storms: the worse of the drive's and the walk's, the drive on a tie, as
  * planDriveWalk picks. Storms count for the walk only, since the pressurized rover is shelter.
- * Null until the trip has a drive and a walk.
+ * Retains an early planner rejection even when no drive or walk was calculated.
  */
 export function tripWithStorms(plan: DriveWalkPlan, conditions: Conditions): TripVerdict | null {
   const driveSummary = plan.drive?.summary;
   const walkRoute = plan.walk?.route;
-  if (!driveSummary || !walkRoute) return null;
+  if (!driveSummary || !walkRoute)
+    return plan.verdict
+      ? { ...plan.verdict, not_checked: ["radiation", "dose_rate", "dust", "daylight"] }
+      : null;
   const walk = walkWithStorms(walkRoute, conditions);
   const drive = evaluateDrive(driveSummary);
   return SEVERITY[walk.verdict] > SEVERITY[drive.verdict]
@@ -251,9 +265,14 @@ export function notCheckedText(notChecked: StormFactor[], conditions: Conditions
 }
 
 /** Step 03's line on the solar alert's feed, such as "Solar alert: none · NASA DONKI, read 10:42 UTC". */
-export function spaceWeatherLine(feed: SpaceWeatherFeed): string {
+export function spaceWeatherLine(feed: SpaceWeatherFeed, nowMs = Date.now()): string {
   if (feed === "loading") return "Solar alert: loading NASA DONKI…";
-  if (feed === "failed") return "Solar alert: NASA DONKI unavailable";
-  // fetched_at is ISO 8601 UTC, so characters 11 to 16 are the hours and minutes.
+  if (feed === "failed") return "Solar alert: NASA DONKI unavailable. Retried every 15 min.";
+  if (feed.stale) {
+    const readAt = feed.fetched_at.slice(0, 16).replace("T", " ");
+    const age = (nowMs - Date.parse(feed.fetched_at)) / 60_000;
+    const ageLabel = Number.isFinite(age) ? ` (${Math.max(0, Math.floor(age))} min old)` : "";
+    return `NASA DONKI solar alert unavailable · stale${ageLabel} · last reported ${feed.level}, read ${readAt} UTC`;
+  }
   return `Solar alert: ${feed.level} · NASA DONKI, read ${feed.fetched_at.slice(11, 16)} UTC`;
 }

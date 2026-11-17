@@ -6,7 +6,8 @@ export const REASON_TEXT: Record<string, string> = {
     "Suit battery would fall under its reserve before the crew reaches shelter.",
   time_return_reserve: "The walk would exceed the suit's main-supply time.",
   eva_oxygen_demand_unmet: "The suit oxygen would run out.",
-  eva_power_demand_unmet: "The suit batteries would run out.",
+  eva_power_demand_unmet:
+    "Suit power demand exceeds available output (battery energy or discharge-power limit), even if energy remains above reserve.",
   simulated_route_blocked: "A simulated blockage on the return path makes the outcome unknown.",
   source_unavailable: "The archived trace has a gap, so the outcome is unknown.",
   arrival_unknown: "The plan never returns to shelter.",

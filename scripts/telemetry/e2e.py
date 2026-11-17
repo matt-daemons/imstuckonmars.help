@@ -85,10 +85,35 @@ def expedition():
         assert all(option["available"] for option in alternatives)
         assert alternatives[0]["arrival_s"] < alternatives[1]["arrival_s"]
         assert alternatives[0]["margins"]["oxygen_g"] > alternatives[1]["margins"]["oxygen_g"]
+        # Shortening the route must retain, but never execute, a later scheduled event.
+        command("event", event={"id": "future-generator", "type": "generator_failure",
+                                "at_s": planned["config"]["duration_s"] - 1})
         request(path + "/commands", {"type": "replan", "option": "turn_back", "expected_revision": revision - 1, "command_id": str(uuid.uuid4())}, token, expected=409)
         _, replanned = command("replan", option="turn_back")
         assert replanned["config"]["route"]["planned_sampling_s"] == 3600
         assert replanned["config"]["route"]["decisions"][0]["option"] == "turn_back"
+        assert replanned["config"]["duration_s"] < planned["config"]["duration_s"]
+        assert any(event["id"] == "future-generator" for event in replanned["events"])
+        arrival = next(leg["end_s"] for leg in reversed(replanned["config"]["route"]["legs"])
+                       if leg["activity"] == "return")
+        assert math.isclose(replanned["config"]["duration_s"] - arrival, 900)
+        command("seek", at_s=arrival - 1)
+        command("play")
+        time.sleep(0.1)
+        arrived = request(path, token=token)
+        assert arrived["clock"]["mode"] == "paused"
+        assert math.isclose(arrived["state"]["elapsed_s"], arrival)
+        assert arrived["state"]["position"]["phase"] == "shelter"
+        assert math.isclose(request(path + "/outlook", token=token)["at_s"], arrival)
+        assert not request(path + "/report", token=token)["ended_by_operator"]
+        time.sleep(0.1)
+        assert request(path, token=token)["state"] == arrived["state"]
+        resume_body, recovery = command("play")
+        assert recovery["clock"]["mode"] == "playing"
+        assert recovery["config"] == replanned["config"]
+        assert request(path + "/commands", resume_body, token)["idempotent_replay"]
+        time.sleep(0.1)
+        assert request(path, token=token)["state"]["elapsed_s"] > arrival
         command("seek", at_s=replanned["config"]["duration_s"])
         report = request(path + "/report", token=token)
         assert report["final"]["position"]["phase"] == "shelter"
@@ -97,6 +122,12 @@ def expedition():
         assert 1 < len(report["series"]) <= 700
         assert report["series"][-1]["t"] == report["at_s"]
         assert all(a["t"] < b["t"] for a, b in zip(report["series"], report["series"][1:]))
+        assert "future-generator" not in report["final"]["applied_event_ids"]
+        for change in [{"type": "speed", "speed": 10}, {"type": "play"},
+                       {"type": "event", "event": {"id": "natural-end", "type": "generator_failure", "at_s": "now"}}]:
+            error = request(path + "/commands", {**change, "expected_revision": revision, "command_id": str(uuid.uuid4())}, token, expected=409)
+            assert error["error"]["code"] == "simulation_ended"
+        assert request(path, token=token)["revision"] == revision
         # Ending is a persistent stop at the current state, not a seek to a successful return.
         command("reset")
         _, walking = command("seek", at_s=1200)
@@ -118,7 +149,7 @@ def expedition():
         command("end")
         _, new_plan = command("plan", plan=plan)
         assert new_plan["clock"]["mode"] == "paused"
-        print(json.dumps({"expedition": "passed", "checks": "admission, preview, position/resources/clock, leak, alternatives, stale revision, replan, report, persistent end, idempotent end, blocked changes, restart/new plan"}))
+        print(json.dumps({"expedition": "passed", "checks": "admission, preview, position/resources/clock, leak, alternatives, stale revision, replan, shelter-arrival pause, explicit recovery resume, report, persistent end, idempotent end, blocked changes, restart/new plan"}))
     finally:
         request(path, token=token, method="DELETE")
 

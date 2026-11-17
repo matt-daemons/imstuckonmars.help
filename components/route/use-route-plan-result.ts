@@ -9,6 +9,9 @@ import type { LngLat } from "@/lib/mars/types";
 import type { RoutePlanInputs } from "./route-plan";
 import { routeRequestState, type LoadedRouteRequest } from "./route-request-state";
 
+/** How long the browser waits for /api/routes/plan; a far site's cache miss takes up to ~20 s. */
+export const ROUTE_PLAN_TIMEOUT_MS = 35_000;
+
 export interface RoutePlanResult {
   walk: { plan: Plan | null; shortest: Plan | null; terrain: null; loadFailed: boolean };
   journey: DriveWalk;
@@ -69,7 +72,10 @@ export function useRoutePlanResult(
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: key,
-            signal: controller.signal,
+            signal: AbortSignal.any([
+              controller.signal,
+              AbortSignal.timeout(ROUTE_PLAN_TIMEOUT_MS),
+            ]),
           });
           if (!response.ok) {
             const body = (await response.json()) as { error?: { message?: string } };
@@ -93,7 +99,7 @@ export function useRoutePlanResult(
               attempt,
               state: {
                 kind: "failed",
-                message: error instanceof Error ? error.message : "Route calculation failed.",
+                message: routePlanErrorMessage(error),
               },
             });
         }
@@ -138,6 +144,13 @@ export function useRoutePlanResult(
     destinations,
     destination,
   };
+}
+
+/** What the step shows when planning fails; it offers a retry beside it. */
+export function routePlanErrorMessage(error: unknown): string {
+  if (error instanceof DOMException && error.name === "TimeoutError")
+    return `Route calculation took longer than ${ROUTE_PLAN_TIMEOUT_MS / 1000} s and was stopped. Retry the route.`;
+  return error instanceof Error ? error.message : "Route calculation failed.";
 }
 
 export function samePoint([lngA, latA]: LngLat, [lngB, latB]: LngLat): boolean {

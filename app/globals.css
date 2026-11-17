@@ -22,7 +22,8 @@
   --secondary: var(--hermes-teal);
   --secondary-foreground: #c6f3f4;
   --muted: #081719;
-  --muted-foreground: #7f9b9d;
+  /* 7.9:1 on --secondary header bars, 6.9:1 on --accent, 9.9:1 on --background (K-5). */
+  --muted-foreground: #a2b8ba;
   --accent: #0f2e31;
   --accent-foreground: #e8ffff;
   --destructive: #ff4f4f;
@@ -307,6 +308,18 @@
 :is([data-slot="button"], [data-slot="badge"]).bg-destructive,
 [data-slot="button"].bg-destructive > [data-slot="button-loading-indicator"] {
   color: var(--destructive-contrast);
+}
+
+/*
+ * Disabled solid buttons often carry status text ("Ended", "Ending simulation…"). coss fades
+ * them to 64%, which drops the text to 3.0–4.65:1. Instead: full opacity, the muted fill and
+ * muted text (8.8:1), keeping the variant's border. Loading buttons keep the coss look, since
+ * their spinner is drawn in the fill's contrast color.
+ */
+[data-slot="button"]:is(.bg-primary, .bg-destructive):disabled:not([data-loading]) {
+  opacity: 1;
+  background-color: var(--muted);
+  color: var(--muted-foreground);
 }
 
 /*

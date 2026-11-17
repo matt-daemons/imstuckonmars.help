@@ -183,4 +183,37 @@ describe("standalone weather risk drills", () => {
       8,
     );
   });
+
+  it("distinguishes a discharge-power failure from a reserve shortfall", () => {
+    const c = buildExpeditionConfig(
+      {
+        ...plan,
+        outbound: { ...plan.outbound, duration_s: 60 },
+        back: { ...plan.back, duration_s: 60 },
+      },
+      "fixture",
+      1,
+    );
+    const events: ScenarioEvent[] = [
+      { id: "effort", type: "consumption_change", target: "eva", value: 1.8, at_s: 780 },
+      {
+        id: "cells",
+        type: "battery_failure",
+        target: "eva",
+        value: Math.round(c.battery.eva.capacity_wh * 0.45),
+        at_s: 780,
+      },
+      risk("dust", 780),
+      risk("cold", 780),
+    ];
+    const forecast = missionOutlook(c, samples, events, 790);
+    for (const option of forecast.options.filter((o) => o.available)) {
+      expect(option.status).toBe("modeled_constraint_violation");
+      expect(option.margins!.oxygen_g).toBeGreaterThan(0);
+      expect(option.margins!.energy_wh).toBeGreaterThan(0);
+      expect(option.reasons).toContain("eva_power_demand_unmet");
+    }
+    expect(forecast.options[2].summary).not.toContain("already keeps its reserves");
+    expect(forecast.rationale).toContain("constraint");
+  });
 });

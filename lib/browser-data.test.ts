@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { REPORT_SHOWN_STORAGE_KEY } from "./mission/completion";
 import {
   MISSION_STORAGE_KEY,
   resetBrowserData,
@@ -14,6 +15,7 @@ function fixture() {
   ]);
   const session = new Map([
     [MISSION_STORAGE_KEY, "session"],
+    [REPORT_SHOWN_STORAGE_KEY, "completion"],
     ["unrelated", "keep"],
   ]);
   const document = { cookie: "" };

@@ -143,10 +143,11 @@ function assemble(
       });
     t = end;
   }
-  if (t > config.duration_s + EPS) return null;
-  if (t < config.duration_s - EPS)
-    schedule.push({ start_s: t, end_s: config.duration_s, activity: "base" });
-  else if (schedule.length) schedule[schedule.length - 1].end_s = config.duration_s;
+  // Keep the configured recovery interval, not all the wall-clock time freed by shorter legs.
+  const recoveryS = config.duration_s - (arrivalOf(config) ?? config.duration_s);
+  const duration = t + recoveryS;
+  if (duration > config.duration_s + EPS) return null;
+  if (recoveryS > EPS) schedule.push({ start_s: t, end_s: duration, activity: "base" });
   const route = {
     ...config.route!,
     legs,
@@ -154,7 +155,7 @@ function assemble(
       ? [...(config.route!.decisions ?? []), { at_s: nowS, ...decision }]
       : config.route!.decisions,
   };
-  return parseConfig({ ...config, schedule, route });
+  return parseConfig({ ...config, duration_s: duration, schedule, route });
 }
 
 function arrivalOf(config: MissionConfig): number | null {
@@ -386,7 +387,9 @@ function candidates(
       summary:
         needed > 0
           ? "The longest sampling that keeps both suit reserves plus a 10 min walking buffer."
-          : "The plan already keeps its reserves; half the sampling buys more margin.",
+          : plan.status === "modeled_resource_feasible"
+            ? "The plan already keeps its reserves; half the sampling buys more margin."
+            : "Halving sampling improves supply margins but does not resolve the other modeled constraints.",
       config:
         position.phase === "science" && keep <= 1
           ? null
@@ -470,11 +473,11 @@ export function missionOutlook(
     rationale =
       best.option === "continue"
         ? "The plan as it stands keeps every suit reserve, so it keeps the most sampling."
-        : `The current plan breaks a suit reserve. ${best.title} is the option that keeps every reserve with the most sampling left.`;
+        : `The current plan breaks a modeled suit constraint. ${best.title} meets the modeled constraints with the most sampling left.`;
   } else if (usable.length) {
     const best = [...usable].sort((a, b) => share(b) - share(a))[0];
     recommended = best.option;
-    rationale = `No option keeps every suit reserve. ${best.title} leaves the most margin on the limiting supply.`;
+    rationale = `No option meets every modeled suit constraint. ${best.title} leaves the most margin on the limiting supply.`;
   } else {
     rationale =
       "No option can be assessed: the simulated return route is blocked or data is missing.";

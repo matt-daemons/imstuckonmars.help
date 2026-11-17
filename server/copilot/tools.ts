@@ -2,8 +2,8 @@ import * as zod from "zod";
 import type { Database } from "../db";
 import { FLIGHT_RULES, type Factor } from "../../lib/flight-rules/rules";
 import { projectResources } from "../../lib/copilot/projection";
-import { parseConfig, parseEvent } from "../../lib/mission/validation";
-import type { MoxieSample, ScenarioEvent } from "../../lib/mission/types";
+import { parseConfig } from "../../lib/mission/validation";
+import type { MoxieSample } from "../../lib/mission/types";
 import { explain } from "../mission/diagnostics";
 import { snapshot, type sessionFor } from "../mission/service";
 import { loadTrace } from "../telemetry/repository";
@@ -132,7 +132,14 @@ function environmentSummary(result: Snapshot) {
   };
 }
 
-function resourceSummary(result: Snapshot) {
+/** The parts of a mission snapshot that the resource summary reads. */
+type ResourceInput = Pick<Snapshot, "config" | "state">;
+
+/**
+ * Suit and base resources at the evaluated instant. Battery capacity is the current usable
+ * capacity, after any cell loss, and the nominal capacity is given next to it.
+ */
+export function resourceSummary(result: ResourceInput) {
   const { config, state } = result;
   const one = (kind: "oxygen" | "battery", location: "base" | "eva") => {
     const remaining =
@@ -141,11 +148,17 @@ function resourceSummary(result: Snapshot) {
       kind === "oxygen" ? config.oxygen[location].reserve_g : config.battery[location].reserve_wh;
     const capacity =
       kind === "oxygen" ? config.oxygen[location].capacity_g : state.battery[location].capacity_wh;
+    const nominal =
+      kind === "oxygen" ? config.oxygen[location].capacity_g : config.battery[location].capacity_wh;
     return {
       unit: kind === "oxygen" ? "g" : "Wh",
       remaining: round(remaining),
       reserve,
-      capacity,
+      capacity: round(capacity),
+      ...(capacity < nominal && {
+        nominal_capacity: nominal,
+        capacity_reduced_by_failure: true,
+      }),
       margin_above_reserve: round(remaining - reserve),
       percent_of_capacity: round((remaining / capacity) * 100, 0),
     };
@@ -154,6 +167,29 @@ function resourceSummary(result: Snapshot) {
     oxygen: { base: one("oxygen", "base"), suit: one("oxygen", "eva") },
     battery: { base: one("battery", "base"), suit: one("battery", "eva") },
   };
+}
+
+/** Simulated faults and drills in effect at the evaluated instant, from the engine state. */
+export function activeConditions(result: ResourceInput) {
+  const { config, state } = result;
+  const where = { base: "base", eva: "suit" } as const;
+  const list: string[] = [];
+  for (const location of ["base", "eva"] as const) {
+    const battery = state.battery[location];
+    if (battery.capacity_wh < config.battery[location].capacity_wh)
+      list.push(
+        `${where[location]} battery cell loss: usable capacity ${round(battery.capacity_wh)} of ${config.battery[location].capacity_wh} Wh`,
+      );
+    if (state.oxygen_leak_g_h[location] > 0)
+      list.push(`${where[location]} oxygen leak: ${round(state.oxygen_leak_g_h[location])} g/h`);
+    if (state.demand_factor[location] !== 1)
+      list.push(`${where[location]} demand factor: ${round(state.demand_factor[location], 2)}`);
+  }
+  if (!state.generator_available) list.push("habitat generator failure");
+  if (state.route_blocked) list.push("route blocked");
+  if (state.weather_risks?.dust) list.push("dust-front drill");
+  if (state.weather_risks?.cold) list.push("cold-snap drill");
+  return list;
 }
 
 function rateToHourly(value: number | null) {
@@ -182,9 +218,8 @@ export async function copilotTools(
     );
     return samples;
   };
-  const events = (JSON.parse(session.events_json) as unknown[]).map((value) =>
-    parseEvent(value, result.config.duration_s),
-  ) as ScenarioEvent[];
+  // The mission owner already validated history, including events beyond a shortened replan.
+  const events = result.events;
 
   const run = async (name: CopilotTool, rawArgs: unknown): Promise<unknown> => {
     switch (name) {
@@ -193,6 +228,7 @@ export async function copilotTools(
         const moxie = result.observed.moxie;
         return {
           mission_time_min: minutes(nowS),
+          evaluated: "Now, at the replay cursor. Values from earlier answers are out of date.",
           mission_duration_min: minutes(result.config.duration_s),
           clock: { mode: result.clock.mode, speed: result.clock.speed },
           activity: result.state.activity,
@@ -200,6 +236,7 @@ export async function copilotTools(
           eva_elapsed_min: minutes(result.state.eva_elapsed_s),
           eva_limit_min: minutes(result.config.eva_limit_s),
           resources_simulated: resourceSummary(result),
+          active_faults: activeConditions(result),
           generator: {
             available: result.state.generator_available,
             captured_oxygen_g_h: round(result.state.effective_oxygen_rate_g_h, 2),

@@ -4,25 +4,91 @@
   --map-panel-header: color-mix(in srgb, var(--secondary) 84%, transparent);
   --muted-foreground: #b5c7c8;
   --sidebar-foreground: var(--foreground);
+  /* The camera stack's widths, shared with the top row so the strip stops before the stack. */
+  --map-views-width: 12rem;
+  --map-layers-width: 8.5rem;
+  --map-layers-open-width: min(23rem, calc(100vw - 14rem));
+  /* Sidebar trigger + Mission dashboard (measured 13.75rem). */
+  --map-top-buttons-width: 14rem;
+  /* The open stack ends right of those buttons (1rem + buttons + 0.75rem gap, 5.5rem right
+     inset) while there is room, but keeps a usable 16rem Layers panel. "100%" resolves against
+     the overlay, the containing block of both the stack and the top row. */
+  --map-stack-open-width: clamp(28.75rem, 100% - var(--map-top-buttons-width) - 7.25rem, 36rem);
+  --map-top-right: calc(
+    5.5rem + var(--map-views-width) + 0.75rem + var(--map-layers-width) + 0.75rem
+  );
+}
+.mars-map-shell:has(.map-layers-control > details[open]) {
+  --map-top-right: calc(
+    5.5rem +
+      min(
+        var(--map-stack-open-width),
+        var(--map-views-width) + 0.75rem + var(--map-layers-open-width)
+      ) +
+      0.75rem
+  );
 }
 
 /* MapLibre writes position: relative inline on its container. */
 .mars-map-shell > .mars-map-canvas {
   position: absolute !important;
+  /* Built-in controls stay below the overlay column's panels and reply text. */
+  isolation: isolate;
   width: 100%;
   height: 100%;
 }
 
 .map-overlay-column {
+  container: map-chrome / inline-size;
   pointer-events: none;
 }
+/* The top row: sidebar trigger, Mission dashboard, then the verdict strip, bounded on the right
+   by the camera stack (5.5rem from the edge, then Camera views and Layers). When the strip does
+   not fit beside the buttons it wraps onto a second line; useTopRowHeight moves the panels below
+   it down. The buttons sit above the camera stack, the strip below it, so neither covers a
+   control it should not. */
 .map-top-left-controls {
   position: absolute;
   top: 1rem;
   left: 1rem;
+  right: var(--map-top-right);
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+  pointer-events: none;
+}
+.map-top-left-controls > * {
+  position: relative;
+  z-index: 13;
+  flex-shrink: 0;
+  pointer-events: auto;
+}
+.map-top-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+  max-width: 100%;
+}
+.map-top-left-controls > .map-top-buttons {
+  flex-shrink: 1;
+}
+.map-top-buttons > div {
+  max-width: 100%;
+}
+.map-top-buttons .homebase-map-trigger {
+  max-width: 100%;
+  height: auto;
+  white-space: normal;
+}
+.map-top-left-controls > .map-top-strip-slot {
+  z-index: 11;
+  display: flex;
+  flex: 1 1 18rem;
+  min-width: 0;
+  pointer-events: none;
 }
 
 .mars-map-shell[data-fake-data]::after {
@@ -56,40 +122,101 @@
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* Centre the verdict strip in the band between the sidebar trigger (left) and the Layers
-   button + compass (right) instead of the whole map, so it never runs under the Layers button. */
-.mars-map-shell .map-verdict-strip {
-  left: 4rem;
-  right: 12rem;
+/* Centred in the free part of the top row, left-aligned on a line of its own; its text truncates. */
+.map-top-strip-slot > .map-verdict-strip {
   width: fit-content;
-  max-width: calc(100% - 16rem);
+  max-width: 100%;
   margin-inline: auto;
-  --tw-translate-x: 0;
-  translate: none;
-  transform: none;
+  pointer-events: auto;
+}
+.map-top-left-controls[data-wrapped] .map-verdict-strip {
+  margin-inline: 0;
+}
+/* The vitals card starts below the top row, however many lines it takes (was 4.75rem). */
+.mars-map-shell .map-left-panels {
+  top: calc(var(--map-top-row-height, 2.75rem) + 2rem);
+  max-height: calc(100% - var(--map-top-row-height, 2.75rem) - 8.25rem);
+}
+/* Only horizontally competing panels share vertical space. The observer measures the complete
+   control stack (including open disclosures and legends) and reserves the vitals readouts. */
+.mars-map-shell .map-overlay-column[data-shared-map-panels] .map-left-panels {
+  top: var(--map-shared-panels-top);
+  max-height: max(0px, calc(100% - var(--map-shared-panels-top) - 6.25rem));
+}
+.map-overlay-column[data-shared-map-panels] .map-camera-stack {
+  max-height: min(
+    var(--map-shared-controls-height),
+    calc(100% - var(--map-top-row-height, 2.75rem) - 8.5rem)
+  );
+}
+.map-overlay-column[data-shared-map-panels] .map-control-row {
+  flex: 0 1 auto;
+  min-height: var(--map-controls-min-height, 0px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  pointer-events: auto;
+  /* The control list scrolls, not the enabled reference legends below it. */
+  scrollbar-gutter: stable;
+}
+/* When even the minimum controls viewport and enabled legends cannot coexist, scroll their
+   complete list instead of flex-shrinking the controls to zero. All regions are keyboard focusable. */
+.map-camera-stack[data-map-stack-scroll] {
+  pointer-events: auto;
+  scrollbar-gutter: stable;
+}
+.map-overlay-column .map-camera-stack[data-map-stack-scroll] .map-control-row {
+  flex: none;
+  overflow-y: visible;
+}
+.map-camera-stack:focus-visible,
+.map-camera-stack .fake-sensor-legend:focus-visible,
+.map-camera-stack .dust-map-legend:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* With the chat open, LARA's reply sits left of the chat panel (right 1rem, 24rem wide)
+   instead of over its last message and input. */
+@media (min-width: 800px) {
+  .mars-map-shell:has(.lara-launcher[aria-expanded="true"]) .lara-reply {
+    left: 1rem;
+    right: 26rem;
+    width: auto;
+    max-width: 40rem;
+    margin-left: auto;
+    transform: none;
+  }
 }
 
 .map-layers-control {
   min-width: 0;
-  width: 8.5rem;
+  width: var(--map-layers-width);
 }
 .map-layers-control:has(> details[open]) {
-  width: min(23rem, calc(100vw - 14rem));
+  width: var(--map-layers-open-width);
 }
 .map-control-row {
   display: flex;
+  flex-wrap: wrap;
   align-items: flex-start;
   justify-content: flex-end;
   gap: 0.75rem;
   width: 100%;
   min-height: 0;
   flex: none;
+  /* Only the controls take clicks, not the empty part of the row beside them. */
+  pointer-events: none;
+}
+.map-control-row > * {
   pointer-events: auto;
 }
 .map-control-row > .map-view-controls {
   position: static;
-  flex: 0 0 12rem;
-  max-width: 12rem;
+  flex: 0 1 var(--map-views-width);
+  max-width: min(var(--map-views-width), 100%);
+}
+.map-control-row > .map-layers-control {
+  max-width: 100%;
 }
 .map-camera-stack {
   position: absolute;
@@ -107,7 +234,7 @@
   pointer-events: none;
 }
 .map-camera-stack:has(.map-layers-control > details[open]) {
-  width: min(100% - 6.5rem, 36rem);
+  width: var(--map-stack-open-width);
 }
 .map-legend-slot {
   display: contents;
@@ -116,34 +243,49 @@
 .map-camera-stack > .map-legend-slot > .dust-map-legend {
   position: static;
   flex: none;
-  min-height: 0;
+  min-height: var(--map-legend-min-height, 0px);
+  max-height: min(45svh, 26rem);
+  overflow-y: auto;
   width: min(16rem, 100%);
   max-width: 100%;
   overscroll-behavior: contain;
   pointer-events: auto;
 }
-@media (max-width: 799px) {
+.map-camera-stack .fake-sensor-legend > h2,
+.map-camera-stack .dust-map-legend > p:first-child {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: var(--background);
+}
+@container map-chrome (max-width: 49rem) {
+  /* The full response and speech controls already appear in the open chat. */
+  .mars-map-shell:has(.lara-launcher[aria-expanded="true"]) .lara-reply {
+    display: none;
+  }
+  /* The camera stack moves under the top row, so only the compass bounds it. */
+  .map-top-left-controls {
+    right: 5.25rem;
+  }
   .map-camera-stack {
-    top: 5rem;
+    top: calc(var(--map-top-row-height, 2.75rem) + 2.25rem);
     right: 1rem;
     width: min(100% - 2rem, 24rem);
-    max-height: calc(100% - 15rem);
+    max-height: calc(100% - var(--map-top-row-height, 2.75rem) - 12.25rem);
   }
   .map-camera-stack:has(.map-layers-control > details[open]) {
     width: min(100% - 2rem, 36rem);
   }
   .map-layers-control:has(> details[open]) {
     width: auto;
-    flex: 1;
+    flex: 1 1 16rem;
   }
   .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
-    flex: 0 0 11.25rem;
+    flex-basis: var(--map-views-width);
   }
 }
 @media (max-height: 600px) {
   .map-camera-stack {
-    bottom: 150px;
-    max-height: none;
     flex-direction: column;
   }
   .map-control-row .map-disclosure-content {
@@ -152,19 +294,6 @@
   .map-camera-stack > .fake-sensor-legend,
   .map-camera-stack > .map-legend-slot > .dust-map-legend {
     flex: none;
-  }
-}
-@media (max-width: 399px) {
-  .map-control-row > .map-view-controls,
-  .map-control-row:has(.map-layers-control > details[open]) > .map-view-controls {
-    flex-basis: 10.25rem;
-  }
-  .map-control-row > .map-layers-control {
-    flex: 1;
-  }
-  .map-control-row .map-disclosure > summary {
-    gap: 4px;
-    padding-inline: 4px;
   }
 }
 
@@ -183,7 +312,9 @@
 
 .mars-map-canvas .maplibregl-ctrl-bottom-left {
   left: var(--map-overlay-left, 0px);
-  bottom: var(--map-overlay-bottom, 0px);
+  /* Keep even expanded, wrapping source credits above the launcher and its halo. */
+  bottom: calc(var(--map-overlay-bottom, 0px) + 4.5rem);
+  max-width: calc(100% - var(--map-overlay-left, 0px) - 1rem);
 }
 .mars-map-canvas .maplibregl-ctrl-bottom-right {
   bottom: var(--map-overlay-bottom, 0px);
@@ -191,11 +322,25 @@
 
 /* The mobile sidebar is portaled outside the map shell by coss. */
 body:has(.mars-map-shell) [data-mobile="true"][data-sidebar="sidebar"] {
+  width: min(22.5rem, calc(100vw - 2rem));
   background: color-mix(in srgb, var(--background) 82%, transparent);
   color: var(--foreground);
   --muted-foreground: #b5c7c8;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+}
+@media (max-width: 767px) {
+  body:has(.mars-map-shell) .route-step-tabs {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(4.5rem, 100%), 1fr));
+  }
+  body:has(.mars-map-shell) .route-step-tabs > [data-slot="tabs-tab"] {
+    min-width: 0;
+    height: auto;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 0.375rem 0.25rem;
+  }
 }
 
 @media (prefers-reduced-transparency: reduce), (forced-colors: active) {

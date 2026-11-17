@@ -9,10 +9,19 @@ import { formatNumber } from "@/lib/mission/format";
 import { useTablePageSize } from "@/hooks/use-table-page-size";
 import { ObservationPlot, clockLabel } from "./observation-plot";
 
-function ObservationRecords({ metric }: { metric: HomebaseMetric }) {
+export function ObservationRecords({
+  metric,
+  from,
+  to,
+}: {
+  metric: HomebaseMetric;
+  from: number;
+  to: number;
+}) {
   const { ref, size } = useTablePageSize();
   const [page, setPage] = useState(0);
-  const pages = Math.max(1, Math.ceil(metric.points.length / size));
+  const points = metric.points.filter((point) => point.utc_ms >= from && point.utc_ms <= to);
+  const pages = Math.max(1, Math.ceil(points.length / size));
   const current = Math.min(page, pages - 1),
     offset = current * size;
   return (
@@ -24,6 +33,9 @@ function ObservationRecords({ metric }: { metric: HomebaseMetric }) {
             NASA source product ↗
           </a>
         )}
+      </p>
+      <p className="hb-plot-context">
+        {clockLabel(from)}–{clockLabel(to)} · Approx. UTC
       </p>
       <div ref={ref} className="hb-table-window">
         <table>
@@ -40,7 +52,7 @@ function ObservationRecords({ metric }: { metric: HomebaseMetric }) {
             </tr>
           </thead>
           <tbody>
-            {metric.points.slice(offset, offset + size).map((p) => (
+            {points.slice(offset, offset + size).map((p) => (
               <tr key={p.utc_ms}>
                 <td>{clockLabel(p.utc_ms)}</td>
                 <td>
@@ -54,8 +66,8 @@ function ObservationRecords({ metric }: { metric: HomebaseMetric }) {
       </div>
       <div className="hb-pagination">
         <span role="status">
-          Rows {metric.points.length ? offset + 1 : 0}–
-          {Math.min(offset + size, metric.points.length)} of {metric.points.length}
+          Rows {points.length ? offset + 1 : 0}–{Math.min(offset + size, points.length)} of{" "}
+          {points.length}
         </span>
         <Button variant="outline" disabled={current === 0} onClick={() => setPage(current - 1)}>
           Previous
@@ -84,14 +96,20 @@ export function ObservationInspector({
   generation: number;
 }) {
   const [view, setView] = useState("chart");
+  const [zoomed, setZoomed] = useState(false);
+  const close = () => {
+    onClose();
+    setView("chart");
+    setZoomed(false);
+  };
+  const from = data?.coverage.from_utc_ms ?? 0;
+  const to = data?.coverage.to_utc_ms ?? 0;
+  const start = zoomed ? Math.max(from, to - 30 * 60000) : from;
   return (
     <Dialog
       open={!!metric && !!data}
       onOpenChange={(open) => {
-        if (!open) {
-          onClose();
-          setView("chart");
-        }
+        if (!open) close();
       }}
     >
       <DialogPopup
@@ -103,7 +121,7 @@ export function ObservationInspector({
           <div className="homebase-dashboard hb-inspector-shell" data-loaded>
             <header className="hb-header">
               <DialogTitle>{metric.title} · archive inspection</DialogTitle>
-              <Button variant="outline" onClick={onClose}>
+              <Button variant="outline" onClick={close}>
                 <X aria-hidden />
                 Close
               </Button>
@@ -132,12 +150,14 @@ export function ObservationInspector({
               {view === "chart" ? (
                 <ObservationPlot
                   metric={metric}
-                  from={data.coverage.from_utc_ms}
-                  to={data.coverage.to_utc_ms}
+                  from={from}
+                  to={to}
                   revealKey={generation}
+                  zoomed={zoomed}
+                  onZoomChange={setZoomed}
                 />
               ) : (
-                <ObservationRecords key={metric.id} metric={metric} />
+                <ObservationRecords key={metric.id} metric={metric} from={start} to={to} />
               )}
             </div>
           </div>

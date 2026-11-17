@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import type { Expedition } from "@/components/expedition/expedition-provider";
 import { parseTrainingCommand, trainingCommandLine, type AskVia } from "@/lib/copilot/training";
+import type { Command } from "@/lib/mission/client";
 import type { ReturnRoute } from "@/lib/mission/types";
 
 import { playHeardCue } from "./cue";
@@ -33,9 +35,11 @@ export interface Turn {
 /** The subset of GET /api/missions/:id the panel reads. */
 interface MissionSnapshot {
   revision: number;
-  clock: { mode: "paused" | "playing"; position_s: number; speed: number };
+  clock: { mode: "paused" | "playing" | "ended"; position_s: number; speed: number };
   config: {
     base: { id: string };
+    /** Set once an expedition is loaded; without it the session is the base-only simulation. */
+    route?: { id: string } | null;
     duration_s: number;
     oxygen: Record<"base" | "eva", { reserve_g: number }>;
     battery: Record<"base" | "eva", { reserve_wh: number }>;
@@ -77,22 +81,35 @@ const ACTION_GAP_MS = 50;
 
 async function json<T>(response: Response): Promise<T> {
   const body = (await response.json()) as T & { error?: { message?: string } };
-  if (!response.ok) throw new Error(body.error?.message ?? `Request failed (${response.status})`);
+  if (!response.ok)
+    throw new Error(body.error?.message ?? `Mission server returned ${response.status}`);
   return body;
 }
 
-/**
- * The polled mission snapshot and the ask → speak loop for LARA. With `shared`, LARA reads the
- * page's expedition session instead of opening its own demo mission, so there is one owner.
- */
-export function useLara(shared?: { id: string; token: string } | null) {
-  const [mission, setMission] = useState<{ id: string; token: string } | null>(null);
-  const [snapshot, setSnapshot] = useState<MissionSnapshot | null>(null);
+/** An error message in three parts (S-2): what failed, the cause if known, what to do. */
+function failure(what: string, cause: unknown, action: string) {
+  const text = cause instanceof Error ? cause.message.trim() : "";
+  const reason = text && !/[.!?]$/.test(text) ? `${text}.` : text;
+  return [`${what}.`, reason, action].filter(Boolean).join(" ");
+}
+
+export type SharedLaraMission = Pick<
+  Expedition,
+  "access" | "snapshot" | "lastOkAt" | "link" | "command"
+>;
+
+/** The shared mission reader and ask → speak loop; only standalone demos own a poller. */
+export function useLara(shared?: SharedLaraMission) {
+  const [demoMission, setMission] = useState<{ id: string; token: string } | null>(null);
+  const mission = shared === undefined ? demoMission : shared.access;
+  const [demoSnapshot, setSnapshot] = useState<MissionSnapshot | null>(null);
+  const snapshot: MissionSnapshot | null = shared === undefined ? demoSnapshot : shared.snapshot;
   const [turns, setTurns] = useState<Turn[]>([]);
   const [status, setStatus] = useState<Status>("starting");
   const [error, setError] = useState<string | null>(null);
   // When the last poll succeeded (ms since epoch), so readers can tell a stale snapshot.
-  const [polledAt, setPolledAt] = useState<number | null>(null);
+  const [demoPolledAt, setPolledAt] = useState<number | null>(null);
+  const polledAt = shared === undefined ? demoPolledAt : shared.lastOkAt;
   const [voice, setVoice] = useState(true);
   const [transcript, setTranscript] = useState("");
   const [reply, setReply] = useState<{
@@ -133,14 +150,12 @@ export function useLara(shared?: { id: string; token: string } | null) {
     [mission],
   );
 
-  const sharedId = shared?.id;
-  const sharedToken = shared?.token;
+  const sharedMode = shared !== undefined;
+  const missionId = mission?.id;
   useEffect(() => {
-    if (shared === undefined) return;
-    setMission(sharedId && sharedToken ? { id: sharedId, token: sharedToken } : null);
-    if (sharedId) setStatus("idle");
-    // Keyed on the credentials, not the object identity.
-  }, [sharedId, sharedToken]);
+    if (sharedMode) setStatus(missionId ? "idle" : "starting");
+    seenReasons.current = null;
+  }, [sharedMode, missionId]);
 
   useEffect(() => {
     if (shared !== undefined) return;
@@ -157,7 +172,10 @@ export function useLara(shared?: { id: string; token: string } | null) {
         setMission({ id: m.id, token: m.token });
         setStatus("idle");
       })
-      .catch((e: Error) => !cancelled && setError(e.message));
+      .catch(
+        (e: Error) =>
+          !cancelled && setError(failure("LARA did not start", e, "Reload the page to try again.")),
+      );
     return () => {
       cancelled = true;
     };
@@ -170,12 +188,12 @@ export function useLara(shared?: { id: string; token: string } | null) {
   }, []);
 
   const refresh = useCallback(async () => {
-    if (!mission) return null;
+    if (sharedMode || !mission) return null;
     const next = await json<MissionSnapshot>(await authed(`missions/${mission.id}`));
     store(next);
     setPolledAt(Date.now());
     return next;
-  }, [authed, mission, store]);
+  }, [authed, mission, sharedMode, store]);
 
   const synthesize = useCallback(
     async (text: string) => {
@@ -391,9 +409,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         ]);
         await speak(answer.text);
       } catch (e) {
-        setError(
-          e instanceof Error ? e.message : "LARA could not complete the request. Please try again.",
-        );
+        setError(failure("LARA did not answer", e, "Ask again."));
       } finally {
         busy.current = false;
         setStatus("idle");
@@ -402,30 +418,37 @@ export function useLara(shared?: { id: string; token: string } | null) {
     [authed, bridge, emitTraining, mission, runActions, say, speak, training, turns],
   );
 
-  // Poll the mission; announce any finding that was not present before.
+  // Voice/history changes must not re-announce a finding from the same snapshot.
+  const askRef = useRef(ask);
+  askRef.current = ask;
+
+  // The expedition provider owns shared polling and out-of-order response protection.
   useEffect(() => {
-    if (!mission) return;
-    const timer = setInterval(async () => {
-      try {
-        const next = await refresh();
-        if (!next) return;
-        const reasons = new Set(next.state.reasons);
-        const seen = seenReasons.current;
-        seenReasons.current = reasons;
-        if (!seen) return;
-        const fresh = [...reasons].find((r) => !seen.has(r));
-        if (fresh) void ask({ alert: { code: fresh } });
-      } catch {
-        // A missed poll is retried on the next tick.
-      }
-    }, POLL_MS);
+    if (sharedMode || !mission) return;
+    const timer = setInterval(() => void refresh().catch(() => {}), POLL_MS);
     void refresh().catch(() => {});
     return () => clearInterval(timer);
-  }, [mission, refresh, ask]);
+  }, [mission, refresh, sharedMode]);
+
+  useEffect(() => {
+    if (!snapshot) return;
+    const reasons = new Set(snapshot.state.reasons);
+    const seen = seenReasons.current;
+    seenReasons.current = reasons;
+    if (!seen) return;
+    const fresh = [...reasons].find((reason) => !seen.has(reason));
+    if (fresh) void askRef.current({ alert: { code: fresh } });
+  }, [snapshot]);
 
   const command = useCallback(
-    async (body: Record<string, unknown>) => {
+    async (body: Command, label = "Simulation command") => {
       if (!mission) throw new Error("The mission is not ready yet. Wait and try again.");
+      if (shared !== undefined) {
+        const next = await shared.command(body, label);
+        if (!next)
+          throw new Error("Command not accepted. Review the mission command status and try again");
+        return;
+      }
       const current = latest.current ?? (await refresh());
       if (!current) throw new Error("Mission readings are unavailable");
       try {
@@ -443,12 +466,18 @@ export function useLara(shared?: { id: string; token: string } | null) {
         store(next);
         setPolledAt(Date.now());
       } catch (e) {
-        setError((e as Error).message);
+        setError(
+          failure(
+            "Simulation command not applied",
+            e,
+            "Wait for current readings, then try again.",
+          ),
+        );
         void refresh().catch(() => {});
         throw e;
       }
     },
-    [authed, mission, refresh, store],
+    [authed, mission, refresh, shared, store],
   );
 
   /** Asks the backend whether the modeled oxygen, energy and time cover a planned return. */
@@ -492,7 +521,7 @@ export function useLara(shared?: { id: string; token: string } | null) {
         if (question) await ask({ question }, "voice");
         else setStatus("idle");
       } catch (e) {
-        setError((e as Error).message);
+        setError(failure("Question not transcribed", e, "Ask again, or type the question."));
         setStatus("idle");
       }
     },
@@ -546,7 +575,9 @@ export function useLara(shared?: { id: string; token: string } | null) {
       captureLimit.current = setTimeout(() => recorder.current?.stop(), MAX_PUSH_TO_TALK_MS);
     } catch {
       micOpening.current = false;
-      setError("The microphone is not available, or the browser denied permission to use it");
+      setError(
+        "Microphone not available: it is missing, or the browser denied permission. Allow microphone access, or type the question.",
+      );
       setStatus("idle");
     }
   }, [askFromAudio, mission]);
@@ -621,7 +652,9 @@ export function useLara(shared?: { id: string; token: string } | null) {
         if (next === "end") setStatus("idle");
         return next;
       } catch (e) {
-        setError((e as Error).message);
+        setError(
+          failure("LARA did not answer", e, 'Say "Hey Lara" to ask again, or type the question.'),
+        );
         setStatus("idle");
         return "end";
       }
@@ -633,6 +666,8 @@ export function useLara(shared?: { id: string; token: string } | null) {
     ready: Boolean(mission),
     snapshot,
     polledAt,
+    // Paused missions poll less often; use the owner's link health, not the demo interval.
+    readingsStale: shared === undefined ? undefined : shared.link !== "live",
     turns,
     status,
     transcript,

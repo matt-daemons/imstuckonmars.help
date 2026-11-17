@@ -14,6 +14,7 @@ import { HomebaseMapEntry } from "@/components/homebase/map-entry";
 import { DebugMenu } from "@/components/debug/debug-menu";
 import { MapCompass } from "@/components/map/map-compass";
 import { MapOverlayViewport } from "./map-overlay-viewport";
+import { MapTopRowSlot, useTopRowHeight } from "./map-top-row";
 import { useMapCursor } from "./use-map-cursor";
 import { SpaceBackdrop } from "./space-backdrop";
 import { useFakeSensorMode } from "./use-fake-sensor-mode";
@@ -78,6 +79,10 @@ export function MarsMap({ children }: { children?: ReactNode }) {
   const [spaceEnabled, setSpaceEnabled] = useState(true);
   const [dashboardShortcut, setDashboardShortcut] = useState<HTMLDivElement | null>(null);
   const [dustLegendTarget, setDustLegendTarget] = useState<HTMLDivElement | null>(null);
+  const [stripSlot, setStripSlot] = useState<HTMLDivElement | null>(null);
+  const topRow = useRef<HTMLDivElement>(null);
+  const overlayColumn = useRef<HTMLDivElement>(null);
+  useTopRowHeight(topRow, stripSlot, overlayColumn);
   const fakeSensors = useFakeSensorMode();
 
   useEffect(() => {
@@ -275,151 +280,162 @@ export function MarsMap({ children }: { children?: ReactNode }) {
           <MissionViewProvider map={loaded} base={HABITAT} error={error}>
             <RouteSidebar map={loaded} base={HABITAT} />
             {/* Keep overlay positions while the map continues behind the sidebar and HUD. */}
-            <div className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col">
-              <MapOverlayViewport map={loaded}>
-                <FakeSensorLayers map={loaded} mode={fakeSensors} />
-                <div className="map-camera-stack">
-                  <div className="map-control-row">
-                    <MapViewControls />
-                    <LayersPanel fakeData={fakeSensors.state.enabled}>
-                      <SidebarSections
-                        layers={
-                          <>
-                            {manifest && (
-                              <LayerPanelBody
-                                manifest={manifest}
-                                visible={visible}
-                                onToggle={toggle}
-                              />
-                            )}
-                            <FakeSensorControls mode={fakeSensors} map={loaded} />
-                          </>
-                        }
-                        scene={
-                          <ScenePanelBody
-                            map={loaded}
-                            habitat={HABITAT}
-                            sites={sites}
-                            spaceEnabled={spaceEnabled}
-                            onSpaceEnabledChange={setSpaceEnabled}
-                            legendTarget={dustLegendTarget}
+            <div
+              ref={overlayColumn}
+              className="map-overlay-column relative z-1 flex h-svh min-w-0 flex-1 flex-col"
+            >
+              <MapTopRowSlot value={stripSlot}>
+                <MapOverlayViewport map={loaded}>
+                  <FakeSensorLayers map={loaded} mode={fakeSensors} />
+                  <div className="map-camera-stack">
+                    <div className="map-control-row">
+                      <MapViewControls />
+                      <LayersPanel fakeData={fakeSensors.state.enabled}>
+                        <SidebarSections
+                          layers={
+                            <>
+                              {manifest && (
+                                <LayerPanelBody
+                                  manifest={manifest}
+                                  visible={visible}
+                                  onToggle={toggle}
+                                />
+                              )}
+                              <FakeSensorControls mode={fakeSensors} map={loaded} />
+                            </>
+                          }
+                          scene={
+                            <ScenePanelBody
+                              map={loaded}
+                              habitat={HABITAT}
+                              sites={sites}
+                              spaceEnabled={spaceEnabled}
+                              onSpaceEnabledChange={setSpaceEnabled}
+                              legendTarget={dustLegendTarget}
+                            />
+                          }
+                        />
+                      </LayersPanel>
+                    </div>
+                    <FakeSensorLegend mode={fakeSensors} />
+                    <div ref={setDustLegendTarget} className="map-legend-slot" />
+                  </div>
+                  <div className="mission-map-chrome contents">
+                    <RouteMapLayers map={loaded} />
+                    <RouteFocus map={loaded} />
+                    <LaraRouteBridge map={loaded} />
+                    <LaraExpeditionBridge />
+                    <CrewLayer map={loaded} />
+                    <HomebaseMapEntry
+                      map={loaded}
+                      habitat={HABITAT}
+                      enlarged={habitatEnlarged}
+                      shortcutTarget={dashboardShortcut}
+                    />
+                    <MapCompass map={loaded} />
+                    <CompletionNotice />
+                    <DebugMenu
+                      page="Map"
+                      controls={<FakeDataToggle mode={fakeSensors} />}
+                      readSections={() => {
+                        const m = map.current;
+                        const center = m?.getCenter();
+                        const terrain = m?.getTerrain();
+                        return [
+                          {
+                            title: "View",
+                            rows: [
+                              { label: "Renderer", value: m?.loaded() ? "Loaded" : "Loading" },
+                              {
+                                label: "Center latitude",
+                                value: center ? `${center.lat.toFixed(6)}°` : "Unavailable",
+                              },
+                              {
+                                label: "Center longitude",
+                                value: center ? `${center.lng.toFixed(6)}°` : "Unavailable",
+                              },
+                              { label: "Zoom", value: m?.getZoom().toFixed(3) ?? "Unavailable" },
+                              {
+                                label: "Pitch",
+                                value: m ? `${m.getPitch().toFixed(2)}°` : "Unavailable",
+                              },
+                              {
+                                label: "Bearing",
+                                value: m ? `${m.getBearing().toFixed(2)}°` : "Unavailable",
+                              },
+                              {
+                                label: "Projection",
+                                value: m ? JSON.stringify(m.getProjection()?.type) : "Unavailable",
+                              },
+                            ],
+                          },
+                          {
+                            title: "Terrain and habitat",
+                            rows: [
+                              { label: "Terrain source", value: terrain?.source ?? "Disabled" },
+                              {
+                                label: "Exaggeration",
+                                value: terrain?.exaggeration ?? "Unavailable",
+                              },
+                              {
+                                label: "Base elevation",
+                                value:
+                                  m?.queryTerrainElevation(HABITAT) == null
+                                    ? "Unavailable"
+                                    : `${m.queryTerrainElevation(HABITAT)?.toFixed(2)} m · display datum`,
+                              },
+                              {
+                                label: "Habitat display",
+                                value:
+                                  !m || m.getZoom() < 7 || !terrain
+                                    ? "Hidden at this view"
+                                    : habitatEnlarged
+                                      ? "Enlarged · not to scale"
+                                      : "Authored scale",
+                              },
+                              { label: "Map error", value: error || "None" },
+                            ],
+                          },
+                        ];
+                      }}
+                    />
+                    {/* One row: sidebar trigger, Mission dashboard and the verdict strip, which
+                      wraps to a second line when it does not fit before the camera stack. */}
+                    <div ref={topRow} className="map-top-left-controls">
+                      <div className="map-top-buttons">
+                        <Tooltip>
+                          <TooltipTrigger
+                            render={<SidebarTrigger variant="outline" aria-keyshortcuts="H" />}
                           />
-                        }
-                      />
-                    </LayersPanel>
-                  </div>
-                  <FakeSensorLegend mode={fakeSensors} />
-                  <div ref={setDustLegendTarget} className="map-legend-slot" />
-                </div>
-                <div className="mission-map-chrome contents">
-                  <RouteMapLayers map={loaded} />
-                  <RouteFocus map={loaded} />
-                  <LaraRouteBridge map={loaded} />
-                  <LaraExpeditionBridge />
-                  <CrewLayer map={loaded} />
-                  <HomebaseMapEntry
-                    map={loaded}
-                    habitat={HABITAT}
-                    enlarged={habitatEnlarged}
-                    shortcutTarget={dashboardShortcut}
-                  />
-                  <MapCompass map={loaded} />
-                  <CompletionNotice />
-                  <DebugMenu
-                    page="Map"
-                    controls={<FakeDataToggle mode={fakeSensors} />}
-                    readSections={() => {
-                      const m = map.current;
-                      const center = m?.getCenter();
-                      const terrain = m?.getTerrain();
-                      return [
-                        {
-                          title: "View",
-                          rows: [
-                            { label: "Renderer", value: m?.loaded() ? "Loaded" : "Loading" },
-                            {
-                              label: "Center latitude",
-                              value: center ? `${center.lat.toFixed(6)}°` : "Unavailable",
-                            },
-                            {
-                              label: "Center longitude",
-                              value: center ? `${center.lng.toFixed(6)}°` : "Unavailable",
-                            },
-                            { label: "Zoom", value: m?.getZoom().toFixed(3) ?? "Unavailable" },
-                            {
-                              label: "Pitch",
-                              value: m ? `${m.getPitch().toFixed(2)}°` : "Unavailable",
-                            },
-                            {
-                              label: "Bearing",
-                              value: m ? `${m.getBearing().toFixed(2)}°` : "Unavailable",
-                            },
-                            {
-                              label: "Projection",
-                              value: m ? JSON.stringify(m.getProjection()?.type) : "Unavailable",
-                            },
-                          ],
-                        },
-                        {
-                          title: "Terrain and habitat",
-                          rows: [
-                            { label: "Terrain source", value: terrain?.source ?? "Disabled" },
-                            {
-                              label: "Exaggeration",
-                              value: terrain?.exaggeration ?? "Unavailable",
-                            },
-                            {
-                              label: "Base elevation",
-                              value:
-                                m?.queryTerrainElevation(HABITAT) == null
-                                  ? "Unavailable"
-                                  : `${m.queryTerrainElevation(HABITAT)?.toFixed(2)} m · display datum`,
-                            },
-                            {
-                              label: "Habitat display",
-                              value:
-                                !m || m.getZoom() < 7 || !terrain
-                                  ? "Hidden at this view"
-                                  : habitatEnlarged
-                                    ? "Enlarged · not to scale"
-                                    : "Authored scale",
-                            },
-                            { label: "Map error", value: error || "None" },
-                          ],
-                        },
-                      ];
-                    }}
-                  />
-                  <div className="map-top-left-controls">
-                    <Tooltip>
-                      <TooltipTrigger
-                        render={<SidebarTrigger variant="outline" aria-keyshortcuts="H" />}
-                      />
-                      <TooltipPopup side="right">
-                        Mission sidebar. Shortcut: <Kbd>H</Kbd>
-                      </TooltipPopup>
-                    </Tooltip>
-                    <div ref={setDashboardShortcut} />
-                  </div>
-                  {error && (
-                    <div className="map-load-error" role="alert">
-                      <CircleXIcon aria-hidden />
-                      <p>Map data did not fully load: {error}. Reload to retry.</p>
-                      <Button variant="outline" onClick={() => window.location.reload()}>
-                        Reload map
-                      </Button>
+                          <TooltipPopup side="right">
+                            Mission sidebar. Shortcut: <Kbd>H</Kbd>
+                          </TooltipPopup>
+                        </Tooltip>
+                        <div ref={setDashboardShortcut} />
+                      </div>
+                      <div ref={setStripSlot} className="map-top-strip-slot" />
                     </div>
-                  )}
-                  {cursor && (
-                    <div className="map-coordinate-readout absolute right-4 bottom-16 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
-                      {cursor[1].toFixed(5)}°N{" "}
-                      {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
-                      °E
-                    </div>
-                  )}
-                  {children}
-                </div>
-              </MapOverlayViewport>
+                    {error && (
+                      <div className="map-load-error" role="alert">
+                        <CircleXIcon aria-hidden />
+                        <p>Map data did not fully load: {error}. Reload to retry.</p>
+                        <Button variant="outline" onClick={() => window.location.reload()}>
+                          Reload map
+                        </Button>
+                      </div>
+                    )}
+                    {cursor && (
+                      <div className="map-coordinate-readout absolute right-4 bottom-16 rounded-md bg-background/80 px-2 py-1 font-mono text-xs">
+                        {/* Hemisphere letter instead of a sign; longitude shows 0–360 °E (CLAUDE.md §4). */}
+                        {Math.abs(cursor[1]).toFixed(5)}°{cursor[1] < 0 ? "S" : "N"}{" "}
+                        {(cursor[0] < 0 ? cursor[0] + 360 : cursor[0]).toFixed(5)}
+                        °E
+                      </div>
+                    )}
+                    {children}
+                  </div>
+                </MapOverlayViewport>
+              </MapTopRowSlot>
               <ExpeditionHud />
             </div>
           </MissionViewProvider>

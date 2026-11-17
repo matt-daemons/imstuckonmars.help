@@ -2,7 +2,7 @@
 import { CircleCheckIcon, CircleHelpIcon, CircleXIcon, type LucideIcon } from "lucide-react";
 
 import { formatDuration, formatNumber } from "@/lib/mission/format";
-import type { OutlookStatus, Resource } from "@/lib/mission/outlook";
+import type { Outcome, OutlookStatus, Resource } from "@/lib/mission/outlook";
 import type { CrewPosition } from "@/lib/mission/types";
 
 export const STATUS_STYLE: Record<
@@ -13,6 +13,28 @@ export const STATUS_STYLE: Record<
   modeled_constraint_violation: { label: "Reserve breached", variant: "error", Icon: CircleXIcon },
   unknown: { label: "Unknown", variant: "warning", Icon: CircleHelpIcon },
 };
+
+/** Energy inventory can stay above reserve while the discharge-power limit leaves load unmet. */
+export function outcomeStyle(outcome: Pick<Outcome, "status" | "reasons">) {
+  const style = STATUS_STYLE[outcome.status];
+  if (outcome.status !== "modeled_constraint_violation") return style;
+  const label = outcome.reasons.includes("eva_power_demand_unmet")
+    ? "Power demand unmet"
+    : outcome.reasons.includes("eva_oxygen_demand_unmet")
+      ? "Oxygen demand unmet"
+      : outcome.reasons.includes("time_return_reserve")
+        ? "EVA time exceeded"
+        : style.label;
+  return { ...style, label };
+}
+
+export function returnedOutcomeText(status: OutlookStatus | undefined): string {
+  if (status === "modeled_resource_feasible")
+    return "Crew back in the shelter. The report is ready.";
+  if (status === "modeled_constraint_violation")
+    return "Crew reached shelter, but a modeled suit constraint was violated. Review the report.";
+  return "Crew reached shelter; the modeled return outcome is unavailable.";
+}
 
 export const RESOURCE_LABEL: Record<Resource, string> = {
   suit_oxygen: "suit oxygen",
